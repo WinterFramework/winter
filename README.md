@@ -1,3 +1,5 @@
+![alt text](https://travis-ci.org/mofr/winter.svg?branch=master)
+
 # Winter
 Web Framework for Python based on Spring Framework
 
