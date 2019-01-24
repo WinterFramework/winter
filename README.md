@@ -1,6 +1,6 @@
 # Winter
 
-[![Build Status](https://travis-ci.com/mofr/winter.svg?branch=master)](https://travis-ci.com/mofr/winter)
+[![Build Status](https://travis-ci.org/mofr/winter.svg?branch=master)](https://travis-ci.org/mofr/winter)
 [![codecov](https://codecov.io/gh/mofr/winter/branch/master/graph/badge.svg)](https://codecov.io/gh/mofr/winter)
 [![PyPI version](https://badge.fury.io/py/winter.svg)](https://badge.fury.io/py/winter)
 
