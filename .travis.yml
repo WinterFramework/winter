@@ -6,7 +6,9 @@ python:
 - '3.6'
 install:
 - python setup.py install
-script: 
+- pip install pytest
+script:
+- pytest
 deploy:
   provider: pypi
   user: mofr
