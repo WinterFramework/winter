@@ -1,13 +1,15 @@
 dist: trusty
 sudo: required
 language: python
+cache: pip
 python:
 - '3.6'
 install:
-- python setup.py install
-- pip install pytest pytest-pythonpath
+- pip install -r requirements/ci.txt
+before_script:
+- coverage erase
 script:
-- pytest
+- tox -e py36
 deploy:
   provider: pypi
   user: mofr
