@@ -2,14 +2,16 @@
 
 [![Build Status](https://travis-ci.com/mofr/winter.svg?branch=master)](https://travis-ci.com/mofr/winter)
 [![codecov](https://codecov.io/gh/mofr/winter/branch/master/graph/badge.svg)](https://codecov.io/gh/mofr/winter)
+[![PyPI version](https://badge.fury.io/py/winter.svg)](https://badge.fury.io/py/winter)
 
-Web Framework for Python based on Spring Framework
+Web Framework for Python inspired by Spring Framework
 
 # Main features
 * Declarative API
 * Built around python type annotations
 * Dependency injection
 * Automatic OpenAPI (swagger) documentation generation
+* Suitable for DDD
 
 # How to use
 ## Installation
