@@ -20,4 +20,5 @@ setup(name='winter',
                         'dataclasses>=0.6',
                         'pydantic>=0.15',
                         'drf-yasg>=1.11.0',
-                        'docstring_parser>=0.1'])
+                        'docstring_parser>=0.1',
+                        'injector>=0.13.4'])
