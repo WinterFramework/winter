@@ -1,6 +1,8 @@
-[![Build Status](https://travis-ci.com/mofr/winter.svg?branch=master)](https://travis-ci.com/mofr/winter)
-
 # Winter
+
+[![Build Status](https://travis-ci.com/mofr/winter.svg?branch=master)](https://travis-ci.com/mofr/winter)
+[![codecov](https://codecov.io/gh/mofr/winter/branch/master/graph/badge.svg)](https://codecov.io/gh/mofr/winter)
+
 Web Framework for Python based on Spring Framework
 
 # Main features
@@ -9,5 +11,8 @@ Web Framework for Python based on Spring Framework
 * Dependency injection
 * Automatic OpenAPI (swagger) documentation generation
 
-# How to install
-`pip install winter`
+# How to use
+## Installation
+```
+pip install winter
+```

@@ -6,11 +6,11 @@ from typing import Union
 
 import pytest
 
-from lib.winter.type_utils import get_origin_type
-from lib.winter.type_utils import is_iterable
-from lib.winter.type_utils import is_optional
-from lib.winter.type_utils import is_origin_type_subclasses
-from lib.winter.type_utils import is_union
+from winter.type_utils import get_origin_type
+from winter.type_utils import is_iterable
+from winter.type_utils import is_optional
+from winter.type_utils import is_origin_type_subclasses
+from winter.type_utils import is_union
 
 
 @pytest.mark.parametrize(('typing_for_check', 'expected'), [
