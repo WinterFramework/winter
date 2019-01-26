@@ -1,13 +1,84 @@
+import datetime
+import decimal
+import inspect
+import json
+import uuid
 from enum import Enum
+from typing import Callable
+from typing import Dict
+from typing import Type
 
-from rest_framework.utils.encoders import JSONEncoder
+__all__ = (
+    'JSONEncoder',
+    'register_encoder',
+)
+
+_encoder_map: Dict[Type, Callable] = {}
 
 
-class WinterJSONEncoder(JSONEncoder):
-    """
-    JSONEncoder subclass that knows how to encode enums
-    """
+class JSONEncoder(json.JSONEncoder):
+
     def default(self, obj):
         if isinstance(obj, Enum):
-            return obj.value
+            obj = obj.value
+
+        func = _encoder_map.get(type(obj))
+
+        if func is not None:
+            return func(obj)
         return super().default(obj)
+
+
+def register_encoder(func: Callable):
+    assert callable(func), 'First argument in register_encoder must be callable'
+
+    signature = inspect.signature(func)
+    assert len(signature.parameters), 'Function must have only one argument'
+    (parameter_name, parameter), = signature.parameters.items()
+    annotation = parameter.annotation
+    assert annotation is not parameter.empty, 'First argument in function must have annotation'
+    assert inspect.isclass(annotation), 'Annotation must be class'
+    assert annotation not in _encoder_map, (
+        f'You can not register "{annotation.__name__}" twice. At first unregister it'
+    )
+    _encoder_map[annotation] = func
+
+
+@register_encoder
+def datetime_encoder(date: datetime.datetime):
+    representation = date.isoformat()
+    if representation.endswith('+00:00'):
+        representation = representation[:-6] + 'Z'
+    return representation
+
+
+@register_encoder
+def date_encoder(date: datetime.date):
+    return date.isoformat()
+
+
+@register_encoder
+def time_encoder(time: datetime.time):
+    if time.utcoffset() is not None:
+        raise ValueError("JSON can't represent timezone-aware times.")
+    return time.isoformat()
+
+
+@register_encoder
+def timedelta_encoder(timedelta: datetime.timedelta):
+    return str(timedelta.total_seconds())
+
+
+@register_encoder
+def decimal_encoder(number: decimal.Decimal):
+    return float(number)
+
+
+@register_encoder
+def uuid_encoder(uid: uuid.UUID):
+    return str(uid)
+
+
+@register_encoder
+def bytes_encoder(byte: bytes):
+    return byte.decode('utf-8')
