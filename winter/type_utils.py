@@ -13,8 +13,7 @@ def is_optional(typing: object) -> bool:
 def is_iterable(typing: object) -> bool:
     """Note that str is not iterable here"""
     if is_union(typing):
-        none_type = NoneType
-        return all(is_iterable(arg) for arg in typing.__args__ if arg != none_type)
+        return all(is_iterable(arg) for arg in typing.__args__ if arg is not NoneType)
 
     return is_origin_type_subclasses(typing, Iterable) and not is_origin_type_subclasses(typing, str)
 
