@@ -1,24 +1,26 @@
 import inspect
 from typing import Iterable
-from typing import Type
 from typing import Union
 
+NoneType = type(None)
+UnionType = type(Union)
 
-def is_optional(type_: Type) -> bool:
-    return is_union(type_) and type(None) in type_.__args__
+
+def is_optional(typing: object) -> bool:
+    return is_union(typing) and NoneType in typing.__args__
 
 
-def is_iterable(type_: Type) -> bool:
+def is_iterable(typing: object) -> bool:
     """Note that str is not iterable here"""
-    if is_union(type_):
-        none_type = type(None)
-        return all(is_iterable(arg) for arg in type_.__args__ if arg != none_type)
+    if is_union(typing):
+        none_type = NoneType
+        return all(is_iterable(arg) for arg in typing.__args__ if arg != none_type)
 
-    return is_origin_type_subclasses(type_, Iterable) and not is_origin_type_subclasses(type_, str)
+    return is_origin_type_subclasses(typing, Iterable) and not is_origin_type_subclasses(typing, str)
 
 
-def is_union(type_: Type) -> bool:
-    return get_origin_type(type_) == Union
+def is_union(typing: object) -> bool:
+    return isinstance(typing, UnionType)
 
 
 def get_origin_type(hint_class):
@@ -27,6 +29,4 @@ def get_origin_type(hint_class):
 
 def is_origin_type_subclasses(hint_class, check_class):
     origin_type = get_origin_type(hint_class)
-    if not inspect.isclass(origin_type):
-        return False
-    return issubclass(origin_type, check_class)
+    return inspect.isclass(origin_type) and issubclass(origin_type, check_class)

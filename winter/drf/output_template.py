@@ -6,6 +6,7 @@ from ..output_processor import register_output_processor
 
 
 class TemplateRenderer(IOutputProcessor):
+
     def __init__(self, template_name: str):
         self._template_name = template_name
 
@@ -18,4 +19,5 @@ def output_template(template_name: str):
         output_processor = TemplateRenderer(template_name)
         register_output_processor(func, output_processor)
         return func
+
     return wrapper
