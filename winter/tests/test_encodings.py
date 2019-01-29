@@ -2,10 +2,10 @@ import datetime
 import decimal
 import enum
 import json
+import uuid
 
 import pytest
 import pytz
-import uuid
 
 from winter.json_encoder import JSONEncoder
 
@@ -22,7 +22,6 @@ class Enum(enum.Enum):
     LIST = [12]
     SET = {'11'}
     STRING = 'test string'
-
 
 
 def get_encoder_class():
