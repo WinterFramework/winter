@@ -22,7 +22,7 @@ _encoder_map: Dict[Type, Tuple[Callable, bool]] = {}
 NoneType = type(None)
 
 
-class EncoderException(Exception):
+class CannotEncode(Exception):
     pass
 
 
@@ -39,7 +39,7 @@ class JSONEncoder(json.JSONEncoder):
 
             try:
                 obj = func(obj)
-            except EncoderException:
+            except CannotEncode:
                 continue
 
             return self.default(obj) if need_recursion else obj
@@ -143,5 +143,5 @@ def enum_encoder(enum: Enum):
 @register_encoder
 def dataclass_encoder(obj: object):
     if not is_dataclass(obj):
-        raise EncoderException
+        raise CannotEncode
     return asdict(obj)
