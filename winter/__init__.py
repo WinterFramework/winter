@@ -19,7 +19,6 @@ from .routing import route_post
 
 
 def _default_configuration():
-    from .dataclasses import DataclassesOutputProcessorResolver
     from .query_parameter import QueryParameterResolver
     from .drf import DRFBodyArgumentResolver
     from .drf import HttpRequestArgumentResolver
@@ -30,7 +29,6 @@ def _default_configuration():
     register_argument_resolver(DRFBodyArgumentResolver())
     register_argument_resolver(QueryParameterResolver())
     register_argument_resolver(HttpRequestArgumentResolver())
-    register_output_processor_resolver(DataclassesOutputProcessorResolver())
     register_controller_method_inspector(PathParametersInspector())
     register_controller_method_inspector(QueryParametersInspector())
 
