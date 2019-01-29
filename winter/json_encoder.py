@@ -101,8 +101,8 @@ def uuid_encoder(uid: uuid.UUID):
 
 
 @register_encoder
-def bytes_encoder(byte: bytes):
-    return byte.decode('utf-8')
+def bytes_encoder(bytes_: bytes):
+    return bytes_.decode('utf-8')
 
 
 @register_encoder
