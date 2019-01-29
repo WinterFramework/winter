@@ -8,6 +8,9 @@ from typing import Callable
 from typing import Dict
 from typing import Type
 
+from dataclasses import asdict
+from dataclasses import is_dataclass
+
 __all__ = (
     'JSONEncoder',
     'register_encoder',
@@ -16,26 +19,38 @@ __all__ = (
 _encoder_map: Dict[Type, Callable] = {}
 
 
+NoneType = type(None)
+
+
+class EncoderException(Exception):
+    pass
+
+
 class JSONEncoder(json.JSONEncoder):
 
     def default(self, obj):
 
-        func = _encoder_map.get(type(obj))
+        for base_cls in type(obj).mro():
+            data = _encoder_map.get(base_cls)
+            if data is None:
+                continue
 
-        if func is not None:
-            return func(obj)
+            func, need_recursion = data
 
-        if isinstance(obj, Enum):
-            return self.default(obj.value)
+            try:
+                obj = func(obj)
+            except EncoderException:
+                continue
 
-        for type_, func in _encoder_map.items():
-            if isinstance(obj, type_):
-                return func(obj)
+            return self.default(obj) if need_recursion else obj
 
         return super().default(obj)
 
 
-def register_encoder(func: Callable):
+def register_encoder(func: Callable=None, *, need_recursion=False):
+    if func is None:
+        return lambda func: register_encoder(func, need_recursion=need_recursion)
+
     assert callable(func), 'First argument in register_encoder must be callable'
 
     signature = inspect.signature(func)
@@ -47,7 +62,7 @@ def register_encoder(func: Callable):
     assert annotation not in _encoder_map, (
         f'You can not register "{annotation.__name__}" twice. At first unregister it'
     )
-    _encoder_map[annotation] = func
+    _encoder_map[annotation] = func, need_recursion
 
 
 @register_encoder
@@ -116,5 +131,16 @@ def list_encoder(array: list):
 
 
 @register_encoder
-def set_encoder(array: set):
-    return list(array)
+def set_encoder(set_: set):
+    return list(set_)
+
+@register_encoder(need_recursion=True)
+def enum_encoder(enum: Enum):
+    return enum.value
+
+
+@register_encoder
+def dataclass_encoder(obj: object):
+    if not is_dataclass(obj):
+        raise EncoderException
+    return asdict(obj)

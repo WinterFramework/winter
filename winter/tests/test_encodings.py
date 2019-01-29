@@ -6,6 +6,7 @@ import uuid
 
 import pytest
 import pytz
+from dataclasses import dataclass
 
 from winter.json_encoder import JSONEncoder
 
@@ -24,11 +25,19 @@ class Enum(enum.Enum):
     STRING = 'test string'
 
 
+@dataclass
+class Dataclass:
+    number: int
+    string: str
+    date: datetime.date
+
+
 def get_encoder_class():
     return JSONEncoder
 
 
 @pytest.mark.parametrize(('value', 'expected_value'), [
+    (None, None),
     (1, 1),
     (Id(1), 1),
     (Enum.ID, 1),
@@ -45,8 +54,24 @@ def get_encoder_class():
     (decimal.Decimal(11.0), 11.0),
     (uuid.UUID('c010de13-7f2d-41f9-b4f0-893087e32b92'), 'c010de13-7f2d-41f9-b4f0-893087e32b92'),
     (b'test bytes', 'test bytes'),
+    (Dataclass(
+        1,
+        'test',
+        datetime.date(year=2019, month=1, day=1),
+    ), {'number': 1, 'string': 'test', 'date': '2019-01-01'}),
 ])
 def test_encoder(value, expected_value):
     encoder_class = get_encoder_class()
     data = {'key': value}
     assert expected_value == json.loads(json.dumps(data, cls=encoder_class))['key']
+
+
+@pytest.mark.parametrize('value', (
+        datetime.time(hour=3, minute=50, second=20, tzinfo=pytz.UTC),
+))
+def test_encoder_with_raises(value):
+    encoder_class = get_encoder_class()
+    data = {'key': value}
+
+    with pytest.raises(ValueError):
+        json.dumps(data, cls=encoder_class)
