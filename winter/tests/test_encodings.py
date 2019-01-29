@@ -46,7 +46,7 @@ def get_encoder_class():
     (uuid.UUID('c010de13-7f2d-41f9-b4f0-893087e32b92'), 'c010de13-7f2d-41f9-b4f0-893087e32b92'),
     (b'test bytes', 'test bytes'),
 ])
-def test_int(value, expected_value):
+def test_encoder(value, expected_value):
     encoder_class = get_encoder_class()
     data = {'key': value}
     assert expected_value == json.loads(json.dumps(data, cls=encoder_class))['key']
