@@ -28,6 +28,10 @@ class JSONEncoder(json.JSONEncoder):
         if isinstance(obj, Enum):
             return self.default(obj.value)
 
+        for type_, func in _encoder_map.items():
+            if isinstance(obj, type_):
+                return func(obj)
+
         return super().default(obj)
 
 

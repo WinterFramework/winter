@@ -15,6 +15,7 @@ class Id(int):
 
 
 class Enum(enum.Enum):
+    ID = Id(1)
     NUMBER = 1
     FLOAT = 1.0
     TUPLE = ('000', 1)
@@ -31,6 +32,7 @@ def get_encoder_class():
 @pytest.mark.parametrize(('value', 'expected_value'), [
     (1, 1),
     (Id(1), 1),
+    (Enum.ID, 1),
     (Enum.NUMBER, 1),
     (Enum.FLOAT, 1.0),
     (Enum.TUPLE, ['000', 1]),
