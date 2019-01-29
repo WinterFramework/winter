@@ -51,7 +51,7 @@ class ControllerMethod:
         return inspect.signature(self.func)
 
     def _build_arguments(self, func):
-        type_hints = typing.get_type_hints(self.func)
+        type_hints = typing.get_type_hints(func)
         type_hints.pop('return', None)
         arguments = {}
         for arg_name, arg_type in type_hints.items():

@@ -109,6 +109,6 @@ def _rewrite_uritemplate_with_regexps(winter_url_path: str, methods: List[Contro
         if len(types) > 1:
             raise Exception(f'Different methods are bound to the same path variable, but have different types annotated: {types}')
         type_, = types
-        regexp = '\d+' if issubclass(type_, int) else '\w+'
+        regexp = r'\d+' if issubclass(type_, int) else r'\w+'
         url_path = url_path.replace(f'{{{variable_name}}}', f'(?P<{variable_name}>{regexp})')
     return url_path

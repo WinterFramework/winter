@@ -19,13 +19,15 @@ _encoder_map: Dict[Type, Callable] = {}
 class JSONEncoder(json.JSONEncoder):
 
     def default(self, obj):
-        if isinstance(obj, Enum):
-            obj = obj.value
 
         func = _encoder_map.get(type(obj))
 
         if func is not None:
             return func(obj)
+
+        if isinstance(obj, Enum):
+            return self.default(obj.value)
+
         return super().default(obj)
 
 
@@ -82,3 +84,33 @@ def uuid_encoder(uid: uuid.UUID):
 @register_encoder
 def bytes_encoder(byte: bytes):
     return byte.decode('utf-8')
+
+
+@register_encoder
+def str_encoder(string: str):
+    return string
+
+
+@register_encoder
+def int_encoder(number: int):
+    return number
+
+
+@register_encoder
+def float_encoder(number: float):
+    return number
+
+
+@register_encoder
+def tuple_encoder(array: tuple):
+    return array
+
+
+@register_encoder
+def list_encoder(array: list):
+    return array
+
+
+@register_encoder
+def set_encoder(array: set):
+    return list(array)
