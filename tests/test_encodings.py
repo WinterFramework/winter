@@ -62,7 +62,7 @@ def get_encoder_class():
         1,
         'test',
         datetime.date(year=2019, month=1, day=1),
-        InnerDataclass(10)
+        InnerDataclass(10),
     ), {'id_': 1, 'number': 1, 'string': 'test', 'date': '2019-01-01', 'inner': {'inner_number': 10}}),
 ])
 def test_encoder(value, expected_value):
