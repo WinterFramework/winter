@@ -6,6 +6,7 @@ import uuid
 from enum import Enum
 from typing import Callable
 from typing import Dict
+from typing import Tuple
 from typing import Type
 
 from dataclasses import asdict
@@ -16,8 +17,7 @@ __all__ = (
     'register_encoder',
 )
 
-_encoder_map: Dict[Type, Callable] = {}
-
+_encoder_map: Dict[Type, Tuple[Callable, bool]] = {}
 
 NoneType = type(None)
 
@@ -47,9 +47,9 @@ class JSONEncoder(json.JSONEncoder):
         return super().default(obj)
 
 
-def register_encoder(func: Callable=None, *, need_recursion=False):
+def register_encoder(func: Callable = None, *, need_recursion=False):
     if func is None:
-        return lambda func: register_encoder(func, need_recursion=need_recursion)
+        return lambda func_: register_encoder(func_, need_recursion=need_recursion)
 
     assert callable(func), 'First argument in register_encoder must be callable'
 
@@ -133,6 +133,7 @@ def list_encoder(array: list):
 @register_encoder
 def set_encoder(set_: set):
     return list(set_)
+
 
 @register_encoder(need_recursion=True)
 def enum_encoder(enum: Enum):
