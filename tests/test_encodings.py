@@ -20,16 +20,21 @@ class Enum(enum.Enum):
     NUMBER = 1
     FLOAT = 1.0
     TUPLE = ('000', 1)
-    LIST = [12]
-    SET = {'11'}
     STRING = 'test string'
 
 
 @dataclass
+class InnerDataclass:
+    inner_number: int
+
+
+@dataclass
 class Dataclass:
+    id_: Id
     number: int
     string: str
     date: datetime.date
+    inner: InnerDataclass
 
 
 def get_encoder_class():
@@ -44,8 +49,6 @@ def get_encoder_class():
     (Enum.NUMBER, 1),
     (Enum.FLOAT, 1.0),
     (Enum.TUPLE, ['000', 1]),
-    (Enum.LIST, [12]),
-    (Enum.SET, ['11']),
     (Enum.STRING, 'test string'),
     (datetime.datetime(year=2019, month=1, day=1, tzinfo=pytz.UTC, hour=3), '2019-01-01T03:00:00Z'),
     (datetime.date(year=2019, month=1, day=1), '2019-01-01'),
@@ -55,10 +58,12 @@ def get_encoder_class():
     (uuid.UUID('c010de13-7f2d-41f9-b4f0-893087e32b92'), 'c010de13-7f2d-41f9-b4f0-893087e32b92'),
     (b'test bytes', 'test bytes'),
     (Dataclass(
+        Id(1),
         1,
         'test',
         datetime.date(year=2019, month=1, day=1),
-    ), {'number': 1, 'string': 'test', 'date': '2019-01-01'}),
+        InnerDataclass(10)
+    ), {'id_': 1, 'number': 1, 'string': 'test', 'date': '2019-01-01', 'inner': {'inner_number': 10}}),
 ])
 def test_encoder(value, expected_value):
     encoder_class = get_encoder_class()
