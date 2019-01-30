@@ -24,8 +24,8 @@ class Enum(enum.Enum):
 
 
 @dataclass
-class InnerDataclass:
-    inner_number: int
+class NestedDataclass:
+    nested_number: int
 
 
 @dataclass
@@ -34,7 +34,7 @@ class Dataclass:
     number: int
     string: str
     date: datetime.date
-    inner: InnerDataclass
+    nested: NestedDataclass
 
 
 def get_encoder_class():
@@ -62,8 +62,8 @@ def get_encoder_class():
         1,
         'test',
         datetime.date(year=2019, month=1, day=1),
-        InnerDataclass(10),
-    ), {'id_': 1, 'number': 1, 'string': 'test', 'date': '2019-01-01', 'inner': {'inner_number': 10}}),
+        NestedDataclass(10),
+    ), {'id_': 1, 'number': 1, 'string': 'test', 'date': '2019-01-01', 'nested': {'nested_number': 10}}),
 ])
 def test_encoder(value, expected_value):
     encoder_class = get_encoder_class()
