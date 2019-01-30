@@ -33,6 +33,10 @@ def route_patch(url_path=''):
     return route(url_path, 'PATCH')
 
 
+def route_put(url_path=''):
+    return route(url_path, 'PUT')
+
+
 def register_route(func, url_path, http_method):
     assert func not in _routes, f'{func} is already mapped to a route'
     _routes[func] = Route(url_path, http_method)
