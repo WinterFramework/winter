@@ -117,8 +117,8 @@ def _rewrite_uritemplate_with_regexps(winter_url_path: str, methods: List[Contro
 
 def _get_regexp(type_) -> str:
     if issubclass(type_, int):
-        return '\d+'
+        return r'\d+'
     elif issubclass(type_, UUID):
-        return '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+        return r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
     else:
-        return '[^/]+'
+        return r'[^/]+'
