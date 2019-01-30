@@ -9,8 +9,7 @@ from typing import Dict
 from typing import Tuple
 from typing import Type
 
-from dataclasses import asdict
-from dataclasses import is_dataclass
+import dataclasses
 
 __all__ = (
     'JSONEncoder',
@@ -142,6 +141,6 @@ def enum_encoder(enum: Enum):
 
 @register_encoder
 def dataclass_encoder(obj: object):
-    if not is_dataclass(obj):
+    if not dataclasses.is_dataclass(obj):
         raise CannotEncode
-    return asdict(obj)
+    return dataclasses.asdict(obj)
