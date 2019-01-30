@@ -45,9 +45,10 @@ class ArgumentsResolver(ArgumentResolver):
                 argument_resolver for argument_resolver in self._argument_resolvers
                 if argument_resolver.is_supported(argument)
             )
-            return argument_resolver.resolve_argument(argument, http_request)
         except StopIteration:
             raise NotSupported()
+
+        return argument_resolver.resolve_argument(argument, http_request)
 
     def resolve_arguments(
             self,
