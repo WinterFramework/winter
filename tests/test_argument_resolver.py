@@ -4,6 +4,7 @@ import pytest
 from mock import Mock
 
 from winter import GenericArgumentResolver, ArgumentsResolver
+from winter.argument_resolver import NotSupported
 from winter.controller import ControllerMethodArgument, ControllerMethod
 
 
@@ -133,7 +134,7 @@ def test_resolve_arguments_fails():
     arguments_resolver = ArgumentsResolver()
 
     # Assert
-    with pytest.raises(Exception, match=f'Unable to resolve argument {arg_name}: int'):
+    with pytest.raises(NotSupported, match=f'Unable to resolve argument {arg_name}: int'):
         # Act
         arguments_resolver.resolve_arguments(controller_method, http_request=Mock(), path_variables={})
 
