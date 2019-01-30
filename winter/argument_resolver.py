@@ -1,4 +1,3 @@
-import typing
 from abc import ABC
 from abc import abstractmethod
 from typing import Any
@@ -57,8 +56,6 @@ class ArgumentsResolver(ArgumentResolver):
             http_request: Request,
             path_variables: Dict,
     ) -> Dict[str, Any]:
-        type_hints = typing.get_type_hints(controller_method.func)
-        type_hints.pop('return', None)
         resolved_arguments = {}
         for argument in controller_method.arguments:
             try:
