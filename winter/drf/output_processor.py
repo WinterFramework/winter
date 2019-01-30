@@ -9,9 +9,9 @@ from ..output_processor import IOutputProcessor
 
 
 class DRFOutputProcessor(IOutputProcessor):
-    def __init__(self, serializer_class: Type[Serializer], serializer_args: Dict):
+    def __init__(self, serializer_class: Type[Serializer], serializer_kwargs: Dict):
         self._serializer_class = serializer_class
-        self._serializer_args = serializer_args
+        self._serializer_kwargs = serializer_kwargs
 
     def process_output(self, output, request: Request):
         if isinstance(output, BodyWithContext):
@@ -23,5 +23,5 @@ class DRFOutputProcessor(IOutputProcessor):
             instance = output
             context = {}
         context.update(request=request)
-        serializer = self._serializer_class(instance=instance, context=context, **self._serializer_args)
+        serializer = self._serializer_class(instance=instance, context=context, **self._serializer_kwargs)
         return serializer.data

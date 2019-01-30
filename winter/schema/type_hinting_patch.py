@@ -55,12 +55,12 @@ def inspect_union_hint_class(hint_class):
 def inspect_primitive_hint_class(hint_class):
     for check_class, type_format in hinting_type_info:
         if is_origin_type_subclasses(hint_class, check_class):
-            swagger_type, format = type_format
+            swagger_type, format_ = type_format
             if callable(swagger_type):
                 swagger_type = swagger_type()
             return OrderedDict([
                 ('type', swagger_type),
-                ('format', format),
+                ('format', format_),
             ])
 
     return NotHandled

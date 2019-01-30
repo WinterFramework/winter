@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import List
+from typing import Type
 
 import docstring_parser
 from drf_yasg import openapi
@@ -29,7 +30,7 @@ def generate_swagger_for_operation(view_func, controller, controller_method: Con
     response_status = get_default_response_status(controller_method)
     responses = {}
     if output_serializer:
-        responses[response_status] = output_serializer.class_(**output_serializer.args)
+        responses[response_status] = output_serializer.class_(**output_serializer.kwargs)
     else:
         responses[response_status] = openapi.Response(description='Success')
     # TODO support response dataclasses, preferably implement in dataclasses.py to keep extensibility
@@ -58,7 +59,7 @@ def _get_argument_type_info(argument: ControllerMethodArgument) -> dict:
     return type_info
 
 
-def _get_type_info_for_enum(enum_class: Enum) -> dict:
+def _get_type_info_for_enum(enum_class: Type[Enum]) -> dict:
     choices = [entry.value for entry in enum_class]
     return {
         'type': openapi.TYPE_STRING,
