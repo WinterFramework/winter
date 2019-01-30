@@ -1,7 +1,6 @@
 [run]
 source = winter
 branch = True
-parallel = true
 disable_warnings = module-not-measured
 
 [report]
