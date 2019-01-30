@@ -16,6 +16,7 @@ from .routing import route_delete
 from .routing import route_get
 from .routing import route_patch
 from .routing import route_post
+from .routing import route_put
 
 
 def _default_configuration():
