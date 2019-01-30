@@ -12,7 +12,7 @@ from .controller import ControllerMethod
 from .controller import ControllerMethodArgument
 
 
-class NotSupported(Exception):
+class ArgumentNotSupported(Exception):
     def __init__(self, argument: ControllerMethodArgument):
         super().__init__(f'Unable to resolve argument {argument.name}: {argument.type_.__name__}')
 
@@ -46,7 +46,7 @@ class ArgumentsResolver(ArgumentResolver):
                 if argument_resolver.is_supported(argument)
             )
         except StopIteration:
-            raise NotSupported(argument)
+            raise ArgumentNotSupported(argument)
 
         return argument_resolver.resolve_argument(argument, http_request)
 
@@ -60,9 +60,9 @@ class ArgumentsResolver(ArgumentResolver):
         for argument in controller_method.arguments:
             try:
                 resolved_arguments[argument.name] = self.resolve_argument(argument, http_request)
-            except NotSupported:
+            except ArgumentNotSupported:
                 if argument.name not in path_variables:
-                    raise NotSupported(argument)
+                    raise ArgumentNotSupported(argument)
                 str_value = path_variables[argument.name]
                 resolved_arguments[argument.name] = argument.type_(str_value)
 
