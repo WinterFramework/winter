@@ -17,11 +17,11 @@ class ArgumentResolver(ABC):
     """IArgumentResolver is used to map http request contents to controller method arguments."""
     @abstractmethod
     def is_supported(self, argument: ControllerMethodArgument) -> bool:
-        return False
+        pass
 
     @abstractmethod
     def resolve_argument(self, argument: ControllerMethodArgument, http_request: Request):
-        return None
+        pass
 
 
 class GenericArgumentResolver(ArgumentResolver):
@@ -58,7 +58,7 @@ def resolve_arguments(
             str_value = path_variables[argument.name]
             resolved_arguments[argument.name] = argument.type_(str_value)
             continue
-        raise Exception(f'Cant resolve argument {argument.name}: {argument.type_}')
+        raise Exception(f'Unable to resolve argument {argument.name}: {argument.type_.__name__}')
     return resolved_arguments
 
 

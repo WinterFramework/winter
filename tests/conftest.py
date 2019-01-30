@@ -1,4 +1,5 @@
 import django
+import pytest
 
 
 def pytest_configure():
@@ -6,3 +7,9 @@ def pytest_configure():
 
     settings.configure()
     django.setup()
+
+
+@pytest.fixture
+def clear_resolvers():
+    from winter.argument_resolver import _resolvers
+    _resolvers.clear()
