@@ -2,6 +2,7 @@ from collections import defaultdict
 from typing import List
 from typing import Type
 from typing import get_type_hints
+from uuid import UUID
 
 import django.http
 import rest_framework.authentication
@@ -109,6 +110,15 @@ def _rewrite_uritemplate_with_regexps(winter_url_path: str, methods: List[Contro
         if len(types) > 1:
             raise Exception(f'Different methods are bound to the same path variable, but have different types annotated: {types}')
         type_, = types
-        regexp = r'\d+' if issubclass(type_, int) else r'\w+'
+        regexp = _get_regexp(type_)
         url_path = url_path.replace(f'{{{variable_name}}}', f'(?P<{variable_name}>{regexp})')
     return url_path
+
+
+def _get_regexp(type_) -> str:
+    if issubclass(type_, int):
+        return '\d+'
+    elif issubclass(type_, UUID):
+        return '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+    else:
+        return '[^/]+'
