@@ -1,8 +1,10 @@
 import typing
 from abc import ABC
 from abc import abstractmethod
+from typing import Any
 from typing import Callable
 from typing import Dict
+from typing import List
 from typing import Type
 
 from rest_framework.request import Request
@@ -10,7 +12,9 @@ from rest_framework.request import Request
 from .controller import ControllerMethod
 from .controller import ControllerMethodArgument
 
-_resolvers = []
+
+class NotSupported(Exception):
+    pass
 
 
 class ArgumentResolver(ABC):
@@ -22,6 +26,48 @@ class ArgumentResolver(ABC):
     @abstractmethod
     def resolve_argument(self, argument: ControllerMethodArgument, http_request: Request):
         pass
+
+
+class ArgumentsResolver(ArgumentResolver):
+    def __init__(self):
+        super().__init__()
+        self._argument_resolvers: List[ArgumentResolver] = []
+
+    def add_argument_resolver(self, argument_resolver: ArgumentResolver):
+        self._argument_resolvers.append(argument_resolver)
+
+    def is_supported(self, argument: ControllerMethodArgument) -> bool:
+        return any(argument_resolver.is_supported(argument) for argument_resolver in self._argument_resolvers)
+
+    def resolve_argument(self, argument: ControllerMethodArgument, http_request: Request) -> Any:
+        try:
+            argument_resolver = next(
+                argument_resolver for argument_resolver in self._argument_resolvers
+                if argument_resolver.is_supported(argument)
+            )
+            return argument_resolver.resolve_argument(argument, http_request)
+        except StopIteration:
+            raise NotSupported()
+
+    def resolve_arguments(
+            self,
+            controller_method: ControllerMethod,
+            http_request: Request,
+            path_variables: Dict,
+    ) -> Dict[str, Any]:
+        type_hints = typing.get_type_hints(controller_method.func)
+        type_hints.pop('return', None)
+        resolved_arguments = {}
+        for argument in controller_method.arguments:
+            try:
+                resolved_arguments[argument.name] = self.resolve_argument(argument, http_request)
+            except NotSupported:
+                if argument.name not in path_variables:
+                    raise Exception(f'Unable to resolve argument {argument.name}: {argument.type_.__name__}')
+                str_value = path_variables[argument.name]
+                resolved_arguments[argument.name] = argument.type_(str_value)
+
+        return resolved_arguments
 
 
 class GenericArgumentResolver(ArgumentResolver):
@@ -37,33 +83,4 @@ class GenericArgumentResolver(ArgumentResolver):
         return self._resolve_argument(http_request)
 
 
-def register_argument_resolver(resolver: ArgumentResolver):
-    _resolvers.append(resolver)
-
-
-def resolve_arguments(
-        controller_method: ControllerMethod,
-        http_request: Request,
-        path_variables: Dict,
-) -> Dict[str, object]:
-    type_hints = typing.get_type_hints(controller_method.func)
-    type_hints.pop('return', None)
-    resolved_arguments = {}
-    for argument in controller_method.arguments:
-        resolver = find_resolver(argument)
-        if resolver:
-            resolved_arguments[argument.name] = resolver.resolve_argument(argument, http_request)
-            continue
-        if argument.name in path_variables:
-            str_value = path_variables[argument.name]
-            resolved_arguments[argument.name] = argument.type_(str_value)
-            continue
-        raise Exception(f'Unable to resolve argument {argument.name}: {argument.type_.__name__}')
-    return resolved_arguments
-
-
-def find_resolver(argument: ControllerMethodArgument) -> typing.Optional[ArgumentResolver]:
-    for resolver in _resolvers:
-        if resolver.is_supported(argument):
-            return resolver
-    return None
+arguments_resolver = ArgumentsResolver()
