@@ -12,17 +12,17 @@ from ..output_processor import register_output_processor
 @dataclass
 class OutputSerializer:
     class_: Type[Serializer]
-    args: Dict
+    kwargs: Dict
 
 
 _output_serializers = {}
 
 
-def output_serializer(serializer_class: Type[Serializer], **serializer_args):
+def output_serializer(serializer_class: Type[Serializer], **serializer_kwargs):
     def wrapper(func):
-        output_processor = DRFOutputProcessor(serializer_class, serializer_args)
+        output_processor = DRFOutputProcessor(serializer_class, serializer_kwargs)
         register_output_processor(func, output_processor)
-        _register_output_serializer(func, serializer_class, serializer_args)
+        _register_output_serializer(func, serializer_class, serializer_kwargs)
         return func
     return wrapper
 
@@ -31,6 +31,6 @@ def get_output_serializer(func) -> Optional[OutputSerializer]:
     return _output_serializers.get(func)
 
 
-def _register_output_serializer(func, serializer_class: Type[Serializer], serializer_args: Dict):
+def _register_output_serializer(func, serializer_class: Type[Serializer], serializer_kwargs: Dict):
     assert func not in _output_serializers
-    _output_serializers[func] = OutputSerializer(serializer_class, serializer_args)
+    _output_serializers[func] = OutputSerializer(serializer_class, serializer_kwargs)

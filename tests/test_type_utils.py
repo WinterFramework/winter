@@ -29,6 +29,7 @@ def test_is_iterable(typing_for_check, expected):
     (Optional[int], True),
     (Union[List, Tuple], True),
     (Tuple, False),
+    (Union, True),
 ])
 def test_is_union(typing_for_check, expected):
     assert is_union(typing_for_check) == expected

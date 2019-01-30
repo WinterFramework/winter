@@ -1,5 +1,5 @@
 import typing
-from abc import ABCMeta
+from abc import ABC
 from abc import abstractmethod
 from typing import Callable
 from typing import Dict
@@ -13,7 +13,7 @@ from .controller import ControllerMethodArgument
 _resolvers = []
 
 
-class ArgumentResolver(metaclass=ABCMeta):
+class ArgumentResolver(ABC):
     """IArgumentResolver is used to map http request contents to controller method arguments."""
     @abstractmethod
     def is_supported(self, argument: ControllerMethodArgument) -> bool:
