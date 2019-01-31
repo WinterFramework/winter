@@ -7,7 +7,8 @@ import uuid
 import pytest
 import pytz
 from dataclasses import dataclass
-
+from django.utils.translation import ugettext_lazy
+from django.utils.translation import ugettext
 from winter.json_encoder import JSONEncoder
 
 
@@ -45,6 +46,8 @@ def get_encoder_class():
     (None, None),
     (1, 1),
     (Id(1), 1),
+    (ugettext_lazy('translated_text'), 'translated_text'),
+    (ugettext('translated_text'), 'translated_text'),
     (Enum.ID, 1),
     (Enum.NUMBER, 1),
     (Enum.FLOAT, 1.0),

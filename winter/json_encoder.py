@@ -10,6 +10,7 @@ from typing import Tuple
 from typing import Type
 
 import dataclasses
+from django.utils.functional import Promise
 
 __all__ = (
     'JSONEncoder',
@@ -144,3 +145,8 @@ def dataclass_encoder(obj: object):
     if not dataclasses.is_dataclass(obj):
         raise CannotEncode
     return dataclasses.asdict(obj)
+
+
+@register_encoder
+def promise_encoder(promise: Promise):
+    return str(promise)
