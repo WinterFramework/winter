@@ -29,6 +29,9 @@ exclude_lines =
     if 0:
     if __name__ == .__main__.:
 
+    # Don't complain if abstract methods ain't being called
+    @abstract
+
 ignore_errors = True
 precision = 2
 show_missing = True

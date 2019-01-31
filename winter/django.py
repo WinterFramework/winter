@@ -13,7 +13,7 @@ from django.conf.urls import url
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 
-from .argument_resolver import resolve_arguments
+from .argument_resolver import arguments_resolver
 from .controller import ControllerMethod
 from .controller import get_controller_component
 from .exceptions import WinterException
@@ -74,7 +74,7 @@ def _create_django_view(controller, controller_methods: List[ControllerMethod]):
 def _create_dispatch_function(controller, controller_method: ControllerMethod):
     def dispatch(winter_view, request: Request, **path_variables):
         try:
-            arguments = resolve_arguments(controller_method, request, path_variables)
+            arguments = arguments_resolver.resolve_arguments(controller_method, request, path_variables)
             result = controller_method.func(controller, **arguments)
             if isinstance(result, django.http.HttpResponse):
                 return result
