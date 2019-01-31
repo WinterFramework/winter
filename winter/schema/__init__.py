@@ -11,4 +11,4 @@ from .query_parameters_inspector import QueryParametersInspector
 
 def setup():
     from drf_yasg.inspectors.field import hinting_type_info
-    hinting_type_info.append((Enum, inspect_enum_class))
+    hinting_type_info.insert(0, (Enum, inspect_enum_class))
