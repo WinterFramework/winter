@@ -1,7 +1,8 @@
 from . import django
 from .argument_resolver import ArgumentResolver
+from .argument_resolver import ArgumentsResolver
 from .argument_resolver import GenericArgumentResolver
-from .argument_resolver import register_argument_resolver
+from .argument_resolver import arguments_resolver
 from .controller import controller
 from .drf import BodyWithContext
 from .drf import input_serializer
@@ -27,9 +28,9 @@ def _default_configuration():
     from .schema import QueryParametersInspector
     from .schema import register_controller_method_inspector
 
-    register_argument_resolver(DRFBodyArgumentResolver())
-    register_argument_resolver(QueryParameterResolver())
-    register_argument_resolver(HttpRequestArgumentResolver())
+    arguments_resolver.add_argument_resolver(DRFBodyArgumentResolver())
+    arguments_resolver.add_argument_resolver(QueryParameterResolver())
+    arguments_resolver.add_argument_resolver(HttpRequestArgumentResolver())
     register_controller_method_inspector(PathParametersInspector())
     register_controller_method_inspector(QueryParametersInspector())
 

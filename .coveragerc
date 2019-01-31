@@ -1,7 +1,6 @@
 [run]
 source = winter
 branch = True
-parallel = true
 disable_warnings = module-not-measured
 
 [report]
@@ -29,6 +28,9 @@ exclude_lines =
     # Don't complain if non-runnable code isn't run:
     if 0:
     if __name__ == .__main__.:
+
+    # Don't complain if abstract methods ain't being called
+    @abstract
 
 ignore_errors = True
 precision = 2
