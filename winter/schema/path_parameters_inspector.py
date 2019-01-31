@@ -5,7 +5,7 @@ import uritemplate
 from drf_yasg import openapi
 
 from .controller_method_inspector import ControllerMethodInspector
-from .generation import _get_argument_type_info
+from .generation import get_argument_type_info
 from ..controller import ControllerMethod
 
 
@@ -22,7 +22,7 @@ class PathParametersInspector(ControllerMethodInspector):
                 continue
             param_doc = params_docs.get(path_variable_name)
             description = param_doc.description if param_doc else ''
-            type_info = _get_argument_type_info(argument)
+            type_info = get_argument_type_info(argument)
             if not type_info:
                 type_info = {'type': openapi.TYPE_STRING}
                 description += ' (Note: parameter type can be wrong)'
