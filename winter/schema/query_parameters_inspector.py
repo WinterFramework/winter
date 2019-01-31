@@ -5,7 +5,7 @@ import docstring_parser
 from drf_yasg import openapi
 
 from .controller_method_inspector import ControllerMethodInspector
-from .generation import _get_argument_type_info
+from .generation import get_argument_type_info
 from .. import type_utils
 from ..controller import ControllerMethod
 from ..query_parameter import get_query_param_mapping
@@ -29,7 +29,7 @@ class QueryParametersInspector(ControllerMethodInspector):
             if default is not inspect.Parameter.empty:
                 default_params['default'] = default
             required = default is inspect.Parameter.empty and not type_utils.is_optional(argument.type_)
-            type_info = _get_argument_type_info(argument)
+            type_info = get_argument_type_info(argument)
             if not type_info:
                 type_info = {'type': openapi.TYPE_STRING}
                 description += ' (Note: parameter type can be wrong)'

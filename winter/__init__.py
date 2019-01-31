@@ -27,12 +27,14 @@ def _default_configuration():
     from .schema import PathParametersInspector
     from .schema import QueryParametersInspector
     from .schema import register_controller_method_inspector
+    from . import schema
 
     arguments_resolver.add_argument_resolver(DRFBodyArgumentResolver())
     arguments_resolver.add_argument_resolver(QueryParameterResolver())
     arguments_resolver.add_argument_resolver(HttpRequestArgumentResolver())
     register_controller_method_inspector(PathParametersInspector())
     register_controller_method_inspector(QueryParametersInspector())
+    schema.setup()
 
 
 _default_configuration()
