@@ -62,7 +62,7 @@ class ArgumentsResolver(ArgumentResolver):
                 resolved_arguments[argument.name] = self.resolve_argument(argument, http_request)
             except ArgumentNotSupported:
                 if argument.name not in path_variables:
-                    raise ArgumentNotSupported(argument)
+                    raise
                 str_value = path_variables[argument.name]
                 resolved_arguments[argument.name] = argument.type_(str_value)
 
