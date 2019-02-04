@@ -77,7 +77,7 @@ class IntegerEnum(IntEnum):
         'type': openapi.TYPE_INTEGER,
         'x-nullable': True
     }
-    ),
+     ),
     (datetime.date, {
         'type': openapi.TYPE_STRING,
         'format': openapi.FORMAT_DATE,
@@ -152,6 +152,7 @@ def test_get_argument_type_info(type_hint, expected_type_info):
 
 def test_get_argument_type_info_with_non_registered_type():
     hint_class = object
+
     def func(arg_1: hint_class):
         return arg_1
 
