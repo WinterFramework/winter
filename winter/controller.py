@@ -33,7 +33,7 @@ class ControllerMethod:
         self.func = func
         self.url_path = url_path
         self.http_method = http_method
-        self._arguments = self._build_arguments(func)
+        self._arguments, self.return_value_class = self._build_arguments(func)
 
     @property
     def name(self) -> str:
@@ -52,11 +52,11 @@ class ControllerMethod:
 
     def _build_arguments(self, func):
         type_hints = typing.get_type_hints(func)
-        type_hints.pop('return', None)
+        return_value_class = type_hints.pop('return', None)
         arguments = {}
         for arg_name, arg_type in type_hints.items():
             arguments[arg_name] = ControllerMethodArgument(self, arg_name, arg_type)
-        return arguments
+        return arguments, return_value_class
 
 
 class ControllerMethodArgument:

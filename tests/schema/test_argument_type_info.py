@@ -2,17 +2,31 @@ from enum import Enum
 from enum import IntEnum
 from typing import List
 
+import dataclasses
 import pytest
 from drf_yasg import openapi
 
 from winter.controller import ControllerMethod
-
 from winter.schema.generation import get_argument_type_info
 
 
 class IntegerValueEnum(Enum):
     RED = 1
     GREEN = 2
+
+
+@dataclasses.dataclass
+class NestedDataclass:
+    nested_number: int
+
+
+class Id(int):
+    pass
+
+
+@dataclasses.dataclass
+class Dataclass:
+    nested: NestedDataclass
 
 
 class StringValueEnum(Enum):
@@ -31,14 +45,58 @@ class IntegerEnum(IntEnum):
 
 
 @pytest.mark.parametrize('type_hint, expected_type_info', [
-    (int, {'type': openapi.TYPE_INTEGER, 'format': None}),
-    (str, {'type': openapi.TYPE_STRING, 'format': None}),
-    (IntegerEnum, {'type': openapi.TYPE_INTEGER, 'enum': [1, 2]}),
-    (IntegerValueEnum, {'type': openapi.TYPE_INTEGER, 'enum': [1, 2]}),
-    (StringValueEnum, {'type': openapi.TYPE_STRING, 'enum': ['red', 'green']}),
-    (MixedValueEnum, {'type': openapi.TYPE_STRING, 'enum': [123, 'green']}),
-    (List[IntegerValueEnum], {'type': openapi.TYPE_ARRAY, 'items': {'type': openapi.TYPE_INTEGER, 'enum': [1, 2]}}),
-    (List[StringValueEnum], {'type': openapi.TYPE_ARRAY, 'items': {'type': openapi.TYPE_STRING, 'enum': ['red', 'green']}}),
+    (Id, {
+        'type': openapi.TYPE_INTEGER
+    }),
+    (int, {
+        'type': openapi.TYPE_INTEGER
+    }),
+    (str, {
+        'type': openapi.TYPE_STRING
+    }),
+    (IntegerEnum, {
+        'type': openapi.TYPE_INTEGER,
+        'enum': [1, 2]
+    }),
+    (IntegerValueEnum, {
+        'type': openapi.TYPE_INTEGER,
+        'enum': [1, 2]
+    }),
+    (StringValueEnum, {
+        'type': openapi.TYPE_STRING,
+        'enum': ['red', 'green']
+    }),
+    (MixedValueEnum, {
+        'type': openapi.TYPE_STRING,
+        'enum': [123, 'green']
+    }),
+    (List[IntegerValueEnum], {
+        'type': openapi.TYPE_ARRAY,
+        'items': {
+            'type': openapi.TYPE_INTEGER,
+            'enum': [1, 2]
+        }
+    }),
+    (List[StringValueEnum], {
+        'type': openapi.TYPE_ARRAY,
+        'items': {
+            'type': openapi.TYPE_STRING,
+            'enum': ['red', 'green']
+        }
+    }),
+    (Dataclass(NestedDataclass(1)), {
+        'type': 'object',
+        'properties': {
+            'nested': {
+                'type': 'object',
+                'properties': {
+                    'nested_number': {
+                        'type': 'integer'
+                    }
+                }
+            }
+        }
+    })
 ])
 def test_get_argument_type_info(type_hint, expected_type_info):
     def func(arg_1: type_hint):
