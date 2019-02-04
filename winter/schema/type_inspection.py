@@ -30,13 +30,22 @@ def register(*types: typing.Tuple[typing.Type], checker=None):
     return wrapper
 
 
+class InspectorNotFound(Exception):
+
+    def __init__(self, hint_cls):
+        self.hint_cls = hint_cls
+
+    def __str__(self):
+        return f'Unknown type: {self.hint_cls}'
+
+
 @dataclasses.dataclass
-class YASGTypeInfo:
+class TypeInfo:
     type_: str
     format_: typing.Optional[str] = None
-    child: typing.Optional['YASGTypeInfo'] = None
+    child: typing.Optional['TypeInfo'] = None
     nullable: bool = False
-    properties: typing.Dict[str, 'YASGTypeInfo'] = dataclasses.field(default_factory=OrderedDict)
+    properties: typing.Dict[str, 'TypeInfo'] = dataclasses.field(default_factory=OrderedDict)
     enum: list = None
 
     def as_dict(self):
@@ -60,115 +69,113 @@ class YASGTypeInfo:
 
         return data
 
+    def get_openapi_schema(self):
+        return openapi.Schema(**self.as_dict())
+
 
 # noinspection PyUnusedLocal
 @register(bool)
-def bool_resolver(hint_class) -> YASGTypeInfo:
-    return YASGTypeInfo(openapi.TYPE_BOOLEAN)
+def inspect_bool(hint_class) -> TypeInfo:
+    return TypeInfo(openapi.TYPE_BOOLEAN)
 
 
 # noinspection PyUnusedLocal
 @register(NoneType)
-def none_resolver(hint_class) -> YASGTypeInfo:
-    return YASGTypeInfo(TYPE_NONE)
+def inspect_none(hint_class) -> TypeInfo:
+    return TypeInfo(TYPE_NONE)
 
 
 # noinspection PyUnusedLocal
 @register(int)
-def int_resolver(hint_class) -> YASGTypeInfo:
-    return YASGTypeInfo(openapi.TYPE_INTEGER)
+def inspect_int(hint_class) -> TypeInfo:
+    return TypeInfo(openapi.TYPE_INTEGER)
 
 
 # noinspection PyUnusedLocal
-@register(str)
-def str_resolver(hint_class) -> YASGTypeInfo:
-    return YASGTypeInfo(openapi.TYPE_STRING)
+@register(str, bytes)
+def inspect_str(hint_class) -> TypeInfo:
+    return TypeInfo(openapi.TYPE_STRING)
 
 
 # noinspection PyUnusedLocal
 @register(float)
-def float_resolver(hint_class) -> YASGTypeInfo:
-    return YASGTypeInfo(openapi.TYPE_NUMBER)
+def inspect_float(hint_class) -> TypeInfo:
+    return TypeInfo(openapi.TYPE_NUMBER)
 
 
 # noinspection PyUnusedLocal
 @register(dict)
-def dict_resolver(hint_class) -> YASGTypeInfo:
-    return YASGTypeInfo(openapi.TYPE_OBJECT)
+def inspect_dict(hint_class) -> TypeInfo:
+    return TypeInfo(openapi.TYPE_OBJECT)
 
 
 # noinspection PyUnusedLocal
 @register(decimal.Decimal)
-def decimal_resolver(hint_class) -> YASGTypeInfo:
-    return YASGTypeInfo(TYPE_DECIMAL, openapi.FORMAT_DECIMAL)
+def inspect_decimal(hint_class) -> TypeInfo:
+    return TypeInfo(TYPE_DECIMAL, openapi.FORMAT_DECIMAL)
 
 
 # noinspection PyUnusedLocal
 @register(uuid.UUID)
-def uuid_resolver(hint_class) -> YASGTypeInfo:
-    return YASGTypeInfo(openapi.TYPE_STRING, openapi.FORMAT_UUID)
+def inspect_uuid(hint_class) -> TypeInfo:
+    return TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_UUID)
 
 
 # noinspection PyUnusedLocal
 @register(datetime.datetime)
-def datetime_resolver(hint_class) -> YASGTypeInfo:
-    return YASGTypeInfo(openapi.TYPE_STRING, openapi.FORMAT_DATETIME)
+def inspect_datetime(hint_class) -> TypeInfo:
+    return TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_DATETIME)
 
 
 # noinspection PyUnusedLocal
 @register(datetime.date)
-def date_resolver(hint_class) -> YASGTypeInfo:
-    return YASGTypeInfo(openapi.TYPE_STRING, openapi.FORMAT_DATE)
+def inspect_date(hint_class) -> TypeInfo:
+    return TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_DATE)
 
 
 # noinspection PyUnusedLocal
 @register(list, tuple, collections.Iterable)
-def iterable_resolver(hint_class) -> YASGTypeInfo:
+def inspect_iterable(hint_class) -> TypeInfo:
     args = getattr(hint_class, '__args__', None)
     child_class = args[0] if args else str
-    child_type_info = get_basic_type_info_from_hint(child_class)
-    return YASGTypeInfo(openapi.TYPE_ARRAY, child=child_type_info)
+    child_type_info = inspect_type(child_class)
+    return TypeInfo(openapi.TYPE_ARRAY, child=child_type_info)
 
 
-@register(enum.IntEnum)
-def intenum_resolver(enum_class: typing.Type[enum.IntEnum]) -> YASGTypeInfo:
-    return enum_resolver(enum_class)
-
-
-@register(enum.Enum)
-def enum_resolver(enum_class: typing.Type[enum.Enum]) -> YASGTypeInfo:
+@register(enum.IntEnum, enum.Enum)
+def inspect_enum(enum_class: typing.Type[enum.Enum]) -> TypeInfo:
     enum_values = [entry.value for entry in enum_class]
     # Try to infer type based on enum values
     enum_value_types = {type(v) for v in enum_values}
 
     if len(enum_value_types) == 1:
-        type_info = get_basic_type_info_from_hint(enum_value_types.pop())
+        type_info = inspect_type(enum_value_types.pop())
     else:
-        type_info = YASGTypeInfo(openapi.TYPE_STRING)
+        type_info = TypeInfo(openapi.TYPE_STRING)
     type_info.enum = enum_values
     return type_info
 
 
 @register(UnionType, checker=is_optional)
-def union_resolver(hint_class) -> YASGTypeInfo:
+def inspect_optional(hint_class) -> TypeInfo:
     child_type = hint_class.__args__[0]
-    type_info = get_basic_type_info_from_hint(child_type)
+    type_info = inspect_type(child_type)
     type_info.nullable = True
     return type_info
 
 
 @register(object, checker=dataclasses.is_dataclass)
-def dataclass_resolver(hint_class) -> YASGTypeInfo:
+def inspect_dataclass(hint_class) -> TypeInfo:
     fields = dataclasses.fields(hint_class)
 
     properties = {
-        field.name: get_basic_type_info_from_hint(field.type)
+        field.name: inspect_type(field.type)
         for field in fields
     }
-    return YASGTypeInfo(type_=openapi.TYPE_OBJECT, properties=properties)
+    return TypeInfo(type_=openapi.TYPE_OBJECT, properties=properties)
 
 
-def get_basic_type_info_from_hint(hint_class) -> YASGTypeInfo:
+def inspect_type(hint_class) -> TypeInfo:
     origin_type = get_origin_type(hint_class)
 
     if inspect.isclass(origin_type):
@@ -185,4 +192,4 @@ def get_basic_type_info_from_hint(hint_class) -> YASGTypeInfo:
         if checker is None or checker(hint_class):
             return resolver(hint_class)
 
-    raise ValueError(f'Unknown type: {hint_class}')
+    raise InspectorNotFound(hint_class)

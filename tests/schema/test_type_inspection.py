@@ -12,7 +12,9 @@ from drf_yasg import openapi
 
 from winter.controller import ControllerMethod
 from winter.schema.generation import get_argument_type_info
-from winter.schema.type_hint import TYPE_NONE
+from winter.schema.type_inspection import InspectorNotFound
+from winter.schema.type_inspection import TYPE_NONE
+from winter.schema.type_inspection import TypeInfo
 
 
 class IntegerValueEnum(Enum):
@@ -156,7 +158,14 @@ def test_get_argument_type_info_with_non_registered_type():
 
     argument = ControllerMethod(func, '/', 'GET').get_argument('arg_1')
 
-    with pytest.raises(ValueError) as exception_info:
+    with pytest.raises(InspectorNotFound) as exception_info:
         # Act
-        type_info = get_argument_type_info(argument)
-    assert exception_info.value.args[0] == f'Unknown type: {hint_class}'
+        get_argument_type_info(argument)
+    assert exception_info.value.hint_cls == hint_class
+    assert str(exception_info.value) == f'Unknown type: {hint_class}'
+
+
+def test_get_openapi_schema():
+    type_info = TypeInfo(openapi.TYPE_BOOLEAN)
+    schema = openapi.Schema(type=openapi.TYPE_BOOLEAN)
+    assert type_info.get_openapi_schema() == schema

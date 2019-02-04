@@ -4,7 +4,7 @@ import docstring_parser
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from winter.schema.type_hint import get_basic_type_info_from_hint
+from .type_inspection import inspect_type
 from .controller_method_inspector import get_controller_method_inspectors
 from ..controller import ControllerMethod
 from ..controller import ControllerMethodArgument
@@ -27,8 +27,8 @@ def generate_swagger_for_operation(view_func, controller, controller_method: Con
     if output_serializer:
         responses[response_status] = output_serializer.class_(**output_serializer.kwargs)
     else:
-        type_info = get_basic_type_info_from_hint(controller_method.return_value_class)
-        responses[response_status] = openapi.Schema(**type_info.as_dict())
+        type_info = inspect_type(controller_method.return_value_class)
+        responses[response_status] = type_info.get_openapi_schema()
     swagger_auto_schema(
         operation_id=f'{controller.__class__.__name__}.{controller_method.func.__name__}',
         operation_description=docstring.short_description,
@@ -46,4 +46,4 @@ def _build_method_parameters(controller_method: ControllerMethod) -> List[openap
 
 
 def get_argument_type_info(argument: ControllerMethodArgument) -> dict:
-    return get_basic_type_info_from_hint(argument.type_).as_dict()
+    return inspect_type(argument.type_).as_dict()
