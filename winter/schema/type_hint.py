@@ -12,6 +12,7 @@ from drf_yasg import openapi
 from rest_framework.settings import api_settings as rest_settings
 
 from winter.type_utils import NoneType
+from winter.type_utils import UnionType
 from winter.type_utils import get_origin_type
 from winter.type_utils import is_optional
 
@@ -148,7 +149,7 @@ def enum_resolver(enum_class: typing.Type[enum.Enum]) -> YASGTypeInfo:
     return type_info
 
 
-@register(typing.Union, checker=is_optional)
+@register(UnionType, checker=is_optional)
 def union_resolver(hint_class) -> YASGTypeInfo:
     child_type = hint_class.__args__[0]
     type_info = get_basic_type_info_from_hint(child_type)
