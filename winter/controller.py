@@ -52,10 +52,10 @@ class ControllerMethod:
     def signature(self) -> inspect.Signature:
         return inspect.signature(self.func)
 
-    def _build_arguments(self, type_hints: dict):
+    def _build_arguments(self, argument_type_hints: dict):
         arguments = {
             arg_name: ControllerMethodArgument(self, arg_name, arg_type)
-            for arg_name, arg_type in type_hints.items()
+            for arg_name, arg_type in argument_type_hints.items()
         }
         return arguments
 
