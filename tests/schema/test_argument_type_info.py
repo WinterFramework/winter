@@ -51,7 +51,7 @@ class IntegerEnum(IntEnum):
 
 @pytest.mark.parametrize('type_hint, expected_type_info', [
     (Id, {
-        'type': openapi.TYPE_INTEGER
+        'type': openapi.TYPE_INTEGER,
     }),
     (None, {
         'type': TYPE_NONE,
@@ -76,8 +76,7 @@ class IntegerEnum(IntEnum):
     (typing.Optional[int], {
         'type': openapi.TYPE_INTEGER,
         'x-nullable': True
-    }
-     ),
+    }),
     (datetime.date, {
         'type': openapi.TYPE_STRING,
         'format': openapi.FORMAT_DATE,
@@ -86,7 +85,6 @@ class IntegerEnum(IntEnum):
         'type': openapi.TYPE_STRING,
         'format': openapi.FORMAT_DATETIME,
     }),
-
     (int, {
         'type': openapi.TYPE_INTEGER
     }),

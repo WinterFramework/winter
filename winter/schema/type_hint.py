@@ -122,7 +122,7 @@ def date_resolver(hint_class) -> YASGTypeInfo:
 
 
 # noinspection PyUnusedLocal
-@register(list, tuple, collections.Iterable, collections.Sequence, collections.Set)
+@register(list, tuple, collections.Iterable)
 def iterable_resolver(hint_class) -> YASGTypeInfo:
     args = getattr(hint_class, '__args__', None)
     child_class = args[0] if args else str
@@ -168,15 +168,7 @@ def dataclass_resolver(hint_class) -> YASGTypeInfo:
     return YASGTypeInfo(type_=openapi.TYPE_OBJECT, properties=properties)
 
 
-def get_basic_type_info_from_hint(hint_class) -> typing.Optional[YASGTypeInfo]:
-    """Given a class (eg from a SerializerMethodField's return type hint,
-    return its basic type information - ``type``, ``format``, ``pattern``,
-    and any applicable min/max limit values.
-
-    :param hint_class: the class
-    :return: the extracted attributes as a dictionary, or ``None`` if the field type is not known
-    :rtype: OrderedDict
-    """
+def get_basic_type_info_from_hint(hint_class) -> YASGTypeInfo:
     origin_type = get_origin_type(hint_class)
 
     if inspect.isclass(origin_type):
