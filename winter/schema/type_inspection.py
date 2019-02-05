@@ -11,17 +11,15 @@ import dataclasses
 from drf_yasg import openapi
 from rest_framework.settings import api_settings as rest_settings
 
-from winter.type_utils import NoneType
 from winter.type_utils import UnionType
 from winter.type_utils import get_origin_type
 from winter.type_utils import is_optional
 
 TYPE_DECIMAL = openapi.TYPE_STRING if rest_settings.COERCE_DECIMAL_TO_STRING else openapi.TYPE_NUMBER
-TYPE_NONE = 'none'
 _resolvers_by_type: typing.Dict[typing.Type, typing.Tuple[typing.Callable, typing.Optional[typing.Callable]]] = {}
 
 
-def register(*types: typing.Tuple[typing.Type], checker=None):
+def register_type_inspector(*types: typing.Tuple[typing.Type], checker=None):
     def wrapper(func):
         for type_ in types:
             _resolvers_by_type[type_] = func, checker
@@ -74,67 +72,67 @@ class TypeInfo:
 
 
 # noinspection PyUnusedLocal
-@register(bool)
+@register_type_inspector(bool)
 def inspect_bool(hint_class) -> TypeInfo:
     return TypeInfo(openapi.TYPE_BOOLEAN)
 
 
 # noinspection PyUnusedLocal
-@register(NoneType)
-def inspect_none(hint_class) -> TypeInfo:
-    return TypeInfo(TYPE_NONE)
-
-
-# noinspection PyUnusedLocal
-@register(int)
+@register_type_inspector(int)
 def inspect_int(hint_class) -> TypeInfo:
     return TypeInfo(openapi.TYPE_INTEGER)
 
 
 # noinspection PyUnusedLocal
-@register(str, bytes)
+@register_type_inspector(bytes)
+def inspect_bytes(hint_class) -> TypeInfo:
+    return TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_BINARY)
+
+
+# noinspection PyUnusedLocal
+@register_type_inspector(str)
 def inspect_str(hint_class) -> TypeInfo:
     return TypeInfo(openapi.TYPE_STRING)
 
 
 # noinspection PyUnusedLocal
-@register(float)
+@register_type_inspector(float)
 def inspect_float(hint_class) -> TypeInfo:
     return TypeInfo(openapi.TYPE_NUMBER)
 
 
 # noinspection PyUnusedLocal
-@register(dict)
+@register_type_inspector(dict)
 def inspect_dict(hint_class) -> TypeInfo:
     return TypeInfo(openapi.TYPE_OBJECT)
 
 
 # noinspection PyUnusedLocal
-@register(decimal.Decimal)
+@register_type_inspector(decimal.Decimal)
 def inspect_decimal(hint_class) -> TypeInfo:
     return TypeInfo(TYPE_DECIMAL, openapi.FORMAT_DECIMAL)
 
 
 # noinspection PyUnusedLocal
-@register(uuid.UUID)
+@register_type_inspector(uuid.UUID)
 def inspect_uuid(hint_class) -> TypeInfo:
     return TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_UUID)
 
 
 # noinspection PyUnusedLocal
-@register(datetime.datetime)
+@register_type_inspector(datetime.datetime)
 def inspect_datetime(hint_class) -> TypeInfo:
     return TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_DATETIME)
 
 
 # noinspection PyUnusedLocal
-@register(datetime.date)
+@register_type_inspector(datetime.date)
 def inspect_date(hint_class) -> TypeInfo:
     return TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_DATE)
 
 
 # noinspection PyUnusedLocal
-@register(list, tuple, collections.Iterable)
+@register_type_inspector(list, tuple, collections.Iterable)
 def inspect_iterable(hint_class) -> TypeInfo:
     args = getattr(hint_class, '__args__', None)
     child_class = args[0] if args else str
@@ -142,7 +140,7 @@ def inspect_iterable(hint_class) -> TypeInfo:
     return TypeInfo(openapi.TYPE_ARRAY, child=child_type_info)
 
 
-@register(enum.IntEnum, enum.Enum)
+@register_type_inspector(enum.IntEnum, enum.Enum)
 def inspect_enum(enum_class: typing.Type[enum.Enum]) -> TypeInfo:
     enum_values = [entry.value for entry in enum_class]
     # Try to infer type based on enum values
@@ -156,7 +154,7 @@ def inspect_enum(enum_class: typing.Type[enum.Enum]) -> TypeInfo:
     return type_info
 
 
-@register(UnionType, checker=is_optional)
+@register_type_inspector(UnionType, checker=is_optional)
 def inspect_optional(hint_class) -> TypeInfo:
     child_type = hint_class.__args__[0]
     type_info = inspect_type(child_type)
@@ -164,7 +162,7 @@ def inspect_optional(hint_class) -> TypeInfo:
     return type_info
 
 
-@register(object, checker=dataclasses.is_dataclass)
+@register_type_inspector(object, checker=dataclasses.is_dataclass)
 def inspect_dataclass(hint_class) -> TypeInfo:
     fields = dataclasses.fields(hint_class)
 

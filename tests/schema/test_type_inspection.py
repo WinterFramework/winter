@@ -13,7 +13,6 @@ from drf_yasg import openapi
 from winter.controller import ControllerMethod
 from winter.schema.generation import get_argument_type_info
 from winter.schema.type_inspection import InspectorNotFound
-from winter.schema.type_inspection import TYPE_NONE
 from winter.schema.type_inspection import TypeInfo
 
 
@@ -55,9 +54,6 @@ class IntegerEnum(IntEnum):
     (Id, {
         'type': openapi.TYPE_INTEGER,
     }),
-    (None, {
-        'type': TYPE_NONE,
-    }),
     (uuid.UUID, {
         'type': openapi.TYPE_STRING,
         'format': openapi.FORMAT_UUID,
@@ -92,6 +88,10 @@ class IntegerEnum(IntEnum):
     }),
     (str, {
         'type': openapi.TYPE_STRING
+    }),
+    (bytes, {
+        'type': openapi.TYPE_STRING,
+        'format': openapi.FORMAT_BINARY,
     }),
     (IntegerEnum, {
         'type': openapi.TYPE_INTEGER,
