@@ -51,4 +51,10 @@ def _build_method_parameters(controller_method: ControllerMethod) -> List[openap
 
 
 def get_argument_type_info(argument: ControllerMethodArgument) -> dict:
-    return inspect_type(argument.type_).as_dict()
+    try:
+        type_info = inspect_type(argument.type_)
+    except InspectorNotFound:
+        return {'type': openapi.TYPE_STRING}
+    else:
+        return type_info.as_dict()
+

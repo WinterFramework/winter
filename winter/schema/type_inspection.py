@@ -46,6 +46,11 @@ class TypeInfo:
     properties: typing.Dict[str, 'TypeInfo'] = dataclasses.field(default_factory=OrderedDict)
     enum: list = None
 
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return False
+        return self.as_dict() == other.as_dict()
+
     def as_dict(self):
         data = {
             'type': self.type_,
