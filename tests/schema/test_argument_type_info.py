@@ -31,8 +31,8 @@ class IntegerEnum(IntEnum):
 
 
 @pytest.mark.parametrize('type_hint, expected_type_info', [
-    (int, {'type': openapi.TYPE_INTEGER, 'format': None}),
-    (str, {'type': openapi.TYPE_STRING, 'format': None}),
+    (int, {'type': openapi.TYPE_INTEGER}),
+    (str, {'type': openapi.TYPE_STRING}),
     (IntegerEnum, {'type': openapi.TYPE_INTEGER, 'enum': [1, 2]}),
     (IntegerValueEnum, {'type': openapi.TYPE_INTEGER, 'enum': [1, 2]}),
     (StringValueEnum, {'type': openapi.TYPE_STRING, 'enum': ['red', 'green']}),
