@@ -15,7 +15,7 @@ class User:
     ({'name': 'Stranger'}, 'Hello, Stranger!'),
     ({}, 'Hello, stranger!'),
 ))
-def test_simple_controller(client, data, expected_body):
+def test_simple_controller(data, expected_body):
     client = APIClient()
     user = User()
     client.force_authenticate(user)
