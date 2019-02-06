@@ -28,7 +28,6 @@ def _default_configuration():
     from .schema import QueryParametersInspector
     from .schema import register_controller_method_inspector
     from . import schema
-
     arguments_resolver.add_argument_resolver(DRFBodyArgumentResolver())
     arguments_resolver.add_argument_resolver(QueryParameterResolver())
     arguments_resolver.add_argument_resolver(HttpRequestArgumentResolver())
