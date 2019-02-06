@@ -17,7 +17,7 @@ class PagePositionArgumentResolver(ArgumentResolver):
     def is_supported(self, argument: ControllerMethodArgument) -> bool:
         return argument.type_ == PagePosition
 
-    def resolve_argument(self, argument: ControllerMethodArgument, http_request: DRFRequest):
+    def resolve_argument(self, argument: ControllerMethodArgument, http_request: DRFRequest) -> PagePosition:
         raw_limit = http_request.query_params.get(self.limit_parameter_name)
         raw_offset = http_request.query_params.get(self.offset_parameter_name)
 

@@ -25,10 +25,8 @@ class _TestSerializer(serializers.Serializer):
 ))
 def test_page_serializer(limit, offset, expected_previous, expected_next):
     TestPageSerializer = PageSerializer[_TestSerializer]
-    base_url = Mock()
-    base_url.return_value = 'test-url.com'
     request = Mock()
-    request.build_absolute_uri = base_url
+    request.build_absolute_uri.return_value = 'test-url.com'
     page = Page(
         total_count=10,
         items=[_TestEntity(1)],
