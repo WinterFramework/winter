@@ -1,19 +1,13 @@
 import pytest
-
 from rest_framework.test import APIClient
 
-
-class User:
-
-    @property
-    def is_authenticated(self):
-        return True
+from .entities import User
 
 
 @pytest.mark.parametrize(['data', 'expected_body'], (
-    ({'name': 'Winter'}, 'Hello, Winter!'),
-    ({'name': 'Stranger'}, 'Hello, Stranger!'),
-    ({}, 'Hello, stranger!'),
+        ({'name': 'Winter'}, 'Hello, Winter!'),
+        ({'name': 'Stranger'}, 'Hello, Stranger!'),
+        ({}, 'Hello, stranger!'),
 ))
 def test_simple_controller(data, expected_body):
     client = APIClient()
