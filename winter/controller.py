@@ -34,7 +34,7 @@ class ControllerMethod:
         self.url_path = url_path
         self.http_method = http_method
         type_hints = typing.get_type_hints(func)
-        self.return_value_class = type_hints.pop('return', None)
+        self.return_value_type = type_hints.pop('return', None)
         self._arguments = self._build_arguments(type_hints)
 
     @property

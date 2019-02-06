@@ -85,7 +85,7 @@ def _create_dispatch_function(controller, controller_method: ControllerMethod):
                 body = result
                 status_code = get_default_response_status(controller_method)
             output_processor = get_output_processor(controller_method.func, body)
-            if output_processor:
+            if output_processor is not None:
                 body = output_processor.process_output(body, request)
             if isinstance(body, django.http.HttpResponse):
                 return body

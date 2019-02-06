@@ -1,7 +1,7 @@
-from rest_framework.renderers import JSONRenderer
+from rest_framework import renderers
 
 from .json_encoder import JSONEncoder
 
 
-class WinterJSONRenderer(JSONRenderer):
+class JSONRenderer(renderers.JSONRenderer):
     encoder_class = JSONEncoder

@@ -1,4 +1,4 @@
-from abc import ABCMeta
+from abc import ABC
 from abc import abstractmethod
 from typing import Any
 from typing import List
@@ -7,19 +7,21 @@ from typing import Optional
 from rest_framework.request import Request
 
 
-class IOutputProcessor(metaclass=ABCMeta):
+class IOutputProcessor(ABC):
     """Process controller method returned value so that it can be put to HttpResponse body.
     Common usage is to serializer some DTO to dict."""
+
     @abstractmethod
     def process_output(self, output, request: Request):
         return output
 
 
-class IOutputProcessorResolver(metaclass=ABCMeta):
+class IOutputProcessorResolver(ABC):
     """
     Resolves IOutputProcessor for a given body type.
     Due to python dynamic typing it's called after every controller method call.
     """
+
     @abstractmethod
     def is_supported(self, body: Any) -> bool:
         return False
@@ -45,7 +47,7 @@ def register_output_processor_resolver(output_processor_resolver: IOutputProcess
 
 def get_output_processor(func, body: Any) -> Optional[IOutputProcessor]:
     output_processor = _registered_output_processors.get(func)
-    if output_processor:
+    if output_processor is not None:
         return output_processor
     for resolver in _registered_resolvers:
         if resolver.is_supported(body):

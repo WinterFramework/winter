@@ -10,6 +10,7 @@ import dataclasses
 import pytest
 from drf_yasg import openapi
 
+from winter.pagination import Page
 from winter.schema.type_inspection import InspectorNotFound
 from winter.schema.type_inspection import TypeInfo
 from winter.schema.type_inspection import inspect_type
@@ -72,9 +73,21 @@ class IntegerEnum(IntEnum):
         'nested': TypeInfo(openapi.TYPE_OBJECT, properties={
             'nested_number': TypeInfo(openapi.TYPE_INTEGER)
         })
+    })),
+    (Page[NestedDataclass], TypeInfo(openapi.TYPE_OBJECT, properties={
+        'meta': TypeInfo(openapi.TYPE_OBJECT, properties={
+            'total_count': TypeInfo(openapi.TYPE_INTEGER),
+            'limit': TypeInfo(openapi.TYPE_INTEGER),
+            'offset': TypeInfo(openapi.TYPE_INTEGER),
+            'previous': TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_URI, nullable=True),
+            'next': TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_URI, nullable=True),
+        }),
+        'objects': TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_OBJECT, properties={
+            'nested_number': TypeInfo(openapi.TYPE_INTEGER)
+        }))
     }))
 ])
-def test_get_argument_type_info(type_hint, expected_type_info):
+def test_inspect_type(type_hint, expected_type_info):
     # Act
     type_info = inspect_type(type_hint)
 
@@ -96,3 +109,14 @@ def test_get_openapi_schema():
     type_info = TypeInfo(openapi.TYPE_BOOLEAN)
     schema = openapi.Schema(type=openapi.TYPE_BOOLEAN)
     assert type_info.get_openapi_schema() == schema
+
+@pytest.mark.parametrize(('first', 'second', 'is_same'), (
+        (TypeInfo(openapi.TYPE_INTEGER), TypeInfo(openapi.TYPE_INTEGER), True),
+        (TypeInfo(openapi.TYPE_INTEGER), TypeInfo(openapi.TYPE_NUMBER), False),
+        (TypeInfo(openapi.TYPE_INTEGER), None, False),
+))
+def test_compare_type_info(first, second, is_same):
+    if is_same:
+        assert first == second
+    else:
+        assert first != second
