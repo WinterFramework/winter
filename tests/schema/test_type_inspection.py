@@ -1,0 +1,98 @@
+import datetime
+import decimal
+import typing
+import uuid
+from enum import Enum
+from enum import IntEnum
+from typing import List
+
+import dataclasses
+import pytest
+from drf_yasg import openapi
+
+from winter.schema.type_inspection import InspectorNotFound
+from winter.schema.type_inspection import TypeInfo
+from winter.schema.type_inspection import inspect_type
+
+
+class IntegerValueEnum(Enum):
+    RED = 1
+    GREEN = 2
+
+
+@dataclasses.dataclass
+class NestedDataclass:
+    nested_number: int
+
+
+class Id(int):
+    pass
+
+
+@dataclasses.dataclass
+class Dataclass:
+    nested: NestedDataclass
+
+
+class StringValueEnum(Enum):
+    RED = 'red'
+    GREEN = 'green'
+
+
+class MixedValueEnum(Enum):
+    RED = 123
+    GREEN = 'green'
+
+
+class IntegerEnum(IntEnum):
+    RED = 1
+    GREEN = 2
+
+
+@pytest.mark.parametrize('type_hint, expected_type_info', [
+    (Id, TypeInfo(openapi.TYPE_INTEGER)),
+    (uuid.UUID, TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_UUID)),
+    (bool, TypeInfo(openapi.TYPE_BOOLEAN)),
+    (dict, TypeInfo(openapi.TYPE_OBJECT)),
+    (float, TypeInfo(openapi.TYPE_NUMBER)),
+    (decimal.Decimal, TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_DECIMAL)),
+    (typing.Optional[int], TypeInfo(openapi.TYPE_INTEGER, nullable=True)),
+    (datetime.datetime, TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_DATETIME)),
+    (datetime.date, TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_DATE)),
+    (int, TypeInfo(openapi.TYPE_INTEGER)),
+    (str, TypeInfo(openapi.TYPE_STRING)),
+    (bytes, TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_BINARY)),
+    (IntegerEnum, TypeInfo(openapi.TYPE_INTEGER, enum=[1, 2])),
+    (IntegerValueEnum, TypeInfo(openapi.TYPE_INTEGER, enum=[1, 2])),
+    (StringValueEnum, TypeInfo(openapi.TYPE_STRING, enum=['red', 'green'])),
+    (MixedValueEnum, TypeInfo(openapi.TYPE_STRING, enum=[123, 'green'])),
+    (List[IntegerValueEnum], TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_INTEGER, enum=[1, 2]))),
+    (List[StringValueEnum], TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_STRING, enum=['red', 'green']))),
+    (Dataclass(NestedDataclass(1)), TypeInfo(openapi.TYPE_OBJECT, properties={
+        'nested': TypeInfo(openapi.TYPE_OBJECT, properties={
+            'nested_number': TypeInfo(openapi.TYPE_INTEGER)
+        })
+    }))
+])
+def test_get_argument_type_info(type_hint, expected_type_info):
+    # Act
+    type_info = inspect_type(type_hint)
+
+    # Assert
+    assert type_info == expected_type_info, type_hint
+
+
+def test_get_argument_type_info_with_non_registered_type():
+    hint_class = object
+
+    with pytest.raises(InspectorNotFound) as exception_info:
+        # Act
+        inspect_type(hint_class)
+    assert exception_info.value.hint_cls == hint_class
+    assert str(exception_info.value) == f'Unknown type: {hint_class}'
+
+
+def test_get_openapi_schema():
+    type_info = TypeInfo(openapi.TYPE_BOOLEAN)
+    schema = openapi.Schema(type=openapi.TYPE_BOOLEAN)
+    assert type_info.get_openapi_schema() == schema

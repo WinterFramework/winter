@@ -7,6 +7,7 @@ from .enum_inspector import inspect_enum_class
 from .generation import generate_swagger_for_operation
 from .path_parameters_inspector import PathParametersInspector
 from .query_parameters_inspector import QueryParametersInspector
+from .type_inspection import register_type_inspector
 
 
 def setup():
