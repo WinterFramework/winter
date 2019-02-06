@@ -3,12 +3,12 @@ from django.http import QueryDict
 from mock import Mock
 from rest_framework.exceptions import ParseError
 from rest_framework.exceptions import ValidationError
+from rest_framework.request import Request as DRFRequest
 
 from winter.controller import ControllerMethodArgument
 from winter.pagination import PagePosition
 from winter.pagination import PagePositionArgumentResolver
-from rest_framework.request import Request as DRFRequest
-QueryDict
+
 
 @pytest.mark.parametrize(('type_', 'expected_is_supported'), (
         (PagePosition, True),
@@ -27,7 +27,7 @@ def test_is_supported_in_page_position_argument_resolver(type_, expected_is_supp
 
 
 @pytest.mark.parametrize(('query_string', 'expected_page_position'), (
-        ('limit=1&offset=3', PagePosition(1,3)),
+        ('limit=1&offset=3', PagePosition(1, 3)),
         ('limit=1', PagePosition(1)),
         ('offset=3', PagePosition(None, 3)),
         ('', PagePosition()),

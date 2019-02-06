@@ -16,11 +16,12 @@ class _TestEntity:
 class _TestSerializer(serializers.Serializer):
     number = serializers.IntegerField()
 
+
 @pytest.mark.parametrize(('limit', 'offset', 'expected_previous', 'expected_next'), (
-    (1, 1, 'test-url.com?limit=1', 'test-url.com?limit=1&offset=2'),
-    (None, None, None, None),
-    (2, 3, 'test-url.com?limit=2&offset=1', 'test-url.com?limit=2&offset=5'),
-    (9, 3, 'test-url.com?limit=9', None),
+        (1, 1, 'test-url.com?limit=1', 'test-url.com?limit=1&offset=2'),
+        (None, None, None, None),
+        (2, 3, 'test-url.com?limit=2&offset=1', 'test-url.com?limit=2&offset=5'),
+        (9, 3, 'test-url.com?limit=9', None),
 ))
 def test_page_serializer(limit, offset, expected_previous, expected_next):
     TestPageSerializer = PageSerializer[_TestSerializer]

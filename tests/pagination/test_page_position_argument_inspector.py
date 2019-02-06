@@ -8,7 +8,6 @@ from winter.pagination import PagePositionArgumentInspector
 from winter.pagination import PagePositionArgumentResolver
 
 
-
 @pytest.mark.parametrize(('argument_type', 'expected_count_parameters'), (
         (PagePosition, 2),
         (object, 0),

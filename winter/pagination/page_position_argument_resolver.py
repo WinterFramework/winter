@@ -1,3 +1,5 @@
+import typing
+
 from rest_framework import exceptions
 from rest_framework.request import Request as DRFRequest
 
@@ -23,7 +25,7 @@ class PagePositionArgumentResolver(ArgumentResolver):
         offset = self._parse_param(raw_offset, 'offset')
         return PagePosition(limit, offset)
 
-    def _parse_param(self, raw_param_value: str, param_name: str):
+    def _parse_param(self, raw_param_value: str, param_name: str) -> typing.Optional[int]:
         if raw_param_value is None:
             return raw_param_value
         try:

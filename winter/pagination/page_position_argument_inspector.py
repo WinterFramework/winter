@@ -1,11 +1,11 @@
 from typing import List
 
 from drf_yasg import openapi
-from winter.controller import ControllerMethod
-from winter.schema import ControllerMethodInspector
 
 from .page_position import PagePosition
 from .page_position_argument_resolver import PagePositionArgumentResolver
+from ..controller import ControllerMethod
+from ..schema import ControllerMethodInspector
 
 
 class PagePositionArgumentInspector(ControllerMethodInspector):

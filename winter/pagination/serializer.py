@@ -2,6 +2,7 @@ from typing import Optional
 from typing import Type
 
 from rest_framework import serializers
+from rest_framework.request import Request as DRFRequest
 from rest_framework.utils.urls import remove_query_param
 from rest_framework.utils.urls import replace_query_param
 
@@ -48,7 +49,7 @@ class _MetaSerializer(serializers.Serializer):
         return replace_query_param(url, 'offset', offset + limit)
 
     @property
-    def request(self):
+    def request(self) -> DRFRequest:
         return self.context['request']
 
 
