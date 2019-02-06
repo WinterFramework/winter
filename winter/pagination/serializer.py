@@ -17,36 +17,39 @@ class _MetaSerializer(serializers.Serializer):
     next = serializers.SerializerMethodField()
 
     def get_previous(self, page: Page) -> Optional[str]:
-        offset = page.position.offset or 0
+        offset = page.position.offset
         limit = page.position.limit
 
-        if offset <= 0 or limit is None:
+        if not offset or limit is None:
             return None
 
         url = self.request.build_absolute_uri()
         url = replace_query_param(url, 'limit', limit)
 
-        if offset - limit <= 0:
+        previous_offset = offset - limit
+
+        if previous_offset <= 0:
             return remove_query_param(url, 'offset')
 
-        offset = offset - limit
-        return replace_query_param(url, 'offset', offset)
+        return replace_query_param(url, 'offset', previous_offset)
 
     def get_next(self, page: Page) -> Optional[str]:
         offset = page.position.offset or 0
         limit = page.position.limit
         total = page.total_count
 
-        if page.position.limit is None:
+        if limit is None:
             return None
 
-        if offset + limit >= total:
+        next_offset = offset + limit
+
+        if next_offset >= total:
             return None
 
         url = self.request.build_absolute_uri()
         url = replace_query_param(url, 'limit', limit)
 
-        return replace_query_param(url, 'offset', offset + limit)
+        return replace_query_param(url, 'offset', next_offset)
 
     @property
     def request(self) -> DRFRequest:
