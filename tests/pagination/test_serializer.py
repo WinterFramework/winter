@@ -40,9 +40,9 @@ def test_page_serializer(limit, offset, expected_previous, expected_next):
             'limit': limit,
             'offset': offset,
             'previous': expected_previous,
-            'next': expected_next
+            'next': expected_next,
         },
-        'objects': [{'number': 1}]
+        'objects': [{'number': 1}],
     }
 
     # Act
