@@ -47,7 +47,10 @@ def test_resolve_argument_in_page_position_argument_resolver(query_string, expec
     request = Mock(spec=DRFRequest)
     request.query_params = QueryDict(query_string)
 
+    # Act
     page_position = resolver.resolve_argument(argument, request)
+
+    # Assert
     assert page_position == expected_page_position
 
 
