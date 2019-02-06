@@ -1,27 +1,33 @@
 import pytest
-from mock import Mock
 
 from winter.controller import ControllerMethod
-from winter.controller import ControllerMethodArgument
 from winter.pagination import PagePosition
 from winter.pagination import PagePositionArgumentInspector
 from winter.pagination import PagePositionArgumentResolver
 
 
-@pytest.mark.parametrize(('argument_type', 'expected_count_parameters'), (
-        (PagePosition, 2),
-        (object, 0),
+@pytest.mark.parametrize(('argument_type', 'must_return_parameters'), (
+        (PagePosition, True),
+        (object, False),
 ))
-def test_page_position_argument_inspector(argument_type, expected_count_parameters):
+def test_page_position_argument_inspector(argument_type, must_return_parameters):
+    def func(arg1: argument_type):
+        return arg1
+
+    controller_method = ControllerMethod(func, '/', 'GET')
     resolver = PagePositionArgumentResolver()
     inspector = PagePositionArgumentInspector(resolver)
-    controller_method = Mock(spec=ControllerMethod)
-    argument = Mock(spec=ControllerMethodArgument)
-    argument.type_ = argument_type
-    controller_method.arguments = [argument]
+
+    if must_return_parameters:
+        expected_parameters = [
+            inspector.limit_parameter,
+            inspector.offset_parameter,
+        ]
+    else:
+        expected_parameters = []
 
     # Act
     parameters = inspector.inspect_parameters(controller_method)
 
     # Assert
-    assert len(parameters) == expected_count_parameters
+    assert parameters == expected_parameters
