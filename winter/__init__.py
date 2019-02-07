@@ -1,5 +1,3 @@
-from winter.output_processor import register_output_processor_resolver
-from .pagination.page import PageOutputProcessorResolver
 from . import django
 from .argument_resolver import ArgumentResolver
 from .argument_resolver import ArgumentsResolver
@@ -10,7 +8,9 @@ from .drf import BodyWithContext
 from .drf import input_serializer
 from .drf import output_serializer
 from .drf import output_template
+from .output_processor import register_output_processor_resolver
 from .pagination import PagePositionArgumentResolver
+from .pagination.page import PageOutputProcessorResolver
 from .query_parameter import query_parameter
 from .response_entity import ResponseEntity
 from .response_status import response_status
