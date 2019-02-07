@@ -21,11 +21,11 @@ class PagePositionArgumentResolver(ArgumentResolver):
         raw_limit = http_request.query_params.get(self.limit_parameter_name)
         raw_offset = http_request.query_params.get(self.offset_parameter_name)
 
-        limit = self._parse_param(raw_limit, 'limit', False)
-        offset = self._parse_param(raw_offset, 'offset', True)
+        limit = self._parse_int_param(raw_limit, 'limit', min_limit=1)
+        offset = self._parse_int_param(raw_offset, 'offset', min_limit=0)
         return PagePosition(limit, offset)
 
-    def _parse_param(self, raw_param_value: str, param_name: str, allow_zero=True) -> typing.Optional[int]:
+    def _parse_int_param(self, raw_param_value: str, param_name: str, min_limit=0) -> typing.Optional[int]:
         if raw_param_value is None:
             return raw_param_value
         try:
@@ -33,6 +33,6 @@ class PagePositionArgumentResolver(ArgumentResolver):
         except (ValueError, TypeError):
             raise exceptions.ParseError(f'Invalid "{param_name}" query parameter value: "{raw_param_value}"')
 
-        if param_value < 0 or (param_name == 0 and not allow_zero):
+        if param_value < min_limit:
             raise exceptions.ValidationError(f'Invalid "{param_name}" query parameter value: "{raw_param_value}"')
         return param_value
