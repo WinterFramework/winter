@@ -6,6 +6,7 @@ from .argument_resolver import arguments_resolver
 from .controller import controller
 from .drf import BodyWithContext
 from .drf import input_serializer
+from .drf import no_authentication
 from .drf import output_serializer
 from .drf import output_template
 from .output_processor import register_output_processor_resolver

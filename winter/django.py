@@ -13,6 +13,7 @@ from django.conf.urls import url
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 
+from winter.drf.auth import is_authentication_needed
 from .argument_resolver import arguments_resolver
 from .controller import ControllerMethod
 from .controller import get_controller_component
@@ -31,11 +32,6 @@ class SessionAuthentication(rest_framework.authentication.SessionAuthentication)
     """SessionAuthentication with supporting 401 status code"""
     def authenticate_header(self, request):
         return 'Unauthorized'
-
-
-class WinterViewPrototype(rest_framework.views.APIView):
-    authentication_classes = (SessionAuthentication,)
-    permission_classes = (IsAuthenticated,)
 
 
 def create_django_urls(controller_class: Type) -> List:
@@ -59,8 +55,9 @@ def create_django_urls(controller_class: Type) -> List:
 
 
 def _create_django_view(controller, controller_methods: List[ControllerMethod]):
-    class WinterView(WinterViewPrototype):
-        pass
+    class WinterView(rest_framework.views.APIView):
+        authentication_classes = (SessionAuthentication,)
+        permission_classes = (IsAuthenticated,) if is_authentication_needed(controller.__class__) else ()
 
     for controller_method in controller_methods:
         dispatch = _create_dispatch_function(controller, controller_method)
