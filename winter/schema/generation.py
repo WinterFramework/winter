@@ -25,7 +25,7 @@ def generate_swagger_for_operation(view_func, controller, controller_method: Con
     output_serializer = get_output_serializer(controller_method.func)
     response_status = get_default_response_status(controller_method)
     responses = {}
-    if output_serializer:
+    if output_serializer is not None:
         responses[response_status] = output_serializer.class_(**output_serializer.kwargs)
     else:
         try:

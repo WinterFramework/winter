@@ -33,7 +33,8 @@ def test_is_supported_in_page_position_argument_resolver(argument_type, expected
         ('limit=1&offset=3', PagePosition(1, 3)),
         ('limit=1', PagePosition(1)),
         ('offset=3', PagePosition(None, 3)),
-        ('', PagePosition()),
+        ('', PagePosition(None, None)),
+        ('offset=0', PagePosition(None, 0)),
 ))
 def test_resolve_argument_in_page_position_argument_resolver(query_string, expected_page_position):
     def func(arg1: int):
