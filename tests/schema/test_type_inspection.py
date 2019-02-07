@@ -116,7 +116,4 @@ def test_get_openapi_schema():
         (TypeInfo(openapi.TYPE_INTEGER), None, False),
 ))
 def test_compare_type_info(first, second, is_same):
-    if is_same:
-        assert first == second
-    else:
-        assert first != second
+    assert (first == second) is is_same
