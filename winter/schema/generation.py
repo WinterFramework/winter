@@ -29,7 +29,7 @@ def generate_swagger_for_operation(view_func, controller, controller_method: Con
         responses[response_status] = output_serializer.class_(**output_serializer.kwargs)
     else:
         try:
-            type_info = inspect_type(controller_method.return_value_class)
+            type_info = inspect_type(controller_method.return_value_type)
         except InspectorNotFound:
             responses[response_status] = openapi.Response(description='Success')
         else:

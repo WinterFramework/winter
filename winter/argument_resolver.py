@@ -1,4 +1,4 @@
-from abc import ABC
+import abc
 from abc import abstractmethod
 from typing import Any
 from typing import Callable
@@ -17,7 +17,7 @@ class ArgumentNotSupported(Exception):
         super().__init__(f'Unable to resolve argument {argument.name}: {argument.type_.__name__}')
 
 
-class ArgumentResolver(ABC):
+class ArgumentResolver(abc.ABC):
     """IArgumentResolver is used to map http request contents to controller method arguments."""
     @abstractmethod
     def is_supported(self, argument: ControllerMethodArgument) -> bool:

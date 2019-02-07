@@ -9,6 +9,8 @@ from .drf import input_serializer
 from .drf import output_serializer
 from .drf import output_template
 from .output_processor import register_output_processor_resolver
+from .pagination import PagePositionArgumentResolver
+from .pagination.page import PageOutputProcessorResolver
 from .query_parameter import query_parameter
 from .response_entity import ResponseEntity
 from .response_status import response_status
@@ -28,12 +30,17 @@ def _default_configuration():
     from .schema import QueryParametersInspector
     from .schema import register_controller_method_inspector
     from . import schema
+    from . import pagination
+
     arguments_resolver.add_argument_resolver(DRFBodyArgumentResolver())
     arguments_resolver.add_argument_resolver(QueryParameterResolver())
+    arguments_resolver.add_argument_resolver(PagePositionArgumentResolver())
     arguments_resolver.add_argument_resolver(HttpRequestArgumentResolver())
     register_controller_method_inspector(PathParametersInspector())
     register_controller_method_inspector(QueryParametersInspector())
+    register_output_processor_resolver(PageOutputProcessorResolver())
     schema.setup()
+    pagination.setup()
 
 
 _default_configuration()

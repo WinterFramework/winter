@@ -19,13 +19,14 @@ TYPE_DECIMAL = openapi.TYPE_STRING if rest_settings.COERCE_DECIMAL_TO_STRING els
 _resolvers_by_type: typing.Dict[typing.Type, typing.Tuple[typing.Callable, typing.Optional[typing.Callable]]] = {}
 
 
-def register_type_inspector(*types: typing.Tuple[typing.Type], checker=None):
-    def wrapper(func):
-        for type_ in types:
-            _resolvers_by_type[type_] = func, checker
-        return func
-
-    return wrapper
+def register_type_inspector(*types: typing.Tuple[typing.Type], checker: typing.Callable = None,
+                            func: typing.Callable = None):
+    if func is None:
+        return lambda func: register_type_inspector(*types, checker=checker, func=func)
+    
+    for type_ in types:
+        _resolvers_by_type[type_] = func, checker
+    return func
 
 
 class InspectorNotFound(Exception):
@@ -44,7 +45,7 @@ class TypeInfo:
     child: typing.Optional['TypeInfo'] = None
     nullable: bool = False
     properties: typing.Dict[str, 'TypeInfo'] = dataclasses.field(default_factory=OrderedDict)
-    enum: list = None
+    enum: typing.Optional[list] = None
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
@@ -62,7 +63,7 @@ class TypeInfo:
             data['items'] = self.child.as_dict()
 
         if self.nullable:
-            data['x-nullable'] = True
+            data['x_nullable'] = True
 
         if self.enum is not None:
             data['enum'] = self.enum
