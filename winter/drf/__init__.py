@@ -1,3 +1,4 @@
+from .auth import no_authentication
 from .body_argument_resolver import DRFBodyArgumentResolver
 from .body_with_context import BodyWithContext
 from .http_request_argument_resolver import HttpRequestArgumentResolver
