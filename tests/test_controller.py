@@ -1,5 +1,3 @@
-import json
-
 import pytest
 from rest_framework.test import APIClient
 
@@ -32,15 +30,16 @@ def test_page_response():
             'next': 'http://testserver/winter_simple/page-response/?limit=2&offset=4',
             'previous': 'http://testserver/winter_simple/page-response/?limit=2',
             'total_count': 10,
-        }
+        },
     }
     data = {
         'limit': 2,
-        'offset': 2
+        'offset': 2,
     }
+
     # Act
     response = client.get('/winter_simple/page-response/', data=data)
 
     # Assert
     assert response.status_code == 200
-    assert json.loads(response.content) == expected_body
+    assert response.json() == expected_body

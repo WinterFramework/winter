@@ -71,19 +71,19 @@ class IntegerEnum(IntEnum):
     (List[StringValueEnum], TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_STRING, enum=['red', 'green']))),
     (Dataclass(NestedDataclass(1)), TypeInfo(openapi.TYPE_OBJECT, properties={
         'nested': TypeInfo(openapi.TYPE_OBJECT, properties={
-            'nested_number': TypeInfo(openapi.TYPE_INTEGER)
+            'nested_number': TypeInfo(openapi.TYPE_INTEGER),
         })
     })),
     (Page[NestedDataclass], TypeInfo(openapi.TYPE_OBJECT, properties={
         'meta': TypeInfo(openapi.TYPE_OBJECT, properties={
             'total_count': TypeInfo(openapi.TYPE_INTEGER),
-            'limit': TypeInfo(openapi.TYPE_INTEGER),
-            'offset': TypeInfo(openapi.TYPE_INTEGER),
+            'limit': TypeInfo(openapi.TYPE_INTEGER, nullable=True),
+            'offset': TypeInfo(openapi.TYPE_INTEGER, nullable=True),
             'previous': TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_URI, nullable=True),
             'next': TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_URI, nullable=True),
         }),
         'objects': TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_OBJECT, properties={
-            'nested_number': TypeInfo(openapi.TYPE_INTEGER)
+            'nested_number': TypeInfo(openapi.TYPE_INTEGER),
         }))
     }))
 ])

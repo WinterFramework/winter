@@ -19,5 +19,5 @@ class PageProcessor(IOutputProcessor):
                 'previous': get_previous_page_url(output, request),
                 'next': get_next_page_url(output, request),
             },
-            'objects': output.items
+            'objects': output.items,
         }

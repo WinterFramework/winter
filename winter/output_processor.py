@@ -1,4 +1,4 @@
-from abc import ABC
+import abc
 from abc import abstractmethod
 from typing import Any
 from typing import List
@@ -7,7 +7,7 @@ from typing import Optional
 from rest_framework.request import Request
 
 
-class IOutputProcessor(ABC):
+class IOutputProcessor(abc.ABC):
     """Process controller method returned value so that it can be put to HttpResponse body.
     Common usage is to serializer some DTO to dict."""
 
@@ -16,7 +16,7 @@ class IOutputProcessor(ABC):
         return output
 
 
-class IOutputProcessorResolver(ABC):
+class IOutputProcessorResolver(abc.ABC):
     """
     Resolves IOutputProcessor for a given body type.
     Due to python dynamic typing it's called after every controller method call.
