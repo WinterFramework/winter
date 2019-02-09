@@ -1,11 +1,13 @@
 from typing import Dict
-from typing import NamedTuple
 from typing import Optional
+
+import dataclasses
 
 _routes: Dict[object, 'Route'] = {}
 
 
-class Route(NamedTuple):
+@dataclasses.dataclass(frozen=True)
+class Route:
     url_path: str
     http_method: str = None
 
@@ -14,6 +16,7 @@ def route(url_path: str, http_method: str = None):
     def wrapper(func):
         register_route(func, url_path, http_method)
         return func
+
     return wrapper
 
 

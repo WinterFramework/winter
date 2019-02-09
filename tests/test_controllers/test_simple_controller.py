@@ -1,8 +1,8 @@
 import pytest
 from rest_framework.test import APIClient
 
-from .entities import AuthorizedUser
-from .entities import User
+from ..entities import AuthorizedUser
+from ..entities import User
 
 
 @pytest.mark.parametrize(['data', 'expected_body'], (
@@ -17,20 +17,6 @@ def test_simple_controller(data, expected_body):
     response = client.get('/winter_simple/', data=data)
     assert response.status_code == 200
     assert response.json() == expected_body
-
-
-def test_401_not_authenticated():
-    client = APIClient()
-    response = client.get('/winter_simple/')
-    assert response.status_code == 401
-
-
-def test_403_forbidden():
-    client = APIClient()
-    user = User()
-    client.force_authenticate(user)
-    response = client.get('/winter_simple/')
-    assert response.status_code == 403
 
 
 def test_page_response():
@@ -60,8 +46,15 @@ def test_page_response():
     assert response.json() == expected_body
 
 
-def test_no_authentication_controller():
+def test_401_not_authenticated():
     client = APIClient()
-    response = client.get('/winter_no_auth/')
-    assert response.status_code == 200
-    assert response.json() == 'Hello, World!'
+    response = client.get('/winter_simple/')
+    assert response.status_code == 401
+
+
+def test_403_forbidden():
+    client = APIClient()
+    user = User()
+    client.force_authenticate(user)
+    response = client.get('/winter_simple/')
+    assert response.status_code == 403

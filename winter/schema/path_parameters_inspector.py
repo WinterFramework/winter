@@ -16,7 +16,7 @@ class PathParametersInspector(ControllerMethodInspector):
 
         parameters = []
 
-        for path_variable_name in uritemplate.variables(controller_method.url_path):
+        for path_variable_name in uritemplate.variables(controller_method.full_url_path):
             argument = controller_method.get_argument(path_variable_name)
             if not argument:
                 continue

@@ -29,7 +29,8 @@ class ControllerComponent:
 
 
 class ControllerMethod:
-    def __init__(self, func, url_path: str, http_method: str):
+    def __init__(self, controller: object, func, url_path: str, http_method: str):
+        self.controller = controller
         self.func = func
         self.url_path = url_path
         self.http_method = http_method
@@ -40,6 +41,12 @@ class ControllerMethod:
     @property
     def name(self) -> str:
         return self.func.__name__
+
+    @property
+    def full_url_path(self):
+        route = get_function_route(self.controller)
+        root_url = route.url_path if route is not None else ''
+        return root_url + self.url_path
 
     @property
     def arguments(self) -> List['ControllerMethodArgument']:
@@ -82,7 +89,7 @@ def _register_controller(controller_class):
         if route in routes:
             already_mapped_member = routes[route]
             raise DuplicateRouteException(member, already_mapped_member)
-        controller_method = ControllerMethod(member, route.url_path, route.http_method)
+        controller_method = ControllerMethod(controller_class, member, route.url_path, route.http_method)
         controller_methods.append(controller_method)
         _methods[member] = controller_method
         routes[route] = member
