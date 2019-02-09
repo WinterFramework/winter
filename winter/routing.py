@@ -46,5 +46,5 @@ def register_route(func, url_path, http_method):
     _routes[func] = Route(url_path, http_method)
 
 
-def get_route(func: typing.Union[typing.Callable]) -> typing.Optional[Route]:
+def get_route(func: typing.Union[type, typing.Callable]) -> typing.Optional[Route]:
     return _routes.get(func)
