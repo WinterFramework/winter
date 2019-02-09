@@ -14,7 +14,7 @@ def test_page_position_argument_inspector(argument_type, must_return_parameters)
     def func(arg1: argument_type):
         return arg1
 
-    controller_method = ControllerMethod(object(), func, '/', 'GET')
+    controller_method = ControllerMethod(object, func, '/', 'GET')
     resolver = PagePositionArgumentResolver()
     inspector = PagePositionArgumentInspector(resolver)
 

@@ -45,7 +45,7 @@ def test_get_argument_type_info(type_hint, expected_type_info):
     def func(arg_1: type_hint):
         return arg_1
 
-    argument = ControllerMethod(object(), func, '/', 'GET').get_argument('arg_1')
+    argument = ControllerMethod(object, func, '/', 'GET').get_argument('arg_1')
 
     # Act
     type_info = get_argument_type_info(argument)
