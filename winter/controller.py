@@ -36,7 +36,7 @@ class ControllerMethod:
 
     def __init__(
             self,
-            controller_cls: type,
+            controller_cls: typing.Type,
             func,
             url_path: str,
             http_method: HTTPMethod,
@@ -93,7 +93,7 @@ class ControllerMethodArgument:
         return self.method.signature.parameters[self.name]
 
 
-def _register_controller(controller_class: type) -> None:
+def _register_controller(controller_class: typing.Type) -> None:
     assert controller_class not in _controllers, f'{controller_class} is already marked as controller'
     controller_methods = []
     routes = {}
@@ -119,12 +119,12 @@ def _register_controller(controller_class: type) -> None:
     _controllers[controller_class] = controller_component
 
 
-def controller(controller_class: type) -> type:
+def controller(controller_class: typing.Type) -> type:
     _register_controller(controller_class)
     return controller_class
 
 
-def get_controller_component(controller_class: Type) -> Optional[ControllerComponent]:
+def get_controller_component(controller_class: typing.Type) -> Optional[ControllerComponent]:
     return _controllers.get(controller_class)
 
 
