@@ -1,13 +1,13 @@
 import typing
 
-from .http_method import HttpMethod
+from .http_method import HTTPMethod
 
 _default_statuses: typing.Dict[typing.Callable, int] = {}
 _default_http_method_statuses = {
-    HttpMethod.GET: 200,
-    HttpMethod.POST: 200,
-    HttpMethod.PATCH: 200,
-    HttpMethod.DELETE: 204,
+    HTTPMethod.GET: 200,
+    HTTPMethod.POST: 200,
+    HTTPMethod.PATCH: 200,
+    HTTPMethod.DELETE: 204,
 }
 
 

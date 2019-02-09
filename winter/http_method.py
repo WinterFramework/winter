@@ -1,7 +1,7 @@
 import enum
 
 
-class HttpMethod(enum.Enum):
+class HTTPMethod(enum.Enum):
     GET = 'GET'
     POST = 'POST'
     DELETE = 'DELETE'

@@ -2,7 +2,7 @@ import typing
 
 import dataclasses
 
-from .http_method import HttpMethod
+from .http_method import HTTPMethod
 
 _routes: typing.Dict[typing.Callable, 'Route'] = {}
 
@@ -10,10 +10,10 @@ _routes: typing.Dict[typing.Callable, 'Route'] = {}
 @dataclasses.dataclass(frozen=True)
 class Route:
     url_path: str
-    http_method: HttpMethod = None
+    http_method: HTTPMethod = None
 
 
-def route(url_path: str, http_method: HttpMethod = None):
+def route(url_path: str, http_method: HTTPMethod = None):
     def wrapper(func):
         register_route(func, url_path, http_method)
         return func
@@ -22,23 +22,23 @@ def route(url_path: str, http_method: HttpMethod = None):
 
 
 def route_get(url_path=''):
-    return route(url_path, HttpMethod.GET)
+    return route(url_path, HTTPMethod.GET)
 
 
 def route_post(url_path=''):
-    return route(url_path, HttpMethod.POST)
+    return route(url_path, HTTPMethod.POST)
 
 
 def route_delete(url_path=''):
-    return route(url_path, HttpMethod.DELETE)
+    return route(url_path, HTTPMethod.DELETE)
 
 
 def route_patch(url_path=''):
-    return route(url_path, HttpMethod.PATCH)
+    return route(url_path, HTTPMethod.PATCH)
 
 
 def route_put(url_path=''):
-    return route(url_path, HttpMethod.PUT)
+    return route(url_path, HTTPMethod.PUT)
 
 
 def register_route(func, url_path, http_method):

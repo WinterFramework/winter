@@ -4,7 +4,7 @@ from typing import List
 from typing import Optional
 from typing import Type
 
-from .http_method import HttpMethod
+from .http_method import HTTPMethod
 from .response_status import get_default_response_status
 from .routing import get_route
 
@@ -39,7 +39,7 @@ class ControllerMethod:
             controller_cls: type,
             func,
             url_path: str,
-            http_method: HttpMethod,
+            http_method: HTTPMethod,
             default_response_status: typing.Optional[int] = 200
     ):
         self.controller_cls = controller_cls
