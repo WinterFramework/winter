@@ -1,18 +1,19 @@
-from typing import Dict
-from typing import Optional
+import typing
 
 import dataclasses
 
-_routes: Dict[object, 'Route'] = {}
+from .http_method import HttpMethod
+
+_routes: typing.Dict[typing.Callable, 'Route'] = {}
 
 
 @dataclasses.dataclass(frozen=True)
 class Route:
     url_path: str
-    http_method: str = None
+    http_method: HttpMethod = None
 
 
-def route(url_path: str, http_method: str = None):
+def route(url_path: str, http_method: HttpMethod = None):
     def wrapper(func):
         register_route(func, url_path, http_method)
         return func
@@ -21,23 +22,23 @@ def route(url_path: str, http_method: str = None):
 
 
 def route_get(url_path=''):
-    return route(url_path, 'GET')
+    return route(url_path, HttpMethod.GET)
 
 
 def route_post(url_path=''):
-    return route(url_path, 'POST')
+    return route(url_path, HttpMethod.POST)
 
 
 def route_delete(url_path=''):
-    return route(url_path, 'DELETE')
+    return route(url_path, HttpMethod.DELETE)
 
 
 def route_patch(url_path=''):
-    return route(url_path, 'PATCH')
+    return route(url_path, HttpMethod.PATCH)
 
 
 def route_put(url_path=''):
-    return route(url_path, 'PUT')
+    return route(url_path, HttpMethod.PUT)
 
 
 def register_route(func, url_path, http_method):
@@ -45,5 +46,5 @@ def register_route(func, url_path, http_method):
     _routes[func] = Route(url_path, http_method)
 
 
-def get_function_route(func) -> Optional[Route]:
+def get_route(func: typing.Union[typing.Callable]) -> typing.Optional[Route]:
     return _routes.get(func)

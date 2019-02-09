@@ -4,18 +4,22 @@ from typing import List
 from typing import Optional
 from typing import Type
 
-from .routing import get_function_route
+from .http_method import HttpMethod
+from .response_status import get_default_response_status
+from .routing import get_route
 
-_controllers = {}
-_methods = {}
+_controllers: typing.Dict[type, 'ControllerComponent'] = {}
+_methods: typing.Dict[typing.Callable, 'ControllerMethod'] = {}
 
 
 class DuplicateRouteException(Exception):
+
     def __init__(self, member_1, member_2):
         super().__init__(f'Duplicate route: {member_1} and {member_2}')
 
 
 class ControllerComponent:
+
     def __init__(self, controller_class, methods: List['ControllerMethod']):
         self.controller_class = controller_class
         self.methods = methods
@@ -29,11 +33,21 @@ class ControllerComponent:
 
 
 class ControllerMethod:
-    def __init__(self, controller: object, func, url_path: str, http_method: str):
-        self.controller = controller
+
+    def __init__(
+            self,
+            controller_cls: type,
+            func,
+            url_path: str,
+            http_method: HttpMethod,
+            default_response_status: typing.Optional[int] = 200
+    ):
+        self.controller_cls = controller_cls
         self.func = func
         self.url_path = url_path
         self.http_method = http_method
+        self.default_response_status = default_response_status
+
         type_hints = typing.get_type_hints(func)
         self.return_value_type = type_hints.pop('return', None)
         self._arguments = self._build_arguments(type_hints)
@@ -44,7 +58,7 @@ class ControllerMethod:
 
     @property
     def full_url_path(self):
-        route = get_function_route(self.controller)
+        route = get_route(self.controller_cls)
         root_url = route.url_path if route is not None else ''
         return root_url + self.url_path
 
@@ -68,6 +82,7 @@ class ControllerMethod:
 
 
 class ControllerMethodArgument:
+
     def __init__(self, method: ControllerMethod, name, type_):
         self.method = method
         self.name = name
@@ -78,18 +93,25 @@ class ControllerMethodArgument:
         return self.method.signature.parameters[self.name]
 
 
-def _register_controller(controller_class):
+def _register_controller(controller_class: type) -> None:
     assert controller_class not in _controllers, f'{controller_class} is already marked as controller'
     controller_methods = []
     routes = {}
     for member in controller_class.__dict__.values():
-        route = get_function_route(member)
+        route = get_route(member)
         if not route:
             continue
         if route in routes:
             already_mapped_member = routes[route]
             raise DuplicateRouteException(member, already_mapped_member)
-        controller_method = ControllerMethod(controller_class, member, route.url_path, route.http_method)
+        default_response_status = get_default_response_status(member)
+        controller_method = ControllerMethod(
+            controller_class,
+            member,
+            route.url_path,
+            route.http_method,
+            default_response_status
+        )
         controller_methods.append(controller_method)
         _methods[member] = controller_method
         routes[route] = member
@@ -97,7 +119,7 @@ def _register_controller(controller_class):
     _controllers[controller_class] = controller_component
 
 
-def controller(controller_class):
+def controller(controller_class: type) -> type:
     _register_controller(controller_class)
     return controller_class
 

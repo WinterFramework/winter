@@ -1,4 +1,4 @@
-from typing import Optional
+import typing
 
 from injector import Injector
 
@@ -10,5 +10,5 @@ def set_injector(injector: Injector):
     _injector = injector
 
 
-def get_injector() -> Optional[Injector]:
+def get_injector() -> typing.Optional[Injector]:
     return _injector

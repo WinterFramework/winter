@@ -30,7 +30,7 @@ class QueryParametersInspector(ControllerMethodInspector):
                 default_params['default'] = default
             required = default is inspect.Parameter.empty and not type_utils.is_optional(argument.type_)
             type_info = get_argument_type_info(argument)
-            if not type_info:
+            if type_info is None:
                 type_info = {'type': openapi.TYPE_STRING}
                 description += ' (Note: parameter type can be wrong)'
             parameter = openapi.Parameter(

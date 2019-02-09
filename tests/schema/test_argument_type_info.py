@@ -31,6 +31,7 @@ class IntegerEnum(IntEnum):
 
 
 @pytest.mark.parametrize('type_hint, expected_type_info', [
+    (object, None),
     (int, {'type': openapi.TYPE_INTEGER}),
     (str, {'type': openapi.TYPE_STRING}),
     (IntegerEnum, {'type': openapi.TYPE_INTEGER, 'enum': [1, 2]}),

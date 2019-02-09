@@ -1,4 +1,5 @@
 import inspect
+import typing
 from collections import defaultdict
 from typing import Optional
 
@@ -27,11 +28,8 @@ def query_parameter(query_parameter_name: str, map_to: str = None):
     return wrapper
 
 
-def get_query_param_mapping(func, name: str) -> Optional[str]:
-    mapping = _query_parameter_mappings.get(func)
-    if not mapping:
-        return None
-    return mapping.get(name)
+def get_query_param_mapping(func: typing.Callable, name: str) -> Optional[str]:
+    return _query_parameter_mappings[func].get(name)
 
 
 class QueryParameterResolver(ArgumentResolver):

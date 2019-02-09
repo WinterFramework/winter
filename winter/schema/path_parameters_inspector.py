@@ -23,7 +23,7 @@ class PathParametersInspector(ControllerMethodInspector):
             param_doc = params_docs.get(path_variable_name)
             description = param_doc.description if param_doc else ''
             type_info = get_argument_type_info(argument)
-            if not type_info:
+            if type_info is None:
                 type_info = {'type': openapi.TYPE_STRING}
                 description += ' (Note: parameter type can be wrong)'
             parameter = openapi.Parameter(
