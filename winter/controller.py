@@ -4,6 +4,7 @@ from typing import List
 from typing import Optional
 from typing import Type
 
+from .routing import Route
 from .routing import get_function_route
 
 _controllers = {}
@@ -29,13 +30,21 @@ class ControllerComponent:
 
 
 class ControllerMethod:
-    def __init__(self, func, url_path: str, http_method: str):
+    def __init__(self, func, route: Route, http_method: str):
         self.func = func
-        self.url_path = url_path
+        self.route = route
         self.http_method = http_method
         type_hints = typing.get_type_hints(func)
         self.return_value_type = type_hints.pop('return', None)
         self._arguments = self._build_arguments(type_hints)
+
+    @property
+    def url_path(self):
+        return self.route.url_path
+
+    @property
+    def url(self):
+        return self.route.url
 
     @property
     def name(self) -> str:
@@ -82,7 +91,7 @@ def _register_controller(controller_class):
         if route in routes:
             already_mapped_member = routes[route]
             raise DuplicateRouteException(member, already_mapped_member)
-        controller_method = ControllerMethod(member, route.url_path, route.http_method)
+        controller_method = ControllerMethod(member, route, route.http_method)
         controller_methods.append(controller_method)
         _methods[member] = controller_method
         routes[route] = member

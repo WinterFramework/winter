@@ -1,3 +1,5 @@
+import uuid
+
 import pytest
 from rest_framework.test import APIClient
 
@@ -65,3 +67,33 @@ def test_no_authentication_controller():
     response = client.get('/winter_no_auth/')
     assert response.status_code == 200
     assert response.json() == 'Hello, World!'
+
+
+uuid_ = str(uuid.uuid4())
+
+
+@pytest.mark.parametrize(('url', 'expected_value'), (
+        ('/with-param/1/', {
+            'type': 'enum',
+            'param': '1'
+        }),
+        ('/with-param/5/', {
+            'type': 'int',
+            'param': 5
+        }),
+        ('/with-param/test/', {
+            'type': 'str',
+            'param': 'test'
+        }),
+        (f'/with-param/{uuid_}/', {
+            'type': 'uuid',
+            'param': uuid_
+        }),
+))
+def test_with_param(url, expected_value):
+    client = APIClient()
+    user = AuthorizedUser()
+    client.force_authenticate(user)
+    response = client.get(url)
+    assert response.status_code == 200
+    assert response.json() == expected_value

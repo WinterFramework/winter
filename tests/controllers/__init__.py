@@ -1,2 +1,3 @@
 from .no_authentication_controller import NoAuthenticationController
 from .simple_controller import SimpleController
+from .with_param_controller import ControllerWithParam
