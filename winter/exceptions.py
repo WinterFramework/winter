@@ -7,9 +7,13 @@ from typing import Set
 from typing import Type
 
 from rest_framework import status as http_status
+from rest_framework.request import Request
 from rest_framework.response import Response as HTTPResponse
 
 _throws: DefaultDict[object, Set[Type[Exception]]] = defaultdict(set)
+
+
+NotHandled = object()
 
 
 class WinterException(Exception):
@@ -32,7 +36,7 @@ def handle_winter_exception(exception: WinterException) -> HTTPResponse:
 
 class ExceptionHandler(abc.ABC):
     @abc.abstractmethod
-    def handle(self, exception):
+    def handle(self, request: Request, exception: Exception):
         pass
 
 
@@ -49,7 +53,7 @@ def mark_func_throws(func, exception_cls: Type[Exception]):
 
 
 def get_throws(func) -> Optional[Set[Type[Exception]]]:
-    return _throws.get(func)
+    return _throws[func]
 
 
 def is_expected_to_throw(func, e: Exception) -> bool:
@@ -77,11 +81,13 @@ class ExceptionsHandler(ExceptionHandler):
                 return handler
         return None
 
-    def handle(self, exception: Exception):
+    def handle(self, request: Request, exception: Exception):
+        from .django import convert_result_to_http_response
         handler = self.get_handler(exception)
         if handler:
-            return handler.handle(exception)
-        raise exception
+            result = handler.handle(request, exception)
+            return convert_result_to_http_response(request, result, handler.__class__.handle)
+        return NotHandled
 
 
 exceptions_handler = ExceptionsHandler()

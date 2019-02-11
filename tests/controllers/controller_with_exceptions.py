@@ -1,4 +1,5 @@
 import dataclasses
+from rest_framework.request import Request
 
 import winter
 
@@ -15,7 +16,7 @@ class CustomExceptionDTO:
 
 class CustomExceptionHandler(winter.ExceptionHandler):
     @winter.response_status(400)
-    def handle(self, exception: CustomException) -> CustomExceptionDTO:
+    def handle(self, request: Request, exception: CustomException) -> CustomExceptionDTO:
         return CustomExceptionDTO(exception.message)
 
 

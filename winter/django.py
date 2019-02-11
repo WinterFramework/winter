@@ -15,14 +15,15 @@ from django.conf.urls import url
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 
-from .drf.auth import is_authentication_needed
 from .argument_resolver import arguments_resolver
 from .controller import ControllerMethod
 from .controller import get_controller_component
+from .drf.auth import is_authentication_needed
+from .exceptions import NotHandled
 from .exceptions import WinterException
 from .exceptions import exceptions_handler
+from .exceptions import get_throws
 from .exceptions import handle_winter_exception
-from .exceptions import is_expected_to_throw
 from .injection import get_injector
 from .output_processor import get_output_processor
 from .response_entity import ResponseEntity
@@ -86,18 +87,15 @@ def _call_controller_method(controller, controller_method: ControllerMethod, pat
     arguments = arguments_resolver.resolve_arguments(controller_method, request, path_variables)
     try:
         result = controller_method.func(controller, **arguments)
-        return _convert_result_to_http_response(request, result, controller_method.func)
-    except Exception as e:
-        if not is_expected_to_throw(controller_method.func, e):
+        return convert_result_to_http_response(request, result, controller_method.func)
+    except tuple(get_throws(controller_method.func)) as e:
+        result = exceptions_handler.handle(request, e)
+        if result is NotHandled:
             raise
-        handler = exceptions_handler.get_handler(e)
-        if not handler:
-            raise
-        result = handler.handle(e)
-        return _convert_result_to_http_response(request, result, handler.__class__.handle)
+        return result
 
 
-def _convert_result_to_http_response(request: Request, result: Any, handle_func):
+def convert_result_to_http_response(request: Request, result: Any, handle_func):
     if isinstance(result, django.http.HttpResponse):
         return result
     if isinstance(result, ResponseEntity):
