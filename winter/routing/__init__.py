@@ -1,3 +1,4 @@
+from .route_table import route_table
 from .routing import Route
 from .routing import route
 from .routing import route_get
