@@ -66,11 +66,16 @@ class ExceptionsHandler(ExceptionHandler):
         assert not self._handlers.get(exception_cls)
         self._handlers[exception_cls] = handler_cls
 
+    def get_handler_class(self, exception_cls: Type[Exception]) -> Optional[Type[ExceptionHandler]]:
+        for handler_exception_cls, handler_cls in self._handlers.items():
+            if issubclass(exception_cls, handler_exception_cls):
+                return handler_cls
+        return None
+
     def get_handler(self, exception: Exception) -> Optional[ExceptionHandler]:
         for exception_cls, handler_cls in self._handlers.items():
-            handler = handler_cls()
             if isinstance(exception, exception_cls):
-                return handler
+                return handler_cls()
         return None
 
     def handle(self, request: Request, exception: Exception):

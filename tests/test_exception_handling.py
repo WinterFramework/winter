@@ -2,6 +2,7 @@ import pytest
 from rest_framework.test import APIClient
 
 from .controllers.controller_with_exceptions import CustomException
+from .controllers.controller_with_exceptions import ExceptionWithoutHandler
 from .entities import AuthorizedUser
 
 
@@ -25,6 +26,7 @@ def test_controller_with_exceptions(url_path, expected_status, expected_body):
 
 @pytest.mark.parametrize(['url_path', 'expected_exception_cls'], (
         ('not_declared_but_thrown', CustomException),
+        ('declared_but_no_handler', ExceptionWithoutHandler),
 ))
 def test_controller_with_exceptions_throws(url_path, expected_exception_cls):
     client = APIClient()
