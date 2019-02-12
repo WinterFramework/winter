@@ -38,7 +38,6 @@ def generate_swagger_for_operation(view_func, controller, controller_method: Con
 def build_responses_schemas(controller_method: ControllerMethod):
     responses = {}
     response_status = str(get_default_response_status(controller_method.func, controller_method.http_method))
-    response_status = str(response_status)
     try:
         responses[response_status] = build_response_schema(controller_method.func)
     except InspectorNotFound:
