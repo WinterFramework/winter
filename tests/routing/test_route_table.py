@@ -23,7 +23,6 @@ class Controller2:
 
 def test_route_table_collects_routes():
     routes = route_table.get_routes()
-    print(routes)
 
     assert Route(url_path='/route_tables/', http_method='GET') in routes
     assert Route(url_path='/route_tables/', http_method='POST') in routes
