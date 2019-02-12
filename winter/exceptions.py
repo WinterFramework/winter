@@ -56,14 +56,6 @@ def get_throws(func) -> Optional[Set[Type[Exception]]]:
     return _throws[func]
 
 
-def is_expected_to_throw(func, e: Exception) -> bool:
-    expected_exception_cls_set = get_throws(func)
-    for expected_exception_cls in expected_exception_cls_set:
-        if isinstance(e, expected_exception_cls):
-            return True
-    return False
-
-
 class ExceptionsHandler(ExceptionHandler):
     HandlersMap = Dict[Type[Exception], Type[ExceptionHandler]]
 
