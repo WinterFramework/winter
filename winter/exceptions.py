@@ -57,7 +57,7 @@ def get_throws(func) -> Optional[Set[Type[Exception]]]:
 
 
 def is_expected_to_throw(func, e: Exception) -> bool:
-    expected_exception_cls_set = get_throws(func) or set()
+    expected_exception_cls_set = get_throws(func)
     for expected_exception_cls in expected_exception_cls_set:
         if isinstance(e, expected_exception_cls):
             return True
