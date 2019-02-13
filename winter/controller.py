@@ -5,14 +5,10 @@ from typing import Optional
 from typing import Type
 
 from .routing import get_function_route
+from .routing import route_table
 
 _controllers = {}
 _methods = {}
-
-
-class DuplicateRouteException(Exception):
-    def __init__(self, member_1, member_2):
-        super().__init__(f'Duplicate route: {member_1} and {member_2}')
 
 
 class ControllerComponent:
@@ -85,10 +81,8 @@ def _register_controller(controller_class):
         route = get_function_route(member)
         if not route:
             continue
-        if route in routes:
-            already_mapped_member = routes[route]
-            raise DuplicateRouteException(member, already_mapped_member)
         controller_method = ControllerMethod(member, route.url_path, route.http_method)
+        route_table.add_route(route, controller_class, controller_method)
         controller_methods.append(controller_method)
         _methods[member] = controller_method
         routes[route] = member
