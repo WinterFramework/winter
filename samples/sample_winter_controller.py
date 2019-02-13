@@ -22,6 +22,8 @@ class Greeting:
     message: str
     name: str
 
+class MediaType:
+    APPLICATION_XML=1
 
 @winter.controller
 @winter.route('winter_sample/')
@@ -37,7 +39,9 @@ class SampleWinterController:
         names = ', '.join(names or ['stranger'])
         return f'Hello, {names}!'
 
-    @winter.route_get('foo/{number}')
+    @winter.route_get('foo/{number}', produces='application/xml')
+    @winter.route_get('foo/{number}', produces=[MediaType.APPLICATION_XML])
+    @winter.route_get('foo/{number}', produces=[MediaType('application/xml; utf-8')])
     @winter.query_parameter('name')
     def hello_with_response_code(self, name: str, number: int) -> winter.ResponseEntity:
         """
