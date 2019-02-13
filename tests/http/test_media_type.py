@@ -5,15 +5,15 @@ from winter.http import MediaType
 
 
 @pytest.mark.parametrize('media_type, expected_result', [
-    ('*', ('*', '*', {})),
-    ('*/*', ('*', '*', {})),
-    ('application/json', ('application', 'json', {})),
-    ('application/json; charset=utf-8', ('application', 'json', {'charset': 'utf-8'})),
-    ('application/xml; charset=utf-8', ('application', 'xml', {'charset': 'utf-8'})),
-    ('application/problem+xml; charset=utf-8; boundary=secondary', ('application', 'problem+xml', {
-        'charset': 'utf-8',
-        'boundary': 'secondary',
-    })),
+    ('*', ('*', '*', ())),
+    ('*/*', ('*', '*', ())),
+    ('application/json', ('application', 'json', ())),
+    ('application/json; charset=utf-8', ('application', 'json', (('charset', 'utf-8'),))),
+    ('application/xml; charset=utf-8', ('application', 'xml', (('charset', 'utf-8'),))),
+    ('application/problem+xml; charset=utf-8; boundary=secondary', ('application', 'problem+xml', (
+            ('charset', 'utf-8'),
+            ('boundary', 'secondary'),
+    ))),
 ])
 def test_valid_media_types(media_type, expected_result):
     result = MediaType.parse(media_type)
@@ -43,4 +43,4 @@ def test_invalid_media_types(media_type, expected_message):
      'application/problem+xml; charset=utf-8; boundary=secondary'),
 ])
 def test_str_representation(media_type, expected_str):
-    assert str(media_type) == expected_str
+    assert str(media_type) == expected_str, str(media_type)

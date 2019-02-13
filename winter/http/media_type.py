@@ -1,4 +1,5 @@
 from typing import Dict
+from typing import NamedTuple
 
 from typing import Tuple
 
@@ -10,7 +11,15 @@ class InvalidMediaTypeException(Exception):
         self.message = message
 
 
-class MediaType:
+class MediaTypeParameter(NamedTuple):
+    name: str
+    value: str
+
+    def __str__(self):
+        return f'{self.name}={self.value}'
+
+
+class MediaType(tuple):
     ALL: 'MediaType' = None
     APPLICATION_ATOM_XML: 'MediaType' = None
     APPLICATION_FORM_URLENCODED: 'MediaType' = None
@@ -35,36 +44,33 @@ class MediaType:
     TEXT_PLAIN: 'MediaType' = None
     TEXT_XML: 'MediaType' = None
 
-    def __init__(self, media_type_str: str):
-        self._type_ = '*'
-        self._subtype = '*'
-        self._parameters: Dict[str, str] = {}
-        self._type, self._subtype, self._parameters = self.parse(media_type_str)
+    def __new__(cls, media_type_str: str):
+        return tuple.__new__(cls, cls.parse(media_type_str))
 
     @property
     def type(self) -> str:
-        return self._type
+        return self[0]
 
     @property
     def subtype(self) -> str:
-        return self._subtype
+        return self[1]
 
     @property
-    def parameters(self) -> Dict[str, str]:
-        return self._parameters
+    def parameters(self) -> Tuple[MediaTypeParameter]:
+        return self[2]
 
     @staticmethod
     def parse(media_type: str) -> Tuple[str, str, Dict[str, str]]:
         media_type = media_type.strip()
         if not media_type:
             raise InvalidMediaTypeException(media_type, 'Media type must not be empty')
-        parameters = {}
+        parameters = []
         parts = media_type.split(';')
         for param_str in parts[1:]:
             key_value = param_str.strip().split('=')
             if len(key_value) != 2:
                 raise InvalidMediaTypeException(media_type, 'Invalid media type parameter list')
-            parameters[key_value[0]] = key_value[1]
+            parameters.append(MediaTypeParameter(*key_value))
         full_type = parts[0]
         if full_type == '*':
             type_, subtype = '*', '*'
@@ -81,21 +87,20 @@ class MediaType:
             raise InvalidMediaTypeException(media_type, 'Empty subtype is specified')
         if (type_ == '*') != (subtype == '*'):
             raise InvalidMediaTypeException(media_type, 'Wildcard is allowed only in */* (all media types)')
-        return type_, subtype, parameters
+        return type_, subtype, tuple(parameters)
 
     def __eq__(self, other) -> bool:
         if not isinstance(other, MediaType):
             return False
-        return other.type == self.type and other.subtype == self.subtype and other.parameters == self.parameters
+        return super().__eq__(other)
 
     def __hash__(self) -> int:
-        return hash((self._type, self._subtype, tuple(self._parameters.items())))
+        return super().__hash__()
 
     def __str__(self) -> str:
         full_type = f'{self.type}/{self.subtype}'
         if self.parameters:
-            parameters_strings = [f'{k}={v}' for k, v in self.parameters.items()]
-            return full_type + '; ' + '; '.join(parameters_strings)
+            return full_type + '; ' + '; '.join(str(parameter) for parameter in self.parameters)
         else:
             return full_type
 
