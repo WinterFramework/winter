@@ -4,10 +4,8 @@ import pytest
 from drf_yasg import openapi
 
 from winter.controller import ControllerMethod
-
 from winter.controller import get_controller_component
 from winter.schema.generation import build_responses_schemas
-
 from ..controllers import ControllerWithExceptions
 
 controller_component = get_controller_component(ControllerWithExceptions)

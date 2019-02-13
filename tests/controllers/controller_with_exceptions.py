@@ -34,7 +34,7 @@ class ControllerWithExceptions:
     @winter.route_get('declared_but_not_thrown/')
     @winter.throws(CustomException)
     def declared_but_not_thrown(self) -> str:
-        return f'Hello, sir!'
+        return 'Hello, sir!'
 
     @winter.route_get('declared_and_thrown/')
     @winter.throws(CustomException)
