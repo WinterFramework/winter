@@ -1,4 +1,6 @@
 from collections import defaultdict
+from typing import Any
+from typing import Dict
 from typing import List
 from typing import Type
 from typing import get_type_hints
@@ -13,11 +15,14 @@ from django.conf.urls import url
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 
-from winter.drf.auth import is_authentication_needed
 from .argument_resolver import arguments_resolver
 from .controller import ControllerMethod
 from .controller import get_controller_component
+from .drf.auth import is_authentication_needed
+from .exceptions import NotHandled
 from .exceptions import WinterException
+from .exceptions import exceptions_handler
+from .exceptions import get_throws
 from .exceptions import handle_winter_exception
 from .injection import get_injector
 from .output_processor import get_output_processor
@@ -71,26 +76,40 @@ def _create_django_view(controller, controller_methods: List[ControllerMethod]):
 def _create_dispatch_function(controller, controller_method: ControllerMethod):
     def dispatch(winter_view, request: Request, **path_variables):
         try:
-            arguments = arguments_resolver.resolve_arguments(controller_method, request, path_variables)
-            result = controller_method.func(controller, **arguments)
-            if isinstance(result, django.http.HttpResponse):
-                return result
-            if isinstance(result, ResponseEntity):
-                body = result.entity
-                status_code = result.status_code
-            else:
-                body = result
-                status_code = get_default_response_status(controller_method)
-            output_processor = get_output_processor(controller_method.func, body)
-            if output_processor is not None:
-                body = output_processor.process_output(body, request)
-            if isinstance(body, django.http.HttpResponse):
-                return body
-            response = rest_framework.response.Response(body, status=status_code)
+            return _call_controller_method(controller, controller_method, path_variables, request)
         except WinterException as exception:
-            response = handle_winter_exception(exception)
-        return response
+            return handle_winter_exception(exception)
+
     return dispatch
+
+
+def _call_controller_method(controller, controller_method: ControllerMethod, path_variables: Dict, request: Request):
+    arguments = arguments_resolver.resolve_arguments(controller_method, request, path_variables)
+    try:
+        result = controller_method.func(controller, **arguments)
+        return convert_result_to_http_response(request, result, controller_method.func)
+    except tuple(get_throws(controller_method.func)) as e:
+        result = exceptions_handler.handle(request, e)
+        if result is NotHandled:
+            raise
+        return result
+
+
+def convert_result_to_http_response(request: Request, result: Any, handle_func):
+    if isinstance(result, django.http.HttpResponse):
+        return result
+    if isinstance(result, ResponseEntity):
+        body = result.entity
+        status_code = result.status_code
+    else:
+        body = result
+        status_code = get_default_response_status(handle_func, request.method)
+    output_processor = get_output_processor(handle_func, body)
+    if output_processor is not None:
+        body = output_processor.process_output(body, request)
+    if isinstance(body, django.http.HttpResponse):
+        return body
+    return rest_framework.response.Response(body, status=status_code)
 
 
 def _group_methods_by_url_path(controller_methods: List[ControllerMethod]):

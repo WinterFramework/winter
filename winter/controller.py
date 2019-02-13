@@ -20,6 +20,12 @@ class ControllerComponent:
     def name(self) -> str:
         return self.controller_class.__name__
 
+    def get_method(self, name: str) -> Optional['ControllerMethod']:
+        for method in self.methods:
+            if method.name == name:
+                return method
+        return None
+
     def __repr__(self):
         return f'ControllerComponent({self.controller_class})'
 

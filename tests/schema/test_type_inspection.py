@@ -110,6 +110,7 @@ def test_get_openapi_schema():
     schema = openapi.Schema(type=openapi.TYPE_BOOLEAN)
     assert type_info.get_openapi_schema() == schema
 
+
 @pytest.mark.parametrize(('first', 'second', 'is_same'), (
         (TypeInfo(openapi.TYPE_INTEGER), TypeInfo(openapi.TYPE_INTEGER), True),
         (TypeInfo(openapi.TYPE_INTEGER), TypeInfo(openapi.TYPE_NUMBER), False),

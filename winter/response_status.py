@@ -1,6 +1,4 @@
-from .controller import ControllerMethod
-
-_default_statuses = {}
+_response_statuses = {}
 _default_http_method_statuses = {
     'get': 200,
     'post': 200,
@@ -16,11 +14,11 @@ def response_status(status: int):
     return wrapper
 
 
-def get_default_response_status(controller_method: ControllerMethod) -> int:
-    default_response_status = _default_statuses.get(controller_method.func)
-    http_method = controller_method.http_method.lower()
+def get_default_response_status(func, http_method: str) -> int:
+    default_response_status = _response_statuses.get(func)
+    http_method = http_method.lower()
     return default_response_status or _default_http_method_statuses.get(http_method, 200)
 
 
 def _set_default_response_status(func, status: int):
-    _default_statuses[func] = status
+    _response_statuses[func] = status
