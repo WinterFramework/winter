@@ -79,7 +79,7 @@ class MediaType:
             raise InvalidMediaTypeException(media_type, 'Empty type is specified')
         if not subtype:
             raise InvalidMediaTypeException(media_type, 'Empty subtype is specified')
-        if (type_ == '*') != (subtype == '*'):
+        if type_ == '*' and subtype != '*':
             raise InvalidMediaTypeException(media_type, 'Wildcard is allowed only in */* (all media types)')
         return type_, subtype, types.MappingProxyType(parameters)
 

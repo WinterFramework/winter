@@ -7,6 +7,7 @@ from winter.http import MediaType
 @pytest.mark.parametrize('media_type, expected_result', [
     ('*', ('*', '*', {})),
     ('*/*', ('*', '*', {})),
+    ('abc/*', ('abc', '*', {})),
     ('application/json', ('application', 'json', {})),
     ('application/json; charset=utf-8', ('application', 'json', {'charset': 'utf-8'})),
     ('application/xml; charset=utf-8', ('application', 'xml', {'charset': 'utf-8'})),
@@ -21,7 +22,6 @@ def test_valid_media_types(media_type, expected_result):
 
 
 @pytest.mark.parametrize('media_type, expected_message', [
-    ('abc/*', 'Wildcard is allowed only in */* (all media types)'),
     ('*/abc', 'Wildcard is allowed only in */* (all media types)'),
     ('*/', 'Empty subtype is specified'),
     ('/', 'Empty type is specified'),
