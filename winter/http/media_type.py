@@ -1,5 +1,5 @@
-from typing import Dict
-
+import types
+from typing import Mapping
 from typing import Tuple
 
 
@@ -38,7 +38,7 @@ class MediaType:
     def __init__(self, media_type_str: str):
         self._type_ = '*'
         self._subtype = '*'
-        self._parameters: Dict[str, str] = {}
+        self._parameters: Mapping[str, str] = {}
         self._type, self._subtype, self._parameters = self.parse(media_type_str)
 
     @property
@@ -50,11 +50,11 @@ class MediaType:
         return self._subtype
 
     @property
-    def parameters(self) -> Dict[str, str]:
+    def parameters(self) -> Mapping[str, str]:
         return self._parameters
 
     @staticmethod
-    def parse(media_type: str) -> Tuple[str, str, Dict[str, str]]:
+    def parse(media_type: str) -> Tuple[str, str, Mapping[str, str]]:
         media_type = media_type.strip()
         if not media_type:
             raise InvalidMediaTypeException(media_type, 'Media type must not be empty')
@@ -81,7 +81,7 @@ class MediaType:
             raise InvalidMediaTypeException(media_type, 'Empty subtype is specified')
         if (type_ == '*') != (subtype == '*'):
             raise InvalidMediaTypeException(media_type, 'Wildcard is allowed only in */* (all media types)')
-        return type_, subtype, parameters
+        return type_, subtype, types.MappingProxyType(parameters)
 
     def __eq__(self, other) -> bool:
         if not isinstance(other, MediaType):
