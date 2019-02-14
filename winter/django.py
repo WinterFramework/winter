@@ -107,7 +107,7 @@ def convert_result_to_http_response(request: Request, result: Any, handle_func):
     output_processor = get_output_processor(handle_func, body)
     if output_processor is not None:
         body = output_processor.process_output(body, request)
-    if isinstance(body, django.http.HttpResponse):
+    if isinstance(body, django.http.response.HttpResponseBase):
         return body
     return rest_framework.response.Response(body, status=status_code)
 
