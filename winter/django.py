@@ -13,6 +13,7 @@ import rest_framework.views
 import uritemplate
 from django.conf.urls import url
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.renderers import BaseRenderer
 from rest_framework.request import Request
 
 from .argument_resolver import arguments_resolver
@@ -63,6 +64,7 @@ def _create_django_view(controller, controller_methods: List[ControllerMethod]):
     class WinterView(rest_framework.views.APIView):
         authentication_classes = (SessionAuthentication,)
         permission_classes = (IsAuthenticated,) if is_authentication_needed(controller.__class__) else ()
+        renderer_classes = _get_renderer_classes(controller_methods)
 
     for controller_method in controller_methods:
         dispatch = _create_dispatch_function(controller, controller_method)
@@ -71,6 +73,26 @@ def _create_django_view(controller, controller_methods: List[ControllerMethod]):
         setattr(WinterView, dispatch_method_name, dispatch)
         generate_swagger_for_operation(dispatch, controller, controller_method)
     return WinterView().as_view()
+
+
+def _get_renderer_classes(controller_methods) -> List[BaseRenderer]:
+    renderer_classes = []
+    for controller_method in controller_methods:
+        route = get_function_route(controller_method.func)
+        if not route.produces:
+            continue
+
+        for media_type_ in route.produces:
+            class Renderer(BaseRenderer):
+                """The renderer bypasses rendering, but adds media_type info, which is used by swagger."""
+                media_type = str(media_type_)
+
+                def render(self, data, accepted_media_type=None, renderer_context=None):
+                    return data
+
+            renderer_classes.append(Renderer)
+    renderer_classes = tuple(renderer_classes) or rest_framework.views.APIView.renderer_classes
+    return renderer_classes
 
 
 def _create_dispatch_function(controller, controller_method: ControllerMethod):
