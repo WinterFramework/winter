@@ -19,7 +19,7 @@ def get_injector() -> Optional[Injector]:
     return _injector
 
 
-def setup_injector(configuration: Union[Module, Iterable[Module]]):
+def setup_injector(configuration: Optional[Union[Module, Iterable[Module]]] = None):
     global _injector
     _injector = Injector(modules=configuration)
     return _injector
