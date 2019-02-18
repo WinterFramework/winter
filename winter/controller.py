@@ -8,7 +8,6 @@ from .routing import get_function_route
 from .routing import route_table
 
 _controllers = {}
-_methods = {}
 
 
 class ControllerComponent:
@@ -31,10 +30,8 @@ class ControllerComponent:
 
 
 class ControllerMethod:
-    def __init__(self, func, url_path: str, http_method: str):
+    def __init__(self, func):
         self.func = func
-        self.url_path = url_path
-        self.http_method = http_method
         type_hints = typing.get_type_hints(func)
         self.return_value_type = type_hints.pop('return', None)
         self._arguments = self._build_arguments(type_hints)
@@ -76,21 +73,15 @@ class ControllerMethodArgument:
 def _register_controller(controller_class):
     assert controller_class not in _controllers, f'{controller_class} is already marked as controller'
     controller_methods = []
-    routes = {}
-    root_route = get_function_route(controller_class)
-    assert not root_route or not root_route.http_method, 'Using HTTP methods is not allowed at controller level'
-    url_prefix = root_route.url_path if root_route else ''
     for member in controller_class.__dict__.values():
         route = get_function_route(member)
         if not route:
             continue
-        controller_method = ControllerMethod(member, url_prefix + route.url_path, route.http_method)
-        route_table.add_route(route, controller_class, controller_method)
+        controller_method = ControllerMethod(member)
         controller_methods.append(controller_method)
-        _methods[member] = controller_method
-        routes[route] = member
     controller_component = ControllerComponent(controller_class, controller_methods)
     _controllers[controller_class] = controller_component
+    route_table.add_controller(controller_class)
 
 
 def controller(controller_class):

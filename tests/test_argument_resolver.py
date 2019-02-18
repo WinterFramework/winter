@@ -50,7 +50,7 @@ def test_resolve_arguments_returns_empty_dict_for_empty_arguments():
         pass
 
     expected_resolved_arguments = {}
-    controller_method = ControllerMethod(func, '', '')
+    controller_method = ControllerMethod(func)
     arguments_resolver = ArgumentsResolver()
 
     # Act
@@ -66,7 +66,7 @@ def test_resolve_arguments_resolves_argument_with_the_first_resolver():
 
     expected_resolved_value = 1
     expected_resolved_arguments = {'a': expected_resolved_value}
-    controller_method = ControllerMethod(func, '', '')
+    controller_method = ControllerMethod(func)
     arguments_resolver = ArgumentsResolver()
     resolver = Mock()
     resolver.is_supported.return_value = True
@@ -86,7 +86,7 @@ def test_resolve_arguments_resolves_argument_with_the_second_resolver():
 
     expected_resolved_value = 1
     expected_resolved_arguments = {'a': expected_resolved_value}
-    controller_method = ControllerMethod(func, '', '')
+    controller_method = ControllerMethod(func)
     arguments_resolver = ArgumentsResolver()
     resolver1 = Mock()
     resolver1.is_supported.return_value = False
@@ -108,7 +108,7 @@ def test_resolve_arguments_fails():
         pass
 
     arg_name = 'a'
-    controller_method = ControllerMethod(func, '', '')
+    controller_method = ControllerMethod(func)
     arguments_resolver = ArgumentsResolver()
 
     # Assert
