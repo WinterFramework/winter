@@ -77,11 +77,14 @@ def _register_controller(controller_class):
     assert controller_class not in _controllers, f'{controller_class} is already marked as controller'
     controller_methods = []
     routes = {}
+    root_route = get_function_route(controller_class)
+    assert not root_route or not root_route.http_method, 'Using HTTP methods is not allowed at controller level'
+    url_prefix = root_route.url_path if root_route else ''
     for member in controller_class.__dict__.values():
         route = get_function_route(member)
         if not route:
             continue
-        controller_method = ControllerMethod(member, route.url_path, route.http_method)
+        controller_method = ControllerMethod(member, url_prefix + route.url_path, route.http_method)
         route_table.add_route(route, controller_class, controller_method)
         controller_methods.append(controller_method)
         _methods[member] = controller_method

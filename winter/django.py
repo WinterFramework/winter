@@ -49,10 +49,9 @@ def create_django_urls(controller_class: Type) -> List:
     else:
         controller = controller_class()
     django_urls = []
-    root_route = get_function_route(controller_class) or Route('')
     for url_path, controller_methods in _group_methods_by_url_path(controller_component.methods):
         django_view = _create_django_view(controller, controller_methods)
-        winter_url_path = f'^{root_route.url_path}{url_path}$'
+        winter_url_path = f'^{url_path}$'
         django_url_path = _rewrite_uritemplate_with_regexps(winter_url_path, controller_methods)
         for controller_method in controller_methods:
             url_name = f'{controller_class.__name__}.{controller_method.name}'
