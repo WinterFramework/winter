@@ -97,15 +97,15 @@ def _get_renderer_classes(controller_methods) -> List[BaseRenderer]:
 def _create_dispatch_function(controller, controller_method: ControllerMethod):
     def dispatch(winter_view, request: Request, **path_variables):
         try:
-            return _call_controller_method(controller, controller_method, path_variables, request)
+            return _call_controller_method(controller, controller_method, request)
         except WinterException as exception:
             return handle_winter_exception(exception)
 
     return dispatch
 
 
-def _call_controller_method(controller, controller_method: ControllerMethod, path_variables: Dict, request: Request):
-    arguments = arguments_resolver.resolve_arguments(controller_method, request, path_variables)
+def _call_controller_method(controller, controller_method: ControllerMethod, request: Request):
+    arguments = arguments_resolver.resolve_arguments(controller_method, request)
     try:
         result = controller_method.func(controller, **arguments)
         return convert_result_to_http_response(request, result, controller_method.func)

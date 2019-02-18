@@ -54,7 +54,7 @@ def test_resolve_arguments_returns_empty_dict_for_empty_arguments():
     arguments_resolver = ArgumentsResolver()
 
     # Act
-    resolved_arguments = arguments_resolver.resolve_arguments(controller_method, http_request=Mock(), path_variables={})
+    resolved_arguments = arguments_resolver.resolve_arguments(controller_method, http_request=Mock())
 
     # Assert
     assert resolved_arguments == expected_resolved_arguments
@@ -74,7 +74,7 @@ def test_resolve_arguments_resolves_argument_with_the_first_resolver():
     arguments_resolver.add_argument_resolver(resolver)
 
     # Act
-    resolved_arguments = arguments_resolver.resolve_arguments(controller_method, http_request=Mock(), path_variables={})
+    resolved_arguments = arguments_resolver.resolve_arguments(controller_method, http_request=Mock())
 
     # Assert
     assert resolved_arguments == expected_resolved_arguments
@@ -97,29 +97,7 @@ def test_resolve_arguments_resolves_argument_with_the_second_resolver():
     arguments_resolver.add_argument_resolver(resolver2)
 
     # Act
-    resolved_arguments = arguments_resolver.resolve_arguments(controller_method, http_request=Mock(), path_variables={})
-
-    # Assert
-    assert resolved_arguments == expected_resolved_arguments
-
-
-def test_resolve_arguments_resolves_argument_with_the_path_variable():
-    def func(a: int):
-        pass
-
-    arg_name = 'a'
-    expected_resolved_value = 1
-    expected_resolved_arguments = {arg_name: expected_resolved_value}
-    controller_method = ControllerMethod(func, '', '')
-    path_variables = {arg_name: str(expected_resolved_value)}
-    arguments_resolver = ArgumentsResolver()
-
-    # Act
-    resolved_arguments = arguments_resolver.resolve_arguments(
-        controller_method,
-        http_request=Mock(),
-        path_variables=path_variables,
-    )
+    resolved_arguments = arguments_resolver.resolve_arguments(controller_method, http_request=Mock())
 
     # Assert
     assert resolved_arguments == expected_resolved_arguments
@@ -136,7 +114,7 @@ def test_resolve_arguments_fails():
     # Assert
     with pytest.raises(ArgumentNotSupported, match=f'Unable to resolve argument {arg_name}: int'):
         # Act
-        arguments_resolver.resolve_arguments(controller_method, http_request=Mock(), path_variables={})
+        arguments_resolver.resolve_arguments(controller_method, http_request=Mock())
 
 
 @pytest.mark.parametrize('resolver1_supported, resolver2_supported', itertools.product([False, True], repeat=2))
