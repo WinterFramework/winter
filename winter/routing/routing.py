@@ -2,18 +2,10 @@ from typing import Dict
 from typing import Optional
 from typing import Tuple
 
-from dataclasses import dataclass
-
+from .route_annotation import RouteAnnotation
 from ..http import MediaType
 
-_routes: Dict[object, 'Route'] = {}
-
-
-@dataclass(frozen=True)
-class Route:
-    url_path: str
-    http_method: str = None
-    produces: Tuple[MediaType] = None  # It's used for swagger only at the moment, but will be used in routing later
+_route_annotations: Dict[object, RouteAnnotation] = {}
 
 
 def route(url_path: str, http_method: Optional[str] = None, produces: Optional[Tuple[MediaType]] = None):
@@ -44,9 +36,9 @@ def route_put(url_path='', produces: Optional[Tuple[MediaType]] = None):
 
 
 def register_route(func, url_path: str, http_method: Optional[str], produces: Optional[Tuple[MediaType]]):
-    assert func not in _routes, f'{func} is already mapped to a route'
-    _routes[func] = Route(url_path, http_method, produces)
+    assert func not in _route_annotations, f'{func} is already has a route'
+    _route_annotations[func] = RouteAnnotation(url_path, http_method, produces)
 
 
-def get_function_route(func) -> Optional[Route]:
-    return _routes.get(func)
+def get_route_annotation(func) -> Optional[RouteAnnotation]:
+    return _route_annotations.get(func)
