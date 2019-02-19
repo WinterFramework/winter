@@ -16,7 +16,10 @@ from winter.type_utils import get_origin_type
 from winter.type_utils import is_optional
 
 TYPE_DECIMAL = openapi.TYPE_STRING if rest_settings.COERCE_DECIMAL_TO_STRING else openapi.TYPE_NUMBER
-_resolvers_by_type: typing.Dict[typing.Type, typing.Tuple[typing.Callable, typing.Optional[typing.Callable]]] = {}
+_resolvers_by_type: typing.Dict[
+    typing.Type,
+    typing.List[typing.Tuple[typing.Callable, typing.Optional[typing.Callable]]]
+] = {}
 
 
 def register_type_inspector(*types: typing.Tuple[typing.Type], checker: typing.Callable = None,
@@ -25,7 +28,8 @@ def register_type_inspector(*types: typing.Tuple[typing.Type], checker: typing.C
         return lambda func: register_type_inspector(*types, checker=checker, func=func)
     
     for type_ in types:
-        _resolvers_by_type[type_] = func, checker
+        callables = _resolvers_by_type.setdefault(type_, [])
+        callables.append((func, checker))
     return func
 
 
@@ -179,6 +183,11 @@ def inspect_dataclass(hint_class) -> TypeInfo:
     return TypeInfo(type_=openapi.TYPE_OBJECT, properties=properties)
 
 
+@register_type_inspector(object, checker=lambda instance: getattr(instance, '__supertype__', None) is not None)
+def inspect_dataclass(hint_class) -> TypeInfo:
+    return inspect_type(hint_class.__supertype__)
+
+
 def inspect_type(hint_class) -> TypeInfo:
     origin_type = get_origin_type(hint_class)
 
@@ -188,12 +197,10 @@ def inspect_type(hint_class) -> TypeInfo:
         types = type(origin_type).mro()
 
     for type_ in types:
-        data = _resolvers_by_type.get(type_)
-        if data is None:
-            continue
-        resolver, checker = data
+        data = _resolvers_by_type.get(type_, [])
 
-        if checker is None or checker(hint_class):
-            return resolver(hint_class)
+        for resolver, checker in data:
+            if checker is None or checker(hint_class):
+                return resolver(hint_class)
 
     raise InspectorNotFound(hint_class)
