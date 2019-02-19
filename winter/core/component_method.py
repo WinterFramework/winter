@@ -5,7 +5,7 @@ from types import FunctionType
 from winter.core.state_key import StateKey
 
 if typing.TYPE_CHECKING:
-    from .component_method_atgument import ComponentMethodArgument
+    from .component_method_argument import ComponentMethodArgument
 
 
 class ComponentMethod:
