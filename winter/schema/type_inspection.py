@@ -184,7 +184,7 @@ def inspect_dataclass(hint_class) -> TypeInfo:
 
 
 @register_type_inspector(object, checker=lambda instance: getattr(instance, '__supertype__', None) is not None)
-def inspect_dataclass(hint_class) -> TypeInfo:
+def inspect_new_type(hint_class) -> TypeInfo:
     return inspect_type(hint_class.__supertype__)
 
 
