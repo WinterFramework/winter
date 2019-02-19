@@ -17,6 +17,7 @@ from rest_framework.request import Request
 
 from .argument_resolver import arguments_resolver
 from .controller import ControllerMethod
+from .controller import build_controller
 from .controller import get_controller_component
 from .drf.auth import is_authentication_needed
 from .exceptions import NotHandled
@@ -24,7 +25,6 @@ from .exceptions import WinterException
 from .exceptions import exceptions_handler
 from .exceptions import get_throws
 from .exceptions import handle_winter_exception
-from .injection import get_injector
 from .output_processor import get_output_processor
 from .response_entity import ResponseEntity
 from .response_status import get_default_response_status
@@ -42,11 +42,7 @@ class SessionAuthentication(rest_framework.authentication.SessionAuthentication)
 def create_django_urls(controller_class: Type) -> List:
     controller_component = get_controller_component(controller_class)
     assert controller_component, f'{controller_class} is not marked as controller'
-    injector = get_injector()
-    if injector:
-        controller = injector.get(controller_class)
-    else:
-        controller = controller_class()
+    controller = build_controller(controller_class)
     django_urls = []
     root_route = get_function_route(controller_class) or Route('')
     for url_path, controller_methods in _group_methods_by_url_path(controller_component.methods):
