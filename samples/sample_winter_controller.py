@@ -2,7 +2,6 @@ from typing import Dict
 from typing import List
 
 import winter
-from injector import inject
 from pydantic.dataclasses import dataclass
 from rest_framework import serializers
 from rest_framework import status
@@ -27,7 +26,6 @@ class Greeting:
 @winter.route('winter_sample/')
 class SampleWinterController:
 
-    @inject
     def __init__(self, test_repository: TestRepository):
         self._test_repository = test_repository
 
