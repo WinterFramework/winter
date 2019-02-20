@@ -2,7 +2,7 @@ import inspect
 import typing
 from types import FunctionType
 
-from winter.core.state_key import StateKey
+from .metadata_key import MetadataKey
 
 if typing.TYPE_CHECKING:
     from .component_method_argument import ComponentMethodArgument
@@ -12,9 +12,9 @@ class ComponentMethod:
 
     def __init__(self, func: FunctionType):
         self.func = func
-        self._controller_cls: FunctionType = None
+        self._component_cls: typing.Type = None
         self._name: str = None
-        self._state = {}
+        self._metadata = {}
 
         type_hints = typing.get_type_hints(func)
         self.return_value_type = type_hints.pop('return', None)
@@ -26,18 +26,18 @@ class ComponentMethod:
         return self.func
 
     def __set_name__(self, owner: typing.Type, name: str):
-        self._controller_cls = owner
+        self._component_cls = owner
         self._name = name
 
-    def update_state(self, state_key: StateKey, state_value: typing.Any):
+    def update_state(self, state_key: MetadataKey, state_value: typing.Any):
         if not state_key.many:
-            self._state[state_key] = state_value
+            self._metadata[state_key] = state_value
         else:
-            items = self._state.setdefault(state_key, [])
+            items = self._metadata.setdefault(state_key, [])
             items.append(state_value)
 
-    def get_state(self, state_key: StateKey):
-        return self._state[state_key]
+    def get_metadata(self, metadata_key: MetadataKey):
+        return self._metadata[metadata_key]
 
     @property
     def name(self) -> str:

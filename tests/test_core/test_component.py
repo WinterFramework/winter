@@ -3,7 +3,7 @@ import functools
 from winter.core import Component
 from winter.core import is_component
 from winter.core.application import WinterApplication
-from winter.core.state_key import StateKey
+from winter.core.metadata_key import MetadataKey
 
 
 def test_is_component():
@@ -38,9 +38,9 @@ def test_method_state():
     winter_app = WinterApplication()
 
     def route(param: str):
-        state_key = StateKey('path')
+        metadata_key = MetadataKey('path')
         state_value = param
-        return functools.partial(winter_app.component_method, state_key=state_key, state_value=state_value)
+        return functools.partial(winter_app.component_method, metadata_key=metadata_key, state_value=state_value)
 
     @winter_app.component
     class SimpleComponent:
@@ -49,8 +49,8 @@ def test_method_state():
         def simple_method(self):
             return None
 
-    state_key = StateKey('path')
-    assert SimpleComponent.simple_method.get_state(state_key) == '/url/'
+    metadata_key = MetadataKey('path')
+    assert SimpleComponent.simple_method.get_metadata(metadata_key) == '/url/'
 
 
 def test_method_state_many():
@@ -58,9 +58,9 @@ def test_method_state_many():
     winter_app = WinterApplication()
 
     def query_param(param: str):
-        state_key = StateKey('query', many=True)
+        metadata_key = MetadataKey('query', many=True)
         state_value = param
-        return functools.partial(winter_app.component_method, state_key=state_key, state_value=state_value)
+        return functools.partial(winter_app.component_method, metadata_key=metadata_key, state_value=state_value)
 
     @winter_app.component
     class SimpleComponent:
@@ -70,7 +70,7 @@ def test_method_state_many():
         def simple_method(self):
             return None
 
-    state_key = StateKey('query', many=True)
+    metadata_key = MetadataKey('query', many=True)
 
-    param = SimpleComponent.simple_method.get_state(state_key)
+    param = SimpleComponent.simple_method.get_metadata(metadata_key)
     assert param == ['second', 'first']

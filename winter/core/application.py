@@ -3,7 +3,7 @@ import typing
 
 from .component import Component
 from .component_method import ComponentMethod
-from .state_key import StateKey
+from .metadata_key import MetadataKey
 
 
 class WinterApplication:
@@ -22,7 +22,7 @@ class WinterApplication:
     def component_method(
             self,
             func: typing.Union[types.FunctionType, ComponentMethod],
-            state_key: StateKey = None,
+            metadata_key: MetadataKey = None,
             state_value: typing.Any = None
     ):
 
@@ -31,9 +31,9 @@ class WinterApplication:
         else:
             method = ComponentMethod(func)
 
-        if state_key is None:
+        if metadata_key is None:
             return method
 
-        method.update_state(state_key, state_value)
+        method.update_state(metadata_key, state_value)
 
         return method

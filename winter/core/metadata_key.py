@@ -4,6 +4,6 @@ import dataclasses
 
 
 @dataclasses.dataclass(frozen=True)
-class StateKey:
+class MetadataKey:
     key: typing.Hashable
     many: bool = False

@@ -1,4 +1,5 @@
 import abc
+import inspect
 import typing
 
 from .component_method import ComponentMethod
@@ -6,14 +7,14 @@ from .component_method import ComponentMethod
 
 class Component(abc.ABC):
 
-    def __init__(self, controller_cls: typing.Type):
-        self.__class__.register(controller_cls)
-        self.controller_cls = controller_cls
+    def __init__(self, component_cls: typing.Type):
+        self.__class__.register(component_cls)
+        self.component_cls = component_cls
         self.methods: typing.List[ComponentMethod] = [
-            controller_method for controller_method in controller_cls.__dict__.values()
-            if isinstance(controller_method, ComponentMethod)
+            component_method for component_method in component_cls.__dict__.values()
+            if isinstance(component_method, ComponentMethod)
         ]
 
 
-def is_component(controller_cls):
-    return issubclass(controller_cls, Component)
+def is_component(cls: typing.Type):
+    return inspect.isclass(cls) and issubclass(cls, Component)
