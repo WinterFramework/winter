@@ -14,6 +14,8 @@ class Component(abc.ABC):
             component_method for component_method in component_cls.__dict__.values()
             if isinstance(component_method, ComponentMethod)
         ]
+        for method in self.methods:
+            method.component = self
 
     @classmethod
     def get_all_component_classes(cls) -> typing.Set:

@@ -1,16 +1,17 @@
 import inspect
 import typing
 
+import dataclasses
+
 if typing.TYPE_CHECKING:
     from .component_method import ComponentMethod
 
 
+@dataclasses.dataclass(frozen=True)
 class ComponentMethodArgument:
-
-    def __init__(self, method: ComponentMethod, name: str, type_):
-        self.method = method
-        self.name = name
-        self.type_ = type_
+    method: 'ComponentMethod'
+    name: str
+    type_: typing.Type
 
     @property
     def parameter(self) -> inspect.Parameter:

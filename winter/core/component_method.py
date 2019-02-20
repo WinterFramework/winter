@@ -3,9 +3,11 @@ import types
 import typing
 from types import FunctionType
 
+from .component_method_argument import ComponentMethodArgument
+
 if typing.TYPE_CHECKING:
+    from .component import Component
     from .metadata import Metadata
-    from .component_method_argument import ComponentMethodArgument
 
 
 class ComponentMethod:
@@ -13,6 +15,8 @@ class ComponentMethod:
     def __init__(self, func: typing.Union[FunctionType, 'ComponentMethod']):
         self.func = func
         self.name: str = None
+        self.component: 'Component' = None
+
         self._component_cls: typing.Type = None
         self._metadata_storage = {}
 
@@ -23,7 +27,7 @@ class ComponentMethod:
     def __get__(self, instance, owner):
         if instance is None:
             return self
-        return self.func
+        return self.func.__get__(instance, owner)
 
     def __call__(self, *args, **kwargs):
         return self.func(*args, **kwargs)
@@ -39,8 +43,8 @@ class ComponentMethod:
         return self._metadata_storage[metadata_cls.key]
 
     @property
-    def arguments(self) -> typing.List['ComponentMethodArgument']:
-        return list(self._arguments.values())
+    def arguments(self) -> typing.Collection[ComponentMethodArgument]:
+        return tuple(self._arguments.values())
 
     def get_argument(self, name: str) -> typing.Optional['ComponentMethodArgument']:
         return self._arguments.get(name)
