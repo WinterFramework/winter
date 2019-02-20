@@ -9,7 +9,6 @@ Web Framework for Python inspired by Spring Framework
 # Main features
 * Declarative API
 * Built around python type annotations
-* Dependency injection
 * Automatic OpenAPI (swagger) documentation generation
 * Suitable for DDD
 
