@@ -1,8 +1,4 @@
-import dataclasses
-
 import winter
-from winter.pagination import Page
-from winter.pagination import PagePosition
 
 
 @winter.controller

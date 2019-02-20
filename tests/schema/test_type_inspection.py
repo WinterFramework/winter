@@ -5,6 +5,7 @@ import uuid
 from enum import Enum
 from enum import IntEnum
 from typing import List
+from typing import NewType
 
 import dataclasses
 import pytest
@@ -19,6 +20,9 @@ from winter.schema.type_inspection import inspect_type
 class IntegerValueEnum(Enum):
     RED = 1
     GREEN = 2
+
+
+TestType = NewType('TestType', int)
 
 
 @dataclasses.dataclass
@@ -51,6 +55,7 @@ class IntegerEnum(IntEnum):
 
 
 @pytest.mark.parametrize('type_hint, expected_type_info', [
+    (TestType, TypeInfo(openapi.TYPE_INTEGER)),
     (Id, TypeInfo(openapi.TYPE_INTEGER)),
     (uuid.UUID, TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_UUID)),
     (bool, TypeInfo(openapi.TYPE_BOOLEAN)),
