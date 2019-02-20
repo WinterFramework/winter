@@ -2,7 +2,6 @@ from winter.core import ComponentMethod
 
 
 def test_parameter():
-
     def test(number: int) -> int:
         return number
 

@@ -24,15 +24,15 @@ class Metadata(abc.ABC):
         pass
 
 
-def metadata(metadata: Metadata):
-
+def metadata(metadata_: Metadata):
     def wrapper(func: typing.Union[types.FunctionType, ComponentMethod]):
         if isinstance(func, ComponentMethod):
             method = func
         else:
             method = ComponentMethod(func)
 
-        method.update_metadata(metadata)
+        method.update_metadata(metadata_)
 
         return method
+
     return wrapper
