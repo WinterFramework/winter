@@ -30,7 +30,7 @@ class ComponentMethod:
 
     def __set_name__(self, owner: typing.Type, name: str):
         self._component_cls = owner
-        self._name = name
+        self.name = name
 
     def update_metadata(self, metadata: 'Metadata'):
         metadata.set_value(self._metadata_storage)
