@@ -1,6 +1,5 @@
 from collections import defaultdict
 from typing import Any
-from typing import Dict
 from typing import List
 from typing import Type
 from typing import get_type_hints
@@ -28,8 +27,7 @@ from .exceptions import handle_winter_exception
 from .output_processor import get_output_processor
 from .response_entity import ResponseEntity
 from .response_status import get_default_response_status
-from .routing import Route
-from .routing import get_function_route
+from .routing import route_table
 from .schema import generate_swagger_for_operation
 
 
@@ -44,10 +42,9 @@ def create_django_urls(controller_class: Type) -> List:
     assert controller_component, f'{controller_class} is not marked as controller'
     controller = build_controller(controller_class)
     django_urls = []
-    root_route = get_function_route(controller_class) or Route('')
     for url_path, controller_methods in _group_methods_by_url_path(controller_component.methods):
         django_view = _create_django_view(controller, controller_methods)
-        winter_url_path = f'^{root_route.url_path}{url_path}$'
+        winter_url_path = f'^{url_path}$'
         django_url_path = _rewrite_uritemplate_with_regexps(winter_url_path, controller_methods)
         for controller_method in controller_methods:
             url_name = f'{controller_class.__name__}.{controller_method.name}'
@@ -61,9 +58,10 @@ def _create_django_view(controller, controller_methods: List[ControllerMethod]):
         permission_classes = (IsAuthenticated,) if is_authentication_needed(controller.__class__) else ()
 
     for controller_method in controller_methods:
+        route = route_table.get_method_route(controller_method)
         dispatch = _create_dispatch_function(controller, controller_method)
         dispatch.controller_method = controller_method
-        dispatch_method_name = controller_method.http_method.lower()
+        dispatch_method_name = route.http_method.lower()
         setattr(WinterView, dispatch_method_name, dispatch)
         generate_swagger_for_operation(dispatch, controller, controller_method)
     return WinterView().as_view()
@@ -73,15 +71,15 @@ def _create_django_view(controller, controller_methods: List[ControllerMethod]):
 def _create_dispatch_function(controller, controller_method: ControllerMethod):
     def dispatch(winter_view, request: Request, **path_variables):
         try:
-            return _call_controller_method(controller, controller_method, path_variables, request)
+            return _call_controller_method(controller, controller_method, request)
         except WinterException as exception:
             return handle_winter_exception(exception)
 
     return dispatch
 
 
-def _call_controller_method(controller, controller_method: ControllerMethod, path_variables: Dict, request: Request):
-    arguments = arguments_resolver.resolve_arguments(controller_method, request, path_variables)
+def _call_controller_method(controller, controller_method: ControllerMethod, request: Request):
+    arguments = arguments_resolver.resolve_arguments(controller_method, request)
     try:
         result = controller_method.func(controller, **arguments)
         return convert_result_to_http_response(request, result, controller_method.func)
@@ -112,7 +110,8 @@ def convert_result_to_http_response(request: Request, result: Any, handle_func):
 def _group_methods_by_url_path(controller_methods: List[ControllerMethod]):
     result = defaultdict(list)
     for controller_method in controller_methods:
-        result[controller_method.url_path].append(controller_method)
+        route = route_table.get_method_route(controller_method)
+        result[route.url_path].append(controller_method)
     return result.items()
 
 

@@ -7,16 +7,17 @@ from drf_yasg import openapi
 from .controller_method_inspector import ControllerMethodInspector
 from .generation import get_argument_type_info
 from ..controller import ControllerMethod
+from ..routing import route_table
 
 
 class PathParametersInspector(ControllerMethodInspector):
     def inspect_parameters(self, controller_method: ControllerMethod) -> List[openapi.Parameter]:
         docstring = docstring_parser.parse(controller_method.func.__doc__)
         params_docs = {param_doc.arg_name: param_doc for param_doc in docstring.params}
-
+        route = route_table.get_method_route(controller_method)
         parameters = []
 
-        for path_variable_name in uritemplate.variables(controller_method.url_path):
+        for path_variable_name in uritemplate.variables(route.url_path):
             argument = controller_method.get_argument(path_variable_name)
             if not argument:
                 continue

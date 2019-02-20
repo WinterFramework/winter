@@ -54,17 +54,10 @@ class ArgumentsResolver(ArgumentResolver):
             self,
             controller_method: ControllerMethod,
             http_request: Request,
-            path_variables: Dict,
     ) -> Dict[str, Any]:
         resolved_arguments = {}
         for argument in controller_method.arguments:
-            try:
-                resolved_arguments[argument.name] = self.resolve_argument(argument, http_request)
-            except ArgumentNotSupported:
-                if argument.name not in path_variables:
-                    raise
-                str_value = path_variables[argument.name]
-                resolved_arguments[argument.name] = argument.type_(str_value)
+            resolved_arguments[argument.name] = self.resolve_argument(argument, http_request)
 
         return resolved_arguments
 

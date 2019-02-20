@@ -2,19 +2,10 @@ from typing import Dict
 from typing import Optional
 from typing import Tuple
 
-from dataclasses import dataclass
-
+from .route_annotation import RouteAnnotation
 from ..http import MediaType
 
-_routes: Dict[object, 'Route'] = {}
-
-
-@dataclass(frozen=True)
-class Route:
-    url_path: str
-    http_method: str = None
-    produces: Tuple[MediaType] = ()  # It's used for swagger only at the moment, but will be used in routing later
-    consumes: Tuple[MediaType] = ()  # It's used for swagger only at the moment, but will be used in routing later
+_route_annotations: Dict[object, RouteAnnotation] = {}
 
 
 def route(
@@ -29,23 +20,23 @@ def route(
     return wrapper
 
 
-def route_get(url_path='', produces: Optional[Tuple[MediaType]] = (), consumes: Optional[Tuple[MediaType]] = ()):
+def route_get(url_path='', produces: Optional[Tuple[MediaType]] = None, consumes: Optional[Tuple[MediaType]] = None):
     return route(url_path, 'GET', produces=produces, consumes=consumes)
 
 
-def route_post(url_path='', produces: Optional[Tuple[MediaType]] = (), consumes: Optional[Tuple[MediaType]] = ()):
+def route_post(url_path='', produces: Optional[Tuple[MediaType]] = None, consumes: Optional[Tuple[MediaType]] = None):
     return route(url_path, 'POST', produces=produces, consumes=consumes)
 
 
-def route_delete(url_path='', produces: Optional[Tuple[MediaType]] = (), consumes: Optional[Tuple[MediaType]] = ()):
+def route_delete(url_path='', produces: Optional[Tuple[MediaType]] = None, consumes: Optional[Tuple[MediaType]] = None):
     return route(url_path, 'DELETE', produces=produces, consumes=consumes)
 
 
-def route_patch(url_path='', produces: Optional[Tuple[MediaType]] = (), consumes: Optional[Tuple[MediaType]] = ()):
+def route_patch(url_path='', produces: Optional[Tuple[MediaType]] = None, consumes: Optional[Tuple[MediaType]] = None):
     return route(url_path, 'PATCH', produces=produces, consumes=consumes)
 
 
-def route_put(url_path='', produces: Optional[Tuple[MediaType]] = (), consumes: Optional[Tuple[MediaType]] = ()):
+def route_put(url_path='', produces: Optional[Tuple[MediaType]] = None, consumes: Optional[Tuple[MediaType]] = None):
     return route(url_path, 'PUT', produces=produces, consumes=consumes)
 
 
@@ -56,9 +47,10 @@ def register_route(
         produces: Optional[Tuple[MediaType]],
         consumes: Optional[Tuple[MediaType]],
 ):
-    assert func not in _routes, f'{func} is already mapped to a route'
-    _routes[func] = Route(url_path, http_method, produces, consumes)
+    assert func not in _route_annotations, f'{func} is already mapped to a route'
+    _route_annotations[func] = RouteAnnotation(url_path, http_method, produces, consumes)
 
 
-def get_function_route(func) -> Optional[Route]:
-    return _routes.get(func)
+
+def get_route_annotation(func) -> Optional[RouteAnnotation]:
+    return _route_annotations.get(func)

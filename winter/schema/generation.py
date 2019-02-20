@@ -15,6 +15,7 @@ from ..drf import get_output_serializer
 from ..exceptions import exceptions_handler
 from ..exceptions import get_throws
 from ..response_status import get_default_response_status
+from ..routing import route_table
 
 
 def generate_swagger_for_operation(view_func, controller, controller_method: ControllerMethod):
@@ -37,7 +38,8 @@ def generate_swagger_for_operation(view_func, controller, controller_method: Con
 
 def build_responses_schemas(controller_method: ControllerMethod):
     responses = {}
-    response_status = str(get_default_response_status(controller_method.func, controller_method.http_method))
+    route = route_table.get_method_route(controller_method)
+    response_status = str(get_default_response_status(controller_method.func, route.http_method))
     try:
         responses[response_status] = build_response_schema(controller_method.func)
     except InspectorNotFound:
@@ -46,7 +48,7 @@ def build_responses_schemas(controller_method: ControllerMethod):
         handler_cls = exceptions_handler.get_handler_class(exception_cls)
         if not handler_cls:
             continue
-        response_status = str(get_default_response_status(handler_cls.handle, controller_method.http_method))
+        response_status = str(get_default_response_status(handler_cls.handle, route.http_method))
         try:
             responses[response_status] = build_response_schema(handler_cls.handle)
         except InspectorNotFound:

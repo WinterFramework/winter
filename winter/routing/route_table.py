@@ -1,9 +1,12 @@
-from typing import Dict, TYPE_CHECKING, List, Tuple, Type
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Set
+from typing import Type
 
-from .routing import Route, get_function_route
-
-if TYPE_CHECKING:
-    from ..controller import ControllerMethod
+from .route import Route
+from .routing import get_route_annotation
+from ..controller import ControllerMethod
 
 
 class UnexpectedHttpMethod(Exception):
@@ -19,26 +22,48 @@ class DuplicateRouteException(Exception):
 class RouteTable:
     def __init__(self):
         super().__init__()
-        self._routes: List[Tuple[Route, Type, 'ControllerMethod']] = []
+        self._routes: List[Route] = []
+        self._routes_set: Set[Route] = set()
+        self._controller_method_routes: Dict[ControllerMethod, Route] = {}
 
-    def add_route(self, route: Route, controller_class: Type, controller_method: 'ControllerMethod'):
-        self._routes.append((route, controller_class, controller_method))
+    def add_route(self, route: Route):
+        if route in self._routes_set:
+            raise DuplicateRouteException(route)
+        self._routes_set.add(route)
+        self._routes.append(route)
+        self._controller_method_routes[route.controller_method] = route
 
-    def get_routes(self) -> Dict[Route, 'ControllerMethod']:
-        routes = {}
-        for route, controller_class, controller_method in self._routes:
-            http_method = controller_method.http_method
-            url_path = controller_method.url_path
-            root_route = get_function_route(controller_class)
-            if root_route is not None:
-                if root_route.http_method is not None:
-                    raise UnexpectedHttpMethod(root_route.http_method)
-                url_path = root_route.url_path + url_path
-            full_route = Route(url_path, http_method)
-            if full_route in routes:
-                raise DuplicateRouteException(full_route)
-            routes[full_route] = controller_method
+    def add_controller(self, controller_class: Type):
+        for route in self._build_controller_routes(controller_class):
+            self.add_route(route)
+
+    def _build_controller_routes(self, controller_class: Type) -> List[Route]:
+        from ..controller import get_controller_component
+        routes = []
+        controller_component = get_controller_component(controller_class)
+        controller_route_annotation = get_route_annotation(controller_class)
+        for controller_method in controller_component.methods:
+            route_annotation = get_route_annotation(controller_method.func)
+            url_path = route_annotation.url_path
+            if controller_route_annotation is not None:
+                if controller_route_annotation.http_method is not None:
+                    raise UnexpectedHttpMethod(controller_route_annotation.http_method)
+                url_path = controller_route_annotation.url_path + url_path
+            routes.append(Route(
+                route_annotation.http_method,
+                url_path,
+                controller_class,
+                controller_method,
+                route_annotation.produces,
+                route_annotation.consumes,
+            ))
         return routes
+
+    def get_method_route(self, controller_method: ControllerMethod) -> Optional[Route]:
+        return self._controller_method_routes.get(controller_method)
+
+    def get_routes(self) -> List[Route]:
+        return self._routes
 
 
 route_table = RouteTable()
