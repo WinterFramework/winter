@@ -11,8 +11,8 @@ _route_annotations: Dict[object, RouteAnnotation] = {}
 def route(
         url_path: str,
         http_method: Optional[str] = None,
-        produces: Optional[Tuple[MediaType]] = (),
-        consumes: Optional[Tuple[MediaType]] = (),
+        produces: Optional[Tuple[MediaType]] = None,
+        consumes: Optional[Tuple[MediaType]] = None,
 ):
     def wrapper(func):
         register_route(func, url_path, http_method, produces, consumes)
@@ -49,7 +49,6 @@ def register_route(
 ):
     assert func not in _route_annotations, f'{func} is already mapped to a route'
     _route_annotations[func] = RouteAnnotation(url_path, http_method, produces, consumes)
-
 
 
 def get_route_annotation(func) -> Optional[RouteAnnotation]:
