@@ -17,7 +17,7 @@ class SwaggerAutoSchema(SwaggerAutoSchemaBase):
     def get_produces(self):
         route = self._get_route_annotation()
         if route is None:
-            return super().get_consumes()
+            return super().get_produces()
         return [str(media_type) for media_type in route.produces]
 
     def _get_route_annotation(self) -> typing.Optional[Route]:
