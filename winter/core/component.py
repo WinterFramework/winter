@@ -1,14 +1,15 @@
-import abc
 import inspect
 import typing
+import weakref
 
 from .component_method import ComponentMethod
 
 
-class Component(abc.ABC):
+class Component:
+    _component_classes = weakref.WeakSet()
 
     def __init__(self, component_cls: typing.Type):
-        self.__class__.register(component_cls)
+        Component.register(component_cls)
         self.component_cls = component_cls
         self.methods: typing.Tuple[ComponentMethod] = tuple(
             component_method for component_method in component_cls.__dict__.values()
@@ -18,12 +19,16 @@ class Component(abc.ABC):
             method.component = self
 
     @classmethod
+    def register(cls, cls_: typing.Type) -> None:
+        cls._component_classes.add(cls_)
+
+    @classmethod
     def get_all_component_classes(cls) -> typing.Set:
-        return cls._abc_registry
+        return cls._component_classes
 
 
 def is_component(cls: typing.Type) -> typing.Type:
-    return inspect.isclass(cls) and issubclass(cls, Component)
+    return cls in Component.get_all_component_classes()
 
 
 def component(cls: typing.Type) -> typing.Type:
