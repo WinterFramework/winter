@@ -4,19 +4,16 @@ import typing
 
 from .component_method import ComponentMethod
 
-MetadataValue = typing.TypeVar('MetadataValue')
-
 
 class Metadata(abc.ABC):
     key: str = None
-    value_type: typing.Type[MetadataValue] = None
 
     def __init_subclass__(cls, **kwargs):
         key = kwargs.pop('key', None)
         assert key is not None, 'Not given "key"'
         cls.key = key
 
-    def __init__(self, value: MetadataValue):
+    def __init__(self, value: typing.Any):
         self.value = value
 
     @abc.abstractmethod
