@@ -2,7 +2,7 @@ import abc
 import types
 import typing
 
-from winter.core.component_method import ComponentMethod
+from .component_method import ComponentMethod
 
 MetadataValue = typing.TypeVar('MetadataValue')
 
