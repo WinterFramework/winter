@@ -6,13 +6,9 @@ from typing import NewType
 from typing import Optional
 from typing import Type
 
-from .routing import get_function_route
-from .routing import route_table
-
 ControllerFactory = NewType('ControllerFactory', Callable[[Type], object])
 _controller_factory: Optional[ControllerFactory] = None
 _controllers = {}
-_methods = {}
 
 
 class ControllerComponent:
@@ -35,10 +31,8 @@ class ControllerComponent:
 
 
 class ControllerMethod:
-    def __init__(self, func, url_path: str, http_method: str):
+    def __init__(self, func):
         self.func = func
-        self.url_path = url_path
-        self.http_method = http_method
         type_hints = typing.get_type_hints(func)
         self.return_value_type = type_hints.pop('return', None)
         self._arguments = self._build_arguments(type_hints)
@@ -65,6 +59,14 @@ class ControllerMethod:
         }
         return arguments
 
+    def __eq__(self, other):
+        if not isinstance(other, ControllerMethod):
+            return False
+        return other.func == self.func
+
+    def __hash__(self):
+        return hash((ControllerMethod, self.func))
+
 
 class ControllerMethodArgument:
     def __init__(self, method: ControllerMethod, name, type_):
@@ -78,20 +80,20 @@ class ControllerMethodArgument:
 
 
 def _register_controller(controller_class):
+    from .routing import get_route_annotation
+    from .routing import route_table
+
     assert controller_class not in _controllers, f'{controller_class} is already marked as controller'
     controller_methods = []
-    routes = {}
     for member in controller_class.__dict__.values():
-        route = get_function_route(member)
-        if not route:
+        route_annotation = get_route_annotation(member)
+        if not route_annotation:
             continue
-        controller_method = ControllerMethod(member, route.url_path, route.http_method)
-        route_table.add_route(route, controller_class, controller_method)
+        controller_method = ControllerMethod(member)
         controller_methods.append(controller_method)
-        _methods[member] = controller_method
-        routes[route] = member
     controller_component = ControllerComponent(controller_class, controller_methods)
     _controllers[controller_class] = controller_component
+    route_table.add_controller(controller_class)
 
 
 def controller(controller_class):

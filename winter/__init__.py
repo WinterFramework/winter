@@ -9,9 +9,9 @@ from .drf import input_serializer
 from .drf import no_authentication
 from .drf import output_serializer
 from .drf import output_template
-from .exceptions import throws
 from .exceptions import ExceptionHandler
 from .exceptions import exceptions_handler
+from .exceptions import throws
 from .output_processor import register_output_processor_resolver
 from .pagination import PagePositionArgumentResolver
 from .pagination.page import PageOutputProcessorResolver
@@ -27,6 +27,7 @@ from .routing import route_put
 
 
 def _default_configuration():
+    from .path_parameters_argument_resolver import PathParametersArgumentResolver
     from .query_parameter import QueryParameterResolver
     from .drf import DRFBodyArgumentResolver
     from .drf import HttpRequestArgumentResolver
@@ -38,6 +39,7 @@ def _default_configuration():
 
     arguments_resolver.add_argument_resolver(DRFBodyArgumentResolver())
     arguments_resolver.add_argument_resolver(QueryParameterResolver())
+    arguments_resolver.add_argument_resolver(PathParametersArgumentResolver())
     arguments_resolver.add_argument_resolver(PagePositionArgumentResolver())
     arguments_resolver.add_argument_resolver(HttpRequestArgumentResolver())
     register_controller_method_inspector(PathParametersInspector())
