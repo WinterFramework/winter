@@ -11,13 +11,13 @@ class SwaggerAutoSchema(SwaggerAutoSchemaBase):
     def get_consumes(self):
         route = self._get_route_annotation()
         if route is None:
-            return []
+            return super().get_consumes()
         return [str(media_type) for media_type in route.consumes]
 
     def get_produces(self):
         route = self._get_route_annotation()
         if route is None:
-            return []
+            return super().get_consumes()
         return [str(media_type) for media_type in route.produces]
 
     def _get_route_annotation(self) -> typing.Optional[Route]:
