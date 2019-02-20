@@ -7,7 +7,7 @@ if typing.TYPE_CHECKING:
 
 class ComponentMethodArgument:
 
-    def __init__(self, method: ComponentMethod, name, type_):
+    def __init__(self, method: ComponentMethod, name: str, type_):
         self.method = method
         self.name = name
         self.type_ = type_

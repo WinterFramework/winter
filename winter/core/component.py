@@ -15,6 +15,17 @@ class Component(abc.ABC):
             if isinstance(component_method, ComponentMethod)
         ]
 
+    @classmethod
+    def get_all_component_classes(cls) -> typing.Set:
+        return cls._abc_registry
+
 
 def is_component(cls: typing.Type):
     return inspect.isclass(cls) and issubclass(cls, Component)
+
+
+def component(cls: typing.Type):
+    if not inspect.isclass(cls):
+        raise ValueError(f'Need class. Given: {cls}')
+    Component.register(cls)
+    return cls

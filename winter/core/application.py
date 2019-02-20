@@ -1,39 +1,25 @@
 import types
 import typing
+import weakref
 
 from .component import Component
-from .component_method import ComponentMethod
-from .metadata_key import MetadataKey
 
 
 class WinterApplication:
 
     def __init__(self):
-        self._components = {}
+        self._components = weakref.WeakKeyDictionary()
 
     @property
     def components(self):
         return types.MappingProxyType(self._components)
 
-    def component(self, cls: typing.Type):
+    def add_component(self, cls: typing.Type):
+        Component.register(cls)
         self._components[cls] = Component(cls)
         return cls
 
-    def component_method(
-            self,
-            func: typing.Union[types.FunctionType, ComponentMethod],
-            metadata_key: MetadataKey = None,
-            state_value: typing.Any = None
-    ):
-
-        if isinstance(func, ComponentMethod):
-            method = func
-        else:
-            method = ComponentMethod(func)
-
-        if metadata_key is None:
-            return method
-
-        method.update_state(metadata_key, state_value)
-
-        return method
+    def autodiscover(self):
+        for component_cls in Component.get_all_component_classes():
+            if component_cls not in self._components:
+                self.add_component(component_cls)

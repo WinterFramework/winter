@@ -1,30 +1,45 @@
-import functools
+import gc
+import typing
 
+import winter.core
 from winter.core import Component
+from winter.core import Metadata
+from winter.core import component_method
+from winter.core import metadata
 from winter.core import is_component
-from winter.core.application import WinterApplication
-from winter.core.metadata_key import MetadataKey
+from winter.core import WinterApplication
 
 
 def test_is_component():
     winter_app = WinterApplication()
 
-    @winter_app.component
-    class SimpleController:
+    class SimpleComponent:
         pass
 
-    assert is_component(SimpleController)
+    winter_app.add_component(SimpleComponent)
+    assert is_component(SimpleComponent)
+
+
+def test_autodiscover():
+    gc.collect()
+
+    @winter.core.component
+    class SimpleComponent:
+        pass
+
+    winter_app = WinterApplication()
+
+    winter_app.autodiscover()
+
+    assert list(winter_app.components) == [SimpleComponent]
 
 
 def test_methods():
-    winter_app = WinterApplication()
-
-    @winter_app.component
     class SimpleComponent:
 
-        @winter_app.component_method
+        @component_method
         def simple_method(self):
-            return None
+            return component
 
     controller = Component(SimpleComponent)
 
@@ -32,37 +47,41 @@ def test_methods():
     method = controller.methods[0]
 
     assert method is SimpleComponent.simple_method
+    component = SimpleComponent()
+    assert SimpleComponent.simple_method(component) is component
 
 
 def test_method_state():
-    winter_app = WinterApplication()
+
+    class PathMetadata(Metadata, key='path'):
+
+        def set_value(self, metadata_storage: typing.Dict):
+            metadata_storage[self.key] = self.value
 
     def route(param: str):
-        metadata_key = MetadataKey('path')
-        state_value = param
-        return functools.partial(winter_app.component_method, metadata_key=metadata_key, state_value=state_value)
+        return metadata(PathMetadata(param))
 
-    @winter_app.component
     class SimpleComponent:
 
         @route('/url/')
         def simple_method(self):
-            return None
+            return 123
 
-    metadata_key = MetadataKey('path')
-    assert SimpleComponent.simple_method.get_metadata(metadata_key) == '/url/'
+    assert SimpleComponent.simple_method.get_metadata(PathMetadata) == '/url/'
+    assert SimpleComponent().simple_method(123)
 
 
 def test_method_state_many():
 
-    winter_app = WinterApplication()
+    class QueryMetadata(Metadata, key='query'):
 
-    def query_param(param: str):
-        metadata_key = MetadataKey('query', many=True)
-        state_value = param
-        return functools.partial(winter_app.component_method, metadata_key=metadata_key, state_value=state_value)
+        def set_value(self, metadata_storage: typing.Dict):
+            queries = metadata_storage.setdefault(self.key, set())
+            queries.add(self.value)
 
-    @winter_app.component
+    def query_param(param_: str):
+        return metadata(QueryMetadata(param_))
+
     class SimpleComponent:
 
         @query_param('first')
@@ -70,7 +89,5 @@ def test_method_state_many():
         def simple_method(self):
             return None
 
-    metadata_key = MetadataKey('query', many=True)
-
-    param = SimpleComponent.simple_method.get_metadata(metadata_key)
-    assert param == ['second', 'first']
+    param = SimpleComponent.simple_method.get_metadata(QueryMetadata)
+    assert param == {'second', 'first'}

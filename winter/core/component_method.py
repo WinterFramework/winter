@@ -1,20 +1,20 @@
 import inspect
+import types
 import typing
 from types import FunctionType
 
-from .metadata_key import MetadataKey
-
 if typing.TYPE_CHECKING:
+    from .metadata import Metadata
     from .component_method_argument import ComponentMethodArgument
 
 
 class ComponentMethod:
 
-    def __init__(self, func: FunctionType):
+    def __init__(self, func: typing.Union[FunctionType, 'ComponentMethod']):
         self.func = func
+        self.name: str = None
         self._component_cls: typing.Type = None
-        self._name: str = None
-        self._metadata = {}
+        self._metadata_storage = {}
 
         type_hints = typing.get_type_hints(func)
         self.return_value_type = type_hints.pop('return', None)
@@ -25,23 +25,18 @@ class ComponentMethod:
             return self
         return self.func
 
+    def __call__(self, *args, **kwargs):
+        return self.func(*args, **kwargs)
+
     def __set_name__(self, owner: typing.Type, name: str):
         self._component_cls = owner
         self._name = name
 
-    def update_state(self, state_key: MetadataKey, state_value: typing.Any):
-        if not state_key.many:
-            self._metadata[state_key] = state_value
-        else:
-            items = self._metadata.setdefault(state_key, [])
-            items.append(state_value)
+    def update_metadata(self, metadata: 'Metadata'):
+        metadata.set_value(self._metadata_storage)
 
-    def get_metadata(self, metadata_key: MetadataKey):
-        return self._metadata[metadata_key]
-
-    @property
-    def name(self) -> str:
-        return self.func.__name__
+    def get_metadata(self, metadata_cls: typing.Type['Metadata']):
+        return self._metadata_storage[metadata_cls.key]
 
     @property
     def arguments(self) -> typing.List['ComponentMethodArgument']:
@@ -60,3 +55,9 @@ class ComponentMethod:
             for arg_name, arg_type in argument_type_hints.items()
         }
         return arguments
+
+
+def component_method(func: typing.Union[types.FunctionType, ComponentMethod]):
+    if isinstance(func, ComponentMethod):
+        return func
+    return ComponentMethod(func)
