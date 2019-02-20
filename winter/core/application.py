@@ -11,7 +11,7 @@ class WinterApplication:
         self._components = weakref.WeakKeyDictionary()
 
     @property
-    def components(self) -> types.MappingProxyType:
+    def components(self) -> typing.Mapping[typing.Type, Component]:
         return types.MappingProxyType(self._components)
 
     def add_component(self, cls: typing.Type) -> typing.Type:
