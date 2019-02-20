@@ -17,11 +17,11 @@ class Metadata(abc.ABC):
         self.value = value
 
     @abc.abstractmethod
-    def set_value(self, metadata_storage: typing.Dict):
+    def set_value(self, metadata_storage: typing.Dict) -> None:
         pass
 
 
-def metadata(metadata_: Metadata):
+def metadata(metadata_: Metadata) -> types.FunctionType:
     def wrapper(func: typing.Union[types.FunctionType, ComponentMethod]):
         if isinstance(func, ComponentMethod):
             method = func

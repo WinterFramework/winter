@@ -22,11 +22,11 @@ class Component(abc.ABC):
         return cls._abc_registry
 
 
-def is_component(cls: typing.Type):
+def is_component(cls: typing.Type) -> typing.Type:
     return inspect.isclass(cls) and issubclass(cls, Component)
 
 
-def component(cls: typing.Type):
+def component(cls: typing.Type) -> typing.Type:
     if not inspect.isclass(cls):
         raise ValueError(f'Need class. Given: {cls}')
     Component.register(cls)

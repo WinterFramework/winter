@@ -36,10 +36,10 @@ class ComponentMethod:
         self._component_cls = owner
         self.name = name
 
-    def update_metadata(self, metadata: 'Metadata'):
+    def update_metadata(self, metadata: 'Metadata') -> None:
         metadata.set_value(self._metadata_storage)
 
-    def get_metadata(self, metadata_cls: typing.Type['Metadata']):
+    def get_metadata(self, metadata_cls: typing.Type['Metadata']) -> typing.Any:
         return self._metadata_storage[metadata_cls.key]
 
     @property
@@ -53,7 +53,7 @@ class ComponentMethod:
     def signature(self) -> inspect.Signature:
         return inspect.signature(self.func)
 
-    def _build_arguments(self, argument_type_hints: dict):
+    def _build_arguments(self, argument_type_hints: dict) -> typing.Mapping:
         arguments = {
             arg_name: ComponentMethodArgument(self, arg_name, arg_type)
             for arg_name, arg_type in argument_type_hints.items()
@@ -61,7 +61,7 @@ class ComponentMethod:
         return arguments
 
 
-def component_method(func: typing.Union[types.FunctionType, ComponentMethod]):
+def component_method(func: typing.Union[types.FunctionType, ComponentMethod]) -> ComponentMethod:
     if isinstance(func, ComponentMethod):
         return func
     return ComponentMethod(func)
