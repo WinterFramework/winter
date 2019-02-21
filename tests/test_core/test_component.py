@@ -28,12 +28,12 @@ def test_methods():
 
         @winter.core.component_method
         def simple_method(self):
-            return component
+            return self
 
-    controller = Component(SimpleComponent)
+    component = Component(SimpleComponent)
 
-    assert len(controller.methods) == 1, SimpleComponent.simple_method
-    method = controller.methods[0]
+    assert len(component.methods) == 1, SimpleComponent.simple_method
+    method = component.methods[0]
 
     assert method is SimpleComponent.simple_method
     component = SimpleComponent()
