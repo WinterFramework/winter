@@ -2,13 +2,14 @@ import inspect
 import typing
 
 from .component_method import ComponentMethod
+from .metadata import Metadata
 
 
 class Component:
-    _component_classes = set()
+    metadata = Metadata()
+    _components = {}
 
     def __init__(self, component_cls: typing.Type):
-        Component.register(component_cls)
         self.component_cls = component_cls
         self.methods: typing.Tuple[ComponentMethod] = tuple(
             component_method for component_method in component_cls.__dict__.values()
@@ -18,16 +19,26 @@ class Component:
             method.component = self
 
     @classmethod
-    def register(cls, cls_: typing.Type) -> None:
-        cls._component_classes.add(cls_)
+    def register(cls, cls_: typing.Type) -> 'Component':
+        instance = cls._components.get(cls_)
+        if instance is None:
+            instance = cls._components[cls_] = cls(cls_)
+        return instance
 
     @classmethod
-    def get_all_component_classes(cls) -> typing.Set:
-        return cls._component_classes
+    def get_all(cls) -> typing.Mapping:
+        return cls._components
+
+    @classmethod
+    def get_by_cls(cls, component_cls):
+        component_ = cls._components.get(component_cls)
+        if component_ is None:
+            component_ = cls(component_cls)
+        return component_
 
 
 def is_component(cls: typing.Type) -> bool:
-    return cls in Component.get_all_component_classes()
+    return cls in Component.get_all()
 
 
 def component(cls: typing.Type) -> typing.Type:

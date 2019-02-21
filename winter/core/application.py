@@ -15,10 +15,10 @@ class WinterApplication:
 
     def add_component(self, cls: typing.Type) -> typing.Type:
         Component.register(cls)
-        self._components[cls] = Component(cls)
+        self._components[cls] = Component.get_by_cls(cls)
         return cls
 
     def autodiscover(self) -> None:
-        for component_cls in Component.get_all_component_classes():
+        for component_cls in Component.get_all():
             if component_cls not in self._components:
                 self.add_component(component_cls)

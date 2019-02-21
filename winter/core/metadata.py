@@ -1,35 +1,43 @@
-import abc
-import types
 import typing
 
-from .component_method import ComponentMethod
+if typing.TYPE_CHECKING:
+    from .metadata_item import MetadataItem
 
 
-class Metadata(abc.ABC):
-    key: str = None
+class Metadata:
 
-    def __init_subclass__(cls, **kwargs):
-        key = kwargs.pop('key', None)
-        assert key is not None, 'Not given "key"'
-        cls.key = key
+    def __init__(self):
+        self.name = None
+        self.owner = None
 
-    def __init__(self, value: typing.Any):
-        self.value = value
+    def __set_name__(self, owner, name):
+        self.owner = owner
+        self.name = name
 
-    @abc.abstractmethod
-    def set_value(self, metadata_storage: typing.Dict) -> None:
-        pass
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+
+        metadata_ = instance.__dict__.get(self.name)
+        if metadata_ is not None:
+            return metadata_
+        metadata_ = instance.__dict__[self.name] = _Metadata()
+        return metadata_
+
+    def __str__(self):
+        return f'{self.__class__.__name__}({self.owner.__name__} at {self.name})'
 
 
-def metadata(metadata_: Metadata) -> types.FunctionType:
-    def wrapper(func: typing.Union[types.FunctionType, ComponentMethod]):
-        if isinstance(func, ComponentMethod):
-            method = func
-        else:
-            method = ComponentMethod(func)
+class _Metadata:
 
-        method.update_metadata(metadata_)
+    def __init__(self):
+        self._metadata_storage = {}
 
-        return method
+    def add(self, metadata_item: 'MetadataItem'):
+        metadata_item.set_value(self._metadata_storage)
 
-    return wrapper
+    def get(self, metadata_item: typing.Union['MetadataItem', typing.Type['MetadataItem']]):
+        return self._metadata_storage.get(metadata_item.key)
+
+    def __repr__(self):
+        return f'Metadata({self._metadata_storage!r}'

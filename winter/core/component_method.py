@@ -4,13 +4,14 @@ import typing
 from types import FunctionType
 
 from .component_method_argument import ComponentMethodArgument
+from .metadata import Metadata
 
 if typing.TYPE_CHECKING:
     from .component import Component
-    from .metadata import Metadata
 
 
 class ComponentMethod:
+    metadata = Metadata()
 
     def __init__(self, func: typing.Union[FunctionType, 'ComponentMethod']):
         self.func = func
@@ -35,12 +36,6 @@ class ComponentMethod:
     def __set_name__(self, owner: typing.Type, name: str):
         self._component_cls = owner
         self.name = name
-
-    def update_metadata(self, metadata: 'Metadata') -> None:
-        metadata.set_value(self._metadata_storage)
-
-    def get_metadata(self, metadata_cls: typing.Type['Metadata']) -> typing.Any:
-        return self._metadata_storage[metadata_cls.key]
 
     @property
     def arguments(self) -> typing.Collection[ComponentMethodArgument]:

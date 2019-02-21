@@ -4,7 +4,7 @@ import pytest
 
 import winter.core
 from winter.core import Component
-from winter.core import Metadata
+from winter.core import MetadataItem
 from winter.core import WinterApplication
 
 
@@ -41,7 +41,7 @@ def test_methods():
 
 
 def test_method_state():
-    class PathMetadata(Metadata, key='path'):
+    class PathMetadata(MetadataItem, key='path'):
 
         def set_value(self, metadata_storage: typing.Dict):
             metadata_storage[self.key] = self.value
@@ -55,11 +55,11 @@ def test_method_state():
         def simple_method(self):
             return 123
 
-    assert SimpleComponent.simple_method.get_metadata(PathMetadata) == '/url/'
+    assert SimpleComponent.simple_method.metadata.get(PathMetadata) == '/url/'
 
 
 def test_method_state_many():
-    class QueryMetadata(Metadata, key='query'):
+    class QueryMetadata(MetadataItem, key='query'):
 
         def set_value(self, metadata_storage: typing.Dict):
             queries = metadata_storage.setdefault(self.key, set())
@@ -75,5 +75,5 @@ def test_method_state_many():
         def simple_method(self):
             return None
 
-    param = SimpleComponent.simple_method.get_metadata(QueryMetadata)
+    param = SimpleComponent.simple_method.metadata.get(QueryMetadata)
     assert param == {'second', 'first'}
