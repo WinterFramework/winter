@@ -1,6 +1,5 @@
 import types
 import typing
-import weakref
 
 from .component import Component
 
@@ -8,7 +7,7 @@ from .component import Component
 class WinterApplication:
 
     def __init__(self):
-        self._components = weakref.WeakKeyDictionary()
+        self._components = {}
 
     @property
     def components(self) -> typing.Mapping[typing.Type, Component]:

@@ -1,10 +1,7 @@
-import gc
-
 import winter.core
 
 
 def test_autodiscover():
-    gc.collect()
 
     @winter.core.component
     class SimpleComponent:
@@ -14,13 +11,11 @@ def test_autodiscover():
 
     winter_app.autodiscover()
 
-    assert list(winter_app.components) == [SimpleComponent]
+    assert SimpleComponent in winter_app.components
 
 
 def test_autodiscover_with_pre_add():
-    gc.collect()
 
-    @winter.core.component
     class SimpleComponent:
         pass
 
@@ -28,4 +23,4 @@ def test_autodiscover_with_pre_add():
     winter_app.add_component(SimpleComponent)
     winter_app.autodiscover()
 
-    assert list(winter_app.components) == [SimpleComponent]
+    assert SimpleComponent in winter_app.components

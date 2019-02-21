@@ -1,12 +1,11 @@
 import inspect
 import typing
-import weakref
 
 from .component_method import ComponentMethod
 
 
 class Component:
-    _component_classes = weakref.WeakSet()
+    _component_classes = set()
 
     def __init__(self, component_cls: typing.Type):
         Component.register(component_cls)
