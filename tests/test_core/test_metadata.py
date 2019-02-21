@@ -17,7 +17,6 @@ def route(path: str):
 
 
 def test_on_class():
-
     @route('test')
     class SimpleComponent:
         pass
@@ -28,7 +27,6 @@ def test_on_class():
 
 
 def test_on_method():
-
     class SimpleComponent:
 
         @route('test')
