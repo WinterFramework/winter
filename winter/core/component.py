@@ -26,7 +26,7 @@ class Component:
         return cls._component_classes
 
 
-def is_component(cls: typing.Type) -> typing.Type:
+def is_component(cls: typing.Type) -> bool:
     return cls in Component.get_all_component_classes()
 
 
