@@ -4,14 +4,14 @@ import typing
 from types import FunctionType
 
 from .component_method_argument import ComponentMethodArgument
-from .metadata import Metadata
+from .annotations import Annotations
 
 if typing.TYPE_CHECKING:
     from .component import Component
 
 
 class ComponentMethod:
-    metadata = Metadata()
+    annotations = Annotations()
 
     def __init__(self, func: typing.Union[FunctionType, 'ComponentMethod']):
         self.func = func

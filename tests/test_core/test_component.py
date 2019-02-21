@@ -1,10 +1,10 @@
 import typing
 
+import dataclasses
 import pytest
 
 import winter.core
 from winter.core import Component
-from winter.core import MetadataItem
 from winter.core import WinterApplication
 
 
@@ -41,13 +41,13 @@ def test_methods():
 
 
 def test_method_state():
-    class PathMetadata(MetadataItem, key='path'):
 
-        def set_value(self, metadata_storage: typing.Dict):
-            metadata_storage[self.key] = self.value
+    @dataclasses.dataclass(frozen=True)
+    class Route:
+        path: str
 
     def route(param: str):
-        return winter.core.metadata(PathMetadata(param))
+        return winter.core.annotations(Route(param))
 
     class SimpleComponent:
 
@@ -55,18 +55,17 @@ def test_method_state():
         def simple_method(self):
             return 123
 
-    assert SimpleComponent.simple_method.metadata.get(PathMetadata) == '/url/'
+    assert SimpleComponent.simple_method.annotations.get(Route) == [Route('/url/')]
 
 
 def test_method_state_many():
-    class QueryMetadata(MetadataItem, key='query'):
 
-        def set_value(self, metadata_storage: typing.Dict):
-            queries = metadata_storage.setdefault(self.key, set())
-            queries.add(self.value)
+    @dataclasses.dataclass(frozen=True)
+    class Query:
+        value: str
 
-    def query_param(param_: str):
-        return winter.core.metadata(QueryMetadata(param_))
+    def query_param(param: str):
+        return winter.core.annotations(Query(param))
 
     class SimpleComponent:
 
@@ -75,5 +74,4 @@ def test_method_state_many():
         def simple_method(self):
             return None
 
-    param = SimpleComponent.simple_method.metadata.get(QueryMetadata)
-    assert param == {'second', 'first'}
+    assert SimpleComponent.simple_method.annotations.get(Query) == [Query('second'), Query('first')]

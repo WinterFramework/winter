@@ -1,4 +1,3 @@
-import abc
 import inspect
 import types
 import typing
@@ -8,23 +7,7 @@ from .component import is_component
 from .component_method import ComponentMethod
 
 
-class MetadataItem(abc.ABC):
-    key: str = None
-
-    def __init_subclass__(cls, **kwargs):
-        key = kwargs.pop('key', None)
-        assert key is not None, 'Not given "key"'
-        cls.key = key
-
-    def __init__(self, value: typing.Any):
-        self.value = value
-
-    @abc.abstractmethod
-    def set_value(self, metadata_storage: typing.Dict) -> None:
-        pass
-
-
-def metadata(metadata_item: MetadataItem) -> typing.Callable:
+def annotations(value: typing.Any) -> typing.Callable:
     def wrapper(func_or_cls: typing.Union[types.FunctionType, ComponentMethod]):
         if isinstance(func_or_cls, ComponentMethod):
             method_or_component = func_or_cls
@@ -37,7 +20,9 @@ def metadata(metadata_item: MetadataItem) -> typing.Callable:
         else:
             raise ValueError(f'Need function or class. Got: {func_or_cls}')
 
-        method_or_component.metadata.add(metadata_item)
+        values = method_or_component.annotations.setdefault(value.__class__, [])
+        values.append(value)
+
         if isinstance(method_or_component, Component):
             return method_or_component.component_cls
         return method_or_component

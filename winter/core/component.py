@@ -2,11 +2,11 @@ import inspect
 import typing
 
 from .component_method import ComponentMethod
-from .metadata import Metadata
+from .annotations import Annotations
 
 
 class Component:
-    metadata = Metadata()
+    annotations = Annotations()
     _components = {}
 
     def __init__(self, component_cls: typing.Type):
