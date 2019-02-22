@@ -11,11 +11,12 @@ def annotate(annotation: typing.Any) -> typing.Union[typing.Type, ComponentMetho
     def wrapper(func_or_cls):
 
         if isinstance(func_or_cls, ComponentMethod) or isinstance(func_or_cls, types.FunctionType):
-            return annotate_method(annotation)(func_or_cls)
+            decorator = annotate_method(annotation)
         elif inspect.isclass(func_or_cls):
-            return annotate_class(annotation)(func_or_cls)
+            decorator = annotate_class(annotation)
         else:
             raise ValueError(f'Need function or class. Got: {func_or_cls}')
+        return decorator(func_or_cls)
     return wrapper
 
 
