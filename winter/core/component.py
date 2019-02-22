@@ -1,12 +1,11 @@
 import inspect
 import typing
 
-from .component_method import ComponentMethod
 from .annotations import Annotations
+from .component_method import ComponentMethod
 
 
 class Component:
-
     _components = {}
 
     def __init__(self, component_cls: typing.Type):
