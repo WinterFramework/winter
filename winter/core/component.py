@@ -6,11 +6,12 @@ from .annotations import Annotations
 
 
 class Component:
-    annotations = Annotations()
+
     _components = {}
 
     def __init__(self, component_cls: typing.Type):
         self.component_cls = component_cls
+        self.annotations = Annotations()
         self.methods: typing.Tuple[ComponentMethod] = tuple(
             component_method for component_method in component_cls.__dict__.values()
             if isinstance(component_method, ComponentMethod)

@@ -20,8 +20,7 @@ def annotations(value: typing.Any) -> typing.Callable:
         else:
             raise ValueError(f'Need function or class. Got: {func_or_cls}')
 
-        values = method_or_component.annotations.setdefault(value.__class__, [])
-        values.append(value)
+        method_or_component.annotations.add(value)
 
         if isinstance(method_or_component, Component):
             return method_or_component.component_cls

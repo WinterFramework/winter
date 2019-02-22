@@ -3,20 +3,20 @@ import types
 import typing
 from types import FunctionType
 
-from .component_method_argument import ComponentMethodArgument
 from .annotations import Annotations
+from .component_method_argument import ComponentMethodArgument
 
 if typing.TYPE_CHECKING:
     from .component import Component
 
 
 class ComponentMethod:
-    annotations = Annotations()
 
     def __init__(self, func: typing.Union[FunctionType, 'ComponentMethod']):
         self.func = func
         self.name: str = None
         self.component: 'Component' = None
+        self.annotations = Annotations()
 
         self._component_cls: typing.Type = None
         self._metadata_storage = {}
