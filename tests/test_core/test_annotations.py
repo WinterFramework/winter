@@ -81,36 +81,19 @@ def test_get_one():
     assert annotation == Route('first')
 
 
-def test_annotate_with_instance():
+@pytest.mark.parametrize(('decorator_factory', 'error_message_template'), (
+        (annotate, 'Need function or class. Got: {instance}'),
+        (annotate_class, 'Need class. Got: {instance}'),
+        (annotate_method, 'Need function. Got: {instance}'),
+))
+def test_annotate_with_instance(decorator_factory, error_message_template):
 
-    @dataclasses.dataclass
-    class _Test:
-        pass
-
-    test = _Test()
-
-
-    decorator = annotate(Route('/path/'))
-
-    with pytest.raises(ValueError) as exception:
-        decorator(test)
-
-    assert str(exception.value) == f'Need function or class. Got: {test}'
-    assert exception.value.args == (f'Need function or class. Got: {test}',)
+    instance = object()
 
 
-def test_annotate_cls_with_instance():
-    @dataclasses.dataclass
-    class _Test:
-        pass
-
-    test = _Test()
-
-
-    decorator = annotate_class(Route('/path/'))
+    decorator = decorator_factory(Route('/path/'))
 
     with pytest.raises(ValueError) as exception:
-        decorator(test)
+        decorator(instance)
 
-    assert str(exception.value) == f'Need class. Got: {test}'
-    assert exception.value.args == (f'Need class. Got: {test}',)
+    assert str(exception.value) == error_message_template.format(instance=instance)

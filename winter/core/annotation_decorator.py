@@ -8,7 +8,7 @@ from .component_method import ComponentMethod
 
 def annotate(annotation: typing.Any) -> typing.Union[typing.Type, ComponentMethod]:
 
-    def wrapper(func_or_cls):
+    def wrapper(func_or_cls: typing.Union[typing.Type, types.FunctionType, ComponentMethod]):
 
         if isinstance(func_or_cls, ComponentMethod) or isinstance(func_or_cls, types.FunctionType):
             decorator = annotate_method(annotation)
@@ -22,8 +22,11 @@ def annotate(annotation: typing.Any) -> typing.Union[typing.Type, ComponentMetho
 
 def annotate_class(value: typing.Any) -> typing.Type:
 
-    def wrapper(cls):
-        component = Component.get_by_cls(cls)
+    def wrapper(cls: typing.Type):
+        if inspect.isclass(cls):
+            component = Component.get_by_cls(cls)
+        else:
+            raise ValueError(f'Need class. Got: {cls}')
         component.annotations.add(value)
         return cls
 
@@ -32,11 +35,13 @@ def annotate_class(value: typing.Any) -> typing.Type:
 
 def annotate_method(annotation: typing.Any) -> ComponentMethod:
 
-    def wrapper(func_or_method):
+    def wrapper(func_or_method: typing.Union[types.FunctionType, ComponentMethod]):
         if isinstance(func_or_method, ComponentMethod):
             method = func_or_method
-        else:
+        elif isinstance(func_or_method, types.FunctionType):
             method = ComponentMethod(func_or_method)
+        else:
+            raise ValueError(f'Need function. Got: {func_or_method}')
         method.annotations.add(annotation)
         return method
     return wrapper
