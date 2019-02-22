@@ -3,7 +3,7 @@ import typing
 
 import dataclasses
 
-if typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:  # pragma: no cover
     from .component_method import ComponentMethod
 
 

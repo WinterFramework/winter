@@ -6,7 +6,7 @@ from types import FunctionType
 from .annotations import Annotations
 from .component_method_argument import ComponentMethodArgument
 
-if typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:  # pragma: no cover
     from .component import Component
 
 

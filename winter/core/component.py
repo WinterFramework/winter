@@ -21,7 +21,7 @@ class Component:
     @classmethod
     def register(cls, cls_: typing.Type) -> 'Component':
         if not inspect.isclass(cls_):
-            raise ValueError(f'Need class. Got: {cls_}')
+            raise cls._raise_invalid_class(cls_)
         instance = cls._components.get(cls_)
         if instance is None:
             instance = cls._components[cls_] = cls(cls_)
@@ -33,10 +33,16 @@ class Component:
 
     @classmethod
     def get_by_cls(cls, component_cls):
+        if not inspect.isclass(component_cls):
+            raise cls._raise_invalid_class(component_cls)
         component_ = cls._components.get(component_cls)
         if component_ is None:
             component_ = cls.register(component_cls)
         return component_
+
+    @classmethod
+    def _raise_invalid_class(cls, cls_):
+        raise ValueError(f'Need class. Got: {cls_}')
 
 
 def is_component(cls: typing.Type) -> bool:

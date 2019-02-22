@@ -28,10 +28,8 @@ def route_method(path: str):
     return annotate_method(Route(path))
 
 
-
 @pytest.mark.parametrize('decorator', (route, route_class))
 def test_on_class_by_decorator(decorator):
-
     @decorator('test')
     class SimpleComponent:
         pass
@@ -39,29 +37,6 @@ def test_on_class_by_decorator(decorator):
     assert is_component(SimpleComponent)
     component = Component.get_by_cls(SimpleComponent)
     assert component.annotations.get(Route) == [Route('test')]
-
-
-def test_on_class():
-
-    class SimpleComponent:
-        pass
-
-    annotate_class(Route('test'), SimpleComponent)
-
-    assert is_component(SimpleComponent)
-    component = Component.get_by_cls(SimpleComponent)
-    assert component.annotations.get(Route) == [Route('test')]
-
-
-def test_on_method():
-    class SimpleComponent:
-
-        def method(self):
-            pass
-
-        method = annotate_method(Route('test'), method)
-
-    assert SimpleComponent.method.annotations.get(Route) == [Route('test')]
 
 
 @pytest.mark.parametrize('decorator', (route, route_method))
@@ -104,3 +79,38 @@ def test_get_one():
     annotation = annotations_.get_one(Route)
 
     assert annotation == Route('first')
+
+
+def test_annotate_with_instance():
+
+    @dataclasses.dataclass
+    class _Test:
+        pass
+
+    test = _Test()
+
+
+    decorator = annotate(Route('/path/'))
+
+    with pytest.raises(ValueError) as exception:
+        decorator(test)
+
+    assert str(exception.value) == f'Need function or class. Got: {test}'
+    assert exception.value.args == (f'Need function or class. Got: {test}',)
+
+
+def test_annotate_cls_with_instance():
+    @dataclasses.dataclass
+    class _Test:
+        pass
+
+    test = _Test()
+
+
+    decorator = annotate_class(Route('/path/'))
+
+    with pytest.raises(ValueError) as exception:
+        decorator(test)
+
+    assert str(exception.value) == f'Need class. Got: {test}'
+    assert exception.value.args == (f'Need class. Got: {test}',)

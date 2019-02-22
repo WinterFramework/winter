@@ -75,3 +75,13 @@ def test_method_state_many():
             return None
 
     assert SimpleComponent.simple_method.annotations.get(Query) == [Query('second'), Query('first')]
+
+
+def test_register_with_instance():
+    instance = object()
+
+    with pytest.raises(ValueError) as exception:
+        Component.register(instance)
+
+    assert str(exception.value) == f'Need class. Got: {instance}'
+    assert exception.value.args == (f'Need class. Got: {instance}',)
