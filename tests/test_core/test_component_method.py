@@ -25,11 +25,8 @@ def test_all_attributes():
 
     assert cls_method.component == winter_app.components[SimpleComponent]
     assert cls_method.name == method_name
-
     assert inspect.ismethod(simple_component.method)
-
     assert cls_method.func == simple_component.method.__func__
-
     assert cls_method(simple_component, 123) == (simple_component, 123)
     assert simple_component.method(123) == (simple_component, 123)
     number_argument = ComponentMethodArgument(cls_method, argument_name, argument_type)
