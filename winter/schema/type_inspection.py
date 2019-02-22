@@ -3,6 +3,7 @@ import datetime
 import decimal
 import enum
 import inspect
+import types
 import typing
 import uuid
 from collections import OrderedDict
@@ -183,7 +184,8 @@ def inspect_dataclass(hint_class) -> TypeInfo:
     return TypeInfo(type_=openapi.TYPE_OBJECT, properties=properties)
 
 
-@register_type_inspector(object, checker=lambda instance: getattr(instance, '__supertype__', None) is not None)
+@register_type_inspector(types.FunctionType,
+                         checker=lambda instance: getattr(instance, '__supertype__', None) is not None)
 def inspect_new_type(hint_class) -> TypeInfo:
     return inspect_type(hint_class.__supertype__)
 
