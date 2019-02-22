@@ -81,7 +81,7 @@ def test_get_one_not_found():
     with pytest.raises(NotFoundAnnotation) as exception:
         annotations_.get_one(Route)
 
-    assert exception.value.value_type == Route
+    assert exception.value.annotation_type == Route
     assert str(exception.value) == f'Not found annotation for {Route}'
 
 
@@ -93,7 +93,7 @@ def test_get_one_multiple_raises():
     with pytest.raises(MultipleAnnotationFound) as exception:
         annotations_.get_one(Route)
 
-    assert exception.value.value_type == Route
+    assert exception.value.annotation_type == Route
     assert str(exception.value) == f'Found more than one annotation for {Route}: 2'
 
 
@@ -101,6 +101,6 @@ def test_get_one():
     annotations_ = Annotations()
     annotations_.add(Route('first'))
 
-    value = annotations_.get_one(Route)
+    annotation = annotations_.get_one(Route)
 
-    assert value == Route('first')
+    assert annotation == Route('first')
