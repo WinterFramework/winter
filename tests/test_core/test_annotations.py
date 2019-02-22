@@ -87,9 +87,7 @@ def test_get_one():
         (annotate_method, 'Need function. Got: {instance}'),
 ))
 def test_annotate_with_instance(decorator_factory, error_message_template):
-
     instance = object()
-
 
     decorator = decorator_factory(Route('/path/'))
 

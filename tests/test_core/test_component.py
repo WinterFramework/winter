@@ -1,5 +1,3 @@
-import typing
-
 import dataclasses
 import pytest
 
@@ -41,7 +39,6 @@ def test_methods():
 
 
 def test_method_state():
-
     @dataclasses.dataclass(frozen=True)
     class Route:
         path: str
@@ -59,7 +56,6 @@ def test_method_state():
 
 
 def test_method_state_many():
-
     @dataclasses.dataclass(frozen=True)
     class Query:
         value: str

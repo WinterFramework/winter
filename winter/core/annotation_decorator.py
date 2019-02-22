@@ -23,10 +23,7 @@ def annotate(annotation: typing.Any) -> typing.Union[typing.Type, ComponentMetho
 def annotate_class(value: typing.Any) -> typing.Type:
 
     def wrapper(cls: typing.Type):
-        if inspect.isclass(cls):
-            component = Component.get_by_cls(cls)
-        else:
-            raise ValueError(f'Need class. Got: {cls}')
+        component = Component.get_by_cls(cls)
         component.annotations.add(value)
         return cls
 
