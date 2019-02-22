@@ -11,7 +11,7 @@ def annotate(
         func_or_cls: typing.Optional[typing.Union[types.FunctionType, ComponentMethod, typing.Type]] = None
 ) -> typing.Callable:
     if func_or_cls is None:
-        return lambda func_or_cls: annotate(annotation, func_or_cls)
+        return lambda func_or_cls_: annotate(annotation, func_or_cls_)
 
     if isinstance(func_or_cls, ComponentMethod) or isinstance(func_or_cls, types.FunctionType):
         return annotate_method(annotation, func_or_cls)
@@ -26,7 +26,7 @@ def annotate_class(
         cls: typing.Optional[ComponentMethod] = None
 ):
     if cls is None:
-        return lambda cls: annotate_class(value, cls)
+        return lambda cls_: annotate_class(value, cls_)
 
     component = Component.get_by_cls(cls)
 
@@ -40,7 +40,7 @@ def annotate_method(
         func_or_method: typing.Optional[typing.Union[types.FunctionType, ComponentMethod]] = None
 ):
     if func_or_method is None:
-        return lambda func_or_method: annotate_method(annotation, func_or_method)
+        return lambda func_or_method_: annotate_method(annotation, func_or_method_)
 
     if isinstance(func_or_method, ComponentMethod):
         method = func_or_method
