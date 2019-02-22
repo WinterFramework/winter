@@ -9,7 +9,7 @@ from .component_method import ComponentMethod
 def annotate(
         annotation: typing.Any,
         func_or_cls: typing.Optional[typing.Union[types.FunctionType, ComponentMethod, typing.Type]] = None
-) -> typing.Callable:
+) -> typing.Union[typing.Type, ComponentMethod]:
     if func_or_cls is None:
         return lambda func_or_cls_: annotate(annotation, func_or_cls_)
 
@@ -24,7 +24,7 @@ def annotate(
 def annotate_class(
         value: typing.Any,
         cls: typing.Optional[ComponentMethod] = None
-):
+) -> typing.Type:
     if cls is None:
         return lambda cls_: annotate_class(value, cls_)
 
@@ -38,7 +38,7 @@ def annotate_class(
 def annotate_method(
         annotation: typing.Any,
         func_or_method: typing.Optional[typing.Union[types.FunctionType, ComponentMethod]] = None
-):
+) -> ComponentMethod:
     if func_or_method is None:
         return lambda func_or_method_: annotate_method(annotation, func_or_method_)
 
