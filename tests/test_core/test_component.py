@@ -47,7 +47,7 @@ def test_method_state():
         path: str
 
     def route(param: str):
-        return winter.core.annotations(Route(param))
+        return winter.core.annotate(Route(param))
 
     class SimpleComponent:
 
@@ -65,7 +65,7 @@ def test_method_state_many():
         value: str
 
     def query_param(param: str):
-        return winter.core.annotations(Query(param))
+        return winter.core.annotate(Query(param))
 
     class SimpleComponent:
 

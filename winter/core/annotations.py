@@ -29,7 +29,7 @@ class NotFoundAnnotation(AnnotationException):
 class Annotations:
 
     def __init__(self):
-        self._data = {}
+        self._data: typing.Dict = {}
 
     def get(self, value_type: typing.Type[ValueType]) -> typing.List[ValueType]:
         return self._data.get(value_type, [])

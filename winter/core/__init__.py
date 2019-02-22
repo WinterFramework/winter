@@ -1,4 +1,6 @@
-from .annotation_decorator import annotations
+from .annotation_decorator import annotate
+from .annotation_decorator import annotate_class
+from .annotation_decorator import annotate_method
 from .application import WinterApplication
 from .component import Component
 from .component import component
