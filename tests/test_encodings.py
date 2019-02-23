@@ -81,9 +81,9 @@ def test_encoder(value, expected_value):
 
 @pytest.mark.parametrize(('value', 'exception_type', 'exception_message'), (
         (
-                datetime.time(hour=3, minute=50, second=20, tzinfo=pytz.UTC),
-                ValueError,
-                "JSON can't represent timezone-aware times."
+            datetime.time(hour=3, minute=50, second=20, tzinfo=pytz.UTC),
+            ValueError,
+            "JSON can't represent timezone-aware times."
         ),
         (
             object(),
