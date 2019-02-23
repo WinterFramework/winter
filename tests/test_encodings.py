@@ -7,8 +7,9 @@ import uuid
 import pytest
 import pytz
 from dataclasses import dataclass
-from django.utils.translation import ugettext_lazy
 from django.utils.translation import ugettext
+from django.utils.translation import ugettext_lazy
+
 from winter.json_encoder import JSONEncoder
 
 
@@ -19,8 +20,9 @@ class Id(int):
 class Enum(enum.Enum):
     ID = Id(1)
     NUMBER = 1
-    FLOAT = 1.0
+    FLOAT = 2.0
     TUPLE = ('000', 1)
+    ARRAY = ['000', 1]
     STRING = 'test string'
 
 
@@ -45,14 +47,18 @@ def get_encoder_class():
 @pytest.mark.parametrize(('value', 'expected_value'), [
     (None, None),
     (1, 1),
+    ([], []),
+    (set(), []),
     (Id(1), 1),
     (ugettext_lazy('translated_text'), 'translated_text'),
     (ugettext('translated_text'), 'translated_text'),
     (Enum.ID, 1),
     (Enum.NUMBER, 1),
-    (Enum.FLOAT, 1.0),
+    (Enum.FLOAT, 2.0),
     (Enum.TUPLE, ['000', 1]),
+    (Enum.ARRAY, ['000', 1]),
     (Enum.STRING, 'test string'),
+    (datetime.datetime(year=2019, month=1, day=1, hour=3), '2019-01-01T03:00:00'),
     (datetime.datetime(year=2019, month=1, day=1, tzinfo=pytz.UTC, hour=3), '2019-01-01T03:00:00Z'),
     (datetime.date(year=2019, month=1, day=1), '2019-01-01'),
     (datetime.time(hour=3, minute=50, second=20), '03:50:20'),
@@ -70,16 +76,26 @@ def get_encoder_class():
 ])
 def test_encoder(value, expected_value):
     encoder_class = get_encoder_class()
-    data = {'key': value}
-    assert expected_value == json.loads(json.dumps(data, cls=encoder_class))['key']
+    assert expected_value == json.loads(json.dumps(value, cls=encoder_class))
 
 
-@pytest.mark.parametrize('value', (
-        datetime.time(hour=3, minute=50, second=20, tzinfo=pytz.UTC),
+@pytest.mark.parametrize(('value', 'exception_type', 'exception_message'), (
+        (
+                datetime.time(hour=3, minute=50, second=20, tzinfo=pytz.UTC),
+                ValueError,
+                "JSON can't represent timezone-aware times."
+        ),
+        (
+            object(),
+            TypeError,
+            f"Object of type '{object.__name__}' is not JSON serializable"
+        ),
 ))
-def test_encoder_with_raises(value):
+def test_encoder_with_raises(value, exception_type, exception_message):
     encoder_class = get_encoder_class()
     data = {'key': value}
 
-    with pytest.raises(ValueError):
+    with pytest.raises(exception_type) as exception:
         json.dumps(data, cls=encoder_class)
+
+    assert exception.value.args == (exception_message, )
