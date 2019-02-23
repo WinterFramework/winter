@@ -5,15 +5,15 @@ AnnotationType = typing.TypeVar('AnnotationType')
 
 class AnnotationException(Exception):
 
-    def __init__(self, value_type: AnnotationType):
-        self.annotation_type = value_type
-        super().__init__(value_type)
+    def __init__(self, annotation_type: AnnotationType):
+        self.annotation_type = annotation_type
+        super().__init__(annotation_type)
 
 
 class MultipleAnnotationFound(AnnotationException):
 
-    def __init__(self, value_type: AnnotationType, count: int):
-        super().__init__(value_type)
+    def __init__(self, annotation_type: AnnotationType, count: int):
+        super().__init__(annotation_type)
         self.count = count
 
     def __str__(self):
