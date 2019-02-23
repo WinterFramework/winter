@@ -9,15 +9,15 @@ import uritemplate
 from ..controller import ControllerMethod
 from ..type_utils import get_origin_type
 
-_regex = {}
+_regexp = {}
 
 
-def register_url_regex(func: types.FunctionType):
+def register_url_regexp(func: types.FunctionType):
     annotations = func.__annotations__.copy()
     annotations.pop('return', None)
     assert len(annotations) == 1
     _item, type_ = annotations.popitem()
-    _regex[type_] = func
+    _regexp[type_] = func
     return func
 
 
@@ -44,7 +44,7 @@ def get_regexp(type_=None) -> str:
         origin_type = type(origin_type)
 
     for cls in origin_type.mro():
-        func = _regex.get(cls)
+        func = _regexp.get(cls)
 
         if func is not None:
             return func(type_)
@@ -52,18 +52,18 @@ def get_regexp(type_=None) -> str:
 
 
 # noinspection PyUnusedLocal
-@register_url_regex
-def int_regex(cls: int):
+@register_url_regexp
+def int_regexp(cls: int):
     return r'\d+'
 
 
 # noinspection PyUnusedLocal
-@register_url_regex
-def uuid_regex(cls: uuid.UUID):
+@register_url_regexp
+def uuid_regexp(cls: uuid.UUID):
     return r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 
 
-@register_url_regex
-def enum_regex(cls: enum.Enum):
+@register_url_regexp
+def enum_regexp(cls: enum.Enum):
     values = (f'({e.value})' for e in cls)
     return '(' + '|'.join(values) + ')'
