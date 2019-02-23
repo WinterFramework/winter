@@ -57,11 +57,11 @@ def test_method_state():
 
 def test_method_state_many():
     @dataclasses.dataclass(frozen=True)
-    class Query:
+    class SimpleAnnotation:
         value: str
 
     def query_param(param: str):
-        return winter.core.annotate(Query(param))
+        return winter.core.annotate(SimpleAnnotation(param))
 
     class SimpleComponent:
 
@@ -70,7 +70,8 @@ def test_method_state_many():
         def simple_method(self):
             return None
 
-    assert SimpleComponent.simple_method.annotations.get(Query) == [Query('second'), Query('first')]
+    expected_annotations = [SimpleAnnotation('second'), SimpleAnnotation('first')]
+    assert SimpleComponent.simple_method.annotations.get(SimpleAnnotation) == expected_annotations
 
 
 def test_register_with_instance():
