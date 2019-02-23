@@ -12,23 +12,23 @@ from winter.core.annotations import NotFoundAnnotation
 
 
 @dataclasses.dataclass(frozen=True)
-class Route:
+class SimpleAnnotation:
     path: str
 
 
-def route(path: str):
-    return annotate(Route(path))
+def simple_annotation(string: str):
+    return annotate(SimpleAnnotation(string))
 
 
-def route_class(path: str):
-    return annotate_class(Route(path))
+def simple_annotation_class(string: str):
+    return annotate_class(SimpleAnnotation(string))
 
 
-def route_method(path: str):
-    return annotate_method(Route(path))
+def simple_annotation_method(string: str):
+    return annotate_method(SimpleAnnotation(string))
 
 
-@pytest.mark.parametrize('decorator', (route, route_class))
+@pytest.mark.parametrize('decorator', (simple_annotation, simple_annotation_class))
 def test_on_class_by_decorator(decorator):
     @decorator('test')
     class SimpleComponent:
@@ -36,10 +36,10 @@ def test_on_class_by_decorator(decorator):
 
     assert is_component(SimpleComponent)
     component = Component.get_by_cls(SimpleComponent)
-    assert component.annotations.get(Route) == [Route('test')]
+    assert component.annotations.get(SimpleAnnotation) == [SimpleAnnotation('test')]
 
 
-@pytest.mark.parametrize('decorator', (route, route_method))
+@pytest.mark.parametrize('decorator', (simple_annotation, simple_annotation_method))
 def test_on_method_by_decorator(decorator):
     class SimpleComponent:
 
@@ -47,38 +47,38 @@ def test_on_method_by_decorator(decorator):
         def method(self):
             pass
 
-    assert SimpleComponent.method.annotations.get(Route) == [Route('test')]
+    assert SimpleComponent.method.annotations.get(SimpleAnnotation) == [SimpleAnnotation('test')]
 
 
 def test_get_one_not_found():
     annotations_ = Annotations()
 
     with pytest.raises(NotFoundAnnotation) as exception:
-        annotations_.get_one(Route)
+        annotations_.get_one(SimpleAnnotation)
 
-    assert exception.value.annotation_type == Route
-    assert str(exception.value) == f'Not found annotation for {Route}'
+    assert exception.value.annotation_type == SimpleAnnotation
+    assert str(exception.value) == f'Not found annotation for {SimpleAnnotation}'
 
 
 def test_get_one_multiple_raises():
     annotations_ = Annotations()
-    annotations_.add(Route('first'))
-    annotations_.add(Route('second'))
+    annotations_.add(SimpleAnnotation('first'))
+    annotations_.add(SimpleAnnotation('second'))
 
     with pytest.raises(MultipleAnnotationFound) as exception:
-        annotations_.get_one(Route)
+        annotations_.get_one(SimpleAnnotation)
 
-    assert exception.value.annotation_type == Route
-    assert str(exception.value) == f'Found more than one annotation for {Route}: 2'
+    assert exception.value.annotation_type == SimpleAnnotation
+    assert str(exception.value) == f'Found more than one annotation for {SimpleAnnotation}: 2'
 
 
 def test_get_one():
     annotations_ = Annotations()
-    annotations_.add(Route('first'))
+    annotations_.add(SimpleAnnotation('first'))
 
-    annotation = annotations_.get_one(Route)
+    annotation = annotations_.get_one(SimpleAnnotation)
 
-    assert annotation == Route('first')
+    assert annotation == SimpleAnnotation('first')
 
 
 @pytest.mark.parametrize(('decorator_factory', 'error_message_template'), (
@@ -89,7 +89,7 @@ def test_get_one():
 def test_annotate_with_instance(decorator_factory, error_message_template):
     instance = object()
 
-    decorator = decorator_factory(Route('/path/'))
+    decorator = decorator_factory(SimpleAnnotation('string'))
 
     with pytest.raises(ValueError) as exception:
         decorator(instance)

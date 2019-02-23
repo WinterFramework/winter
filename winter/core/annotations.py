@@ -35,19 +35,19 @@ class Annotations:
         return self._data.get(annotation_type, [])
 
     def get_one(self, annotation_type: typing.Type[AnnotationType]) -> AnnotationType:
-        values = self.get(annotation_type)
+        annotations = self.get(annotation_type)
 
-        count_values = len(values)
+        count_annotations = len(annotations)
 
-        if not count_values:
+        if not count_annotations:
             raise NotFoundAnnotation(annotation_type)
 
-        if count_values > 1:
-            raise MultipleAnnotationFound(annotation_type, count_values)
+        if count_annotations > 1:
+            raise MultipleAnnotationFound(annotation_type, count_annotations)
 
-        value = values[0]
+        value = annotations[0]
         return value
 
     def add(self, annotation: AnnotationType):
-        values = self._data.setdefault(annotation.__class__, [])
-        values.append(annotation)
+        annotations = self._data.setdefault(annotation.__class__, [])
+        annotations.append(annotation)
