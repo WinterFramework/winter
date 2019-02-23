@@ -2,14 +2,11 @@ from collections import defaultdict
 from typing import Any
 from typing import List
 from typing import Type
-from typing import get_type_hints
-from uuid import UUID
 
 import django.http
 import rest_framework.authentication
 import rest_framework.response
 import rest_framework.views
-import uritemplate
 from django.conf.urls import url
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -24,6 +21,7 @@ from .exceptions import WinterException
 from .exceptions import exceptions_handler
 from .exceptions import get_throws
 from .exceptions import handle_winter_exception
+from .http.urls import rewrite_uritemplate_with_regexps
 from .output_processor import get_output_processor
 from .response_entity import ResponseEntity
 from .response_status import get_default_response_status
@@ -33,6 +31,7 @@ from .schema import generate_swagger_for_operation
 
 class SessionAuthentication(rest_framework.authentication.SessionAuthentication):
     """SessionAuthentication with supporting 401 status code"""
+
     def authenticate_header(self, request):
         return 'Unauthorized'
 
@@ -45,7 +44,7 @@ def create_django_urls(controller_class: Type) -> List:
     for url_path, controller_methods in _group_methods_by_url_path(controller_component.methods):
         django_view = _create_django_view(controller, controller_methods)
         winter_url_path = f'^{url_path}$'
-        django_url_path = _rewrite_uritemplate_with_regexps(winter_url_path, controller_methods)
+        django_url_path = rewrite_uritemplate_with_regexps(winter_url_path, controller_methods)
         for controller_method in controller_methods:
             url_name = f'{controller_class.__name__}.{controller_method.name}'
             django_urls.append(url(django_url_path, django_view, name=url_name))
@@ -113,24 +112,3 @@ def _group_methods_by_url_path(controller_methods: List[ControllerMethod]):
         route = route_table.get_method_route(controller_method)
         result[route.url_path].append(controller_method)
     return result.items()
-
-
-def _rewrite_uritemplate_with_regexps(winter_url_path: str, methods: List[ControllerMethod]) -> str:
-    url_path = winter_url_path
-    for variable_name in uritemplate.variables(winter_url_path):
-        types = {get_type_hints(method.func).get(variable_name) for method in methods} or {None}
-        if len(types) > 1:
-            raise Exception(f'Different methods are bound to the same path variable, but have different types annotated: {types}')
-        type_, = types
-        regexp = _get_regexp(type_)
-        url_path = url_path.replace(f'{{{variable_name}}}', f'(?P<{variable_name}>{regexp})')
-    return url_path
-
-
-def _get_regexp(type_) -> str:
-    if issubclass(type_, int):
-        return r'\d+'
-    elif issubclass(type_, UUID):
-        return r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
-    else:
-        return r'[^/]+'
