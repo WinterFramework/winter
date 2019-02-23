@@ -6,6 +6,15 @@ from winter.core import Component
 from winter.core import WinterApplication
 
 
+@dataclasses.dataclass(frozen=True)
+class SimpleAnnotation:
+    value: str
+
+
+def simple_annotation(param: str):
+    return winter.core.annotate(SimpleAnnotation(param))
+
+
 def test_is_component():
     winter_app = WinterApplication()
 
@@ -39,34 +48,21 @@ def test_methods():
 
 
 def test_method_state():
-    @dataclasses.dataclass(frozen=True)
-    class Route:
-        path: str
-
-    def route(param: str):
-        return winter.core.annotate(Route(param))
-
     class SimpleComponent:
 
-        @route('/url/')
+        @simple_annotation('/url/')
         def simple_method(self):
             return 123
 
-    assert SimpleComponent.simple_method.annotations.get(Route) == [Route('/url/')]
+    assert SimpleComponent.simple_method.annotations.get(SimpleAnnotation) == [SimpleAnnotation('/url/')]
 
 
 def test_method_state_many():
-    @dataclasses.dataclass(frozen=True)
-    class SimpleAnnotation:
-        value: str
-
-    def query_param(param: str):
-        return winter.core.annotate(SimpleAnnotation(param))
 
     class SimpleComponent:
 
-        @query_param('first')
-        @query_param('second')
+        @simple_annotation('first')
+        @simple_annotation('second')
         def simple_method(self):
             return None
 
