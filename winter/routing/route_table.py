@@ -55,6 +55,7 @@ class RouteTable:
                 controller_class,
                 controller_method,
                 route_annotation.produces,
+                route_annotation.consumes,
             ))
         return routes
 

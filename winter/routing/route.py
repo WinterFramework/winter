@@ -14,3 +14,4 @@ class Route:
     controller_class: Type
     controller_method: ControllerMethod
     produces: Tuple[MediaType] = None
+    consumes: Tuple[MediaType] = None

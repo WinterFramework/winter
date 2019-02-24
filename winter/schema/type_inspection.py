@@ -12,9 +12,9 @@ import dataclasses
 from drf_yasg import openapi
 from rest_framework.settings import api_settings as rest_settings
 
-from winter.type_utils import UnionType
-from winter.type_utils import get_origin_type
-from winter.type_utils import is_optional
+from ..type_utils import UnionType
+from ..type_utils import get_origin_type
+from ..type_utils import is_optional
 
 TYPE_DECIMAL = openapi.TYPE_STRING if rest_settings.COERCE_DECIMAL_TO_STRING else openapi.TYPE_NUMBER
 _resolvers_by_type: typing.Dict[
