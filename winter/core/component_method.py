@@ -38,14 +38,6 @@ class ComponentMethod:
         self._component = Component.register(owner)
         self._component.add_method(self)
 
-    def __eq__(self, other):
-        if not isinstance(other, ComponentMethod):
-            return False
-        return other.func == self.func
-
-    def __hash__(self):
-        return hash((ComponentMethod, self.func))
-
     @property
     def component(self):
         return self._component
