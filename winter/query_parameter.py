@@ -25,11 +25,11 @@ def query_parameter(name: str, map_to: str = None):
     return annotate_method(annotation)
 
 
-def get_query_param_mapping(method: ComponentMethod, name: str) -> Optional[str]:
+def get_query_param_mapping(method: ComponentMethod, map_to: str) -> Optional[str]:
     annotations = method.annotations.get(QueryParameterAnnotation)
     for query_parameter_annotation in annotations:
-        if query_parameter_annotation.name == name:
-            return query_parameter_annotation.map_to
+        if query_parameter_annotation.map_to == map_to:
+            return query_parameter_annotation.name
     return None
 
 
