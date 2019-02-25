@@ -79,23 +79,26 @@ def test_encoder(value, expected_value):
     assert expected_value == json.loads(json.dumps(value, cls=encoder_class))
 
 
-@pytest.mark.parametrize(('value', 'exception_type', 'exception_message'), (
+@pytest.mark.parametrize(('value', 'exception_type', 'exception_messages'), (
+    (
+        datetime.time(hour=3, minute=50, second=20, tzinfo=pytz.UTC),
+        ValueError,
+        ("JSON can't represent timezone-aware times.", ),
+    ),
+    (
+        object(),
+        TypeError,
         (
-            datetime.time(hour=3, minute=50, second=20, tzinfo=pytz.UTC),
-            ValueError,
-            "JSON can't represent timezone-aware times."
+            f"Object of type '{object.__name__}' is not JSON serializable",
+            f"Object of type {object.__name__} is not JSON serializable",
         ),
-        (
-            object(),
-            TypeError,
-            f"Object of type '{object.__name__}' is not JSON serializable"
-        ),
+    ),
 ))
-def test_encoder_with_raises(value, exception_type, exception_message):
+def test_encoder_with_raises(value, exception_type, exception_messages):
     encoder_class = get_encoder_class()
     data = {'key': value}
 
     with pytest.raises(exception_type) as exception:
         json.dumps(data, cls=encoder_class)
 
-    assert exception.value.args == (exception_message, )
+    assert exception.value.args[0] in exception_messages

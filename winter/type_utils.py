@@ -19,7 +19,7 @@ def is_iterable(typing: object) -> bool:
 
 
 def is_union(typing: object) -> bool:
-    return isinstance(typing, UnionType)
+    return get_origin_type(typing) == Union
 
 
 def get_origin_type(hint_class):
