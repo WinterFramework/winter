@@ -33,5 +33,4 @@ def output_serializer(serializer_class: Type[Serializer], **serializer_kwargs):
 
 
 def get_output_serializer(method: ComponentMethod) -> Optional[OutputSerializer]:
-    output_serializers = method.annotations.get(OutputSerializer)
-    return output_serializers[0] if output_serializers else None
+    return method.annotations.get_one_or_none(OutputSerializer)

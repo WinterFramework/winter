@@ -6,7 +6,7 @@ import uuid
 
 import uritemplate
 
-from winter.core import ComponentMethod
+from ..core import ComponentMethod
 from ..type_utils import get_origin_type
 
 _regexp = {}
@@ -22,7 +22,6 @@ def register_url_regexp(func: types.FunctionType):
 
 
 def rewrite_uritemplate_with_regexps(url_path: str, methods: typing.Iterable[ComponentMethod]) -> str:
-
     for variable_name in uritemplate.variables(url_path):
         arguments = (method.get_argument(variable_name) for method in methods)
 
