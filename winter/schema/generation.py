@@ -21,7 +21,7 @@ from ..routing import Route
 def generate_swagger_for_operation(view_func, controller, route: Route):
     method = route.method
     docstring = docstring_parser.parse(method.func.__doc__)
-    input_serializer = get_input_serializer(method.func)
+    input_serializer = get_input_serializer(method)
     if input_serializer:
         request_body = input_serializer.class_
     else:
