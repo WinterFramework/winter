@@ -1,11 +1,12 @@
-from typing import Dict
 from typing import Optional
 from typing import Tuple
 
 from .route_annotation import RouteAnnotation
+from ..core import Component
+from ..core import ComponentMethod
+from ..core import annotate
 from ..http import MediaType
-
-_route_annotations: Dict[object, RouteAnnotation] = {}
+from ..routing.route import Route
 
 
 def route(
@@ -14,10 +15,8 @@ def route(
         produces: Optional[Tuple[MediaType]] = None,
         consumes: Optional[Tuple[MediaType]] = None,
 ):
-    def wrapper(func):
-        register_route(func, url_path, http_method, produces, consumes)
-        return func
-    return wrapper
+    annotation = RouteAnnotation(url_path, http_method, produces, consumes)
+    return annotate(annotation)
 
 
 def route_get(url_path='', produces: Optional[Tuple[MediaType]] = None, consumes: Optional[Tuple[MediaType]] = None):
@@ -40,16 +39,35 @@ def route_put(url_path='', produces: Optional[Tuple[MediaType]] = None, consumes
     return route(url_path, 'PUT', produces=produces, consumes=consumes)
 
 
-def register_route(
-        func,
-        url_path: str,
-        http_method: Optional[str],
-        produces: Optional[Tuple[MediaType]],
-        consumes: Optional[Tuple[MediaType]],
-):
-    assert func not in _route_annotations, f'{func} is already mapped to a route'
-    _route_annotations[func] = RouteAnnotation(url_path, http_method, produces, consumes)
+def get_route_annotation(component_method_or_component) -> Optional[RouteAnnotation]:
+    if isinstance(component_method_or_component, ComponentMethod):
+        annotations = component_method_or_component.annotations
+        return annotations.get_one(RouteAnnotation)
+    elif isinstance(component_method_or_component, Component):
+        annotations = component_method_or_component.annotations
+        route_annotations = annotations.get(RouteAnnotation)
+        return route_annotations[0] if route_annotations else None
+    else:
+        raise AssertionError(f'invalid {component_method_or_component}')
 
 
-def get_route_annotation(func) -> Optional[RouteAnnotation]:
-    return _route_annotations.get(func)
+def get_route(method: ComponentMethod) -> Route:
+    route = method.annotations.get_one_or_none(Route)
+
+    if route is not None:
+        return route
+
+    component_route_annotation = get_route_annotation(method.component)
+    component_url = component_route_annotation.url_path if component_route_annotation is not None else ''
+
+    route_annotation = get_route_annotation(method)
+    url_path = component_url + route_annotation.url_path
+    route = Route(
+        route_annotation.http_method,
+        url_path,
+        method,
+        route_annotation.produces,
+        route_annotation.consumes,
+    )
+    method.annotations.add(route, single=True)
+    return route

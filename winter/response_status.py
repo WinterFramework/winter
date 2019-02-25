@@ -1,4 +1,12 @@
-_response_statuses = {}
+import typing
+
+import dataclasses
+
+from .core import annotate
+
+if typing.TYPE_CHECKING:  # pragma: no cover
+    from .routing import Route
+
 _default_http_method_statuses = {
     'get': 200,
     'post': 200,
@@ -7,18 +15,19 @@ _default_http_method_statuses = {
 }
 
 
+@dataclasses.dataclass
+class ResponseStatusAnnotation:
+    status_code: int
+
+
 def response_status(status: int):
-    def wrapper(func):
-        _set_default_response_status(func, status)
-        return func
-    return wrapper
+    annotation = ResponseStatusAnnotation(status)
+    return annotate(annotation, single=True)
 
 
-def get_default_response_status(func, http_method: str) -> int:
-    default_response_status = _response_statuses.get(func)
-    http_method = http_method.lower()
-    return default_response_status or _default_http_method_statuses.get(http_method, 200)
-
-
-def _set_default_response_status(func, status: int):
-    _response_statuses[func] = status
+def get_default_response_status(route: 'Route') -> int:
+    method = route.method
+    response_status_annotation = method.annotations.get_one_or_none(ResponseStatusAnnotation)
+    if response_status_annotation is not None:
+        return response_status_annotation.status_code
+    return _default_http_method_statuses.get(route.http_method.lower())

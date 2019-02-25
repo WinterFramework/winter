@@ -3,7 +3,7 @@ import typing
 from drf_yasg.inspectors import SwaggerAutoSchema as SwaggerAutoSchemaBase
 
 from ..routing import Route
-from ..routing import get_route_annotation
+from ..routing.routing import get_route
 
 
 class SwaggerAutoSchema(SwaggerAutoSchemaBase):
@@ -23,7 +23,7 @@ class SwaggerAutoSchema(SwaggerAutoSchemaBase):
     def _get_route_annotation(self) -> typing.Optional[Route]:
         controller_cls = type(self.view)
         func = getattr(controller_cls, self.method.lower(), None)
-        controller_method = func.controller_method if func is not None else None
+        controller_method = func.method if func is not None else None
         if controller_method is None:
             return None
-        return get_route_annotation(controller_method.func)
+        return get_route(controller_method)

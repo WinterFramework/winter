@@ -5,9 +5,7 @@ from types import FunctionType
 
 from .annotations import Annotations
 from .component_method_argument import ComponentMethodArgument
-
-if typing.TYPE_CHECKING:  # pragma: no cover
-    from .component import Component
+from .component import Component
 
 
 class ComponentMethod:
@@ -15,7 +13,7 @@ class ComponentMethod:
     def __init__(self, func: typing.Union[FunctionType, 'ComponentMethod']):
         self.func = func
         self.name: str = None
-        self.component: 'Component' = None
+        self._component: 'Component' = None
         self.annotations = Annotations()
 
         self._component_cls: typing.Type = None
@@ -36,6 +34,21 @@ class ComponentMethod:
     def __set_name__(self, owner: typing.Type, name: str):
         self._component_cls = owner
         self.name = name
+
+        self._component = Component.register(owner)
+        self._component.add_method(self)
+
+    def __eq__(self, other):
+        if not isinstance(other, ComponentMethod):
+            return False
+        return other.func == self.func
+
+    def __hash__(self):
+        return hash((ComponentMethod, self.func))
+
+    @property
+    def component(self):
+        return self._component
 
     @property
     def arguments(self) -> typing.Collection[ComponentMethodArgument]:
