@@ -25,8 +25,8 @@ from ..controllers import ControllerWithExceptions
     }),
 ])
 def test_response_schema(controller_class: Type, method_name: str, expected_responses: Dict):
-    controller_component = get_component(controller_class)
-    method = controller_component.get_method(method_name)
+    component = get_component(controller_class)
+    method = component.get_method(method_name)
     route = get_route(method)
 
     # Act
