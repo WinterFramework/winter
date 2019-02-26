@@ -33,7 +33,7 @@ class AlreadyAnnotated(AnnotationException):
         self.annotation = annotation
 
     def __str__(self):
-        return f'Cannot annotate twice {type(self.annotation)}'
+        return f'Cannot annotate twice: {type(self.annotation)}'
 
 
 class Annotations:

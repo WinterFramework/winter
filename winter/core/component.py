@@ -4,7 +4,7 @@ import typing
 
 from .annotations import Annotations
 
-if typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:  # pragma: no cover
     from .component_method import ComponentMethod
 
 
