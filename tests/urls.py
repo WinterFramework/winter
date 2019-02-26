@@ -8,4 +8,5 @@ urlpatterns = [
     *winter.django.create_django_urls(controllers.ControllerWithExceptions),
     *winter.django.create_django_urls(controllers.ControllerWithMediaTypesRouting),
     *winter.django.create_django_urls(controllers.ControllerWithPathParameters),
+    *winter.django.create_django_urls(controllers.ControllerWithSerializer),
 ]
