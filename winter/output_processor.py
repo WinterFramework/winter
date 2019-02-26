@@ -1,12 +1,11 @@
 import abc
 import typing
 
+import dataclasses
 from rest_framework.request import Request as DRFRequest
 
 from .core import ComponentMethod
 from .core import annotate
-
-_key = 'output_processors'
 
 
 class IOutputProcessor(abc.ABC):
@@ -16,6 +15,11 @@ class IOutputProcessor(abc.ABC):
     @abc.abstractmethod
     def process_output(self, output, request: DRFRequest):  # pragma: no cover
         return output
+
+
+@dataclasses.dataclass
+class OutputProcessorAnnotation:
+    output_processor: IOutputProcessor
 
 
 class IOutputProcessorResolver(abc.ABC):
@@ -38,7 +42,7 @@ _registered_resolvers: typing.List[IOutputProcessorResolver] = []
 
 
 def register_output_processor(method: typing.Callable, output_processor: IOutputProcessor):
-    return annotate(output_processor, key=_key)(method)
+    return annotate(OutputProcessorAnnotation(output_processor), single=True)(method)
 
 
 def register_output_processor_resolver(output_processor_resolver: IOutputProcessorResolver):
@@ -46,9 +50,9 @@ def register_output_processor_resolver(output_processor_resolver: IOutputProcess
 
 
 def get_output_processor(method: ComponentMethod, body: typing.Any) -> typing.Optional[IOutputProcessor]:
-    output_processor = method.annotations.get_one_or_none(_key)
-    if output_processor is not None:
-        return output_processor
+    output_processor_annotation = method.annotations.get_one_or_none(OutputProcessorAnnotation)
+    if output_processor_annotation is not None:
+        return output_processor_annotation.output_processor
     for resolver in _registered_resolvers:
         if resolver.is_supported(body):
             return resolver.get_processor(body)

@@ -3,7 +3,7 @@ import typing
 from drf_yasg.inspectors import SwaggerAutoSchema as SwaggerAutoSchemaBase
 
 from ..routing import Route
-from ..routing.routing import get_route
+from ..routing import get_route
 
 
 class SwaggerAutoSchema(SwaggerAutoSchemaBase):

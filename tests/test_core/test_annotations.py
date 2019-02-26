@@ -57,7 +57,7 @@ def test_get_one_not_found():
     with pytest.raises(NotFoundAnnotation) as exception:
         annotations_.get_one(SimpleAnnotation)
 
-    assert exception.value.annotation_key == SimpleAnnotation
+    assert exception.value.annotation_type == SimpleAnnotation
     assert str(exception.value) == f'Not found annotation for {SimpleAnnotation}'
 
 
@@ -69,7 +69,7 @@ def test_get_one_multiple_raises():
     with pytest.raises(MultipleAnnotationFound) as exception:
         annotations_.get_one(SimpleAnnotation)
 
-    assert exception.value.annotation_key == SimpleAnnotation
+    assert exception.value.annotation_type == SimpleAnnotation
     assert str(exception.value) == f'Found more than one annotation for {SimpleAnnotation}: 2'
 
 

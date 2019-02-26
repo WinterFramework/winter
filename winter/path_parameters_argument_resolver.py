@@ -14,7 +14,7 @@ class PathParametersArgumentResolver(ArgumentResolver):
 
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
         route = get_route(argument.method)
-        return argument.name in route.variables
+        return argument.name in route.path_variables
 
     def resolve_argument(self, argument: ComponentMethodArgument, http_request: Request):
         resolver_match = self._url_resolver.resolve(http_request.path_info)

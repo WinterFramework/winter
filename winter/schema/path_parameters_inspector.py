@@ -6,7 +6,7 @@ from drf_yasg import openapi
 from .controller_method_inspector import ControllerMethodInspector
 from .generation import get_argument_type_info
 from ..core import ComponentMethod
-from ..routing.routing import get_route
+from ..routing import get_route
 
 
 class PathParametersInspector(ControllerMethodInspector):
@@ -17,7 +17,7 @@ class PathParametersInspector(ControllerMethodInspector):
         route = get_route(method)
         parameters = []
 
-        for path_variable_name in route.variables:
+        for path_variable_name in route.path_variables:
             argument = method.get_argument(path_variable_name)
             if not argument:
                 continue

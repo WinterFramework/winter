@@ -16,5 +16,5 @@ class Route:
     consumes: Tuple[MediaType] = None
 
     @property
-    def variables(self):
+    def path_variables(self):
         return uritemplate.variables(self.url_path)

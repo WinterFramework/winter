@@ -7,6 +7,7 @@ from typing import Optional
 from typing import Set
 from typing import Type
 
+import dataclasses
 from rest_framework import status as http_status
 from rest_framework.request import Request
 from rest_framework.response import Response as HTTPResponse
@@ -18,7 +19,10 @@ _throws: DefaultDict[object, Set[Type[Exception]]] = defaultdict(set)
 
 NotHandled = object()
 
-_key = 'exceptions'
+
+@dataclasses.dataclass
+class ExceptionAnnotation:
+    exception_cls: typing.Type[Exception]
 
 
 class WinterException(Exception):
@@ -63,11 +67,12 @@ class ExceptionHandler(abc.ABC):
 
 def throws(exception_cls: Type[Exception]):
     """Decorator to use on methods."""
-    return annotate(exception_cls, key=_key, unique=True)
+    return annotate(ExceptionAnnotation(exception_cls), unique=True)
 
 
-def get_throws(method: ComponentMethod) -> Optional[Set[Type[Exception]]]:
-    return method.annotations.get(_key)
+def get_throws(method: ComponentMethod) -> typing.List[Type[Exception]]:
+    annotations = method.annotations.get(ExceptionAnnotation)
+    return [annotation.exception_cls for annotation in annotations]
 
 
 class ExceptionsHandler(ExceptionHandler):

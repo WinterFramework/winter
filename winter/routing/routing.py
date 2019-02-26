@@ -45,18 +45,12 @@ def get_route_annotation(component_method_or_component) -> Optional[RouteAnnotat
         return annotations.get_one(RouteAnnotation)
     elif isinstance(component_method_or_component, Component):
         annotations = component_method_or_component.annotations
-        route_annotations = annotations.get(RouteAnnotation)
-        return route_annotations[0] if route_annotations else None
+        return annotations.get_one_or_none(RouteAnnotation)
     else:
         raise AssertionError(f'invalid {component_method_or_component}')
 
 
 def get_route(method: ComponentMethod) -> Route:
-    route = method.annotations.get_one_or_none(Route)
-
-    if route is not None:
-        return route
-
     component_route_annotation = get_route_annotation(method.component)
     component_url = component_route_annotation.url_path if component_route_annotation is not None else ''
 
@@ -69,5 +63,4 @@ def get_route(method: ComponentMethod) -> Route:
         route_annotation.produces,
         route_annotation.consumes,
     )
-    method.annotations.add(route, single=True)
     return route
