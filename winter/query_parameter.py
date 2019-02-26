@@ -1,46 +1,46 @@
 import inspect
-from collections import defaultdict
 from typing import Optional
 
+import dataclasses
 import django.http
 import pydantic
-from pydantic.dataclasses import dataclass
 from rest_framework.exceptions import ParseError
 
 from . import type_utils
 from .argument_resolver import ArgumentResolver
-from .controller import ControllerMethodArgument
-
-_query_parameter_mappings = defaultdict(dict)
-
-
-def _register_query_parameter_mapping(function, query_parameter_name: str, map_to: str):
-    _query_parameter_mappings[function][map_to] = query_parameter_name
+from .core import ComponentMethod
+from .core import ComponentMethodArgument
+from .core.annotation_decorator import annotate_method
 
 
-def query_parameter(query_parameter_name: str, map_to: str = None):
-    map_to = map_to or query_parameter_name
-
-    def wrapper(func):
-        _register_query_parameter_mapping(func, query_parameter_name, map_to)
-        return func
-    return wrapper
+@dataclasses.dataclass(frozen=True)
+class QueryParameterAnnotation:
+    name: str
+    map_to: str
 
 
-def get_query_param_mapping(func, name: str) -> Optional[str]:
-    mapping = _query_parameter_mappings.get(func)
-    if not mapping:
-        return None
-    return mapping.get(name)
+def query_parameter(name: str, map_to: str = None):
+    map_to = map_to if map_to is not None else name
+    annotation = QueryParameterAnnotation(name, map_to)
+    return annotate_method(annotation)
+
+
+def get_query_param_mapping(method: ComponentMethod, map_to: str) -> Optional[str]:
+    annotations = method.annotations.get(QueryParameterAnnotation)
+    for query_parameter_annotation in annotations:
+        if query_parameter_annotation.map_to == map_to:
+            return query_parameter_annotation.name
+    return None
 
 
 class QueryParameterResolver(ArgumentResolver):
-    def is_supported(self, argument: ControllerMethodArgument) -> bool:
-        return get_query_param_mapping(argument.method.func, argument.name) is not None
 
-    def resolve_argument(self, argument: ControllerMethodArgument, http_request: django.http.HttpRequest):
+    def is_supported(self, argument: ComponentMethodArgument) -> bool:
+        return get_query_param_mapping(argument.method, argument.name) is not None
+
+    def resolve_argument(self, argument: ComponentMethodArgument, http_request: django.http.HttpRequest):
         query_parameters = http_request.GET
-        query_parameter_name = get_query_param_mapping(argument.method.func, argument.name)
+        query_parameter_name = get_query_param_mapping(argument.method, argument.name)
         if query_parameter_name not in query_parameters:
             default = argument.parameter.default
             if default is not inspect.Parameter.empty:
@@ -54,7 +54,7 @@ class QueryParameterResolver(ArgumentResolver):
         else:
             query_parameter_value = query_parameters[query_parameter_name]
 
-        @dataclass
+        @pydantic.dataclasses.dataclass
         class FieldData:
             value: argument.type_
 

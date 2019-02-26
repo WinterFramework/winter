@@ -4,16 +4,13 @@ AnnotationType = typing.TypeVar('AnnotationType')
 
 
 class AnnotationException(Exception):
-
-    def __init__(self, annotation_type: AnnotationType):
-        self.annotation_type = annotation_type
-        super().__init__(annotation_type)
+    pass
 
 
 class MultipleAnnotationFound(AnnotationException):
 
     def __init__(self, annotation_type: AnnotationType, count: int):
-        super().__init__(annotation_type)
+        self.annotation_type = annotation_type
         self.count = count
 
     def __str__(self):
@@ -22,8 +19,21 @@ class MultipleAnnotationFound(AnnotationException):
 
 class NotFoundAnnotation(AnnotationException):
 
+    def __init__(self, annotation_type: AnnotationType):
+        self.annotation_type = annotation_type
+        super().__init__(annotation_type)
+
     def __str__(self):
         return f'Not found annotation for {self.annotation_type}'
+
+
+class AlreadyAnnotated(AnnotationException):
+
+    def __init__(self, annotation: AnnotationType):
+        self.annotation = annotation
+
+    def __str__(self):
+        return f'Cannot annotate twice: {type(self.annotation)}'
 
 
 class Annotations:
@@ -31,23 +41,34 @@ class Annotations:
     def __init__(self):
         self._data: typing.Dict = {}
 
-    def get(self, annotation_type: typing.Type[AnnotationType]) -> typing.List[AnnotationType]:
+    def get(self, annotation_type: AnnotationType) -> typing.List[AnnotationType]:
         return self._data.get(annotation_type, [])
 
-    def get_one(self, annotation_type: typing.Type[AnnotationType]) -> AnnotationType:
+    def get_one_or_none(self, annotation_type: AnnotationType) -> typing.Optional[AnnotationType]:
         annotations = self.get(annotation_type)
 
         count_annotations = len(annotations)
 
-        if not count_annotations:
-            raise NotFoundAnnotation(annotation_type)
-
         if count_annotations > 1:
             raise MultipleAnnotationFound(annotation_type, count_annotations)
 
-        value = annotations[0]
-        return value
+        return annotations[0] if annotations else None
 
-    def add(self, annotation: AnnotationType):
-        annotations = self._data.setdefault(annotation.__class__, [])
+    def get_one(self, annotation_type: AnnotationType) -> AnnotationType:
+        annotation = self.get_one_or_none(annotation_type)
+        if annotation is None:
+            raise NotFoundAnnotation(annotation_type)
+        return annotation
+
+    def add(self, annotation: AnnotationType, unique=False, single=False):
+        annotation_type = annotation.__class__
+
+        if single and annotation_type in self._data:
+            raise AlreadyAnnotated(annotation)
+
+        annotations = self._data.setdefault(annotation_type, [])
+
+        if unique and annotation in annotations:
+            raise AlreadyAnnotated(annotation)
+
         annotations.append(annotation)

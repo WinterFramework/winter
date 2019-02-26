@@ -5,7 +5,7 @@ from rest_framework.exceptions import ParseError
 from rest_framework.exceptions import ValidationError
 from rest_framework.request import Request as DRFRequest
 
-from winter.controller import ControllerMethod
+from winter.core import ComponentMethod
 from winter.pagination import PagePosition
 from winter.pagination import PagePositionArgumentResolver
 
@@ -18,8 +18,8 @@ def test_is_supported_in_page_position_argument_resolver(argument_type, expected
     def func(arg1: argument_type):
         return arg1
 
-    controller_method = ControllerMethod(func)
-    argument = controller_method.get_argument('arg1')
+    method = ComponentMethod(func)
+    argument = method.get_argument('arg1')
     resolver = PagePositionArgumentResolver()
 
     # Act
@@ -40,8 +40,8 @@ def test_resolve_argument_in_page_position_argument_resolver(query_string, expec
     def func(arg1: int):
         return arg1
 
-    controller_method = ControllerMethod(func)
-    argument = controller_method.get_argument('arg1')
+    method = ComponentMethod(func)
+    argument = method.get_argument('arg1')
 
     resolver = PagePositionArgumentResolver()
 
@@ -63,8 +63,8 @@ def test_resolve_argument_in_page_position_argument_resolver_with_raises(query_s
     def func(arg1: int):
         return arg1
 
-    controller_method = ControllerMethod(func)
-    argument = controller_method.get_argument('arg1')
+    method = ComponentMethod(func)
+    argument = method.get_argument('arg1')
 
     request = Mock(spec=DRFRequest)
     request.query_params = QueryDict(query_string)

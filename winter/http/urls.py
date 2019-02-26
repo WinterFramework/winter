@@ -6,7 +6,7 @@ import uuid
 
 import uritemplate
 
-from ..controller import ControllerMethod
+from ..core import ComponentMethod
 from ..type_utils import get_origin_type
 
 _regexp = {}
@@ -21,7 +21,7 @@ def register_url_regexp(func: types.FunctionType):
     return func
 
 
-def rewrite_uritemplate_with_regexps(url_path: str, methods: typing.List[ControllerMethod]) -> str:
+def rewrite_uritemplate_with_regexps(url_path: str, methods: typing.Iterable[ComponentMethod]) -> str:
     for variable_name in uritemplate.variables(url_path):
         arguments = (method.get_argument(variable_name) for method in methods)
 

@@ -1,9 +1,9 @@
 from typing import Tuple
-from typing import Type
 
 import dataclasses
+import uritemplate
 
-from ..controller import ControllerMethod
+from ..core import ComponentMethod
 from ..http import MediaType
 
 
@@ -11,7 +11,10 @@ from ..http import MediaType
 class Route:
     http_method: str
     url_path: str
-    controller_class: Type
-    controller_method: ControllerMethod
+    method: ComponentMethod
     produces: Tuple[MediaType] = None
     consumes: Tuple[MediaType] = None
+
+    @property
+    def path_variables(self):
+        return uritemplate.variables(self.url_path)

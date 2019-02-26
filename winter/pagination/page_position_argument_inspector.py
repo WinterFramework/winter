@@ -4,7 +4,7 @@ from drf_yasg import openapi
 
 from .page_position import PagePosition
 from .page_position_argument_resolver import PagePositionArgumentResolver
-from ..controller import ControllerMethod
+from ..core import ComponentMethod
 from ..schema import ControllerMethodInspector
 
 
@@ -25,9 +25,9 @@ class PagePositionArgumentInspector(ControllerMethodInspector):
             type=openapi.TYPE_INTEGER,
         )
 
-    def inspect_parameters(self, controller_method: ControllerMethod) -> List[openapi.Parameter]:
+    def inspect_parameters(self, method: ComponentMethod) -> List[openapi.Parameter]:
         parameters = []
-        for argument in controller_method.arguments:
+        for argument in method.arguments:
             if argument.type_ == PagePosition:
                 parameters.append(self.limit_parameter)
                 parameters.append(self.offset_parameter)
