@@ -1,7 +1,6 @@
 import dataclasses
-from rest_framework.throttling import SimpleRateThrottle
+from rest_framework.throttling import ScopedRateThrottle
 
-from ..core import Component
 from ..core import annotate
 
 
@@ -11,39 +10,46 @@ class ThrottlingAnnotation:
 
 
 def throttling(rate: str):
-    return annotate(ThrottlingAnnotation(rate))
+    return annotate(ThrottlingAnnotation(rate), single=True)
 
 
-class WinterRateThrottle(SimpleRateThrottle):
-
-    def get_cache_key(self, request, view):
-        """
-        If `view.throttle_scope` is not set, don't apply this throttle.
-
-        Otherwise generate the unique cache key by concatenating the user id
-        with the '.throttle_scope` property of the view.
-        """
-        if request.user.is_authenticated:
-            ident = request.user.pk
-        else:
-            ident = self.get_ident(request)
-
-        return self.cache_format % {
-            'scope': self.scope,
-            'ident': ident
-        }
+class WinterRateThrottle(ScopedRateThrottle):
 
     def allow_request(self, request, view):
-        controller_cls = type(view)
-        component = Component.get_by_cls(controller_cls)
-        throttling_annotations = component.annotations.get(ThrottlingAnnotation)
 
-        if not throttling_annotations:
+        rate = self._get_rate(request, view)
+        if rate is None:
             return True
-        throttling_annotation = throttling_annotations[0]
 
-        self.num_requests = throttling_annotation.num_requests
-        self.duration = throttling_annotation.duration
+        self.num_requests, self.duration = self.parse_rate(rate)
 
-        # We can now proceed as normal.
-        return super().allow_request(request, view)
+        self.key = self.get_cache_key(request, view)
+
+        self.history = self.cache.get(self.key, [])
+        self.now = self.timer()
+
+        while self.history and self.history[-1] <= self.now - self.duration:
+            self.history.pop()
+        if len(self.history) >= self.num_requests:
+            return self.throttle_failure()
+        return self.throttle_success()
+
+    def _get_rate(self, request, view):
+        controller_cls = type(view)
+
+        func = getattr(controller_cls, request.method.lower(), None)
+        method = getattr(func, 'method', None)
+
+        if method is None:
+            return True
+
+        throttling_annotation = method.annotations.get_one_or_none(ThrottlingAnnotation)
+
+        if throttling_annotation is not None:
+            return throttling_annotation.rate
+
+        throttling_annotation = method.component.annotations.get_one_or_none(ThrottlingAnnotation)
+
+        if throttling_annotation is not None:
+            return throttling_annotation.rate
+        return None
