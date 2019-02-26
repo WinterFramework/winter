@@ -37,7 +37,6 @@ class IOutputProcessorResolver(abc.ABC):
         pass
 
 
-_registered_output_processors = {}
 _registered_resolvers: typing.List[IOutputProcessorResolver] = []
 
 
