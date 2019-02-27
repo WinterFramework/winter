@@ -1,3 +1,7 @@
+import random
+import uuid
+
+
 class User:
 
     @property
@@ -17,6 +21,9 @@ class Guest(User):
 
 
 class AuthorizedUser(User):
+
+    def __init__(self, pk=None):
+        self.pk = pk if pk is not None else uuid.uuid4()
 
     @property
     def is_authenticated(self):
