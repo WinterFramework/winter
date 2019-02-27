@@ -6,7 +6,7 @@ from rest_framework.throttling import SimpleRateThrottle
 from ..core import Component
 from ..core import annotate
 
-if typing.TYPE_CHECKING:
+if typing.TYPE_CHECKING:  # pragma: no cover
     from ..routing import Route
 
 
