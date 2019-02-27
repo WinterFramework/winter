@@ -12,7 +12,6 @@ import dataclasses
 from drf_yasg import openapi
 from rest_framework.settings import api_settings as rest_settings
 
-from ..type_utils import UnionType
 from ..type_utils import get_origin_type
 from ..type_utils import is_optional
 
@@ -23,12 +22,12 @@ _resolvers_by_type: typing.Dict[
 ] = {}
 
 
-def register_type_inspector(*types: typing.Tuple[typing.Type], checker: typing.Callable = None,
+def register_type_inspector(*types_: typing.Tuple[typing.Type], checker: typing.Callable = None,
                             func: typing.Callable = None):
     if func is None:
-        return lambda func: register_type_inspector(*types, checker=checker, func=func)
-    
-    for type_ in types:
+        return lambda func: register_type_inspector(*types_, checker=checker, func=func)
+
+    for type_ in types_:
         callables = _resolvers_by_type.setdefault(type_, [])
         callables.append((func, checker))
     return func
@@ -194,11 +193,11 @@ def inspect_type(hint_class) -> TypeInfo:
     origin_type = get_origin_type(hint_class)
 
     if inspect.isclass(origin_type):
-        types = origin_type.mro()
+        types_ = origin_type.mro()
     else:
-        types = type(origin_type).mro()
+        types_ = type(origin_type).mro()
 
-    for type_ in types:
+    for type_ in types_:
         data = _resolvers_by_type.get(type_, [])
 
         for resolver, checker in data:
