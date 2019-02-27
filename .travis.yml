@@ -15,6 +15,7 @@ before_script:
 
 script:
 - tox
+- sonar-scanner
 
 after_success:
   - |
@@ -22,6 +23,10 @@ after_success:
       chmod +x coverage.sh
       ./coverage.sh
     fi
+
+addons:
+  sonarcloud:
+    organization: "mofr_winter"
 
 deploy:
   provider: pypi
