@@ -12,13 +12,13 @@ class SwaggerAutoSchema(SwaggerAutoSchemaBase):
         route = self._get_route()
         if route is None:
             return super().get_consumes()
-        return [str(media_type) for media_type in route.consumes]
+        return [str(media_type) for media_type in route.consumes or ()]
 
     def get_produces(self):
         route = self._get_route()
         if route is None:
             return super().get_produces()
-        return [str(media_type) for media_type in route.produces]
+        return [str(media_type) for media_type in route.produces or ()]
 
     def _get_route(self) -> typing.Optional[Route]:
         view_cls = type(self.view)
