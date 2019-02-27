@@ -1,7 +1,13 @@
-import dataclasses
-from rest_framework.throttling import ScopedRateThrottle
+import typing
 
+import dataclasses
+from rest_framework.throttling import SimpleRateThrottle
+
+from ..core import Component
 from ..core import annotate
+
+if typing.TYPE_CHECKING:
+    from ..routing import Route
 
 
 @dataclasses.dataclass
@@ -13,15 +19,20 @@ def throttling(rate: str):
     return annotate(ThrottlingAnnotation(rate), single=True)
 
 
-class WinterRateThrottle(ScopedRateThrottle):
+class BaseRateThrottle(SimpleRateThrottle):
+    rate_by_http_method = {}
+
+    def __init__(self):
+        # We do not need base implementation
+        pass
 
     def allow_request(self, request, view):
+        self.rate = self._get_rate(request)
 
-        rate = self._get_rate(request, view)
-        if rate is None:
+        if self.rate is None:
             return True
 
-        self.num_requests, self.duration = self.parse_rate(rate)
+        self.num_requests, self.duration = self.parse_rate(self.rate)
 
         self.key = self.get_cache_key(request, view)
 
@@ -31,25 +42,47 @@ class WinterRateThrottle(ScopedRateThrottle):
         while self.history and self.history[-1] <= self.now - self.duration:
             self.history.pop()
         if len(self.history) >= self.num_requests:
-            return self.throttle_failure()
+            return False
         return self.throttle_success()
 
-    def _get_rate(self, request, view):
-        controller_cls = type(view)
+    def get_cache_key(self, request, view):
+        if request.user.is_authenticated:
+            ident = request.user.pk
+        else:
+            ident = self.get_ident(request)
 
-        func = getattr(controller_cls, request.method.lower(), None)
-        method = getattr(func, 'method', None)
+        return self.cache_format % {
+            'scope': self.scope,
+            'ident': ident
+        }
 
-        if method is None:
-            return True
+    def _get_rate(self, request):
+        return self.rate_by_http_method.get(request.method.lower())
 
-        throttling_annotation = method.annotations.get_one_or_none(ThrottlingAnnotation)
 
-        if throttling_annotation is not None:
-            return throttling_annotation.rate
+def create_throttle_classes(
+        component: Component,
+        routes: typing.List['Route']
+) -> typing.Tuple[typing.Type[BaseRateThrottle], ...]:
 
-        throttling_annotation = method.component.annotations.get_one_or_none(ThrottlingAnnotation)
+    throttling_annotation = component.annotations.get_one_or_none(ThrottlingAnnotation)
+    base_rate = throttling_annotation.rate if throttling_annotation is not None else None
+    rate_by_http_method_ = {}
 
-        if throttling_annotation is not None:
-            return throttling_annotation.rate
-        return None
+    for route in routes:
+
+        throttling_annotation = route.method.annotations.get_one_or_none(ThrottlingAnnotation)
+
+        rate = throttling_annotation.rate if throttling_annotation is not None else base_rate
+
+        rate_by_http_method_[route.http_method.lower()] = rate
+
+    rate_by_http_method_ = {key: value for key, value in rate_by_http_method_.items() if value is not None}
+
+    if not rate_by_http_method_:
+        return ()
+
+    class RateThrottle(BaseRateThrottle):
+        rate_by_http_method = rate_by_http_method_
+
+    return (RateThrottle,)

@@ -21,6 +21,7 @@ from .exceptions import WinterException
 from .exceptions import exceptions_handler
 from .exceptions import get_throws
 from .exceptions import handle_winter_exception
+from .http.throttling import create_throttle_classes
 from .http.urls import rewrite_uritemplate_with_regexps
 from .output_processor import get_output_processor
 from .response_entity import ResponseEntity
@@ -57,6 +58,7 @@ def _create_django_view(controller, component, routes: List[Route]):
     class WinterView(rest_framework.views.APIView):
         authentication_classes = (SessionAuthentication,)
         permission_classes = (IsAuthenticated,) if is_authentication_needed(component) else ()
+        throttle_classes = create_throttle_classes(component, routes)
 
     for route in routes:
         dispatch = _create_dispatch_function(controller, route)

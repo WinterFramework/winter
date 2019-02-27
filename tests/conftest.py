@@ -10,7 +10,6 @@ def pytest_configure():
         REST_FRAMEWORK={
             'DEFAULT_RENDERER_CLASSES': ('winter.json_renderer.JSONRenderer',),
             'UNAUTHENTICATED_USER': Guest,
-            'DEFAULT_THROTTLE_CLASSES': ('winter.http.throttling.WinterRateThrottle',),
         },
     )
     django.setup()
