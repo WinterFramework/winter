@@ -34,7 +34,7 @@ class BaseRateThrottle(BaseThrottle):
     cache = default_cache
     cache_format = 'throttle_{scope}_{ident}'
 
-    def allow_request(self, request, view):
+    def allow_request(self, request, view) -> bool:
         throttling_ = self._get_throttling(request)
 
         if throttling_ is None:
@@ -55,7 +55,7 @@ class BaseRateThrottle(BaseThrottle):
         self.cache.set(key, history, throttling_.duration)
         return True
 
-    def _get_cache_key(self, request, scope: str):
+    def _get_cache_key(self, request, scope: str) -> str:
         if request.user.is_authenticated:
             ident = request.user.pk
         else:
@@ -66,7 +66,7 @@ class BaseRateThrottle(BaseThrottle):
         return self.throttling_by_http_method.get(request.method.lower())
 
 
-def _parse_rate(rate):
+def _parse_rate(rate: str) -> typing.Tuple[int, int]:
     """
     Given the request rate string, return a two tuple of:
     <allowed number of requests>, <period of time in seconds>
