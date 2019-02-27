@@ -5,7 +5,7 @@ import docstring_parser
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from .method_arguments_inspector import get_controller_method_inspectors
+from .method_arguments_inspector import get_method_arguments_inspectors
 from .type_inspection import InspectorNotFound
 from .type_inspection import inspect_type
 from ..core import ComponentMethod
@@ -42,7 +42,7 @@ def build_responses_schemas(route: Route):
     responses = {}
     response_status = str(get_default_response_status(route))
 
-    responses[response_status] = build_response_schema(route, default=openapi.Response(description='Success'))
+    responses[response_status] = build_response_schema(route)
 
     for exception_cls in get_throws(route.method):
         handler = exceptions_handler.get_handler(exception_cls)
@@ -53,7 +53,7 @@ def build_responses_schemas(route: Route):
     return responses
 
 
-def build_response_schema(route, default=None):
+def build_response_schema(route):
     method = route.method
     output_serializer = get_output_serializer(method)
     if output_serializer is not None:
@@ -64,14 +64,14 @@ def build_response_schema(route, default=None):
     try:
         type_info = inspect_type(return_value_type)
     except InspectorNotFound:
-        return default
+        return None
     else:
         return type_info.get_openapi_schema()
 
 
 def _build_method_parameters(method: ComponentMethod) -> List[openapi.Parameter]:
     parameters = []
-    for method_inspector in get_controller_method_inspectors():
+    for method_inspector in get_method_arguments_inspectors():
         parameters += method_inspector.inspect_parameters(method)
     return parameters
 

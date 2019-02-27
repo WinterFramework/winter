@@ -20,5 +20,5 @@ def register_controller_method_inspector(inspector: MethodArgumentsInspector):
     _method_inspectors.append(inspector)
 
 
-def get_controller_method_inspectors() -> List[MethodArgumentsInspector]:
+def get_method_arguments_inspectors() -> List[MethodArgumentsInspector]:
     return _method_inspectors

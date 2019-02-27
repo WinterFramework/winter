@@ -8,7 +8,7 @@ from ..core import ComponentMethod
 from ..schema import MethodArgumentsInspector
 
 
-class PagePositionArgumentInspector(MethodArgumentsInspector):
+class PagePositionArgumentsInspector(MethodArgumentsInspector):
     def __init__(self, page_position_argument_resolver: PagePositionArgumentResolver):
         self.limit_parameter = openapi.Parameter(
             name=page_position_argument_resolver.limit_parameter_name,
