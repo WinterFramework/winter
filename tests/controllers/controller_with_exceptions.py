@@ -5,6 +5,7 @@ import winter
 
 
 class CustomException(Exception):
+
     def __init__(self, message: str):
         super().__init__(message)
         self.message = message
@@ -20,6 +21,7 @@ class CustomExceptionDTO:
 
 
 class CustomExceptionHandler(winter.ExceptionHandler):
+
     @winter.response_status(400)
     def handle(self, request: Request, exception: CustomException) -> CustomExceptionDTO:
         return CustomExceptionDTO(exception.message)

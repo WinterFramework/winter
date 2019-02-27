@@ -14,7 +14,7 @@ class OneTwoEnumWithInt(enum.Enum):
     TWO = 2
 
     @classmethod
-    def _missing_(cls, value): # This is need because of needing of instancing from string
+    def _missing_(cls, value):  # This is need because of needing of instancing from string
         try:
             value = int(value)
         except ValueError:
@@ -27,8 +27,8 @@ class OneTwoEnumWithInt(enum.Enum):
 @winter.route('controller_with_path_parameters/{param1}/')
 class ControllerWithPathParameters:
 
-    @winter.route_get('{param2}/{param3}/{param4}/{param5}/')
     @winter.query_parameter('param6')
+    @winter.route_get('{param2}/{param3}/{param4}/{param5}/')
     def test(
             self,
             param1: str,

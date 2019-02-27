@@ -1,30 +1,30 @@
 from typing import List
 
 import docstring_parser
-import uritemplate
 from drf_yasg import openapi
 
 from .controller_method_inspector import ControllerMethodInspector
 from .generation import get_argument_type_info
-from ..controller import ControllerMethod
-from ..routing import route_table
+from ..core import ComponentMethod
+from ..routing import get_route
 
 
 class PathParametersInspector(ControllerMethodInspector):
-    def inspect_parameters(self, controller_method: ControllerMethod) -> List[openapi.Parameter]:
-        docstring = docstring_parser.parse(controller_method.func.__doc__)
+
+    def inspect_parameters(self, method: ComponentMethod) -> List[openapi.Parameter]:
+        docstring = docstring_parser.parse(method.func.__doc__)
         params_docs = {param_doc.arg_name: param_doc for param_doc in docstring.params}
-        route = route_table.get_method_route(controller_method)
+        route = get_route(method)
         parameters = []
 
-        for path_variable_name in uritemplate.variables(route.url_path):
-            argument = controller_method.get_argument(path_variable_name)
+        for path_variable_name in route.path_variables:
+            argument = method.get_argument(path_variable_name)
             if not argument:
                 continue
             param_doc = params_docs.get(path_variable_name)
             description = param_doc.description if param_doc else ''
             type_info = get_argument_type_info(argument)
-            if not type_info:
+            if type_info is None:
                 type_info = {'type': openapi.TYPE_STRING}
                 description += ' (Note: parameter type can be wrong)'
             parameter = openapi.Parameter(

@@ -1,22 +1,22 @@
-import uritemplate
 from django.urls import get_resolver
 from rest_framework.request import Request
 
 from .argument_resolver import ArgumentResolver
-from .controller import ControllerMethodArgument
-from .routing import route_table
+from .core import ComponentMethodArgument
+from .routing.routing import get_route
 
 
 class PathParametersArgumentResolver(ArgumentResolver):
+
     def __init__(self):
         super().__init__()
         self._url_resolver = get_resolver()
 
-    def is_supported(self, argument: ControllerMethodArgument) -> bool:
-        route = route_table.get_method_route(argument.method)
-        return argument.name in uritemplate.variables(route.url_path)
+    def is_supported(self, argument: ComponentMethodArgument) -> bool:
+        route = get_route(argument.method)
+        return argument.name in route.path_variables
 
-    def resolve_argument(self, argument: ControllerMethodArgument, http_request: Request):
+    def resolve_argument(self, argument: ComponentMethodArgument, http_request: Request):
         resolver_match = self._url_resolver.resolve(http_request.path_info)
         callback, callback_args, callback_kwargs = resolver_match
         return argument.type_(callback_kwargs[argument.name])

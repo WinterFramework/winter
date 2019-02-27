@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from rest_framework.serializers import Serializer
 
 from .output_processor import DRFOutputProcessor
+from ..core import ComponentMethod
+from ..core import annotate
 from ..output_processor import register_output_processor
 
 
@@ -19,18 +21,16 @@ _output_serializers = {}
 
 
 def output_serializer(serializer_class: Type[Serializer], **serializer_kwargs):
-    def wrapper(func):
+    annotation = OutputSerializer(serializer_class, serializer_kwargs)
+
+    def wrapper(method):
+        method = annotate(annotation)(method)
         output_processor = DRFOutputProcessor(serializer_class, serializer_kwargs)
-        register_output_processor(func, output_processor)
-        _register_output_serializer(func, serializer_class, serializer_kwargs)
-        return func
+        method = register_output_processor(method, output_processor)
+        return method
+
     return wrapper
 
 
-def get_output_serializer(func) -> Optional[OutputSerializer]:
-    return _output_serializers.get(func)
-
-
-def _register_output_serializer(func, serializer_class: Type[Serializer], serializer_kwargs: Dict):
-    assert func not in _output_serializers
-    _output_serializers[func] = OutputSerializer(serializer_class, serializer_kwargs)
+def get_output_serializer(method: ComponentMethod) -> Optional[OutputSerializer]:
+    return method.annotations.get_one_or_none(OutputSerializer)

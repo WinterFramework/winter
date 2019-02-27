@@ -6,6 +6,7 @@ from winter.core import annotate
 from winter.core import annotate_class
 from winter.core import annotate_method
 from winter.core import is_component
+from winter.core.annotations import AlreadyAnnotated
 from winter.core.annotations import Annotations
 from winter.core.annotations import MultipleAnnotationFound
 from winter.core.annotations import NotFoundAnnotation
@@ -95,3 +96,42 @@ def test_annotate_with_instance(decorator_factory, error_message_template):
         decorator(instance)
 
     assert str(exception.value) == error_message_template.format(instance=instance)
+
+
+def test_empty_annotation():
+    @annotate(None)
+    class Controller:
+
+        @annotate(None)
+        def simple_method(self):
+            return None
+
+    component = Component.get_by_cls(Controller)
+
+    # Assert
+    assert Controller.simple_method.annotations.get_one_or_none(None) is None
+    assert Controller.simple_method.annotations.get_one_or_none(type(None)) is None
+    assert component.annotations.get_one_or_none(None) is None
+    assert component.annotations.get_one_or_none(type(None)) is None
+
+
+def test_try_twice_annotation_with_single():
+    with pytest.raises(AlreadyAnnotated) as exception:
+        @annotate(SimpleAnnotation('test'), single=True)
+        @annotate(SimpleAnnotation('test'), single=True)
+        def simple_method():
+            return None
+
+    assert exception.value.annotation == SimpleAnnotation('test')
+    assert str(exception.value) == f'Cannot annotate twice: {SimpleAnnotation}'
+
+
+def test_try_twice_annotation_with_unique():
+    with pytest.raises(AlreadyAnnotated) as exception:
+        @annotate(SimpleAnnotation('test'), unique=True)
+        @annotate(SimpleAnnotation('test'), unique=True)
+        def simple_method():
+            return None
+
+    assert exception.value.annotation == SimpleAnnotation('test')
+    assert str(exception.value) == f'Cannot annotate twice: {SimpleAnnotation}'
