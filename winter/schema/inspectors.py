@@ -21,8 +21,13 @@ class SwaggerAutoSchema(SwaggerAutoSchemaBase):
         return [str(media_type) for media_type in route.produces]
 
     def _get_route(self) -> typing.Optional[Route]:
-        controller_cls = type(self.view)
-        method = getattr(controller_cls, self.method.lower(), None)
+        view_cls = type(self.view)
+        func = getattr(view_cls, self.method.lower(), None)
+        if func is None:
+            return None
+
+        method = getattr(func, 'method', None)
+
         if method is None:
             return None
         return get_route(method)
