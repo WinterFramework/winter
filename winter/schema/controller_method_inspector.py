@@ -2,11 +2,12 @@ from typing import List
 
 from drf_yasg import openapi
 
-from ..controller import ControllerMethod
+from ..core import ComponentMethod
 
 
 class ControllerMethodInspector:
-    def inspect_parameters(self, controller_method: ControllerMethod) -> List[openapi.Parameter]:
+
+    def inspect_parameters(self, controller_method: ComponentMethod) -> List[openapi.Parameter]:
         return []
 
 

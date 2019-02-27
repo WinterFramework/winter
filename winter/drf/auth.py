@@ -1,14 +1,14 @@
-_no_authentication_controller_classes = set()
+from ..core import annotate
+
+
+class NotNeedAuthentication:
+    pass
 
 
 def no_authentication(controller_class):
-    _register_no_authentication_controller(controller_class)
-    return controller_class
+    return annotate(NotNeedAuthentication(), single=True)(controller_class)
 
 
-def is_authentication_needed(controller_class) -> bool:
-    return controller_class not in _no_authentication_controller_classes
+def is_authentication_needed(component) -> bool:
+    return component.annotations.get_one_or_none(NotNeedAuthentication) is None
 
-
-def _register_no_authentication_controller(controller_class):
-    _no_authentication_controller_classes.add(controller_class)

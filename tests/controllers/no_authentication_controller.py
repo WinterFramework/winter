@@ -6,7 +6,7 @@ import winter
 @winter.no_authentication
 class NoAuthenticationController:
 
-    @winter.route_get('/')
     @winter.query_parameter('name')
+    @winter.route_get('/')
     def hello(self) -> str:
         return f'Hello, World!'

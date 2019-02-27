@@ -4,7 +4,8 @@ from typing import Type
 import pytest
 from drf_yasg import openapi
 
-from winter.controller import get_controller_component
+from winter.controller import get_component
+from winter.routing.routing import get_route
 from winter.schema.generation import build_responses_schemas
 from ..controllers import ControllerWithExceptions
 
@@ -24,11 +25,12 @@ from ..controllers import ControllerWithExceptions
     }),
 ])
 def test_response_schema(controller_class: Type, method_name: str, expected_responses: Dict):
-    controller_component = get_controller_component(controller_class)
-    method = controller_component.get_method(method_name)
+    component = get_component(controller_class)
+    method = component.get_method(method_name)
+    route = get_route(method)
 
     # Act
-    responses = build_responses_schemas(method)
+    responses = build_responses_schemas(route)
 
     # Assert
     assert responses == expected_responses

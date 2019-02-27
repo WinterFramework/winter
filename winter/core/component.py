@@ -1,8 +1,11 @@
 import inspect
+import types
 import typing
 
 from .annotations import Annotations
-from .component_method import ComponentMethod
+
+if typing.TYPE_CHECKING:  # pragma: no cover
+    from .component_method import ComponentMethod
 
 
 class Component:
@@ -11,12 +14,19 @@ class Component:
     def __init__(self, component_cls: typing.Type):
         self.component_cls = component_cls
         self.annotations = Annotations()
-        self.methods: typing.Tuple[ComponentMethod] = tuple(
-            component_method for component_method in component_cls.__dict__.values()
-            if isinstance(component_method, ComponentMethod)
-        )
-        for method in self.methods:
-            method.component = self
+        self._methods: typing.Dict[str, 'ComponentMethod'] = {}
+
+    @property
+    def methods(self):
+        return self._methods.values()
+
+    def get_method(self, name: str) -> typing.Optional['ComponentMethod']:
+        return self._methods.get(name)
+
+    def add_method(self, method: 'ComponentMethod'):
+        method_name = method.name
+        assert method_name not in self._methods, 'Component cannot have two methods with same name'
+        self._methods[method_name] = method
 
     @classmethod
     def register(cls, cls_: typing.Type) -> 'Component':

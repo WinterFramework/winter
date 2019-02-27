@@ -5,7 +5,7 @@ from rest_framework.request import Request as DRFRequest
 
 from .page_position import PagePosition
 from ..argument_resolver import ArgumentResolver
-from ..controller import ControllerMethodArgument
+from ..core import ComponentMethodArgument
 
 
 class PagePositionArgumentResolver(ArgumentResolver):
@@ -14,10 +14,10 @@ class PagePositionArgumentResolver(ArgumentResolver):
         self.limit_parameter_name = limit_parameter_name
         self.offset_parameter_name = offset_parameter_name
 
-    def is_supported(self, argument: ControllerMethodArgument) -> bool:
+    def is_supported(self, argument: ComponentMethodArgument) -> bool:
         return argument.type_ == PagePosition
 
-    def resolve_argument(self, argument: ControllerMethodArgument, http_request: DRFRequest) -> PagePosition:
+    def resolve_argument(self, argument: ComponentMethodArgument, http_request: DRFRequest) -> PagePosition:
         raw_limit = http_request.query_params.get(self.limit_parameter_name)
         raw_offset = http_request.query_params.get(self.offset_parameter_name)
 
