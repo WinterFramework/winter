@@ -26,7 +26,7 @@ after_success:
 
 addons:
   sonarcloud:
-    organization: "mofr_winter"
+    organization: "mofr"
 
 deploy:
   provider: pypi
