@@ -19,8 +19,8 @@ class Id(int):
 
 class Enum(enum.Enum):
     ID = Id(1)
-    NUMBER = 1
-    FLOAT = 2.0
+    NUMBER = 2
+    FLOAT = 3.0
     TUPLE = ('000', 1)
     ARRAY = ['000', 1]
     STRING = 'test string'
@@ -40,7 +40,7 @@ class Dataclass:
     nested: NestedDataclass
 
 def generator():
-    yield 1
+    yield Enum.NUMBER
 
 
 def get_encoder_class():
@@ -52,14 +52,14 @@ def get_encoder_class():
     (1, 1),
     ([], []),
     (frozenset(), []),
-    (generator(), [1]),
+    (generator(), [2]),
     (set(), []),
     (Id(1), 1),
     (ugettext_lazy('translated_text'), 'translated_text'),
     (ugettext('translated_text'), 'translated_text'),
     (Enum.ID, 1),
-    (Enum.NUMBER, 1),
-    (Enum.FLOAT, 2.0),
+    (Enum.NUMBER, 2),
+    (Enum.FLOAT, 3.0),
     (Enum.TUPLE, ['000', 1]),
     (Enum.ARRAY, ['000', 1]),
     (Enum.STRING, 'test string'),
