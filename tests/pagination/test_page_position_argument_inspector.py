@@ -1,6 +1,6 @@
 import pytest
 
-from winter.controller import ControllerMethod
+from winter.core import ComponentMethod
 from winter.pagination import PagePosition
 from winter.pagination import PagePositionArgumentInspector
 from winter.pagination import PagePositionArgumentResolver
@@ -14,7 +14,7 @@ def test_page_position_argument_inspector(argument_type, must_return_parameters)
     def func(arg1: argument_type):
         return arg1
 
-    controller_method = ControllerMethod(func)
+    method = ComponentMethod(func)
     resolver = PagePositionArgumentResolver()
     inspector = PagePositionArgumentInspector(resolver)
 
@@ -27,7 +27,7 @@ def test_page_position_argument_inspector(argument_type, must_return_parameters)
         expected_parameters = []
 
     # Act
-    parameters = inspector.inspect_parameters(controller_method)
+    parameters = inspector.inspect_parameters(method)
 
     # Assert
     assert parameters == expected_parameters

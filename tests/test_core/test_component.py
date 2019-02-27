@@ -37,10 +37,10 @@ def test_methods():
         def simple_method(self):
             return self
 
-    component = Component(SimpleComponent)
+    component = Component.get_by_cls(SimpleComponent)
 
     assert len(component.methods) == 1, SimpleComponent.simple_method
-    method = component.methods[0]
+    method = component.get_method('simple_method')
 
     assert method is SimpleComponent.simple_method
     component = SimpleComponent()

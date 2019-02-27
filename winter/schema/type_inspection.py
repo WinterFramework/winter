@@ -165,7 +165,7 @@ def inspect_enum(enum_class: typing.Type[enum.Enum]) -> TypeInfo:
     return type_info
 
 
-@register_type_inspector(UnionType, checker=is_optional)
+@register_type_inspector(object, checker=is_optional)
 def inspect_optional(hint_class) -> TypeInfo:
     child_type = hint_class.__args__[0]
     type_info = inspect_type(child_type)
