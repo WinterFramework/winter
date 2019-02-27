@@ -40,7 +40,8 @@ class BaseRateThrottle(BaseThrottle):
         if throttling_ is None:
             return True
 
-        key = self._get_cache_key(request, throttling_.scope)
+        ident = self.get_ident(request)
+        key = self._get_cache_key(throttling_.scope, ident)
 
         history = self.cache.get(key, [])
         now = time.time()
@@ -55,12 +56,17 @@ class BaseRateThrottle(BaseThrottle):
         self.cache.set(key, history, throttling_.duration)
         return True
 
-    def _get_cache_key(self, request, scope: str) -> str:
-        if request.user.is_authenticated:
-            ident = request.user.pk
-        else:
-            ident = self.get_ident(request)
+    def _get_cache_key(self, scope: str, ident: str) -> str:
         return self.cache_format.format(scope=scope, ident=ident)
+
+    def get_ident(self, request) -> str:
+        user_pk = request.user.pk if request.user.is_authenticated else None
+
+        if user_pk is not None:
+            return str(user_pk)
+
+        return super().get_ident(request)
+
 
     def _get_throttling(self, request) -> typing.Optional[Throttling]:
         return self.throttling_by_http_method.get(request.method.lower())
