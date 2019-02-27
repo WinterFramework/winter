@@ -35,27 +35,27 @@ class BaseRateThrottle(BaseThrottle):
     cache_format = 'throttle_{scope}_{ident}'
 
     def allow_request(self, request, view):
-        throttling = self._get_throttling(request)
+        throttling_ = self._get_throttling(request)
 
-        if throttling is None:
+        if throttling_ is None:
             return True
 
-        self.key = self._get_cache_key(request, view, throttling.scope)
+        key = self._get_cache_key(request, throttling_.scope)
 
-        history = self.cache.get(self.key, [])
-        self.now = time.time()
+        history = self.cache.get(key, [])
+        now = time.time()
 
-        while history and history[-1] <= self.now - throttling.duration:
+        while history and history[-1] <= now - throttling_.duration:
             history.pop()
 
-        if len(history) >= throttling.num_requests:
+        if len(history) >= throttling_.num_requests:
             return False
 
-        history.insert(0, self.now)
-        self.cache.set(self.key, history, throttling.duration)
+        history.insert(0, now)
+        self.cache.set(key, history, throttling_.duration)
         return True
 
-    def _get_cache_key(self, request, view, scope: str):
+    def _get_cache_key(self, request, scope: str):
         if request.user.is_authenticated:
             ident = request.user.pk
         else:
@@ -74,7 +74,7 @@ def _parse_rate(rate):
     num, period = rate.split('/')
     num_requests = int(num)
     duration = {'s': 1, 'm': 60, 'h': 3600, 'd': 86400}[period[0]]
-    return (num_requests, duration)
+    return num_requests, duration
 
 
 def create_throttle_classes(
@@ -93,8 +93,8 @@ def create_throttle_classes(
 
         if throttling_annotation is not None and throttling_annotation.rate is not None:
             num_requests, duration = _parse_rate(throttling_annotation.rate)
-            throttling = Throttling(num_requests, duration, throttling_annotation.scope)
-            throttling_by_http_method_[route.http_method.lower()] = throttling
+            throttling_ = Throttling(num_requests, duration, throttling_annotation.scope)
+            throttling_by_http_method_[route.http_method.lower()] = throttling_
 
     if not throttling_by_http_method_:
         return ()
