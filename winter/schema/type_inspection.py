@@ -1,4 +1,3 @@
-import collections
 import datetime
 import decimal
 import enum
@@ -7,6 +6,7 @@ import types
 import typing
 import uuid
 from collections import OrderedDict
+from collections.abc import Iterable
 
 import dataclasses
 from drf_yasg import openapi
@@ -142,7 +142,7 @@ def inspect_date(hint_class) -> TypeInfo:
 
 
 # noinspection PyUnusedLocal
-@register_type_inspector(list, tuple, collections.Iterable)
+@register_type_inspector(list, tuple, Iterable)
 def inspect_iterable(hint_class) -> TypeInfo:
     args = getattr(hint_class, '__args__', None)
     child_class = args[0] if args else str
