@@ -127,8 +127,14 @@ def test_compare_type_info(first, second, is_same):
 
 
 @pytest.mark.parametrize(('enum_cls', 'expected_value'), (
-        (IntegerValueEnum, {'enum': [1, 2], 'type': 'integer'}),
-        (StringValueEnum, {'enum': ['red', 'green'], 'type': 'string'}),
+        (IntegerValueEnum, {
+            'enum': [1, 2],
+            'type': 'integer'
+        }),
+        (StringValueEnum, {
+            'enum': ['red', 'green'],
+            'type': 'string'
+        }),
 ))
 def test_inspect_enum_class(enum_cls, expected_value):
     assert inspect_enum_class(enum_cls) == expected_value

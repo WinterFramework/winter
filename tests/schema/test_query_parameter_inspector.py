@@ -14,7 +14,6 @@ class ControllerForQueryParameter:
             valid_query_param: int,
             invalid_query_param: object,
     ):
-
         pass
 
 
