@@ -39,6 +39,9 @@ class Dataclass:
     date: datetime.date
     nested: NestedDataclass
 
+def generator():
+    yield 1
+
 
 def get_encoder_class():
     return JSONEncoder
@@ -48,6 +51,8 @@ def get_encoder_class():
     (None, None),
     (1, 1),
     ([], []),
+    (frozenset(), []),
+    (generator(), [1]),
     (set(), []),
     (Id(1), 1),
     (ugettext_lazy('translated_text'), 'translated_text'),

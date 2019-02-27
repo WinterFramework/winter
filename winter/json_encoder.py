@@ -2,6 +2,7 @@ import datetime
 import decimal
 import inspect
 import json
+import types
 import uuid
 from enum import Enum
 from typing import Callable
@@ -133,6 +134,16 @@ def list_encoder(array: list):
 @register_encoder
 def set_encoder(set_: set):
     return list(set_)
+
+
+@register_encoder
+def frozenset_encoder(frozenset_: frozenset):
+    return list(frozenset_)
+
+
+@register_encoder
+def frozenset_encoder(generator: types.GeneratorType):
+    return list(generator)
 
 
 @register_encoder(need_recursion=True)
