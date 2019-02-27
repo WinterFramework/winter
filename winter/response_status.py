@@ -10,6 +10,7 @@ if typing.TYPE_CHECKING:  # pragma: no cover
 _default_http_method_statuses = {
     'get': 200,
     'post': 200,
+    'put': 200,
     'patch': 200,
     'delete': 204,
 }
