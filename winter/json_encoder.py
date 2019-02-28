@@ -142,7 +142,7 @@ def frozenset_encoder(frozenset_: frozenset):
 
 
 @register_encoder
-def frozenset_encoder(generator: types.GeneratorType):
+def generator_encoder(generator: types.GeneratorType):
     return list(generator)
 
 
