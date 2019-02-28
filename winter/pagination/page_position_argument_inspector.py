@@ -5,10 +5,10 @@ from drf_yasg import openapi
 from .page_position import PagePosition
 from .page_position_argument_resolver import PagePositionArgumentResolver
 from ..core import ComponentMethod
-from ..schema import ControllerMethodInspector
+from ..schema import MethodArgumentsInspector
 
 
-class PagePositionArgumentInspector(ControllerMethodInspector):
+class PagePositionArgumentsInspector(MethodArgumentsInspector):
     def __init__(self, page_position_argument_resolver: PagePositionArgumentResolver):
         self.limit_parameter = openapi.Parameter(
             name=page_position_argument_resolver.limit_parameter_name,
