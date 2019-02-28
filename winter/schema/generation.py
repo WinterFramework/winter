@@ -5,7 +5,7 @@ import docstring_parser
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from .controller_method_inspector import get_controller_method_inspectors
+from .method_arguments_inspector import get_method_arguments_inspectors
 from .type_inspection import InspectorNotFound
 from .type_inspection import inspect_type
 from ..core import ComponentMethod
@@ -16,6 +16,7 @@ from ..exceptions import exceptions_handler
 from ..exceptions import get_throws
 from ..response_status import get_default_response_status
 from ..routing import Route
+from ..schema.type_inspection import TypeInfo
 
 
 def generate_swagger_for_operation(view_func, controller, route: Route):
@@ -40,19 +41,15 @@ def generate_swagger_for_operation(view_func, controller, route: Route):
 def build_responses_schemas(route: Route):
     responses = {}
     response_status = str(get_default_response_status(route))
-    try:
-        responses[response_status] = build_response_schema(route)
-    except InspectorNotFound:
-        responses[response_status] = openapi.Response(description='Success')
+
+    responses[response_status] = build_response_schema(route)
+
     for exception_cls in get_throws(route.method):
         handler = exceptions_handler.get_handler(exception_cls)
         if handler is None:
             continue
         response_status = str(get_default_response_status(handler.route))
-        try:
-            responses[response_status] = build_response_schema(handler.route)
-        except InspectorNotFound:
-            continue
+        responses[response_status] = build_response_schema(handler.route)
     return responses
 
 
@@ -64,21 +61,25 @@ def build_response_schema(route):
 
     type_hints = typing.get_type_hints(method.func)
     return_value_type = type_hints.get('return', None)
-    type_info = inspect_type(return_value_type)
-    return type_info.get_openapi_schema()
+    try:
+        type_info = inspect_type(return_value_type)
+    except InspectorNotFound:
+        return None
+    else:
+        return type_info.get_openapi_schema()
 
 
 def _build_method_parameters(method: ComponentMethod) -> List[openapi.Parameter]:
     parameters = []
-    for method_inspector in get_controller_method_inspectors():
+    for method_inspector in get_method_arguments_inspectors():
         parameters += method_inspector.inspect_parameters(method)
     return parameters
 
 
-def get_argument_type_info(argument: ComponentMethodArgument) -> typing.Optional[dict]:
+def get_argument_type_info(argument: ComponentMethodArgument) -> typing.Optional[TypeInfo]:
     try:
         type_info = inspect_type(argument.type_)
     except InspectorNotFound:
         return None
     else:
-        return type_info.as_dict()
+        return type_info

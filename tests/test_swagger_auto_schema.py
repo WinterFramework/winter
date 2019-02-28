@@ -18,10 +18,10 @@ def auto_schema():
         del View.post.method
 
 
-def get_empty_swagger_auto_schema():
+def get_empty_swagger_auto_schema(method: str = 'post'):
     view = View()
 
-    return SwaggerAutoSchema(view, 'path', 'patch', 'components', 'request', {})
+    return SwaggerAutoSchema(view, 'path', method, 'components', 'request', {})
 
 
 class View(APIView):
@@ -53,7 +53,8 @@ def test_get_produces_without_method():
     assert consumes == ['application/json']
 
 
-def test_get_consumes_without_method():
-    auto_schema = get_empty_swagger_auto_schema()
+@pytest.mark.parametrize('method', ('post', 'patch'))
+def test_get_consumes_without_method(method):
+    auto_schema = get_empty_swagger_auto_schema(method)
     consumes = auto_schema.get_consumes()
     assert consumes == ['application/json']
