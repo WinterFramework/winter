@@ -2,9 +2,9 @@ from typing import List
 
 from drf_yasg import openapi
 
+from .docstring_parser import DocstringParser
 from .generation import get_argument_type_info
 from .method_arguments_inspector import MethodArgumentsInspector
-from .utils import DocstringParser
 from ..core import ComponentMethod
 from ..query_parameter import get_query_param_mapping
 
@@ -34,8 +34,8 @@ class QueryParametersInspector(MethodArgumentsInspector):
                 }
                 invalid_type_hint = True
             else:
-                invalid_type_hint = False
                 type_info_data = type_info.as_dict()
+                invalid_type_hint = False
 
             description = docstring_parser.get_description(query_parameter_name, invalid_type_hint)
 

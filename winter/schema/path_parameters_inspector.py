@@ -2,9 +2,9 @@ from typing import List
 
 from drf_yasg import openapi
 
+from .docstring_parser import DocstringParser
 from .generation import get_argument_type_info
 from .method_arguments_inspector import MethodArgumentsInspector
-from .utils import DocstringParser
 from ..core import ComponentMethod
 from ..routing import get_route
 
@@ -29,8 +29,8 @@ class PathParametersInspector(MethodArgumentsInspector):
                 }
                 invalid_type_hint = True
             else:
-                invalid_type_hint = False
                 type_info_data = type_info.as_dict()
+                invalid_type_hint = False
 
             parameter = openapi.Parameter(
                 name=argument.name,
