@@ -1,13 +1,10 @@
-import inspect
 from typing import List
 
-import docstring_parser
 from drf_yasg import openapi
 
 from .generation import get_argument_type_info
 from .method_arguments_inspector import MethodArgumentsInspector
-from .utils import update_doc_with_invalid_hype_hint
-from .. import type_utils
+from .utils import DocstringParser
 from ..core import ComponentMethod
 from ..query_parameter import get_query_param_mapping
 
@@ -15,9 +12,7 @@ from ..query_parameter import get_query_param_mapping
 class QueryParametersInspector(MethodArgumentsInspector):
 
     def inspect_parameters(self, method: ComponentMethod) -> List[openapi.Parameter]:
-        docstring = docstring_parser.parse(method.func.__doc__)
-        params_docs = {param_doc.arg_name: param_doc for param_doc in docstring.params}
-
+        docstring_parser = DocstringParser(method.func.__doc__)
         parameters = []
 
         for argument in method.arguments:
@@ -26,25 +21,28 @@ class QueryParametersInspector(MethodArgumentsInspector):
             if query_parameter_name is None:
                 continue
 
-            param_doc = params_docs.get(query_parameter_name)
-            description = param_doc.description if param_doc else ''
             default_params = {}
-            default = argument.parameter.default
-            if default is not inspect.Parameter.empty:
-                default_params['default'] = default
-            required = default is inspect.Parameter.empty and not type_utils.is_optional(argument.type_)
+
+            if argument.has_default():
+                default_params['default'] = argument.default
+
             type_info = get_argument_type_info(argument)
 
             if type_info is None:
-                type_info_data = {'type': openapi.TYPE_STRING}
-                description = update_doc_with_invalid_hype_hint(description)
+                type_info_data = {
+                    'type': openapi.TYPE_STRING
+                }
+                invalid_type_hint = True
             else:
+                invalid_type_hint = False
                 type_info_data = type_info.as_dict()
+
+            description = docstring_parser.get_description(query_parameter_name, invalid_type_hint)
 
             parameter = openapi.Parameter(
                 name=query_parameter_name,
                 description=description,
-                required=required,
+                required=argument.required,
                 in_=openapi.IN_QUERY,
                 **type_info_data,
                 **default_params,
