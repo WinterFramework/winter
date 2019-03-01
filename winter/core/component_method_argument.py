@@ -9,6 +9,7 @@ from .. import type_utils
 if typing.TYPE_CHECKING:  # pragma: no cover
     from .component_method import ComponentMethod
 
+
 @dataclasses.dataclass(frozen=True)
 class ComponentMethodArgument:
     method: 'ComponentMethod'
@@ -26,5 +27,6 @@ class ComponentMethodArgument:
     def default(self):
         return self.parameter.default
 
+    @property
     def required(self) -> bool:
         return self.default is inspect.Parameter.empty and not type_utils.is_optional(self.type_)
