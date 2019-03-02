@@ -10,10 +10,6 @@ import winter
 from winter.query_parameter import QueryParameterResolver
 
 
-def get_resolver():
-    return QueryParameterResolver()
-
-
 def get_request(query_string):
     django_request = HttpRequest()
     django_request.GET = QueryDict(query_string, mutable=True)
@@ -41,7 +37,7 @@ def test_query_parameter_resolver(argument_name, query_string, expected_value):
     ):
         return without_default, optional, array, with_default
 
-    resolver = get_resolver()
+    resolver = QueryParameterResolver()
 
     argument = method.get_argument(argument_name)
     request = get_request(query_string)
@@ -58,7 +54,7 @@ def test_query_parameter_resolver_with_raises(query_string, expected_exception_m
     def method(query_param: int):
         return query_param
 
-    resolver = get_resolver()
+    resolver = QueryParameterResolver()
 
     argument = method.get_argument('query_param')
     request = get_request(query_string)
