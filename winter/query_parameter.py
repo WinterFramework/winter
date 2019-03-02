@@ -1,9 +1,8 @@
-import inspect
 from typing import Optional
 
 import dataclasses
-import django.http
 import pydantic
+import rest_framework.request
 from rest_framework.exceptions import ParseError
 
 from . import type_utils
@@ -38,14 +37,13 @@ class QueryParameterResolver(ArgumentResolver):
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
         return get_query_param_mapping(argument.method, argument.name) is not None
 
-    def resolve_argument(self, argument: ComponentMethodArgument, http_request: django.http.HttpRequest):
+    def resolve_argument(self, argument: ComponentMethodArgument, http_request: rest_framework.request.Request):
         query_parameters = http_request.GET
         query_parameter_name = get_query_param_mapping(argument.method, argument.name)
         if query_parameter_name not in query_parameters:
-            default = argument.parameter.default
-            if default is not inspect.Parameter.empty:
-                return default
-            elif type_utils.is_optional(argument.type_):
+            if argument.has_default():
+                return argument.default
+            elif not argument.required:
                 return None
             else:
                 raise ParseError(f'Missing required query parameter "{query_parameter_name}"')

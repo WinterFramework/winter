@@ -2,9 +2,9 @@ from typing import List
 
 from drf_yasg import openapi
 
-from .docstring_parser import DocstringParser
 from .generation import get_argument_type_info
 from .method_arguments_inspector import MethodArgumentsInspector
+from .utils import update_doc_with_invalid_hype_hint
 from ..core import ComponentMethod
 from ..query_parameter import get_query_param_mapping
 
@@ -12,7 +12,6 @@ from ..query_parameter import get_query_param_mapping
 class QueryParametersInspector(MethodArgumentsInspector):
 
     def inspect_parameters(self, method: ComponentMethod) -> List[openapi.Parameter]:
-        docstring_parser = DocstringParser(method.func.__doc__)
         parameters = []
 
         for argument in method.arguments:
@@ -32,12 +31,11 @@ class QueryParametersInspector(MethodArgumentsInspector):
                 type_info_data = {
                     'type': openapi.TYPE_STRING
                 }
-                invalid_type_hint = True
+                description = update_doc_with_invalid_hype_hint(argument.description)
+
             else:
                 type_info_data = type_info.as_dict()
-                invalid_type_hint = False
-
-            description = docstring_parser.get_description(query_parameter_name, invalid_type_hint)
+                description = argument.description
 
             parameter = openapi.Parameter(
                 name=query_parameter_name,
