@@ -38,7 +38,7 @@ class QueryParameterResolver(ArgumentResolver):
         return get_query_param_mapping(argument.method, argument.name) is not None
 
     def resolve_argument(self, argument: ComponentMethodArgument, http_request: rest_framework.request.Request):
-        query_parameters = http_request.GET
+        query_parameters = http_request.query_params
         query_parameter_name = get_query_param_mapping(argument.method, argument.name)
         if query_parameter_name not in query_parameters:
             if argument.has_default():
