@@ -33,7 +33,12 @@ def test_query_parameter_resolver(argument_name, query_string, expected_value):
     @winter.query_parameter('optional')
     @winter.query_parameter('with_default')
     @winter.query_parameter('array')
-    def method(without_default: int, optional: typing.Optional[str], array: typing.List[int], with_default: str = 'default'):
+    def method(
+            without_default: int,
+            optional: typing.Optional[str],
+            array: typing.List[int],
+            with_default: str = 'default',
+    ):
         return without_default, optional, array, with_default
 
     resolver = get_resolver()
@@ -43,15 +48,16 @@ def test_query_parameter_resolver(argument_name, query_string, expected_value):
     assert resolver.is_supported(argument)
     assert resolver.resolve_argument(argument, request) == expected_value
 
+
 @pytest.mark.parametrize(('query_string', 'expected_exception_message'), (
         ('query_param=invalid_int', 'Invalid query parameter "query_param" value "invalid_int"'),
-        ( '', 'Missing required query parameter "query_param"'),
+        ('', 'Missing required query parameter "query_param"'),
 ))
 def test_query_parameter_resolver_with_raises(query_string, expected_exception_message):
-
     @winter.query_parameter('query_param')
     def method(query_param: int):
         return query_param
+
     resolver = get_resolver()
 
     argument = method.get_argument('query_param')
