@@ -1,41 +1,38 @@
+import typing
 from typing import List
 
 from drf_yasg import openapi
 
 from .generation import get_argument_type_info
 from .method_arguments_inspector import MethodArgumentsInspector
+from .type_inspection import TypeInfo
 from .utils import update_doc_with_invalid_hype_hint
-from ..core import ComponentMethod
-from ..routing import get_route
+from ..routing import Route
+
+if typing.TYPE_CHECKING:  # pragma: no cover
+    from ..routing import Route
 
 
 class PathParametersInspector(MethodArgumentsInspector):
+    _default_type_info = TypeInfo(openapi.TYPE_STRING)
 
-    def inspect_parameters(self, method: ComponentMethod) -> List[openapi.Parameter]:
-        route = get_route(method)
+    def inspect_parameters(self, route: 'Route') -> List[openapi.Parameter]:
         parameters = []
 
-        for path_variable_name in route.path_variables:
-            argument = method.get_argument(path_variable_name)
-            if argument is None:
-                continue
-
+        for argument in route.path_arguments:
             type_info = get_argument_type_info(argument)
+            description = argument.description
 
             if type_info is None:
-                type_info_data = {
-                    'type': openapi.TYPE_STRING
-                }
-                description = update_doc_with_invalid_hype_hint(argument.description)
-            else:
-                type_info_data = type_info.as_dict()
-                description = argument.description
+                type_info = self._default_type_info
+                description = update_doc_with_invalid_hype_hint(description)
+
             parameter = openapi.Parameter(
                 name=argument.name,
                 description=description,
                 required=True,
                 in_=openapi.IN_PATH,
-                **type_info_data,
+                **type_info.as_dict(),
             )
             parameters.append(parameter)
 

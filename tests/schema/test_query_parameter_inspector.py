@@ -1,6 +1,7 @@
 from drf_yasg import openapi
 
 import winter
+from winter.routing import get_route
 from winter.schema import QueryParametersInspector
 
 
@@ -19,9 +20,9 @@ class ControllerForQueryParameter:
 
 def test_query_parameter_inspector():
     inspector = QueryParametersInspector()
-
+    route = get_route(ControllerForQueryParameter.simple_method)
     # Act
-    parameters = inspector.inspect_parameters(ControllerForQueryParameter.simple_method)
+    parameters = inspector.inspect_parameters(route)
 
     # Assert
     assert len(parameters) == 2
