@@ -29,7 +29,7 @@ class ComponentMethodArgument:
 
     @property
     def description(self):
-        return self.method.docstring.get_description(self.name)
+        return self.method.docstring.get_argument_description(self.name)
 
     @property
     def required(self) -> bool:
