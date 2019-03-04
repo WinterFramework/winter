@@ -1,5 +1,4 @@
 import inspect
-import types
 import typing
 
 from .annotations import Annotations

@@ -4,8 +4,10 @@ import typing
 from types import FunctionType
 
 from .annotations import Annotations
-from .component_method_argument import ComponentMethodArgument
 from .component import Component
+from .component_method_argument import ComponentMethodArgument
+from .docstring import Docstring
+from .utils import cached_property
 
 
 class ComponentMethod:
@@ -17,7 +19,6 @@ class ComponentMethod:
         self.annotations = Annotations()
 
         self._component_cls: typing.Type = None
-        self._metadata_storage = {}
 
         type_hints = typing.get_type_hints(func)
         self.return_value_type = type_hints.pop('return', None)
@@ -35,7 +36,7 @@ class ComponentMethod:
         self._component_cls = owner
         self.name = name
 
-        self._component = Component.register(owner)
+        self._component = Component.get_by_cls(owner)
         self._component.add_method(self)
 
     @property
@@ -46,8 +47,12 @@ class ComponentMethod:
     def arguments(self) -> typing.Collection[ComponentMethodArgument]:
         return tuple(self._arguments.values())
 
-    def get_argument(self, name: str) -> typing.Optional['ComponentMethodArgument']:
+    def get_argument(self, name: str) -> typing.Optional[ComponentMethodArgument]:
         return self._arguments.get(name)
+
+    @cached_property
+    def docstring(self):
+        return Docstring(self.func.__doc__)
 
     @property
     def signature(self) -> inspect.Signature:

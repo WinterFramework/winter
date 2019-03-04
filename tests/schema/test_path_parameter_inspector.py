@@ -1,6 +1,7 @@
 from drf_yasg import openapi
 
 import winter
+from winter.routing import get_route
 from winter.schema import PathParametersInspector
 
 
@@ -21,9 +22,9 @@ class ControllerForTestingInspectors:
 
 def test_path_parameter_inspector():
     inspector = PathParametersInspector()
-
+    route = get_route(ControllerForTestingInspectors.simple_method)
     # Act
-    parameters = inspector.inspect_parameters(ControllerForTestingInspectors.simple_method)
+    parameters = inspector.inspect_parameters(route)
 
     # Assert
     assert len(parameters) == 2

@@ -43,15 +43,10 @@ class ArgumentsResolver(ArgumentResolver):
         return any(argument_resolver.is_supported(argument) for argument_resolver in self._argument_resolvers)
 
     def resolve_argument(self, argument: ComponentMethodArgument, http_request: Request) -> Any:
-        try:
-            argument_resolver = next(
-                argument_resolver for argument_resolver in self._argument_resolvers
-                if argument_resolver.is_supported(argument)
-            )
-        except StopIteration:
-            raise ArgumentNotSupported(argument)
-
-        return argument_resolver.resolve_argument(argument, http_request)
+        for argument_resolver in self._argument_resolvers:
+            if argument_resolver.is_supported(argument):
+                return argument_resolver.resolve_argument(argument, http_request)
+        raise ArgumentNotSupported(argument)
 
     def resolve_arguments(
             self,
