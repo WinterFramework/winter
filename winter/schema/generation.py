@@ -8,7 +8,7 @@ from drf_yasg.utils import swagger_auto_schema
 from .method_arguments_inspector import get_method_arguments_inspectors
 from .type_inspection import InspectorNotFound
 from .type_inspection import inspect_type
-from ..core import ComponentMethod
+from .utils import update_doc_with_invalid_hype_hint
 from ..core import ComponentMethodArgument
 from ..drf import get_input_serializer
 from ..drf import get_output_serializer
@@ -27,7 +27,7 @@ def generate_swagger_for_operation(view_func, controller, route: Route):
         request_body = input_serializer.class_
     else:
         request_body = None
-    manual_parameters = _build_method_parameters(method)
+    manual_parameters = _build_method_parameters(route)
     responses = build_responses_schemas(route)
     swagger_auto_schema(
         operation_id=f'{controller.__class__.__name__}.{method.func.__name__}',
@@ -53,7 +53,7 @@ def build_responses_schemas(route: Route):
     return responses
 
 
-def build_response_schema(route):
+def build_response_schema(route: Route):
     method = route.method
     output_serializer = get_output_serializer(method)
     if output_serializer is not None:
@@ -69,17 +69,27 @@ def build_response_schema(route):
         return type_info.get_openapi_schema()
 
 
-def _build_method_parameters(method: ComponentMethod) -> List[openapi.Parameter]:
+def _build_method_parameters(route: Route) -> List[openapi.Parameter]:
     parameters = []
     for method_inspector in get_method_arguments_inspectors():
-        parameters += method_inspector.inspect_parameters(method)
+        parameters += method_inspector.inspect_parameters(route)
     return parameters
 
 
-def get_argument_type_info(argument: ComponentMethodArgument) -> typing.Optional[TypeInfo]:
+def get_argument_info(argument: ComponentMethodArgument) -> dict:
     try:
         type_info = inspect_type(argument.type_)
+        invalid_hype_hint = False
     except InspectorNotFound:
-        return None
-    else:
-        return type_info
+        type_info = TypeInfo(openapi.TYPE_STRING)
+        invalid_hype_hint = True
+    type_info_data = type_info.as_dict()
+
+    description = argument.description
+
+    if invalid_hype_hint:
+        description = update_doc_with_invalid_hype_hint(description)
+    default = argument.default if argument.has_default() else None
+    type_info_data['description'] = description
+    type_info_data['default'] = default
+    return type_info_data

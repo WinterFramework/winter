@@ -49,18 +49,16 @@ class ArgumentsResolver(ArgumentResolver):
         return True
 
     def resolve_argument(self, argument: ComponentMethodArgument, http_request: Request) -> Any:
+
         if argument in self._cache:
             argument_resolver = self._cache[argument]
-        else:
-            try:
-                argument_resolver = self._cache[argument] = next(
-                    argument_resolver for argument_resolver in self._argument_resolvers
-                    if argument_resolver.is_supported(argument)
-                )
-            except StopIteration:
-                raise ArgumentNotSupported(argument)
+            return argument_resolver.resolve_argument(argument, http_request)
 
-        return argument_resolver.resolve_argument(argument, http_request)
+        for argument_resolver in self._argument_resolvers:
+            if argument_resolver.is_supported(argument):
+                self._cache[argument] = argument_resolver
+                return argument_resolver.resolve_argument(argument, http_request)
+        raise ArgumentNotSupported(argument)
 
     def resolve_arguments(
             self,
@@ -86,7 +84,7 @@ class GenericArgumentResolver(ArgumentResolver):
         return argument.name == self._arg_name and argument.type_ == self._arg_type
 
     def resolve_argument(self, argument: ComponentMethodArgument, http_request: Request):
-        return self._resolve_argument(http_request)
+        return self._resolve_argument(argument, http_request)
 
 
 arguments_resolver = ArgumentsResolver()

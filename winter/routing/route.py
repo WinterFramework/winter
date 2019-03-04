@@ -1,9 +1,10 @@
-from typing import Tuple
+import typing
 
 import dataclasses
 import uritemplate
 
 from ..core import ComponentMethod
+from ..core import cached_property
 from ..http import MediaType
 
 
@@ -12,9 +13,12 @@ class Route:
     http_method: str
     url_path: str
     method: ComponentMethod
-    produces: Tuple[MediaType] = None
-    consumes: Tuple[MediaType] = None
+    produces: typing.Tuple[MediaType] = None
+    consumes: typing.Tuple[MediaType] = None
 
-    @property
+    @cached_property
     def path_variables(self):
         return uritemplate.variables(self.url_path)
+
+    def has_path_variable(self, name: str):
+        return name in self.path_variables
