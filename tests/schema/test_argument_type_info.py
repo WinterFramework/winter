@@ -30,16 +30,17 @@ class IntegerEnum(IntEnum):
 
 
 @pytest.mark.parametrize('type_hint, expected_type_info', [
-    (object, None),
-    (int, {'type': openapi.TYPE_INTEGER}),
-    (str, {'type': openapi.TYPE_STRING}),
-    (IntegerEnum, {'type': openapi.TYPE_INTEGER, 'enum': [1, 2]}),
-    (IntegerValueEnum, {'type': openapi.TYPE_INTEGER, 'enum': [1, 2]}),
-    (StringValueEnum, {'type': openapi.TYPE_STRING, 'enum': ['red', 'green']}),
-    (MixedValueEnum, {'type': openapi.TYPE_STRING, 'enum': [123, 'green']}),
-    (List[IntegerValueEnum], {'type': openapi.TYPE_ARRAY, 'items': {'type': openapi.TYPE_INTEGER, 'enum': [1, 2]}}),
+    (object, {'type': 'string', 'description': '(Note: parameter type can be wrong)'}),
+    (int, {'type': openapi.TYPE_INTEGER, 'description': ''}),
+    (str, {'type': openapi.TYPE_STRING, 'description': ''}),
+    (IntegerEnum, {'type': openapi.TYPE_INTEGER, 'enum': [1, 2], 'description': ''}),
+    (IntegerValueEnum, {'type': openapi.TYPE_INTEGER, 'enum': [1, 2], 'description': ''}),
+    (StringValueEnum, {'type': openapi.TYPE_STRING, 'enum': ['red', 'green'], 'description': ''}),
+    (MixedValueEnum, {'type': openapi.TYPE_STRING, 'enum': [123, 'green'], 'description': ''}),
+    (List[IntegerValueEnum],
+     {'type': openapi.TYPE_ARRAY, 'items': {'type': openapi.TYPE_INTEGER, 'enum': [1, 2]}, 'description': ''}),
     (List[StringValueEnum],
-     {'type': openapi.TYPE_ARRAY, 'items': {'type': openapi.TYPE_STRING, 'enum': ['red', 'green']}}),
+     {'type': openapi.TYPE_ARRAY, 'items': {'type': openapi.TYPE_STRING, 'enum': ['red', 'green']}, 'description': ''}),
 ])
 def test_get_argument_type_info(type_hint, expected_type_info):
     def func(arg_1: type_hint):
@@ -48,11 +49,7 @@ def test_get_argument_type_info(type_hint, expected_type_info):
     argument = ComponentMethod(func).get_argument('arg_1')
 
     # Act
-    type_info = get_argument_type_info(argument)
+    type_info_data = get_argument_type_info(argument)
 
     # Assert
-    if type_info is None:
-        type_info_data = None
-    else:
-        type_info_data = type_info.as_dict()
     assert type_info_data == expected_type_info

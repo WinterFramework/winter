@@ -8,6 +8,7 @@ from drf_yasg.utils import swagger_auto_schema
 from .method_arguments_inspector import get_method_arguments_inspectors
 from .type_inspection import InspectorNotFound
 from .type_inspection import inspect_type
+from .utils import update_doc_with_invalid_hype_hint
 from ..core import ComponentMethodArgument
 from ..drf import get_input_serializer
 from ..drf import get_output_serializer
@@ -75,10 +76,18 @@ def _build_method_parameters(route: Route) -> List[openapi.Parameter]:
     return parameters
 
 
-def get_argument_type_info(argument: ComponentMethodArgument) -> typing.Optional[TypeInfo]:
+def get_argument_type_info(argument: ComponentMethodArgument) -> dict:
     try:
         type_info = inspect_type(argument.type_)
+        invalid_hype_hint = False
     except InspectorNotFound:
-        return None
-    else:
-        return type_info
+        type_info = TypeInfo(openapi.TYPE_STRING)
+        invalid_hype_hint = True
+    type_info_data = type_info.as_dict()
+
+    description = argument.description
+
+    if invalid_hype_hint:
+        description = update_doc_with_invalid_hype_hint(description)
+    type_info_data['description'] = description
+    return type_info_data

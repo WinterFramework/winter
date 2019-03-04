@@ -6,7 +6,6 @@ from drf_yasg import openapi
 from .generation import get_argument_type_info
 from .method_arguments_inspector import MethodArgumentsInspector
 from .type_inspection import TypeInfo
-from .utils import update_doc_with_invalid_hype_hint
 from ..core import ComponentMethodArgument
 from ..query_parameter import QueryParameterAnnotation
 
@@ -24,21 +23,14 @@ class QueryParametersInspector(MethodArgumentsInspector):
 
             default = argument.default if argument.has_default() else None
 
-            type_info = get_argument_type_info(argument)
-
-            description = argument.description
-
-            if type_info is None:
-                type_info = self._default_type_info
-                description = update_doc_with_invalid_hype_hint(description)
+            type_info_data = get_argument_type_info(argument)
 
             parameter = openapi.Parameter(
                 name=query_parameter_name,
-                description=description,
                 required=argument.required,
                 in_=openapi.IN_QUERY,
                 default=default,
-                **type_info.as_dict(),
+                **type_info_data,
             )
             parameters.append(parameter)
 

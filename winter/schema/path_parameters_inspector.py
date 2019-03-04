@@ -5,8 +5,6 @@ from drf_yasg import openapi
 
 from .generation import get_argument_type_info
 from .method_arguments_inspector import MethodArgumentsInspector
-from .type_inspection import TypeInfo
-from .utils import update_doc_with_invalid_hype_hint
 from ..core import ComponentMethodArgument
 from ..routing import Route
 
@@ -15,25 +13,17 @@ if typing.TYPE_CHECKING:  # pragma: no cover
 
 
 class PathParametersInspector(MethodArgumentsInspector):
-    _default_type_info = TypeInfo(openapi.TYPE_STRING)
 
     def inspect_parameters(self, route: 'Route') -> List[openapi.Parameter]:
         parameters = []
 
         for argument in self._path_arguments(route):
-            type_info = get_argument_type_info(argument)
-            description = argument.description
-
-            if type_info is None:
-                type_info = self._default_type_info
-                description = update_doc_with_invalid_hype_hint(description)
-
+            type_info_data = get_argument_type_info(argument)
             parameter = openapi.Parameter(
                 name=argument.name,
-                description=description,
                 required=True,
                 in_=openapi.IN_PATH,
-                **type_info.as_dict(),
+                **type_info_data,
             )
             parameters.append(parameter)
 
