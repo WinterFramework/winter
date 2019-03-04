@@ -36,11 +36,15 @@ def get_query_param_mapping(method: ComponentMethod, map_to: str) -> Optional[st
 class QueryParameterResolver(ArgumentResolver):
 
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
-        return get_query_param_mapping(argument.method, argument.name) is not None
+        if argument in self._cache:
+            query_parameter_name = self._cache[argument]
+        else:
+            query_parameter_name = self._cache[argument] = get_query_param_mapping(argument.method, argument.name)
+        return query_parameter_name is not None
 
     def resolve_argument(self, argument: ComponentMethodArgument, http_request: django.http.HttpRequest):
         query_parameters = http_request.GET
-        query_parameter_name = get_query_param_mapping(argument.method, argument.name)
+        query_parameter_name = self._cache[argument]
         if query_parameter_name not in query_parameters:
             default = argument.parameter.default
             if default is not inspect.Parameter.empty:

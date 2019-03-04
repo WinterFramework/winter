@@ -1,4 +1,5 @@
 import abc
+import typing
 from abc import abstractmethod
 from typing import Any
 from typing import Callable
@@ -21,6 +22,10 @@ class ArgumentNotSupported(Exception):
 class ArgumentResolver(abc.ABC):
     """IArgumentResolver is used to map http request contents to controller method arguments."""
 
+    def __init__(self):
+        self._cache: typing.Dict[ComponentMethodArgument, typing.Any] = {}
+        super().__init__()
+
     @abstractmethod
     def is_supported(self, argument: ComponentMethodArgument) -> bool:  # pragma: no cover
         pass
@@ -40,16 +45,20 @@ class ArgumentsResolver(ArgumentResolver):
         self._argument_resolvers.append(argument_resolver)
 
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
-        return any(argument_resolver.is_supported(argument) for argument_resolver in self._argument_resolvers)
+        # ArgumentsResolver must resolve all arguments
+        return True
 
     def resolve_argument(self, argument: ComponentMethodArgument, http_request: Request) -> Any:
-        try:
-            argument_resolver = next(
-                argument_resolver for argument_resolver in self._argument_resolvers
-                if argument_resolver.is_supported(argument)
-            )
-        except StopIteration:
-            raise ArgumentNotSupported(argument)
+        if argument in self._cache:
+            argument_resolver = self._cache[argument]
+        else:
+            try:
+                argument_resolver = self._cache[argument] = next(
+                    argument_resolver for argument_resolver in self._argument_resolvers
+                    if argument_resolver.is_supported(argument)
+                )
+            except StopIteration:
+                raise ArgumentNotSupported(argument)
 
         return argument_resolver.resolve_argument(argument, http_request)
 
@@ -71,6 +80,7 @@ class GenericArgumentResolver(ArgumentResolver):
         self._arg_name = arg_name
         self._arg_type = arg_type
         self._resolve_argument = resolve_argument
+        super().__init__()
 
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
         return argument.name == self._arg_name and argument.type_ == self._arg_type
