@@ -89,5 +89,7 @@ def get_argument_type_info(argument: ComponentMethodArgument) -> dict:
 
     if invalid_hype_hint:
         description = update_doc_with_invalid_hype_hint(description)
+    default = argument.default if argument.has_default() else None
     type_info_data['description'] = description
+    type_info_data['default'] = default
     return type_info_data

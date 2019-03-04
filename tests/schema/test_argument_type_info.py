@@ -30,17 +30,24 @@ class IntegerEnum(IntEnum):
 
 
 @pytest.mark.parametrize('type_hint, expected_type_info', [
-    (object, {'type': 'string', 'description': '(Note: parameter type can be wrong)'}),
-    (int, {'type': openapi.TYPE_INTEGER, 'description': ''}),
-    (str, {'type': openapi.TYPE_STRING, 'description': ''}),
-    (IntegerEnum, {'type': openapi.TYPE_INTEGER, 'enum': [1, 2], 'description': ''}),
-    (IntegerValueEnum, {'type': openapi.TYPE_INTEGER, 'enum': [1, 2], 'description': ''}),
-    (StringValueEnum, {'type': openapi.TYPE_STRING, 'enum': ['red', 'green'], 'description': ''}),
-    (MixedValueEnum, {'type': openapi.TYPE_STRING, 'enum': [123, 'green'], 'description': ''}),
+    (object, {'type': 'string', 'description': '(Note: parameter type can be wrong)', 'default': None}),
+    (int, {'type': openapi.TYPE_INTEGER, 'description': '', 'default': None}),
+    (str, {'type': openapi.TYPE_STRING, 'description': '', 'default': None}),
+    (IntegerEnum, {'type': openapi.TYPE_INTEGER, 'enum': [1, 2], 'description': '', 'default': None}),
+    (IntegerValueEnum, {'type': openapi.TYPE_INTEGER, 'enum': [1, 2], 'description': '', 'default': None}),
+    (StringValueEnum, {'type': openapi.TYPE_STRING, 'enum': ['red', 'green'], 'description': '', 'default': None}),
+    (MixedValueEnum, {'type': openapi.TYPE_STRING, 'enum': [123, 'green'], 'description': '', 'default': None}),
     (List[IntegerValueEnum],
-     {'type': openapi.TYPE_ARRAY, 'items': {'type': openapi.TYPE_INTEGER, 'enum': [1, 2]}, 'description': ''}),
+     {
+         'type': openapi.TYPE_ARRAY, 'items': {'type': openapi.TYPE_INTEGER, 'enum': [1, 2]}, 'description': '',
+         'default': None,
+     }),
     (List[StringValueEnum],
-     {'type': openapi.TYPE_ARRAY, 'items': {'type': openapi.TYPE_STRING, 'enum': ['red', 'green']}, 'description': ''}),
+     {
+         'type': openapi.TYPE_ARRAY, 'items': {'type': openapi.TYPE_STRING, 'enum': ['red', 'green']},
+         'description': '',
+         'default': None,
+     }),
 ])
 def test_get_argument_type_info(type_hint, expected_type_info):
     def func(arg_1: type_hint):
