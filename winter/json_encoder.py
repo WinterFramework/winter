@@ -30,14 +30,10 @@ class CannotEncode(Exception):
 class JSONEncoder(json.JSONEncoder):
 
     def default(self, obj):
+        encoders = (_encoder_map.get(base_cls) for base_cls in type(obj).mro())
+        encoders = (encoder for encoder in encoders if encoder is not None)
 
-        for base_cls in type(obj).mro():
-            data = _encoder_map.get(base_cls)
-            if data is None:
-                continue
-
-            func, need_recursion = data
-
+        for func, need_recursion in encoders:
             try:
                 obj = func(obj)
             except CannotEncode:
