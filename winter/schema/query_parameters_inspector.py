@@ -3,7 +3,7 @@ from typing import List
 
 from drf_yasg import openapi
 
-from .generation import get_argument_type_info
+from .generation import get_argument_info
 from .method_arguments_inspector import MethodArgumentsInspector
 from ..core import ComponentMethodArgument
 from ..query_parameter import QueryParameterAnnotation
@@ -19,13 +19,13 @@ class QueryParametersInspector(MethodArgumentsInspector):
 
         for argument, query_parameter_name in self._query_arguments(route):
 
-            type_info_data = get_argument_type_info(argument)
+            parameter_data = get_argument_info(argument)
 
             parameter = openapi.Parameter(
                 name=query_parameter_name,
                 required=argument.required,
                 in_=openapi.IN_QUERY,
-                **type_info_data,
+                **parameter_data,
             )
             parameters.append(parameter)
 

@@ -76,7 +76,7 @@ def _build_method_parameters(route: Route) -> List[openapi.Parameter]:
     return parameters
 
 
-def get_argument_type_info(argument: ComponentMethodArgument) -> dict:
+def get_argument_info(argument: ComponentMethodArgument) -> dict:
     try:
         type_info = inspect_type(argument.type_)
         invalid_hype_hint = False

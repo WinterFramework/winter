@@ -6,7 +6,7 @@ import pytest
 from drf_yasg import openapi
 
 from winter.core import ComponentMethod
-from winter.schema.generation import get_argument_type_info
+from winter.schema.generation import get_argument_info
 
 
 class IntegerValueEnum(Enum):
@@ -56,7 +56,7 @@ def test_get_argument_type_info(type_hint, expected_type_info):
     argument = ComponentMethod(func).get_argument('arg_1')
 
     # Act
-    type_info_data = get_argument_type_info(argument)
+    type_info_data = get_argument_info(argument)
 
     # Assert
     assert type_info_data == expected_type_info

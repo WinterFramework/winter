@@ -3,7 +3,7 @@ from typing import List
 
 from drf_yasg import openapi
 
-from .generation import get_argument_type_info
+from .generation import get_argument_info
 from .method_arguments_inspector import MethodArgumentsInspector
 from ..core import ComponentMethodArgument
 from ..routing import Route
@@ -18,12 +18,12 @@ class PathParametersInspector(MethodArgumentsInspector):
         parameters = []
 
         for argument in self._path_arguments(route):
-            type_info_data = get_argument_type_info(argument)
+            parameter_data = get_argument_info(argument)
             parameter = openapi.Parameter(
                 name=argument.name,
                 required=True,
                 in_=openapi.IN_PATH,
-                **type_info_data,
+                **parameter_data,
             )
             parameters.append(parameter)
 
