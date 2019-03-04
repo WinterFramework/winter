@@ -1,5 +1,4 @@
 import abc
-import typing
 from abc import abstractmethod
 from typing import Any
 from typing import Callable
@@ -19,12 +18,30 @@ class ArgumentNotSupported(Exception):
         super().__init__(f'Unable to resolve argument {argument.name}: {argument.type_.__name__}')
 
 
+class ArgumentResolverCache:
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+
+        cache = instance.__dict__.setdefault(self.name, {})
+        return cache
+
+    def __set_name__(self, owner, name):
+        self.name = name
+        self.owner = owner
+
+    def __repr__(self):
+        return str(self)
+
+    def __str__(self):
+        return f'{self.__class__.__name__} of {self.owner.__name__} at {self.name}'
+
+
+
 class ArgumentResolver(abc.ABC):
     """IArgumentResolver is used to map http request contents to controller method arguments."""
-
-    def __init__(self):
-        self._cache: typing.Dict[ComponentMethodArgument, typing.Any] = {}
-        super().__init__()
+    _cache = ArgumentResolverCache()
 
     @abstractmethod
     def is_supported(self, argument: ComponentMethodArgument) -> bool:  # pragma: no cover
@@ -49,16 +66,8 @@ class ArgumentsResolver(ArgumentResolver):
         return True
 
     def resolve_argument(self, argument: ComponentMethodArgument, http_request: Request) -> Any:
-
-        if argument in self._cache:
-            argument_resolver = self._cache[argument]
-            return argument_resolver.resolve_argument(argument, http_request)
-
-        for argument_resolver in self._argument_resolvers:
-            if argument_resolver.is_supported(argument):
-                self._cache[argument] = argument_resolver
-                return argument_resolver.resolve_argument(argument, http_request)
-        raise ArgumentNotSupported(argument)
+        argument_resolver = self._get_argument_resolver(argument)
+        return argument_resolver.resolve_argument(argument, http_request)
 
     def resolve_arguments(
             self,
@@ -71,14 +80,23 @@ class ArgumentsResolver(ArgumentResolver):
 
         return resolved_arguments
 
+    def _get_argument_resolver(self, argument: ComponentMethodArgument) -> 'ArgumentResolver':
+        if argument in self._cache:
+            return self._cache[argument]
+        for argument_resolver in self._argument_resolvers:
+            if argument_resolver.is_supported(argument):
+                self._cache[argument] = argument_resolver
+                return argument_resolver
+        raise ArgumentNotSupported(argument)
+
 
 class GenericArgumentResolver(ArgumentResolver):
 
     def __init__(self, arg_name: str, arg_type: Type, resolve_argument: Callable):
+        super().__init__()
         self._arg_name = arg_name
         self._arg_type = arg_type
         self._resolve_argument = resolve_argument
-        super().__init__()
 
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
         return argument.name == self._arg_name and argument.type_ == self._arg_type

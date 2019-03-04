@@ -41,7 +41,7 @@ def test_path_parameter_resolver_cache():
     class SimpleController:
 
         @winter.route_get('{argument}')
-        def method(argument: int):
+        def method(self, argument: int):
             return argument
 
     resolver = PathParametersArgumentResolver()
