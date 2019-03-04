@@ -49,7 +49,9 @@ def test_resolve_arguments_resolves_argument_with_the_first_resolver():
         pass
 
     expected_resolved_value = 1
-    expected_resolved_arguments = {'a': expected_resolved_value}
+    expected_resolved_arguments = {
+        'a': expected_resolved_value,
+    }
     method = ComponentMethod(func)
     arguments_resolver = ArgumentsResolver()
     resolver = Mock()
@@ -108,7 +110,7 @@ def test_arguments_resolver_is_supported_true():
         return None
 
     def resolve_argument(argument: ComponentMethodArgument, http_request):
-        return argument.default
+        return argument.type_
 
     arguments_resolver = ArgumentsResolver()
     resolver = GenericArgumentResolver(
@@ -123,4 +125,4 @@ def test_arguments_resolver_is_supported_true():
 
     # Assert
     assert arguments_resolver.is_supported(argument)
-    assert arguments_resolver.resolve_argument(argument, request) == argument.default
+    assert arguments_resolver.resolve_argument(argument, request) == argument.type_

@@ -15,6 +15,12 @@ class Component:
         self.annotations = Annotations()
         self._methods: typing.Dict[str, 'ComponentMethod'] = {}
 
+    def __repr__(self):
+        return str(self)
+
+    def __str__(self):
+        return f'Component(component_cls={self.component_cls.__name__})'
+
     @property
     def methods(self):
         return self._methods.values()
