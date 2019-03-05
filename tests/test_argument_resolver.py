@@ -1,9 +1,6 @@
-from collections.abc import MutableMapping
-
 import pytest
 from mock import Mock
 
-from winter import ArgumentResolver
 from winter import ArgumentsResolver
 from winter import GenericArgumentResolver
 from winter.argument_resolver import ArgumentNotSupported
@@ -128,4 +125,5 @@ def test_arguments_resolver_is_supported_true():
 
     # Assert
     assert arguments_resolver.is_supported(argument)
+    assert arguments_resolver.is_supported(argument)  # Check for cache
     assert arguments_resolver.resolve_argument(argument, request) == argument.type_

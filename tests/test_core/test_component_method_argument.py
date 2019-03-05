@@ -23,7 +23,6 @@ def test_default():
     method = ComponentMethod(test)
     argument = method.get_argument('number')
 
-
     with pytest.raises(ArgumentDoesNotHaveDefault) as exception:
         argument.get_default()
 

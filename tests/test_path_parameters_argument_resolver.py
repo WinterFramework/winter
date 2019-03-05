@@ -4,7 +4,6 @@ import pytest
 from mock import Mock
 from rest_framework.request import Request
 
-import winter
 from tests.controllers.controller_with_path_parameters import ControllerWithPathParameters
 from tests.controllers.controller_with_path_parameters import OneTwoEnum
 from tests.controllers.controller_with_path_parameters import OneTwoEnumWithInt
@@ -30,27 +29,14 @@ def test_resolve_path_parameter(path, arg_name, expected_value):
     http_request.path_info = path
 
     # Act
+    is_supported = resolver.is_supported(argument)
+    second_is_supported = resolver.is_supported(argument)
     result = resolver.resolve_argument(argument, http_request)
 
     # Assert
-    assert result == expected_value
-
-
-def test_path_parameter_resolver_cache():
-    class SimpleController:
-
-        @winter.route_get('{argument}')
-        def method(self, argument: int):
-            return argument
-
-    resolver = PathParametersArgumentResolver()
-    argument = SimpleController.method.get_argument('argument')
-
-    # Act
-    is_supported = resolver.is_supported(argument)
-
     assert is_supported
-    assert resolver.is_supported(argument)  # Check with cache
+    assert second_is_supported
+    assert result == expected_value
 
 
 @pytest.mark.parametrize('controller_class, method_name, arg_name, expected_value', [
