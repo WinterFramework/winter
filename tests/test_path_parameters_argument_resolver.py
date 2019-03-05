@@ -8,7 +8,6 @@ import winter
 from tests.controllers.controller_with_path_parameters import ControllerWithPathParameters
 from tests.controllers.controller_with_path_parameters import OneTwoEnum
 from tests.controllers.controller_with_path_parameters import OneTwoEnumWithInt
-from tests.utils import timeit
 from winter.controller import get_component
 from winter.core import Component
 from winter.path_parameters_argument_resolver import PathParametersArgumentResolver
@@ -47,12 +46,12 @@ def test_path_parameter_resolver_cache():
     resolver = PathParametersArgumentResolver()
     argument = SimpleController.method.get_argument('argument')
 
-    func = timeit(resolver.is_supported)
     # Act
-    first_call = func(argument)
-    second_call = func(argument)
+    is_supported = resolver.is_supported(argument)
 
-    assert first_call > second_call
+    assert is_supported
+    assert argument in resolver._cache
+    assert resolver.is_supported(argument)  # Check with cache
 
 
 @pytest.mark.parametrize('controller_class, method_name, arg_name, expected_value', [

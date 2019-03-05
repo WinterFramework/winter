@@ -6,7 +6,6 @@ from rest_framework.exceptions import ParseError
 import winter
 from winter.query_parameter import QueryParameterResolver
 from .utils import get_request
-from .utils import timeit
 
 
 @pytest.mark.parametrize(('argument_name', 'query_string', 'expected_value'), (
@@ -46,13 +45,12 @@ def test_query_parameter_resolver_cache():
 
     resolver = QueryParameterResolver()
     argument = method.get_argument('argument')
-    func = timeit(resolver.is_supported)
     # Act
-    first_call = func(argument)
-    second_call = func(argument)
+    is_supported = resolver.is_supported(argument)
 
-    # Assert
-    assert first_call > second_call
+    assert is_supported
+    assert argument in resolver._cache
+    assert resolver.is_supported(argument)  # Check with cache
 
 
 @pytest.mark.parametrize(('query_string', 'expected_exception_message'), (
