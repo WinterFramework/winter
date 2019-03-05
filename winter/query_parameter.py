@@ -7,6 +7,7 @@ import rest_framework.request
 from rest_framework.exceptions import ParseError
 
 from . import type_utils
+from .argument_resolver import ArgumentNotSupported
 from .argument_resolver import ArgumentResolver
 from .core import ArgumentDoesNotHaveDefault
 from .core import ComponentMethod
@@ -41,14 +42,17 @@ class QueryParameterResolver(ArgumentResolver):
         self._cache = {}
 
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
-        if argument not in self._cache:
-            self._set_cache(argument)
-        return self._cache[argument] is not None
+        return self._get_cached_data(argument) is not None
 
     def resolve_argument(self, argument: ComponentMethodArgument, http_request: rest_framework.request.Request):
         query_parameters = http_request.query_params
 
-        parameter_name, pydantic_data_class, is_iterable = self._cache[argument]
+        cached_data = self._get_cached_data(argument)
+
+        if cached_data is None:
+            raise ArgumentNotSupported(argument)
+
+        parameter_name, pydantic_data_class, is_iterable = cached_data
 
         if parameter_name not in query_parameters:
             try:
@@ -69,7 +73,11 @@ class QueryParameterResolver(ArgumentResolver):
         else:
             return parameters[parameter_name]
 
-    def _set_cache(self, argument: ComponentMethodArgument) -> None:
+    def _get_cached_data(self, argument: ComponentMethodArgument):
+
+        if argument in self._cache:
+            return self._cache[argument]
+
         parameter_name = get_query_param_mapping(argument.method, argument.name)
         if parameter_name is None:
             self._cache[argument] = None
@@ -77,7 +85,8 @@ class QueryParameterResolver(ArgumentResolver):
 
         pydantic_data_class = self._create_pydantic_class(argument.type_)
         is_iterable = type_utils.is_iterable(argument.type_)
-        self._cache[argument] = parameter_name, pydantic_data_class, is_iterable
+        cached_data = self._cache[argument] = parameter_name, pydantic_data_class, is_iterable
+        return cached_data
 
     def _create_pydantic_class(self, type_) -> typing.Type:
         @pydantic.dataclasses.dataclass
