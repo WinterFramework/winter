@@ -36,6 +36,10 @@ def get_query_param_mapping(method: ComponentMethod, map_to: str) -> Optional[st
 
 class QueryParameterResolver(ArgumentResolver):
 
+    def __init__(self):
+        super().__init__()
+        self._cache = {}
+
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
         if argument not in self._cache:
             self._set_cache(argument)

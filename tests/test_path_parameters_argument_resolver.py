@@ -50,7 +50,6 @@ def test_path_parameter_resolver_cache():
     is_supported = resolver.is_supported(argument)
 
     assert is_supported
-    assert argument in resolver._cache
     assert resolver.is_supported(argument)  # Check with cache
 
 

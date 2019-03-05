@@ -12,6 +12,7 @@ class PathParametersArgumentResolver(ArgumentResolver):
     def __init__(self):
         super().__init__()
         self._url_resolver = get_resolver()
+        self._cache = {}
 
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
         if argument in self._cache:

@@ -18,30 +18,8 @@ class ArgumentNotSupported(Exception):
         super().__init__(f'Unable to resolve argument {argument.name}: {argument.type_.__name__}')
 
 
-class ArgumentResolverCache:
-
-    def __get__(self, instance, owner):
-        if instance is None:
-            return self
-
-        cache = instance.__dict__.setdefault(self.name, {})
-        return cache
-
-    def __set_name__(self, owner, name):
-        self.name = name
-        self.owner = owner
-
-    def __repr__(self):
-        return str(self)
-
-    def __str__(self):
-        return f'{self.__class__.__name__} of {self.owner.__name__} at {self.name}'
-
-
-
 class ArgumentResolver(abc.ABC):
     """IArgumentResolver is used to map http request contents to controller method arguments."""
-    _cache = ArgumentResolverCache()
 
     @abstractmethod
     def is_supported(self, argument: ComponentMethodArgument) -> bool:  # pragma: no cover
@@ -57,6 +35,7 @@ class ArgumentsResolver(ArgumentResolver):
     def __init__(self):
         super().__init__()
         self._argument_resolvers: List[ArgumentResolver] = []
+        self._cache = {}
 
     def add_argument_resolver(self, argument_resolver: ArgumentResolver):
         self._argument_resolvers.append(argument_resolver)

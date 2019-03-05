@@ -7,7 +7,6 @@ from winter import ArgumentResolver
 from winter import ArgumentsResolver
 from winter import GenericArgumentResolver
 from winter.argument_resolver import ArgumentNotSupported
-from winter.argument_resolver import ArgumentResolverCache
 from winter.core import ComponentMethod
 from winter.core import ComponentMethodArgument
 from .utils import get_request
@@ -130,12 +129,3 @@ def test_arguments_resolver_is_supported_true():
     # Assert
     assert arguments_resolver.is_supported(argument)
     assert arguments_resolver.resolve_argument(argument, request) == argument.type_
-
-
-def test_argument_resolver_cache():
-    cache = ArgumentsResolver._cache
-    assert isinstance(cache, ArgumentResolverCache)
-    assert str(cache) == f'{ArgumentResolverCache.__name__} of {ArgumentResolver.__name__} at _cache'
-    arguments_resolver = ArgumentsResolver()
-
-    assert isinstance(arguments_resolver._cache, MutableMapping)
