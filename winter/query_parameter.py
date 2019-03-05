@@ -48,7 +48,7 @@ class QueryParameterResolver(ArgumentResolver):
 
         if parameter_name not in query_parameters:
             try:
-                return argument.default
+                return argument.get_default()
             except ArgumentDoesNotHaveDefault:
                 raise ParseError(f'Missing required query parameter "{parameter_name}"')
 

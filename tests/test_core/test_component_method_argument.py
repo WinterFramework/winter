@@ -25,6 +25,6 @@ def test_default():
 
 
     with pytest.raises(ArgumentDoesNotHaveDefault) as exception:
-        argument.default
+        argument.get_default()
 
-    assert str(exception.value) == f'{argument} does not have default'
+    assert str(exception.value) == f'{argument} does not have get_default'

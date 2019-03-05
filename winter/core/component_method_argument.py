@@ -16,7 +16,7 @@ class ArgumentDoesNotHaveDefault(Exception):
         self.argument = argument
 
     def __str__(self):
-        return f'{self.argument} does not have default'
+        return f'{self.argument} does not have get_default'
 
 
 @dataclasses.dataclass(frozen=True)
@@ -29,15 +29,13 @@ class ComponentMethodArgument:
     def parameter(self) -> inspect.Parameter:
         return self.method.signature.parameters[self.name]
 
-    def has_default(self) -> bool:
-        return self.parameter.default is not inspect.Parameter.empty
-
-    @cached_property
-    def default(self) -> typing.Any:
-        if self.has_default():
+    def get_default(self, default=inspect.Parameter.empty) -> typing.Any:
+        if self.parameter.default is not inspect.Parameter.empty:
             return self.parameter.default
-        if not self.required:
+        if type_utils.is_optional(self.type_):
             return None
+        if default is not inspect.Parameter.empty:
+            return default
         raise ArgumentDoesNotHaveDefault(self)
 
     @property
