@@ -34,22 +34,9 @@ def test_query_parameter_resolver(argument_name, query_string, expected_value):
     argument = method.get_argument(argument_name)
     request = get_request(query_string)
     assert resolver.is_supported(argument)
+    assert resolver.is_supported(argument)  # Check cache
 
     assert resolver.resolve_argument(argument, request) == expected_value
-
-
-def test_query_parameter_resolver_cache():
-    @winter.query_parameter('argument')
-    def method(argument: int):
-        return argument
-
-    resolver = QueryParameterResolver()
-    argument = method.get_argument('argument')
-    # Act
-    is_supported = resolver.is_supported(argument)
-
-    assert is_supported
-    assert resolver.is_supported(argument)  # Check with cache
 
 
 @pytest.mark.parametrize(('query_string', 'expected_exception_message'), (
