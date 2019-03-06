@@ -11,11 +11,12 @@ from ..core import ComponentMethodArgument
 class PagePositionArgumentResolver(ArgumentResolver):
 
     def __init__(self, limit_parameter_name: str = 'limit', offset_parameter_name: str = 'offset'):
+        super().__init__()
         self.limit_parameter_name = limit_parameter_name
         self.offset_parameter_name = offset_parameter_name
 
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
-        return argument.type_ == PagePosition
+        return argument.type_ is PagePosition
 
     def resolve_argument(self, argument: ComponentMethodArgument, http_request: DRFRequest) -> PagePosition:
         raw_limit = http_request.query_params.get(self.limit_parameter_name)
