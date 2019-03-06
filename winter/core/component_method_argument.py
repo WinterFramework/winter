@@ -10,6 +10,15 @@ if typing.TYPE_CHECKING:  # pragma: no cover
     from .component_method import ComponentMethod
 
 
+class ArgumentDoesNotHaveDefault(Exception):
+
+    def __init__(self, argument: 'ComponentMethodArgument'):
+        self.argument = argument
+
+    def __str__(self):
+        return f'{self.argument} does not have get_default'
+
+
 @dataclasses.dataclass(frozen=True)
 class ComponentMethodArgument:
     method: 'ComponentMethod'
@@ -20,12 +29,14 @@ class ComponentMethodArgument:
     def parameter(self) -> inspect.Parameter:
         return self.method.signature.parameters[self.name]
 
-    def has_default(self) -> bool:
-        return self.default is not inspect.Parameter.empty
-
-    @cached_property
-    def default(self) -> typing.Any:
-        return self.parameter.default
+    def get_default(self, default=inspect.Parameter.empty) -> typing.Any:
+        if self.parameter.default is not inspect.Parameter.empty:
+            return self.parameter.default
+        if type_utils.is_optional(self.type_):
+            return None
+        if default is not inspect.Parameter.empty:
+            return default
+        raise ArgumentDoesNotHaveDefault(self)
 
     @property
     def description(self):
@@ -33,4 +44,4 @@ class ComponentMethodArgument:
 
     @property
     def required(self) -> bool:
-        return self.default is inspect.Parameter.empty and not type_utils.is_optional(self.type_)
+        return self.parameter.default is inspect.Parameter.empty and not type_utils.is_optional(self.type_)

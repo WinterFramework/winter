@@ -39,6 +39,12 @@ class ComponentMethod:
         self._component = Component.get_by_cls(owner)
         self._component.add_method(self)
 
+    def __repr__(self):
+        return str(self)
+
+    def __str__(self):
+        return f'ComponentMethod(component={self._component}, name={self.name}, func={self.func})'
+
     @property
     def component(self):
         return self._component
