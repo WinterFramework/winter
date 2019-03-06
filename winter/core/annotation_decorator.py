@@ -1,4 +1,4 @@
-import inspect
+import abc
 import types
 import typing
 
@@ -6,40 +6,56 @@ from .component import Component
 from .component_method import ComponentMethod
 
 
-def annotate(annotation: typing.Any, *, unique=False, single=False)-> typing.Callable:
-    def wrapper(
-            func_or_cls: typing.Union[typing.Type, types.FunctionType, ComponentMethod]
-    ) -> typing.Union[typing.Type, ComponentMethod]:
+class annotate_base(abc.ABC):
+    _supported_classes = ()
 
-        if isinstance(func_or_cls, ComponentMethod) or isinstance(func_or_cls, types.FunctionType):
-            decorator = annotate_method(annotation, unique=unique, single=single)
-        elif inspect.isclass(func_or_cls):
-            decorator = annotate_class(annotation, unique=unique, single=single)
+    def __init__(self, annotation: typing.Any, *, unique=False, single=False):
+        self.annotation = annotation
+        self.unique = unique
+        self.single = single
+
+    @classmethod
+    def is_supported(cls, item: typing.Any) -> bool:
+        return isinstance(item, cls._supported_classes)
+
+    @abc.abstractmethod
+    def __call__(self, item) -> typing.Callable:  # pragma: no cover
+        pass
+
+
+class annotate(annotate_base):
+    _supported_classes = (typing.Type, types.FunctionType, ComponentMethod,)
+
+    def __call__(self, func_or_cls: typing.Union[typing.Type, types.FunctionType, ComponentMethod]) -> typing.Callable:
+        if annotate_method.is_supported(func_or_cls):
+            decorator = annotate_method(self.annotation, unique=self.unique, single=self.single)
+        elif annotate_class.is_supported(func_or_cls):
+            decorator = annotate_class(self.annotation, unique=self.unique, single=self.single)
         else:
             raise ValueError(f'Need function or class. Got: {func_or_cls}')
         return decorator(func_or_cls)
-    return wrapper
 
 
-def annotate_class(annotation: typing.Any, *, unique=False, single=False) -> typing.Callable:
-    def wrapper(cls: typing.Type) -> typing.Type:
+class annotate_class(annotate_base):
+    _supported_classes = (type,)
+
+    def __call__(self, cls: typing.Type):
         component = Component.get_by_cls(cls)
-        if annotation is not None:
-            component.annotations.add(annotation, unique=unique, single=single)
+        if self.annotation is not None:
+            component.annotations.add(self.annotation, unique=self.unique, single=self.single)
         return cls
 
-    return wrapper
 
+class annotate_method(annotate_base):
+    _supported_classes = (ComponentMethod, types.FunctionType)
 
-def annotate_method(annotation: typing.Any, *, unique=False, single=False) -> typing.Callable:
-    def wrapper(func_or_method: typing.Union[types.FunctionType, ComponentMethod]) -> ComponentMethod:
+    def __call__(self, func_or_method: typing.Union[types.FunctionType, ComponentMethod]):
         if isinstance(func_or_method, ComponentMethod):
             method = func_or_method
         elif isinstance(func_or_method, types.FunctionType):
             method = ComponentMethod(func_or_method)
         else:
             raise ValueError(f'Need function. Got: {func_or_method}')
-        if annotation is not None:
-            method.annotations.add(annotation, unique=unique, single=single)
+        if self.annotation is not None:
+            method.annotations.add(self.annotation, unique=self.unique, single=self.single)
         return method
-    return wrapper
