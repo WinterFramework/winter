@@ -1,5 +1,3 @@
-import operator
-
 import pytest
 
 from winter.http import InvalidMediaTypeException
@@ -51,13 +49,8 @@ def test_comparing_media_types(first, second):
     assert hash(first_media_type) == hash(second_media_type)
 
 
-@pytest.mark.parametrize(('item', 'operator_'), (
-        ('*/*', operator.eq),
-        ('*', operator.eq),
-        (object, operator.ne),
-))
-def test_comparing_media_types_with_other_types(item, operator_):
-    assert operator_(MediaType.ALL, item)
+def test_comparing_with_other_types():
+    assert MediaType.ALL != '*'
 
 
 @pytest.mark.parametrize('media_type, expected_str', [

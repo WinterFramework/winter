@@ -97,8 +97,6 @@ class MediaType:
             raise InvalidMediaTypeException(media_type_str, 'Wildcard is allowed only in */* (all media types)')
 
     def __eq__(self, other) -> bool:
-        if isinstance(other, str):
-            other = self.__class__(other)
         if not isinstance(other, MediaType):
             return False
         return other.type == self.type and other.subtype == self.subtype and other.parameters == self.parameters
