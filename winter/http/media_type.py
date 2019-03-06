@@ -53,37 +53,52 @@ class MediaType:
     def parameters(self) -> Mapping[str, str]:
         return self._parameters
 
-    @staticmethod
-    def parse(media_type: str) -> Tuple[str, str, Mapping[str, str]]:
+    @classmethod
+    def parse(cls, media_type: str) -> Tuple[str, str, Mapping[str, str]]:
         media_type = media_type.strip()
         if not media_type:
             raise InvalidMediaTypeException(media_type, 'Media type must not be empty')
-        parameters = {}
-        parts = media_type.split(';')
-        for param_str in parts[1:]:
-            key_value = param_str.strip().split('=')
-            if len(key_value) != 2:
-                raise InvalidMediaTypeException(media_type, 'Invalid media type parameter list')
-            parameters[key_value[0]] = key_value[1]
-        full_type = parts[0]
-        if full_type == '*':
-            type_, subtype = '*', '*'
-        else:
-            full_type_parts = full_type.split('/')
-            if len(full_type_parts) < 2:
-                raise InvalidMediaTypeException(media_type, 'Media type must contain "/"')
-            if len(full_type_parts) > 2:
-                raise InvalidMediaTypeException(media_type, 'Invalid media type format')
-            type_, subtype = full_type_parts
-        if not type_:
-            raise InvalidMediaTypeException(media_type, 'Empty type is specified')
-        if not subtype:
-            raise InvalidMediaTypeException(media_type, 'Empty subtype is specified')
-        if type_ == '*' and subtype != '*':
-            raise InvalidMediaTypeException(media_type, 'Wildcard is allowed only in */* (all media types)')
+
+        full_type, *parameters_parts = media_type.split(';')
+        parameters = cls._build_parameters(media_type, parameters_parts)
+        type_, separator, subtype = full_type.partition('/')
+
+        if type_ == '*' and separator == '':
+            subtype = '*'
+            separator = '/'
+
+        type_ = type_.strip()
+        subtype = subtype.strip()
+
+        cls._check(media_type, type_, separator, subtype)
         return type_, subtype, types.MappingProxyType(parameters)
 
+    @classmethod
+    def _build_parameters(cls, media_type_str, parts):
+        parameters = {}
+        for param_str in parts:
+            key_value = param_str.strip().split('=')
+            if len(key_value) != 2:
+                raise InvalidMediaTypeException(media_type_str, 'Invalid media type parameter list')
+            parameters[key_value[0]] = key_value[1]
+        return parameters
+
+    @classmethod
+    def _check(cls, media_type_str, type_, separator, subtype):
+        if subtype.count('/'):
+            raise InvalidMediaTypeException(media_type_str, 'Invalid media type format')
+        if not separator:
+            raise InvalidMediaTypeException(media_type_str, 'Media type must contain "/"')
+        if not type_:
+            raise InvalidMediaTypeException(media_type_str, 'Empty type is specified')
+        if not subtype:
+            raise InvalidMediaTypeException(media_type_str, 'Empty subtype is specified')
+        if type_ == '*' and subtype != '*':
+            raise InvalidMediaTypeException(media_type_str, 'Wildcard is allowed only in */* (all media types)')
+
     def __eq__(self, other) -> bool:
+        if isinstance(other, str):
+            other = self.__class__(other)
         if not isinstance(other, MediaType):
             return False
         return other.type == self.type and other.subtype == self.subtype and other.parameters == self.parameters

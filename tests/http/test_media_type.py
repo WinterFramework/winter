@@ -1,3 +1,5 @@
+import operator
+
 import pytest
 
 from winter.http import InvalidMediaTypeException
@@ -27,6 +29,7 @@ def test_valid_media_types(media_type, expected_result):
     ('/', 'Empty type is specified'),
     ('/test', 'Empty type is specified'),
     ('', 'Media type must not be empty'),
+    ('test', 'Media type must contain "/"'),
     ('test/test/test', 'Invalid media type format'),
     ('test/test; hz', 'Invalid media type parameter list'),
 ])
@@ -35,6 +38,26 @@ def test_invalid_media_types(media_type, expected_message):
         MediaType.parse(media_type)
 
     assert exception_info.value.message == expected_message
+
+
+@pytest.mark.parametrize(('first', 'second'), (
+        ('type/subtype', '  type / subtype  '),
+))
+def test_comparing_media_types(first, second):
+    first_media_type = MediaType(first)
+    second_media_type = MediaType(second)
+
+    assert first_media_type == second_media_type
+    assert hash(first_media_type) == hash(second_media_type)
+
+
+@pytest.mark.parametrize(('item', 'operator_'), (
+        ('*/*', operator.eq),
+        ('*', operator.eq),
+        (object, operator.ne),
+))
+def test_comparing_media_types_with_other_types(item, operator_):
+    assert operator_(MediaType.ALL, item)
 
 
 @pytest.mark.parametrize('media_type, expected_str', [
