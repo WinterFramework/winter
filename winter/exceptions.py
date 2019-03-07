@@ -50,15 +50,8 @@ class ExceptionHandler(abc.ABC):
     status_code = None
 
     def __init__(self):
-        from .routing import Route
-
         handle = self.__class__.handle
-        handle = annotate(None)(handle)
-        self.route = Route(
-            http_method='',
-            url_path='',
-            method=handle
-        )
+        self.handle_method = annotate(None)(handle)
 
     @abc.abstractmethod
     def handle(self, request: Request, exception: Exception):  # pragma: no cover
@@ -106,7 +99,7 @@ class ExceptionsHandler(ExceptionHandler):
         handler = self.get_handler(exception)
         if handler:
             result = handler.handle(request, exception)
-            return convert_result_to_http_response(request, result, handler.route)
+            return convert_result_to_http_response(request, result, handler.handle_method)
         return NotHandled
 
 

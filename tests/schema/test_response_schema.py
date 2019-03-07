@@ -25,10 +25,8 @@ def test_build_response_schema(return_type, expected_response):
         def simple_method(self) -> return_type:
             return None
 
-    route = get_route(SimpleController.simple_method)
-
     # Act
-    schema = build_response_schema(route)
+    schema = build_response_schema(SimpleController.simple_method)
 
     # Assert
     assert isinstance(schema, openapi.SwaggerDict)
