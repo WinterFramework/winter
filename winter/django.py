@@ -86,7 +86,7 @@ def _call_controller_method(controller, route: Route, request: Request):
     arguments = arguments_resolver.resolve_arguments(route.method, request)
     try:
         result = method(controller, **arguments)
-        return convert_result_to_http_response(request, result, route)
+        return convert_result_to_http_response(request, result, route.method)
     except tuple(get_throws(method)) as e:
         result = exceptions_handler.handle(request, e)
         if result is NotHandled:
@@ -94,7 +94,7 @@ def _call_controller_method(controller, route: Route, request: Request):
         return result
 
 
-def convert_result_to_http_response(request: Request, result: Any, route: Route):
+def convert_result_to_http_response(request: Request, result: Any, method: ComponentMethod):
     if isinstance(result, django.http.HttpResponse):
         return result
     if isinstance(result, ResponseEntity):
@@ -102,8 +102,8 @@ def convert_result_to_http_response(request: Request, result: Any, route: Route)
         status_code = result.status_code
     else:
         body = result
-        status_code = get_default_response_status(route)
-    output_processor = get_output_processor(route.method, body)
+        status_code = get_default_response_status(request.method, method)
+    output_processor = get_output_processor(method, body)
     if output_processor is not None:
         body = output_processor.process_output(body, request)
     if isinstance(body, django.http.response.HttpResponseBase):

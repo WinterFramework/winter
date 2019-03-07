@@ -2,7 +2,7 @@ import uritemplate
 from django.urls import get_resolver
 from rest_framework.request import Request
 
-from winter.argument_resolver import ArgumentNotSupported
+from .argument_resolver import ArgumentNotSupported
 from .argument_resolver import ArgumentResolver
 from .core import ComponentMethodArgument
 from .routing.routing import get_url_path

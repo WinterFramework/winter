@@ -9,6 +9,7 @@ from .method_arguments_inspector import get_method_arguments_inspectors
 from .type_inspection import InspectorNotFound
 from .type_inspection import inspect_type
 from .utils import update_doc_with_invalid_hype_hint
+from ..core import ComponentMethod
 from ..core import ComponentMethodArgument
 from ..drf import get_input_serializer
 from ..drf import get_output_serializer
@@ -40,21 +41,21 @@ def generate_swagger_for_operation(view_func, controller, route: Route):
 
 def build_responses_schemas(route: Route):
     responses = {}
-    response_status = str(get_default_response_status(route))
+    http_method = route.http_method
+    response_status = str(get_default_response_status(http_method, route.method))
 
-    responses[response_status] = build_response_schema(route)
+    responses[response_status] = build_response_schema(route.method)
 
     for exception_cls in get_throws(route.method):
         handler = exceptions_handler.get_handler(exception_cls)
         if handler is None:
             continue
-        response_status = str(get_default_response_status(handler.route))
-        responses[response_status] = build_response_schema(handler.route)
+        response_status = str(get_default_response_status(http_method, handler.handle_method))
+        responses[response_status] = build_response_schema(handler.handle_method)
     return responses
 
 
-def build_response_schema(route: Route):
-    method = route.method
+def build_response_schema(method: ComponentMethod):
     output_serializer = get_output_serializer(method)
     if output_serializer is not None:
         return output_serializer.class_(**output_serializer.kwargs)
@@ -64,7 +65,7 @@ def build_response_schema(route: Route):
     try:
         type_info = inspect_type(return_value_type)
     except InspectorNotFound:
-        return None
+        return openapi.Response(description='')
     else:
         return type_info.get_openapi_schema()
 

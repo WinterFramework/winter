@@ -1,11 +1,7 @@
-import typing
-
 import dataclasses
 
+from .core import ComponentMethod
 from .core import annotate
-
-if typing.TYPE_CHECKING:  # pragma: no cover
-    from .routing import Route
 
 _default_http_method_statuses = {
     'get': 200,
@@ -26,9 +22,8 @@ def response_status(status: int):
     return annotate(annotation, single=True)
 
 
-def get_default_response_status(route: 'Route') -> int:
-    method = route.method
+def get_default_response_status(http_method: str, method: ComponentMethod) -> int:
     response_status_annotation = method.annotations.get_one_or_none(ResponseStatusAnnotation)
     if response_status_annotation is not None:
         return response_status_annotation.status_code
-    return _default_http_method_statuses.get(route.http_method.lower())
+    return _default_http_method_statuses.get(http_method.lower())
