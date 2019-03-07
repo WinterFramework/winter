@@ -67,7 +67,6 @@ class BaseRateThrottle(BaseThrottle):
 
         return super().get_ident(request)
 
-
     def _get_throttling(self, request) -> typing.Optional[Throttling]:
         return self.throttling_by_http_method.get(request.method.lower())
 
