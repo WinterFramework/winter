@@ -24,5 +24,5 @@ def build_controller(controller_class: _ControllerType) -> _Controller:
     return _controller_factory(controller_class)
 
 
-def get_component(controller_class: typing.Type) -> Component:
+def get_component(controller_class: _ControllerType) -> Component:
     return Component.get_by_cls(controller_class)
