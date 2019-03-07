@@ -1,17 +1,22 @@
+import enum
 import re
 import uuid
 
 import pytest
 
-from tests.controllers.controller_with_path_parameters import OneTwoEnum
 from winter.core import ComponentMethod
 from winter.http.urls import rewrite_uritemplate_with_regexps
+
+
+class _OneTwoEnum(enum.Enum):
+    ONE = 'one'
+    TWO = 'two'
 
 
 @pytest.mark.parametrize(('url_path', 'param_type', 'expected_url_path', 'example_url'), (
         (r'/{param}/', int, r'/(?P<param>\d+)/', r'/1/'),
         (r'/{param}/', str, r'/(?P<param>[^/]+)/', r'/test/'),
-        (r'/{param}/', OneTwoEnum, r'/(?P<param>((one)|(two)))/', r'/one/'),
+        (r'/{param}/', _OneTwoEnum, r'/(?P<param>((one)|(two)))/', r'/one/'),
         (
                 r'/{param}/',
                 uuid.UUID,
