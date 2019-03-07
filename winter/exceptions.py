@@ -51,7 +51,7 @@ class ExceptionHandler(abc.ABC):
 
     def __init__(self):
         handle = self.__class__.handle
-        self.handle_method = annotate(None)(handle)
+        self.handle_method = ComponentMethod.get_or_create(handle)
 
     @abc.abstractmethod
     def handle(self, request: Request, exception: Exception):  # pragma: no cover

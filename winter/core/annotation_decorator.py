@@ -41,8 +41,7 @@ class annotate_class(annotate_base):
 
     def __call__(self, cls: typing.Type):
         component = Component.get_by_cls(cls)
-        if self.annotation is not None:
-            component.annotations.add(self.annotation, unique=self.unique, single=self.single)
+        component.annotations.add(self.annotation, unique=self.unique, single=self.single)
         return cls
 
 
@@ -51,6 +50,5 @@ class annotate_method(annotate_base):
 
     def __call__(self, func_or_method: typing.Union[types.FunctionType, ComponentMethod]):
         method = ComponentMethod.get_or_create(func_or_method)
-        if self.annotation is not None:
-            method.annotations.add(self.annotation, unique=self.unique, single=self.single)
+        method.annotations.add(self.annotation, unique=self.unique, single=self.single)
         return method
