@@ -60,7 +60,23 @@ class MediaType:
             raise InvalidMediaTypeException(media_type, 'Media type must not be empty')
 
         full_type, *parameters_parts = media_type.split(';')
-        parameters = cls._build_parameters(media_type, parameters_parts)
+        parameters = cls._parse_parameters(media_type, parameters_parts)
+        type_, subtype = cls._parse_full_type(media_type, full_type)
+        return type_, subtype, types.MappingProxyType(parameters)
+
+    @classmethod
+    def _parse_parameters(cls, media_type_str, parts):
+        parameters = {}
+        for param_str in parts:
+            key_value = param_str.strip().split('=')
+            if len(key_value) != 2:
+                raise InvalidMediaTypeException(media_type_str, 'Invalid media type parameter list')
+            key, value = (item.strip() for item in key_value)
+            parameters[key] = value
+        return parameters
+
+    @classmethod
+    def _parse_full_type(cls, media_type_str, full_type):
         type_, separator, subtype = full_type.partition('/')
 
         if type_ == '*' and separator == '':
@@ -70,31 +86,25 @@ class MediaType:
         type_ = type_.strip()
         subtype = subtype.strip()
 
-        cls._check(media_type, type_, separator, subtype)
-        return type_, subtype, types.MappingProxyType(parameters)
-
-    @classmethod
-    def _build_parameters(cls, media_type_str, parts):
-        parameters = {}
-        for param_str in parts:
-            key_value = param_str.strip().split('=')
-            if len(key_value) != 2:
-                raise InvalidMediaTypeException(media_type_str, 'Invalid media type parameter list')
-            parameters[key_value[0]] = key_value[1]
-        return parameters
+        cls._check(media_type_str, type_, separator, subtype)
+        return type_, subtype
 
     @classmethod
     def _check(cls, media_type_str, type_, separator, subtype):
+        cls._check_for_empty(media_type_str, type_, separator, subtype)
         if subtype.count('/'):
             raise InvalidMediaTypeException(media_type_str, 'Invalid media type format')
+        if type_ == '*' and subtype != '*':
+            raise InvalidMediaTypeException(media_type_str, 'Wildcard is allowed only in */* (all media types)')
+
+    @classmethod
+    def _check_for_empty(self, media_type_str, type_, separator, subtype):
         if not separator:
             raise InvalidMediaTypeException(media_type_str, 'Media type must contain "/"')
         if not type_:
             raise InvalidMediaTypeException(media_type_str, 'Empty type is specified')
         if not subtype:
             raise InvalidMediaTypeException(media_type_str, 'Empty subtype is specified')
-        if type_ == '*' and subtype != '*':
-            raise InvalidMediaTypeException(media_type_str, 'Wildcard is allowed only in */* (all media types)')
 
     def __eq__(self, other) -> bool:
         if not isinstance(other, MediaType):
