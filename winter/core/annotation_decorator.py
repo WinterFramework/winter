@@ -50,12 +50,7 @@ class annotate_method(annotate_base):
     _supported_classes = (ComponentMethod, types.FunctionType,)
 
     def __call__(self, func_or_method: typing.Union[types.FunctionType, ComponentMethod]):
-        if isinstance(func_or_method, ComponentMethod):
-            method = func_or_method
-        elif isinstance(func_or_method, types.FunctionType):
-            method = ComponentMethod(func_or_method)
-        else:
-            raise ValueError(f'Need function. Got: {func_or_method}')
+        method = ComponentMethod.get_or_create(func_or_method)
         if self.annotation is not None:
             method.annotations.add(self.annotation, unique=self.unique, single=self.single)
         return method
