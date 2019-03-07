@@ -1,8 +1,7 @@
 import dataclasses
 
-from winter.core import ComponentMethod
+from .core import ComponentMethod
 from .core import annotate
-
 
 _default_http_method_statuses = {
     'get': 200,
