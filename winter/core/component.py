@@ -47,7 +47,7 @@ class Component:
         return cls._components
 
     @classmethod
-    def get_by_cls(cls, component_cls):
+    def get_by_cls(cls, component_cls) -> 'Component':
         if not inspect.isclass(component_cls):
             cls._raise_invalid_class(component_cls)
         component_ = cls._components.get(component_cls)
