@@ -42,7 +42,7 @@ def build_responses_schemas(route: Route):
     responses = {}
     response_status = str(get_default_response_status(route))
 
-    responses[response_status] = build_response_schema(route)
+    responses[response_status] = build_response_schema(route, openapi.Response(description=''))
 
     for exception_cls in get_throws(route.method):
         handler = exceptions_handler.get_handler(exception_cls)
@@ -53,7 +53,7 @@ def build_responses_schemas(route: Route):
     return responses
 
 
-def build_response_schema(route: Route):
+def build_response_schema(route: Route, default=None):
     method = route.method
     output_serializer = get_output_serializer(method)
     if output_serializer is not None:
@@ -64,7 +64,7 @@ def build_response_schema(route: Route):
     try:
         type_info = inspect_type(return_value_type)
     except InspectorNotFound:
-        return None
+        return default
     else:
         return type_info.get_openapi_schema()
 
