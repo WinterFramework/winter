@@ -45,6 +45,15 @@ class ComponentMethod:
     def __str__(self):
         return f'ComponentMethod(component={self._component}, name={self.name}, func={self.func})'
 
+    @classmethod
+    def get_or_create(cls, func_or_method):
+        if isinstance(func_or_method, cls):
+            return func_or_method
+        elif isinstance(func_or_method, types.FunctionType):
+            return ComponentMethod(func_or_method)
+        else:
+            raise ValueError(f'Need function. Got: {func_or_method}')
+
     @property
     def component(self):
         return self._component
