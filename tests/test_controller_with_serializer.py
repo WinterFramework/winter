@@ -15,3 +15,16 @@ def test_controller_with_serializer():
 
     assert response.status_code == 200
     assert response.json() == expected_data
+
+
+def test_controller_with_serializer_context():
+    client = APIClient()
+    user = AuthorizedUser()
+    client.force_authenticate(user)
+
+    expected_data = {'number': 123}
+
+    response = client.get('/with-serializer/with-context/')
+
+    assert response.status_code == 200
+    assert response.json() == expected_data
