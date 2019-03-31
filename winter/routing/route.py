@@ -19,6 +19,3 @@ class Route:
     @cached_property
     def path_variables(self):
         return uritemplate.variables(self.url_path)
-
-    def has_path_variable(self, name: str):
-        return name in self.path_variables
