@@ -1,4 +1,5 @@
 # requirements for running the tests via pytest
+freezegun==0.3.11
 mock==2.0.0
 pytest>=3.6
 pytest-pythonpath>=0.7.1

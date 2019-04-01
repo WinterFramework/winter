@@ -2,7 +2,7 @@ import winter
 
 
 @winter.controller
-@winter.route('winter_no_auth')
+@winter.route('winter-no-auth')
 @winter.no_authentication
 class NoAuthenticationController:
 

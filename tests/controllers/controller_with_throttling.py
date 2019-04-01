@@ -1,6 +1,7 @@
 import winter.http
 import winter
 
+
 @winter.http.throttling('5/s')
 @winter.route_get('with-throttling-on-controller/')
 class ControllerWithThrottlingOnController:

@@ -17,7 +17,6 @@ class TemplateRenderer(IOutputProcessor):
 def output_template(template_name: str):
     def wrapper(func):
         output_processor = TemplateRenderer(template_name)
-        register_output_processor(func, output_processor)
-        return func
+        return register_output_processor(func, output_processor)
 
     return wrapper

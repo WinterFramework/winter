@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 import pytest
 from rest_framework.test import APIClient
 
@@ -14,23 +16,34 @@ def test_simple_controller(data, expected_body):
     client = APIClient()
     user = AuthorizedUser()
     client.force_authenticate(user)
-    response = client.get('/winter_simple/', data=data)
-    assert response.status_code == 200
+    response = client.get('/winter-simple/', data=data)
+    assert response.status_code == HTTPStatus.OK
     assert response.json() == expected_body
 
 
 def test_401_not_authenticated():
     client = APIClient()
-    response = client.get('/winter_simple/')
-    assert response.status_code == 401
+    response = client.get('/winter-simple/')
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
 
 
 def test_403_forbidden():
     client = APIClient()
     user = User()
     client.force_authenticate(user)
-    response = client.get('/winter_simple/')
-    assert response.status_code == 403
+    response = client.get('/winter-simple/')
+    assert response.status_code == HTTPStatus.FORBIDDEN
+
+
+def test_get_response_entity():
+    client = APIClient()
+    user = AuthorizedUser()
+    client.force_authenticate(user)
+    response = client.get('/winter-simple/get-response-entity/')
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == {
+        'number': 123,
+    }
 
 
 def test_page_response():
@@ -42,8 +55,8 @@ def test_page_response():
         'meta': {
             'limit': 2,
             'offset': 2,
-            'next': 'http://testserver/winter_simple/page-response/?limit=2&offset=4',
-            'previous': 'http://testserver/winter_simple/page-response/?limit=2',
+            'next': 'http://testserver/winter-simple/page-response/?limit=2&offset=4',
+            'previous': 'http://testserver/winter-simple/page-response/?limit=2',
             'total_count': 10,
         },
     }
@@ -53,15 +66,15 @@ def test_page_response():
     }
 
     # Act
-    response = client.get('/winter_simple/page-response/', data=data)
+    response = client.get('/winter-simple/page-response/', data=data)
 
     # Assert
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
     assert response.json() == expected_body
 
 
 def test_no_authentication_controller():
     client = APIClient()
-    response = client.get('/winter_no_auth/')
-    assert response.status_code == 200
+    response = client.get('/winter-no-auth/')
+    assert response.status_code == HTTPStatus.OK
     assert response.json() == 'Hello, World!'

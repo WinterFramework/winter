@@ -17,8 +17,6 @@ class DRFOutputProcessor(IOutputProcessor):
         if isinstance(output, BodyWithContext):
             instance = output.body
             context = output.context
-        elif isinstance(output, tuple):
-            instance, context = output
         else:
             instance = output
             context = {}
