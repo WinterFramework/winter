@@ -46,6 +46,9 @@ class BaseRateThrottle(BaseThrottle):
         history = self.cache.get(key, [])
         now = time.time()
 
+        while history and history[-1] <= now - throttling_.duration:
+            history.pop()
+
         if len(history) >= throttling_.num_requests:
             return False
 

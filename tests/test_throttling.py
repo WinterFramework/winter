@@ -1,3 +1,4 @@
+import datetime
 from http import HTTPStatus
 
 import pytest
@@ -25,12 +26,16 @@ def test_throttling_discards_old_requests():
     user = AuthorizedUser()
     client.force_authenticate(user)
 
-    with freeze_time('2000-01-01 10:00:00'):
-        for _ in range(10):
+    with freeze_time(datetime.datetime(2000, 1, 1, second=0, microsecond=0)):
+        for _ in range(3):
+            client.get('/with-throttling-on-controller/')
+
+    with freeze_time(datetime.datetime(2000, 1, 1, second=0, microsecond=600000)):
+        for _ in range(2):
             client.get('/with-throttling-on-controller/')
 
     # Act
-    with freeze_time('2000-01-01 10:00:30'):
+    with freeze_time(datetime.datetime(2000, 1, 1, second=1, microsecond=0)):
         response = client.get('/with-throttling-on-controller/')
 
     assert response.status_code == HTTPStatus.OK
