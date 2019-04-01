@@ -17,14 +17,14 @@ def test_simple_controller(data, expected_body):
     user = AuthorizedUser()
     client.force_authenticate(user)
     response = client.get('/winter-simple/', data=data)
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
     assert response.json() == expected_body
 
 
 def test_401_not_authenticated():
     client = APIClient()
     response = client.get('/winter-simple/')
-    assert response.status_code == 401
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
 
 
 def test_403_forbidden():
@@ -32,7 +32,7 @@ def test_403_forbidden():
     user = User()
     client.force_authenticate(user)
     response = client.get('/winter-simple/')
-    assert response.status_code == 403
+    assert response.status_code == HTTPStatus.FORBIDDEN
 
 
 def test_get_response_entity():
@@ -69,12 +69,12 @@ def test_page_response():
     response = client.get('/winter-simple/page-response/', data=data)
 
     # Assert
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
     assert response.json() == expected_body
 
 
 def test_no_authentication_controller():
     client = APIClient()
     response = client.get('/winter-no-auth/')
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
     assert response.json() == 'Hello, World!'

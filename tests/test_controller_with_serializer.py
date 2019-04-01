@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from rest_framework.test import APIClient
 
 from tests.entities import AuthorizedUser
@@ -13,7 +15,7 @@ def test_controller_with_serializer():
 
     response = client.post('/with-serializer/', data=data)
 
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
     assert response.json() == expected_data
 
 
@@ -26,5 +28,5 @@ def test_controller_with_serializer_context():
 
     response = client.get('/with-serializer/with-context/')
 
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
     assert response.json() == expected_data
