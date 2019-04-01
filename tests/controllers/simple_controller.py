@@ -1,6 +1,7 @@
 from http import HTTPStatus
 
 import dataclasses
+from rest_framework.response import Response
 
 import winter
 from winter import ResponseEntity
@@ -31,3 +32,27 @@ class SimpleController:
     @winter.response_status(HTTPStatus.ACCEPTED)
     def return_response_entity(self) -> ResponseEntity:
         return ResponseEntity(Dataclass(123), status_code=HTTPStatus.OK)
+
+    @winter.route_get('return-response/')
+    def return_response(self) -> Response:
+        return Response(data=[])
+
+    @winter.route_get('get/')
+    def get(self):
+        return None
+
+    @winter.route_post('post/')
+    def post(self):
+        return None
+
+    @winter.route_delete('delete/')
+    def delete(self):
+        return None
+
+    @winter.route_patch('patch/')
+    def patch(self):
+        return None
+
+    @winter.route_put('put/')
+    def put(self):
+        return None

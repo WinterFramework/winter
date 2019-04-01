@@ -7,18 +7,22 @@ from rest_framework.test import APIClient
 
 from .entities import AuthorizedUser
 
-
-def test_throttling():
+@pytest.mark.parametrize('need_auth', (True, False))
+def test_throttling(need_auth):
     client = APIClient()
-    user = AuthorizedUser()
-    client.force_authenticate(user)
 
-    for i in range(1, 10):
+    if need_auth:
+        user = AuthorizedUser()
+        client.force_authenticate(user)
+
+    for i in range(1, 5):
         response = client.get('/with-throttling-on-controller/')
-        if i > 5:
-            assert response.status_code == HTTPStatus.TOO_MANY_REQUESTS, i
+        response_of_same = client.get('/with-throttling-on-controller/same/')
+
+        if i >  6 // 2:
+            assert response.status_code == response_of_same.status_code == HTTPStatus.TOO_MANY_REQUESTS, i
         else:
-            assert response.status_code == HTTPStatus.OK, i
+            assert response.status_code == response_of_same.status_code == HTTPStatus.OK, i
 
 
 def test_throttling_discards_old_requests():
@@ -41,17 +45,20 @@ def test_throttling_discards_old_requests():
     assert response.status_code == HTTPStatus.OK
 
 
-def test_throttling_on_method():
+@pytest.mark.parametrize('need_auth', (True, False))
+def test_throttling_on_method(need_auth):
     client = APIClient()
-    user = AuthorizedUser()
-    client.force_authenticate(user)
+    if need_auth:
+        user = AuthorizedUser()
+        client.force_authenticate(user)
 
     for i in range(1, 10):
         response = client.get('/with-throttling-on-method/')
+        response_of_same = client.get('/with-throttling-on-method/same/')
         if i > 5:
-            assert response.status_code == HTTPStatus.TOO_MANY_REQUESTS, i
+            assert response.status_code == response_of_same.status_code == HTTPStatus.TOO_MANY_REQUESTS, i
         else:
-            assert response.status_code == HTTPStatus.OK, i
+            assert response.status_code == response_of_same.status_code == HTTPStatus.OK, i
 
 
 @pytest.mark.parametrize(('url', 'method'), (

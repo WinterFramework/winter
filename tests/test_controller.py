@@ -78,3 +78,29 @@ def test_no_authentication_controller():
     response = client.get('/winter-no-auth/')
     assert response.status_code == HTTPStatus.OK
     assert response.json() == 'Hello, World!'
+
+
+def test_return_response():
+    client = APIClient()
+    user = AuthorizedUser()
+    client.force_authenticate(user)
+    response = client.get('/winter-simple/return-response/')
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == []
+
+
+@pytest.mark.parametrize(('method', 'http_response_status'), (
+        ('get', HTTPStatus.OK),
+        ('post', HTTPStatus.OK),
+        ('patch',HTTPStatus.OK),
+        ('delete', HTTPStatus.NO_CONTENT),
+        ('put', HTTPStatus.OK),
+))
+def test_methods(method, http_response_status):
+    client = APIClient()
+    user = AuthorizedUser()
+    client.force_authenticate(user)
+    url = f'/winter-simple/{method}/'
+    response = getattr(client, method)(url)
+    assert response.status_code == http_response_status
+    assert response.content == b''
