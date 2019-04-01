@@ -7,11 +7,13 @@ from rest_framework.test import APIClient
 
 from .entities import AuthorizedUser
 
-
-def test_throttling():
+@pytest.mark.parametrize('need_auth', (True, False))
+def test_throttling(need_auth):
     client = APIClient()
-    user = AuthorizedUser()
-    client.force_authenticate(user)
+
+    if need_auth:
+        user = AuthorizedUser()
+        client.force_authenticate(user)
 
     for i in range(1, 10):
         response = client.get('/with-throttling-on-controller/')
@@ -41,10 +43,12 @@ def test_throttling_discards_old_requests():
     assert response.status_code == HTTPStatus.OK
 
 
-def test_throttling_on_method():
+@pytest.mark.parametrize('need_auth', (True, False))
+def test_throttling_on_method(need_auth):
     client = APIClient()
-    user = AuthorizedUser()
-    client.force_authenticate(user)
+    if need_auth:
+        user = AuthorizedUser()
+        client.force_authenticate(user)
 
     for i in range(1, 10):
         response = client.get('/with-throttling-on-method/')

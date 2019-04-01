@@ -2,7 +2,8 @@ import winter.http
 import winter
 
 
-@winter.http.throttling('5/s')
+@winter.http.throttling('5/s', scope='ControllerWithThrottlingOnController')
+@winter.no_authentication
 @winter.route_get('with-throttling-on-controller/')
 class ControllerWithThrottlingOnController:
 
@@ -17,6 +18,7 @@ class ControllerWithThrottlingOnController:
 
 
 @winter.route_get('with-throttling-on-method/')
+@winter.no_authentication
 class ControllerWithThrottlingOnMethod:
 
     @winter.route_get()

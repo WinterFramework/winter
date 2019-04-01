@@ -1,5 +1,6 @@
 import time
 import typing
+import uuid
 
 import dataclasses
 from django.core.cache import cache as default_cache
@@ -26,6 +27,8 @@ class Throttling:
 
 
 def throttling(rate: typing.Optional[str], scope: typing.Optional[str] = None):
+    if scope is None:
+        scope = uuid.uuid4()
     return annotate(ThrottlingAnnotation(rate, scope), single=True)
 
 
@@ -64,7 +67,6 @@ class BaseRateThrottle(BaseThrottle):
 
         if user_pk is not None:
             return str(user_pk)
-
         return super().get_ident(request)
 
     def _get_throttling(self, request) -> typing.Optional[Throttling]:
