@@ -20,7 +20,7 @@ pip install winter
 ```
 
 ## Hello world
-```
+```python
 import winter
 
 @winter.controller
@@ -31,7 +31,7 @@ class HelloWorldController:
 ```
 
 To use it with Django:
-```
+```python
 import winter.django
 
 urlpatterns = [
