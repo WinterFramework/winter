@@ -94,9 +94,9 @@ def _call_controller_method(controller, route: Route, request: Request):
 
         if handler is not None:
             result = handler.handle(request, exception)
-            result = convert_result_to_http_response(request, result, handler.handle_method)
-        else:
-            result = exceptions_handler.handle(request, exception)
+            return convert_result_to_http_response(request, result, handler.handle_method)
+
+        result = exceptions_handler.handle(request, exception)
         if result is NotHandled:
             raise
         return result
