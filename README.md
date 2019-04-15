@@ -18,3 +18,23 @@ Web Framework for Python inspired by Spring Framework
 ```
 pip install winter
 ```
+
+## Hello world
+```python
+import winter
+
+@winter.controller
+class HelloWorldController:
+    @winter.route_get('/hello/')
+    def hello(self):
+        return f'Hello, world!'
+```
+
+To use it with Django:
+```python
+import winter.django
+
+urlpatterns = [
+    *winter.django.create_django_urls(HelloWorldController),
+]
+```
