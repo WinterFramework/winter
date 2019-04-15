@@ -23,7 +23,7 @@ NotHandled = object()
 @dataclasses.dataclass
 class ExceptionAnnotation:
     exception_cls: typing.Type[Exception]
-    handler_cls: typing.Optional['ExceptionHandler'] = None
+    handler: typing.Optional['ExceptionHandler'] = None
 
 
 class WinterException(Exception):
@@ -59,14 +59,21 @@ class ExceptionHandler(abc.ABC):
         pass
 
 
-def throws(exception_cls: Type[Exception], handler_cls: typing.Optional[ExceptionHandler] = None):
+def throws(exception_cls: Type[Exception], handler_cls: typing.Optional[typing.Type[ExceptionHandler]] = None):
     """Decorator to use on methods."""
-    return annotate(ExceptionAnnotation(exception_cls, handler_cls), unique=True)
+    from .controller import build_controller
+
+    if handler_cls is not None:
+        handler = build_controller(handler_cls)
+    else:
+        handler = None
+
+    return annotate(ExceptionAnnotation(exception_cls, handler), unique=True)
 
 
 def get_throws(method: ComponentMethod) -> typing.Dict[Exception, ExceptionHandler]:
     annotations = method.annotations.get(ExceptionAnnotation)
-    return {annotation.exception_cls: annotation.handler_cls for annotation in annotations}
+    return {annotation.exception_cls: annotation.handler for annotation in annotations}
 
 
 class ExceptionsHandler(ExceptionHandler):

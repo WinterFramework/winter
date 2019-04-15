@@ -69,7 +69,7 @@ class ControllerWithExceptions:
     def winter_exception(self, http_request: Request):
         raise WinterException()
 
-    @winter.throws(CustomException, AnotherExceptionHandler())
+    @winter.throws(CustomException, AnotherExceptionHandler)
     @winter.route_get('exception_with_custom_handler/')
     def with_custom_handler(self) -> str:
         raise CustomException('message')
