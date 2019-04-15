@@ -84,11 +84,19 @@ def _create_dispatch_function(controller, route: Route):
 def _call_controller_method(controller, route: Route, request: Request):
     method = route.method
     arguments = arguments_resolver.resolve_arguments(route.method, request)
+    handlers_by_exception = get_throws(method)
     try:
         result = method(controller, **arguments)
         return convert_result_to_http_response(request, result, route.method)
-    except tuple(get_throws(method)) as e:
-        result = exceptions_handler.handle(request, e)
+    except tuple(handlers_by_exception) as exception:
+        exception_cls = type(exception)
+        handler = handlers_by_exception.get(exception_cls)
+
+        if handler is not None:
+            result = handler.handle(request, exception)
+            result = convert_result_to_http_response(request, result, handler.handle_method)
+        else:
+            result = exceptions_handler.handle(request, exception)
         if result is NotHandled:
             raise
         return result
