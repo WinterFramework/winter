@@ -23,6 +23,7 @@ NotHandled = object()
 @dataclasses.dataclass
 class ExceptionAnnotation:
     exception_cls: typing.Type[Exception]
+    handler: typing.Optional['ExceptionHandler'] = None
 
 
 class WinterException(Exception):
@@ -58,14 +59,21 @@ class ExceptionHandler(abc.ABC):
         pass
 
 
-def throws(exception_cls: Type[Exception]):
+def throws(exception_cls: Type[Exception], handler_cls: typing.Optional[typing.Type[ExceptionHandler]] = None):
     """Decorator to use on methods."""
-    return annotate(ExceptionAnnotation(exception_cls), unique=True)
+    from .controller import build_controller
+
+    if handler_cls is not None:
+        handler = build_controller(handler_cls)
+    else:
+        handler = None
+
+    return annotate(ExceptionAnnotation(exception_cls, handler), unique=True)
 
 
-def get_throws(method: ComponentMethod) -> typing.List[Type[Exception]]:
+def get_throws(method: ComponentMethod) -> typing.Dict[typing.Type[Exception], ExceptionHandler]:
     annotations = method.annotations.get(ExceptionAnnotation)
-    return [annotation.exception_cls for annotation in annotations]
+    return {annotation.exception_cls: annotation.handler for annotation in annotations}
 
 
 class ExceptionsHandler(ExceptionHandler):
@@ -82,10 +90,7 @@ class ExceptionsHandler(ExceptionHandler):
         self._handlers[exception_cls] = build_controller(handler_cls)
 
     def get_handler(self, exception: typing.Union[typing.Type[Exception], Exception]) -> Optional[ExceptionHandler]:
-        if isinstance(exception, Exception):
-            exception_type = type(exception)
-        else:
-            exception_type = exception
+        exception_type = type(exception) if isinstance(exception, Exception) else exception
 
         for exception_cls, handler in self._handlers.items():
             if issubclass(exception_type, exception_cls):
@@ -97,10 +102,40 @@ class ExceptionsHandler(ExceptionHandler):
         from .django import convert_result_to_http_response
 
         handler = self.get_handler(exception)
-        if handler:
+        if handler is not None:
             result = handler.handle(request, exception)
             return convert_result_to_http_response(request, result, handler.handle_method)
         return NotHandled
+
+
+class MethodExceptionsHandler(ExceptionHandler):
+
+    def __init__(self, method: ComponentMethod):
+        super().__init__()
+        self._method = method
+        self._handlers_by_exception = get_throws(self._method)
+
+    @property
+    def exception_classes(self) -> typing.Tuple[Type[Exception], ...]:
+        return tuple(self._handlers_by_exception.keys())
+
+    def get_handler(self, exception: typing.Union[typing.Type[Exception], Exception]) -> Optional[ExceptionHandler]:
+        exception_type = type(exception) if isinstance(exception, Exception) else exception
+
+        for exception_cls, handler in self._handlers_by_exception.items():
+            if handler is not None and issubclass(exception_type, exception_cls):
+                return handler
+        return None
+
+    @annotate(None)
+    def handle(self, request: Request, exception: Exception):
+        from .django import convert_result_to_http_response
+
+        handler = self.get_handler(exception)
+        if handler is not None:
+            result = handler.handle(request, exception)
+            return convert_result_to_http_response(request, result, handler.handle_method)
+        return exceptions_handler.handle(request, exception)
 
 
 exceptions_handler = ExceptionsHandler()

@@ -29,6 +29,12 @@ class CustomExceptionHandler(winter.ExceptionHandler):
         return CustomExceptionDTO(exception.message)
 
 
+class AnotherExceptionHandler(winter.ExceptionHandler):
+    @winter.response_status(401)
+    def handle(self, request: Request, exception: CustomException) -> int:
+        return 21
+
+
 winter.exceptions_handler.add_handler(CustomException, CustomExceptionHandler)
 
 
@@ -62,3 +68,8 @@ class ControllerWithExceptions:
     @winter.route_get('not_declared_winter_exception/')
     def winter_exception(self, http_request: Request):
         raise WinterException()
+
+    @winter.throws(CustomException, AnotherExceptionHandler)
+    @winter.route_get('exception_with_custom_handler/')
+    def with_custom_handler(self) -> str:
+        raise CustomException('message')

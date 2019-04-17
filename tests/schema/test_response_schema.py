@@ -39,6 +39,10 @@ def test_build_response_schema(return_type, expected_response):
             'message': openapi.Schema(type=openapi.TYPE_STRING),
         }),
     }),
+    (ControllerWithExceptions, 'with_custom_handler', {
+        '200': openapi.Schema(type=openapi.TYPE_STRING),
+        '401': openapi.Schema(type=openapi.TYPE_INTEGER)
+    }),
     (ControllerWithExceptions, 'not_declared_but_thrown', {
         '200': openapi.Schema(type=openapi.TYPE_STRING),
     }),
