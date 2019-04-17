@@ -16,10 +16,9 @@ from .controller import build_controller
 from .controller import get_component
 from .core import ComponentMethod
 from .drf.auth import is_authentication_needed
+from .exceptions import MethodExceptionsHandler
 from .exceptions import NotHandled
 from .exceptions import WinterException
-from .exceptions import exceptions_handler
-from .exceptions import get_throws
 from .exceptions import handle_winter_exception
 from .http.throttling import create_throttle_classes
 from .http.urls import rewrite_uritemplate_with_regexps
@@ -73,6 +72,7 @@ def _create_django_view(controller, component, routes: List[Route]):
 
 def _create_dispatch_function(controller, route: Route):
     def dispatch(winter_view, request: Request, **path_variables):
+
         try:
             return _call_controller_method(controller, route, request)
         except WinterException as exception:
@@ -83,24 +83,16 @@ def _create_dispatch_function(controller, route: Route):
 
 def _call_controller_method(controller, route: Route, request: Request):
     method = route.method
-    arguments = arguments_resolver.resolve_arguments(route.method, request)
-    handlers_by_exception = get_throws(method)
+    arguments = arguments_resolver.resolve_arguments(method, request)
+    method_exceptions_handler = MethodExceptionsHandler(method)
     try:
         result = method(controller, **arguments)
-        return convert_result_to_http_response(request, result, route.method)
-    except tuple(handlers_by_exception) as exception:
-        exception_cls = type(exception)
-        handler = handlers_by_exception.get(exception_cls)
-
-        if handler is not None:
-            result = handler.handle(request, exception)
-            return convert_result_to_http_response(request, result, handler.handle_method)
-
-        result = exceptions_handler.handle(request, exception)
+        return convert_result_to_http_response(request, result, method)
+    except tuple(method_exceptions_handler.exceptions) as exception:
+        result = method_exceptions_handler.handle(request, exception)
         if result is NotHandled:
             raise
         return result
-
 
 def convert_result_to_http_response(request: Request, result: Any, method: ComponentMethod):
     if isinstance(result, django.http.HttpResponse):

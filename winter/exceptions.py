@@ -71,13 +71,13 @@ def throws(exception_cls: Type[Exception], handler_cls: typing.Optional[typing.T
     return annotate(ExceptionAnnotation(exception_cls, handler), unique=True)
 
 
-def get_throws(method: ComponentMethod) -> typing.Dict[Exception, ExceptionHandler]:
+def get_throws(method: ComponentMethod) -> typing.Dict[typing.Type[Exception], ExceptionHandler]:
     annotations = method.annotations.get(ExceptionAnnotation)
     return {annotation.exception_cls: annotation.handler for annotation in annotations}
 
 
 class ExceptionsHandler(ExceptionHandler):
-    HandlersMap = Dict[Type[Exception], ExceptionHandler]
+    HandlersMap = Dict[typing.Optional[Type[Exception]], ExceptionHandler]
 
     def __init__(self):
         self._handlers: ExceptionsHandler.HandlersMap = {}
@@ -105,10 +105,40 @@ class ExceptionsHandler(ExceptionHandler):
         from .django import convert_result_to_http_response
 
         handler = self.get_handler(exception)
-        if handler:
+        if handler is not None:
             result = handler.handle(request, exception)
             return convert_result_to_http_response(request, result, handler.handle_method)
         return NotHandled
+
+
+class MethodExceptionsHandler(ExceptionHandler):
+
+    def __init__(self, method: ComponentMethod):
+        super().__init__()
+        self._method = method
+        self._handlers_by_exception = get_throws(self._method)
+
+    @property
+    def exceptions(self) -> typing.Tuple[Type[Exception], ...]:
+        return tuple(self._handlers_by_exception.keys())
+
+    def get_handler(self, exception: Exception) -> Optional[ExceptionHandler]:
+        exception_type = type(exception)
+
+        for exception_cls, handler in self._handlers_by_exception.items():
+            if handler is not None and issubclass(exception_type, exception_cls):
+                return handler
+        return None
+
+    @annotate(None)
+    def handle(self, request: Request, exception: Exception):
+        from .django import convert_result_to_http_response
+
+        handler = self.get_handler(exception)
+        if handler is not None:
+            result = handler.handle(request, exception)
+            return convert_result_to_http_response(request, result, handler.handle_method)
+        return exceptions_handler.handle(request, exception)
 
 
 exceptions_handler = ExceptionsHandler()
