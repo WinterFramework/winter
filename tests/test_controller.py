@@ -92,7 +92,7 @@ def test_return_response():
 @pytest.mark.parametrize(('method', 'http_response_status'), (
         ('get', HTTPStatus.OK),
         ('post', HTTPStatus.OK),
-        ('patch',HTTPStatus.OK),
+        ('patch', HTTPStatus.OK),
         ('delete', HTTPStatus.NO_CONTENT),
         ('put', HTTPStatus.OK),
 ))

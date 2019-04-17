@@ -37,13 +37,18 @@ class RedirectException(WinterException):
         self.redirect_to = redirect_to
 
 
+class BadRequestException(WinterException):
+
+    def __init__(self, message: str = 'Bad Request'):
+        super().__init__()
+        self.message = message
+
+
 def handle_winter_exception(exception: WinterException) -> HTTPResponse:
     if isinstance(exception, RedirectException):
-        return HTTPResponse(
-            status=http_status.HTTP_302_FOUND, headers={
-                'Location': exception.redirect_to,
-            }
-        )
+        return HTTPResponse(status=http_status.HTTP_302_FOUND, headers={'Location': exception.redirect_to})
+    if isinstance(exception, BadRequestException):
+        return HTTPResponse(status=http_status.HTTP_400_BAD_REQUEST)
     raise exception
 
 

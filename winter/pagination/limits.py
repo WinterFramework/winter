@@ -1,12 +1,14 @@
+import typing
+
 import dataclasses
 
 
 @dataclasses.dataclass(frozen=True)
 class LimitsAnnotation:
-    default: int
-    maximum: int
+    default: typing.Optional[int]
+    maximum: typing.Optional[int]
 
 
-def limits(default: int, maximum: int):
+def limits(default: typing.Optional[int], maximum: typing.Optional[int]):
     annotation = LimitsAnnotation(default=default, maximum=maximum)
     return annotation

@@ -72,7 +72,6 @@ def _create_django_view(controller, component, routes: List[Route]):
 
 def _create_dispatch_function(controller, route: Route):
     def dispatch(winter_view, request: Request, **path_variables):
-
         try:
             return _call_controller_method(controller, route, request)
         except WinterException as exception:
@@ -93,6 +92,7 @@ def _call_controller_method(controller, route: Route, request: Request):
         if result is NotHandled:
             raise
         return result
+
 
 def convert_result_to_http_response(request: Request, result: Any, method: ComponentMethod):
     if isinstance(result, django.http.HttpResponse):
