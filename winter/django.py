@@ -88,7 +88,7 @@ def _call_controller_method(controller, route: Route, request: Request):
     try:
         result = method(controller, **arguments)
         return convert_result_to_http_response(request, result, method)
-    except tuple(method_exceptions_handler.exceptions) as exception:
+    except tuple(method_exceptions_handler.exception_classes) as exception:
         result = method_exceptions_handler.handle(request, exception)
         if result is NotHandled:
             raise

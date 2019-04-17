@@ -13,8 +13,8 @@ from ..core import ComponentMethod
 from ..core import ComponentMethodArgument
 from ..drf import get_input_serializer
 from ..drf import get_output_serializer
+from ..exceptions import MethodExceptionsHandler
 from ..exceptions import exceptions_handler
-from ..exceptions import get_throws
 from ..response_status import get_default_response_status
 from ..routing import Route
 from ..schema.type_inspection import TypeInfo
@@ -45,9 +45,12 @@ def build_responses_schemas(route: Route):
     response_status = str(get_default_response_status(http_method, route.method))
 
     responses[response_status] = build_response_schema(route.method)
+    method_exceptions_handler = MethodExceptionsHandler(route.method)
 
-    for exception_cls in get_throws(route.method):
-        handler = exceptions_handler.get_handler(exception_cls)
+    for exception_cls in method_exceptions_handler.exception_classes:
+        handler = method_exceptions_handler.get_handler(exception_cls)
+        if handler is None:
+            handler = exceptions_handler.get_handler(exception_cls)
         if handler is None:
             continue
         response_status = str(get_default_response_status(http_method, handler.handle_method))
