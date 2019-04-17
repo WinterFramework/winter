@@ -48,7 +48,7 @@ def handle_winter_exception(exception: WinterException) -> HTTPResponse:
     if isinstance(exception, RedirectException):
         return HTTPResponse(status=http_status.HTTP_302_FOUND, headers={'Location': exception.redirect_to})
     if isinstance(exception, BadRequestException):
-        return HTTPResponse(status=http_status.HTTP_400_BAD_REQUEST)
+        return HTTPResponse(exception.message, status=http_status.HTTP_400_BAD_REQUEST)
     raise exception
 
 
