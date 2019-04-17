@@ -90,10 +90,7 @@ class ExceptionsHandler(ExceptionHandler):
         self._handlers[exception_cls] = build_controller(handler_cls)
 
     def get_handler(self, exception: typing.Union[typing.Type[Exception], Exception]) -> Optional[ExceptionHandler]:
-        if isinstance(exception, Exception):
-            exception_type = type(exception)
-        else:
-            exception_type = exception
+        exception_type = type(exception) if isinstance(exception, Exception) else exception
 
         for exception_cls, handler in self._handlers.items():
             if issubclass(exception_type, exception_cls):
@@ -123,10 +120,7 @@ class MethodExceptionsHandler(ExceptionHandler):
         return tuple(self._handlers_by_exception.keys())
 
     def get_handler(self, exception: typing.Union[typing.Type[Exception], Exception]) -> Optional[ExceptionHandler]:
-        if isinstance(exception, Exception):
-            exception_type = type(exception)
-        else:
-            exception_type = exception
+        exception_type = type(exception) if isinstance(exception, Exception) else exception
 
         for exception_cls, handler in self._handlers_by_exception.items():
             if handler is not None and issubclass(exception_type, exception_cls):
