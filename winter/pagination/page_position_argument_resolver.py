@@ -5,11 +5,11 @@ from furl import furl
 from rest_framework import exceptions
 from rest_framework.request import Request as DRFRequest
 
-from winter.exceptions import BadRequestException
-from winter.exceptions import RedirectException
 from .page_position import PagePosition
 from ..argument_resolver import ArgumentResolver
 from ..core import ComponentMethodArgument
+from ..exceptions import BadRequestException
+from ..exceptions import RedirectException
 
 
 class PagePositionArgumentResolver(ArgumentResolver):
