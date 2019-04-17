@@ -18,23 +18,13 @@ class PagePositionArgumentResolver(ArgumentResolver):
             self,
             limit_parameter_name: str = 'limit',
             offset_parameter_name: str = 'offset',
-            default_limit: typing.Optional[int] = None,
-            maximum_limit: typing.Optional[int] = None,
-            redirect_to_default_limit: bool = False,
     ):
         super().__init__()
         self.limit_parameter_name = limit_parameter_name
         self.offset_parameter_name = offset_parameter_name
-        self.default_limit = default_limit
-        self.maximum_limit = maximum_limit
-        self.redirect_to_default_limit = redirect_to_default_limit
-
-        if default_limit is None and self.redirect_to_default_limit:
-            warnings.warn(
-                'PagePositionArgumentResolver: redirect_to_default_limit is set to True, '
-                'however it has no effect as default_limit is not specified',
-                UserWarning,
-            )
+        self.default_limit = None
+        self.maximum_limit = None
+        self.redirect_to_default_limit = False
 
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
         return argument.type_ is PagePosition
@@ -46,10 +36,17 @@ class PagePositionArgumentResolver(ArgumentResolver):
         limit = self._parse_int_param(raw_limit, 'limit', min_value=1)
         offset = self._parse_int_param(raw_offset, 'offset', min_value=0)
 
-        if limit is None and self.default_limit is not None and self.redirect_to_default_limit:
-            f = furl(http_request.get_full_path())
-            f.args[self.limit_parameter_name] = self.default_limit
-            raise RedirectException(redirect_to=f.url)
+        if self.redirect_to_default_limit:
+            if self.default_limit is None:
+                warnings.warn(
+                    'PagePositionArgumentResolver: redirect_to_default_limit is set to True, '
+                    'however it has no effect as default_limit is not specified',
+                    UserWarning,
+                )
+            elif limit is None:
+                parsed_url = furl(http_request.get_full_path())
+                parsed_url.args[self.limit_parameter_name] = self.default_limit
+                raise RedirectException(redirect_to=parsed_url.url)
 
         if limit is None:
             limit = self.default_limit
