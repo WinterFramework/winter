@@ -77,7 +77,7 @@ def get_throws(method: ComponentMethod) -> typing.Dict[typing.Type[Exception], E
 
 
 class ExceptionsHandler(ExceptionHandler):
-    HandlersMap = Dict[typing.Optional[Type[Exception]], ExceptionHandler]
+    HandlersMap = Dict[Type[Exception], ExceptionHandler]
 
     def __init__(self):
         self._handlers: ExceptionsHandler.HandlersMap = {}
