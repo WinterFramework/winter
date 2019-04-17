@@ -13,7 +13,7 @@ from .entities import AuthorizedUser
         ('redirect', HTTPStatus.FOUND, '/root/'),
         ('declared_but_not_thrown', 200, 'Hello, sir!'),
         ('declared_and_thrown', 400, {'message': 'declared_and_thrown'}),
-        ('exception_with_custom_handler', 401, 'message'),
+        ('exception_with_custom_handler', 401, 21),
 ))
 def test_controller_with_exceptions(url_path, expected_status, expected_body):
     client = APIClient()

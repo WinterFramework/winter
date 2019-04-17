@@ -29,16 +29,10 @@ class CustomExceptionHandler(winter.ExceptionHandler):
         return CustomExceptionDTO(exception.message)
 
 
-class Handler(winter.ExceptionHandler):
-    @winter.response_status(400)
-    def handle(self, request: Request, exception: CustomException) -> int:
-        return 400
-
-
 class AnotherExceptionHandler(winter.ExceptionHandler):
     @winter.response_status(401)
-    def handle(self, request: Request, exception: CustomException) -> str:
-        return exception.message
+    def handle(self, request: Request, exception: CustomException) -> int:
+        return 21
 
 
 winter.exceptions_handler.add_handler(CustomException, CustomExceptionHandler)
@@ -56,11 +50,6 @@ class ControllerWithExceptions:
     @winter.route_get('declared_and_thrown/')
     @winter.throws(CustomException)
     def declared_and_thrown(self) -> str:
-        raise CustomException('declared_and_thrown')
-
-    @winter.route_get('declared_and_thrown_with_other_handler/')
-    @winter.throws(CustomException, Handler)
-    def declared_and_thrown_with_other_handler(self) -> str:
         raise CustomException('declared_and_thrown')
 
     @winter.route_get('not_declared_but_thrown/')
