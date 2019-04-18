@@ -42,7 +42,7 @@ def handle_winter_exception(exception: WinterException) -> HTTPResponse:
         return HTTPResponse(
             status=http_status.HTTP_302_FOUND, headers={
                 'Location': exception.redirect_to,
-            }
+            },
         )
     raise exception
 

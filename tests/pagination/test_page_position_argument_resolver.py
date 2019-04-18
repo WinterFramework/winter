@@ -11,8 +11,8 @@ from winter.pagination import PagePositionArgumentResolver
 
 
 @pytest.mark.parametrize(('argument_type', 'expected_is_supported'), (
-        (PagePosition, True),
-        (object, False),
+    (PagePosition, True),
+    (object, False),
 ))
 def test_is_supported_in_page_position_argument_resolver(argument_type, expected_is_supported):
     def func(arg1: argument_type):
@@ -30,11 +30,11 @@ def test_is_supported_in_page_position_argument_resolver(argument_type, expected
 
 
 @pytest.mark.parametrize(('query_string', 'expected_page_position'), (
-        ('limit=1&offset=3', PagePosition(1, 3)),
-        ('limit=1', PagePosition(1)),
-        ('offset=3', PagePosition(None, 3)),
-        ('', PagePosition(None, None)),
-        ('offset=0', PagePosition(None, 0)),
+    ('limit=1&offset=3', PagePosition(1, 3)),
+    ('limit=1', PagePosition(1)),
+    ('offset=3', PagePosition(None, 3)),
+    ('', PagePosition(None, None)),
+    ('offset=0', PagePosition(None, 0)),
 ))
 def test_resolve_argument_in_page_position_argument_resolver(query_string, expected_page_position):
     def func(arg1: int):
@@ -56,8 +56,8 @@ def test_resolve_argument_in_page_position_argument_resolver(query_string, expec
 
 
 @pytest.mark.parametrize(('query_string', 'exception_type', 'message'), (
-        ('limit=none', ParseError, 'Invalid "limit" query parameter value: "none"'),
-        ('offset=-20', ValidationError, 'Invalid "offset" query parameter value: "-20"'),
+    ('limit=none', ParseError, 'Invalid "limit" query parameter value: "none"'),
+    ('offset=-20', ValidationError, 'Invalid "offset" query parameter value: "-20"'),
 ))
 def test_resolve_argument_in_page_position_argument_resolver_with_raises(query_string, exception_type, message):
     def func(arg1: int):

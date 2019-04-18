@@ -24,7 +24,7 @@ class annotate_base(abc.ABC):
 
 
 class annotate(annotate_base):
-    _supported_classes = (typing.Type, types.FunctionType, ComponentMethod,)
+    _supported_classes = (typing.Type, types.FunctionType, ComponentMethod)
 
     def __call__(self, func_or_cls: typing.Union[typing.Type, types.FunctionType, ComponentMethod]) -> typing.Callable:
         if annotate_method.is_supported(func_or_cls):
@@ -46,7 +46,7 @@ class annotate_class(annotate_base):
 
 
 class annotate_method(annotate_base):
-    _supported_classes = (ComponentMethod, types.FunctionType,)
+    _supported_classes = (ComponentMethod, types.FunctionType)
 
     def __call__(self, func_or_method: typing.Union[types.FunctionType, ComponentMethod]):
         method = ComponentMethod.get_or_create(func_or_method)

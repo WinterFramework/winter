@@ -38,7 +38,7 @@ class _PageSerializerFactory:
             'child_serializer should be inherited from serializers.Field'
 
         payloads = {
-            'objects': serializers.ListField(child=child_serializer(), source='items')
+            'objects': serializers.ListField(child=child_serializer(), source='items'),
         }
         return type(f'SpecificSerializerFor{child_serializer}', (_PageBaseSerializer,), payloads)
 

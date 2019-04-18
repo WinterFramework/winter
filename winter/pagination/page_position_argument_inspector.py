@@ -1,10 +1,14 @@
 from typing import List
+from typing import TYPE_CHECKING
 
 from drf_yasg import openapi
 
 from .page_position import PagePosition
 from .page_position_argument_resolver import PagePositionArgumentResolver
 from ..schema import MethodArgumentsInspector
+
+if TYPE_CHECKING:
+    from winter.routing import Route
 
 
 class PagePositionArgumentsInspector(MethodArgumentsInspector):

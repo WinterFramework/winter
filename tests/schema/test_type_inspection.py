@@ -78,7 +78,7 @@ class IntegerEnum(IntEnum):
     (Dataclass(NestedDataclass(1)), TypeInfo(openapi.TYPE_OBJECT, properties={
         'nested': TypeInfo(openapi.TYPE_OBJECT, properties={
             'nested_number': TypeInfo(openapi.TYPE_INTEGER),
-        })
+        }),
     })),
     (Page[NestedDataclass], TypeInfo(openapi.TYPE_OBJECT, properties={
         'meta': TypeInfo(openapi.TYPE_OBJECT, properties={
@@ -90,8 +90,8 @@ class IntegerEnum(IntEnum):
         }),
         'objects': TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_OBJECT, properties={
             'nested_number': TypeInfo(openapi.TYPE_INTEGER),
-        }))
-    }))
+        })),
+    })),
 ])
 def test_inspect_type(type_hint, expected_type_info):
     # Act
@@ -118,23 +118,23 @@ def test_get_openapi_schema():
 
 
 @pytest.mark.parametrize(('first', 'second', 'is_same'), (
-        (TypeInfo(openapi.TYPE_INTEGER), TypeInfo(openapi.TYPE_INTEGER), True),
-        (TypeInfo(openapi.TYPE_INTEGER), TypeInfo(openapi.TYPE_NUMBER), False),
-        (TypeInfo(openapi.TYPE_INTEGER), None, False),
+    (TypeInfo(openapi.TYPE_INTEGER), TypeInfo(openapi.TYPE_INTEGER), True),
+    (TypeInfo(openapi.TYPE_INTEGER), TypeInfo(openapi.TYPE_NUMBER), False),
+    (TypeInfo(openapi.TYPE_INTEGER), None, False),
 ))
 def test_compare_type_info(first, second, is_same):
     assert (first == second) is is_same
 
 
 @pytest.mark.parametrize(('enum_cls', 'expected_value'), (
-        (IntegerValueEnum, {
-            'enum': [1, 2],
-            'type': 'integer'
-        }),
-        (StringValueEnum, {
-            'enum': ['red', 'green'],
-            'type': 'string'
-        }),
+    (IntegerValueEnum, {
+        'enum': [1, 2],
+        'type': 'integer',
+    }),
+    (StringValueEnum, {
+        'enum': ['red', 'green'],
+        'type': 'string',
+    }),
 ))
 def test_inspect_enum_class(enum_cls, expected_value):
     assert inspect_enum_class(enum_cls) == expected_value

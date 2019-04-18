@@ -30,7 +30,7 @@ def rewrite_uritemplate_with_regexps(url_path: str, methods: typing.Iterable[Com
         if len(argument_types) > 1:
             raise Exception(
                 f'Different methods are bound to the same path variable, '
-                f'but have different types annotated: {argument_types}'
+                f'but have different types annotated: {argument_types}',
             )
         regexp = get_regexp(*argument_types)
         url_path = url_path.replace(f'{{{variable_name}}}', f'(?P<{variable_name}>{regexp})')

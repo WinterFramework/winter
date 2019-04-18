@@ -18,7 +18,7 @@ from ..type_utils import is_optional
 TYPE_DECIMAL = openapi.TYPE_STRING if rest_settings.COERCE_DECIMAL_TO_STRING else openapi.TYPE_NUMBER
 _inspectors_by_type: typing.Dict[
     typing.Type,
-    typing.List[typing.Tuple[typing.Callable, typing.Optional[typing.Callable]]]
+    typing.List[typing.Tuple[typing.Callable, typing.Optional[typing.Callable]]],
 ] = {}
 
 
@@ -200,7 +200,6 @@ def inspect_type(hint_class) -> TypeInfo:
 
         if type_info is not None:
             return type_info
-
 
     raise InspectorNotFound(hint_class)
 
