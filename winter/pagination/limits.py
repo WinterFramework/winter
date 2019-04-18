@@ -10,7 +10,8 @@ from ..exceptions.handlers import ExceptionHandler
 
 
 class MaximumLimitValueExceeded(Exception):
-    pass
+    def __init__(self, maximum_limit: int):
+        super().__init__(f'Maximum limit value is exceeded: {maximum_limit}')
 
 
 class RedirectToDefaultLimitException(Exception):

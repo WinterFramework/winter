@@ -37,7 +37,7 @@ class PagePositionArgumentResolver(ArgumentResolver):
             limit = self.default_limit
 
         if limit is not None and self.maximum_limit is not None and limit > self.maximum_limit:
-            raise MaximumLimitValueExceeded(f'"{self.limit_name}" maximum value is exceeded: {self.maximum_limit}')
+            raise MaximumLimitValueExceeded(self.maximum_limit)
 
         return PagePosition(limit, offset)
 
