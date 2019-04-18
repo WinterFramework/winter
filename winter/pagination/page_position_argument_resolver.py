@@ -5,23 +5,18 @@ from furl import furl
 from rest_framework import exceptions
 from rest_framework.request import Request as DRFRequest
 
+from .limits import MaximumLimitValueExceeded
+from .limits import RedirectToDefaultLimitException
 from .page_position import PagePosition
 from ..argument_resolver import ArgumentResolver
 from ..core import ComponentMethodArgument
-from ..exceptions import BadRequestException
-from ..exceptions import RedirectException
 
 
 class PagePositionArgumentResolver(ArgumentResolver):
 
-    def __init__(
-            self,
-            limit_parameter_name: str = 'limit',
-            offset_parameter_name: str = 'offset',
-    ):
-        super().__init__()
-        self.limit_parameter_name = limit_parameter_name
-        self.offset_parameter_name = offset_parameter_name
+    def __init__(self, limit_name: str = 'limit', offset_name: str = 'offset'):
+        self.limit_name = limit_name
+        self.offset_name = offset_name
         self.default_limit = None
         self.maximum_limit = None
         self.redirect_to_default_limit = False
@@ -30,8 +25,8 @@ class PagePositionArgumentResolver(ArgumentResolver):
         return argument.type_ is PagePosition
 
     def resolve_argument(self, argument: ComponentMethodArgument, http_request: DRFRequest) -> PagePosition:
-        raw_limit = http_request.query_params.get(self.limit_parameter_name)
-        raw_offset = http_request.query_params.get(self.offset_parameter_name)
+        raw_limit = http_request.query_params.get(self.limit_name)
+        raw_offset = http_request.query_params.get(self.offset_name)
 
         limit = self._parse_int_param(raw_limit, 'limit', min_value=1)
         offset = self._parse_int_param(raw_offset, 'offset', min_value=0)
@@ -42,7 +37,7 @@ class PagePositionArgumentResolver(ArgumentResolver):
             limit = self.default_limit
 
         if limit is not None and self.maximum_limit is not None and limit > self.maximum_limit:
-            raise BadRequestException(f'"{self.limit_parameter_name}" maximum value is exceeded: {self.maximum_limit}')
+            raise MaximumLimitValueExceeded(f'"{self.limit_name}" maximum value is exceeded: {self.maximum_limit}')
 
         return PagePosition(limit, offset)
 
@@ -56,8 +51,8 @@ class PagePositionArgumentResolver(ArgumentResolver):
                 )
             elif limit is None:
                 parsed_url = furl(http_request.get_full_path())
-                parsed_url.args[self.limit_parameter_name] = self.default_limit
-                raise RedirectException(redirect_to=parsed_url.url)
+                parsed_url.args[self.limit_name] = self.default_limit
+                raise RedirectToDefaultLimitException(redirect_to=parsed_url.url)
 
     @staticmethod
     def _parse_int_param(raw_param_value: str, param_name: str, min_value: int = 0) -> typing.Optional[int]:

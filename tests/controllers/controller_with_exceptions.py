@@ -2,8 +2,6 @@ import dataclasses
 from rest_framework.request import Request
 
 import winter
-from winter.exceptions import RedirectException
-from winter.exceptions import WinterException
 
 
 class CustomException(Exception):
@@ -60,14 +58,6 @@ class ControllerWithExceptions:
     @winter.throws(ExceptionWithoutHandler)
     def declared_but_no_handler(self) -> str:
         raise ExceptionWithoutHandler()
-
-    @winter.route_get('redirect/')
-    def redirect(self) -> str:
-        raise RedirectException(redirect_to='/root/')
-
-    @winter.route_get('not_declared_winter_exception/')
-    def winter_exception(self, http_request: Request):
-        raise WinterException()
 
     @winter.throws(CustomException, AnotherExceptionHandler)
     @winter.route_get('exception_with_custom_handler/')

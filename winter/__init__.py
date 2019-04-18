@@ -9,9 +9,10 @@ from .drf import input_serializer
 from .drf import no_authentication
 from .drf import output_serializer
 from .drf import output_template
-from .exceptions import ExceptionHandler
-from .exceptions import exceptions_handler
 from .exceptions import throws
+from .exceptions.handlers import ExceptionHandler
+from .exceptions.handlers import exceptions_handler
+from .exceptions.throws import throws
 from .output_processor import register_output_processor_resolver
 from .pagination import PagePositionArgumentResolver
 from .pagination.page import PageOutputProcessorResolver

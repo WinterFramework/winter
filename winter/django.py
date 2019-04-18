@@ -16,10 +16,8 @@ from .controller import build_controller
 from .controller import get_component
 from .core import ComponentMethod
 from .drf.auth import is_authentication_needed
-from .exceptions import MethodExceptionsHandler
-from .exceptions import NotHandled
-from .exceptions import WinterException
-from .exceptions import handle_winter_exception
+from .exceptions.handlers import MethodExceptionsHandler
+from .exceptions.handlers import NotHandled
 from .http.throttling import create_throttle_classes
 from .http.urls import rewrite_uritemplate_with_regexps
 from .output_processor import get_output_processor
@@ -72,10 +70,7 @@ def _create_django_view(controller, component, routes: List[Route]):
 
 def _create_dispatch_function(controller, route: Route):
     def dispatch(winter_view, request: Request, **path_variables):
-        try:
-            return _call_controller_method(controller, route, request)
-        except WinterException as exception:
-            return handle_winter_exception(exception)
+        return _call_controller_method(controller, route, request)
 
     return dispatch
 

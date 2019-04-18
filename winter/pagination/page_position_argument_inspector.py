@@ -10,14 +10,14 @@ from ..schema import MethodArgumentsInspector
 class PagePositionArgumentsInspector(MethodArgumentsInspector):
     def __init__(self, page_position_argument_resolver: PagePositionArgumentResolver):
         self.limit_parameter = openapi.Parameter(
-            name=page_position_argument_resolver.limit_parameter_name,
+            name=page_position_argument_resolver.limit_name,
             description='Number of results to return per page',
             required=False,
             in_=openapi.IN_QUERY,
             type=openapi.TYPE_INTEGER,
         )
         self.offset_parameter = openapi.Parameter(
-            name=page_position_argument_resolver.offset_parameter_name,
+            name=page_position_argument_resolver.offset_name,
             description='The initial index from which to return the results',
             required=False,
             in_=openapi.IN_QUERY,
