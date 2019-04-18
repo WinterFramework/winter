@@ -77,9 +77,9 @@ def _create_dispatch_function(controller, route: Route):
 
 def _call_controller_method(controller, route: Route, request: Request):
     method = route.method
-    arguments = arguments_resolver.resolve_arguments(method, request)
     method_exceptions_handler = MethodExceptionsHandler(method)
     try:
+        arguments = arguments_resolver.resolve_arguments(method, request)
         result = method(controller, **arguments)
         return convert_result_to_http_response(request, result, method)
     except tuple(method_exceptions_handler.exception_classes) as exception:

@@ -7,6 +7,7 @@ from rest_framework.request import Request as DRFRequest
 
 from .limits import MaximumLimitValueExceeded
 from .limits import RedirectToDefaultLimitException
+from .limits import LimitsAnnotation
 from .page_position import PagePosition
 from ..argument_resolver import ArgumentResolver
 from ..core import ComponentMethodArgument
@@ -31,19 +32,18 @@ class PagePositionArgumentResolver(ArgumentResolver):
         limit = self._parse_int_param(raw_limit, 'limit', min_value=1)
         offset = self._parse_int_param(raw_offset, 'offset', min_value=0)
 
-        self._try_redirect_to_default_limit(http_request, limit)
+        default_limit = self.default_limit
+        maximum_limit = self.maximum_limit
+        redirect_to_default_limit = self.redirect_to_default_limit
 
-        if limit is None:
-            limit = self.default_limit
+        limits_annotation = argument.method.annotations.get_one_or_none(LimitsAnnotation)
+        if limits_annotation is not None:
+            default_limit = limits_annotation.default
+            maximum_limit = limits_annotation.maximum
+            redirect_to_default_limit = limits_annotation.redirect_to_default
 
-        if limit is not None and self.maximum_limit is not None and limit > self.maximum_limit:
-            raise MaximumLimitValueExceeded(self.maximum_limit)
-
-        return PagePosition(limit, offset)
-
-    def _try_redirect_to_default_limit(self, http_request: DRFRequest, limit: typing.Optional[int]):
-        if self.redirect_to_default_limit:
-            if self.default_limit is None:
+        if redirect_to_default_limit:
+            if default_limit is None:
                 warnings.warn(
                     'PagePositionArgumentResolver: redirect_to_default_limit is set to True, '
                     'however it has no effect as default_limit is not specified',
@@ -51,8 +51,16 @@ class PagePositionArgumentResolver(ArgumentResolver):
                 )
             elif limit is None:
                 parsed_url = furl(http_request.get_full_path())
-                parsed_url.args[self.limit_name] = self.default_limit
+                parsed_url.args[self.limit_name] = default_limit
                 raise RedirectToDefaultLimitException(redirect_to=parsed_url.url)
+
+        if limit is None:
+            limit = default_limit
+
+        if limit is not None and maximum_limit is not None and limit > maximum_limit:
+            raise MaximumLimitValueExceeded(maximum_limit)
+
+        return PagePosition(limit, offset)
 
     @staticmethod
     def _parse_int_param(raw_param_value: str, param_name: str, min_value: int = 0) -> typing.Optional[int]:

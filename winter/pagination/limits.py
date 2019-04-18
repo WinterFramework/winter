@@ -30,8 +30,14 @@ class RedirectToDefaultLimitExceptionHandler(ExceptionHandler):
 class LimitsAnnotation:
     default: typing.Optional[int]
     maximum: typing.Optional[int]
+    redirect_to_default: bool
 
 
-def limits(default: typing.Optional[int], maximum: typing.Optional[int]):
-    annotation = LimitsAnnotation(default=default, maximum=maximum)
+def limits(
+        *,
+        default: typing.Optional[int],
+        maximum: typing.Optional[int],
+        redirect_to_default: bool = False,
+):
+    annotation = LimitsAnnotation(default=default, maximum=maximum, redirect_to_default=redirect_to_default)
     return annotate(annotation, single=True)

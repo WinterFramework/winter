@@ -1,6 +1,7 @@
 from http import HTTPStatus
 
 import dataclasses
+from rest_framework.request import Request
 from rest_framework.response import Response
 
 import winter
@@ -34,8 +35,11 @@ class SimpleController:
         return ResponseEntity(Dataclass(123), status_code=HTTPStatus.OK)
 
     @winter.route_get('return-response/')
-    def return_response(self) -> Response:
-        return Response(data=[])
+    def return_response(self, request: Request) -> Response:
+        data = {
+            'logged_in': bool(request.user),
+        }
+        return Response(data=data)
 
     @winter.route_get('get/')
     def get(self):
