@@ -33,7 +33,7 @@ class RedirectExceptionHandler(ExceptionHandler):
 
 class BadRequestExceptionHandler(ExceptionHandler):
     @response_status(400)
-    def handle(self, request: Request, exception: Exception):
+    def handle(self, request: Request, exception: Exception) -> str:
         return str(exception.args[0])  # stupid Exception implementation (Viva Python!)
 
 
