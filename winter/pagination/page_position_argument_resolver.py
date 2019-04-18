@@ -5,12 +5,12 @@ from furl import furl
 from rest_framework import exceptions
 from rest_framework.request import Request
 
-from .limits import MaximumLimitValueExceeded
-from .limits import RedirectToDefaultLimitException
 from .limits import LimitsAnnotation
+from .limits import MaximumLimitValueExceeded
 from .page_position import PagePosition
 from ..argument_resolver import ArgumentResolver
 from ..core import ComponentMethodArgument
+from ..exceptions import RedirectException
 
 
 class PagePositionArgumentResolver(ArgumentResolver):
@@ -70,7 +70,7 @@ class PagePositionArgumentResolver(ArgumentResolver):
             elif limit is None:
                 parsed_url = furl(http_request.get_full_path())
                 parsed_url.args[self.limit_name] = default_limit
-                raise RedirectToDefaultLimitException(redirect_to=parsed_url.url)
+                raise RedirectException(redirect_to=parsed_url.url)
 
     @staticmethod
     def _parse_int_param(raw_param_value: str, param_name: str, min_value: int = 0) -> typing.Optional[int]:

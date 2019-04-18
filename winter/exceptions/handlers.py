@@ -1,8 +1,11 @@
 import abc
 import typing
+from http import HTTPStatus
 
 from rest_framework.request import Request
+from rest_framework.response import Response
 
+from .exceptions import RedirectException
 from .throws import get_throws
 from ..core import ComponentMethod
 from ..core import annotate
@@ -23,6 +26,12 @@ class ExceptionHandler(abc.ABC):
         pass
 
 
+class RedirectExceptionHandler(ExceptionHandler):
+    def handle(self, request: Request, exception: Exception):
+        assert isinstance(exception, RedirectException)
+        return Response(status=HTTPStatus.FOUND, headers={'Location': exception.redirect_to})
+
+
 class BadRequestExceptionHandler(ExceptionHandler):
     @response_status(400)
     def handle(self, request: Request, exception: Exception):
@@ -34,13 +43,27 @@ class ExceptionsHandler(ExceptionHandler):
 
     def __init__(self):
         self._handlers: ExceptionsHandler.HandlersMap = {}
+        self._auto_throws_exceptions = set()
         super().__init__()
 
-    def add_handler(self, exception_cls: typing.Type[Exception], handler_cls: typing.Type[ExceptionHandler]):
+    @property
+    def auto_throws_exception_classes(self) -> typing.Tuple[typing.Type[Exception], ...]:
+        return tuple(self._auto_throws_exceptions)
+
+    def add_handler(
+            self,
+            exception_cls: typing.Type[Exception],
+            handler_cls: typing.Type[ExceptionHandler],
+            *,
+            auto_throws: bool = False,
+    ):
         from ..controller import build_controller
 
         assert exception_cls not in self._handlers
         self._handlers[exception_cls] = build_controller(handler_cls)
+
+        if auto_throws:
+            self._auto_throws_exceptions.add(exception_cls)
 
     def get_handler(
             self,

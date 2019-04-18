@@ -1,7 +1,5 @@
 import winter
-from winter.pagination import MaximumLimitValueExceeded
 from winter.pagination import PagePosition
-from winter.pagination import RedirectToDefaultLimitException
 
 
 @winter.route('with-limits/')
@@ -9,8 +7,6 @@ class ControllerWithLimits:
 
     @winter.route_get('')
     @winter.pagination.limits(default=20, maximum=100, redirect_to_default=True)
-    @winter.throws(RedirectToDefaultLimitException)  # TODO: add auto throws here
-    @winter.throws(MaximumLimitValueExceeded)  # TODO: add auto throws here
     def method(self, page_position: PagePosition):
         return {
             'limit': page_position.limit,

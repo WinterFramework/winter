@@ -1,6 +1,4 @@
 from .limits import MaximumLimitValueExceeded
-from .limits import RedirectToDefaultLimitException
-from .limits import RedirectToDefaultLimitExceptionHandler
 from .limits import limits
 from .page import Page
 from .page import inspect_page
@@ -15,5 +13,4 @@ from ..exceptions.handlers import exceptions_handler
 def setup():
     from ..schema import register_type_inspector
     register_type_inspector(Page, func=inspect_page)
-    exceptions_handler.add_handler(MaximumLimitValueExceeded, BadRequestExceptionHandler)
-    exceptions_handler.add_handler(RedirectToDefaultLimitException, RedirectToDefaultLimitExceptionHandler)
+    exceptions_handler.add_handler(MaximumLimitValueExceeded, BadRequestExceptionHandler, auto_throws=True)

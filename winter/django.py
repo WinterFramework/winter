@@ -18,6 +18,7 @@ from .core import ComponentMethod
 from .drf.auth import is_authentication_needed
 from .exceptions.handlers import MethodExceptionsHandler
 from .exceptions.handlers import NotHandled
+from .exceptions.handlers import exceptions_handler
 from .http.throttling import create_throttle_classes
 from .http.urls import rewrite_uritemplate_with_regexps
 from .output_processor import get_output_processor
@@ -82,11 +83,13 @@ def _call_controller_method(controller, route: Route, request: Request):
         arguments = arguments_resolver.resolve_arguments(method, request)
         result = method(controller, **arguments)
         return convert_result_to_http_response(request, result, method)
-    except tuple(method_exceptions_handler.exception_classes) as exception:
+    except method_exceptions_handler.exception_classes as exception:
         result = method_exceptions_handler.handle(request, exception)
         if result is NotHandled:
             raise
         return result
+    except exceptions_handler.auto_throws_exception_classes as exception:
+        return exceptions_handler.handle(request, exception)
 
 
 def convert_result_to_http_response(request: Request, result: Any, method: ComponentMethod):
