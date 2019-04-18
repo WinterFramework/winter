@@ -29,8 +29,8 @@ class PagePositionArgumentResolver(ArgumentResolver):
         raw_limit = http_request.query_params.get(self.limit_name)
         raw_offset = http_request.query_params.get(self.offset_name)
 
-        limit = self._parse_int_param(raw_limit, 'limit', min_value=1)
-        offset = self._parse_int_param(raw_offset, 'offset', min_value=0)
+        limit = self._parse_int_param(raw_limit, self.limit_name, min_value=1)
+        offset = self._parse_int_param(raw_offset, self.offset_name, min_value=0)
 
         limits_annotation = argument.method.annotations.get_one_or_none(LimitsAnnotation)
 
