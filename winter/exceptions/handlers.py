@@ -15,7 +15,6 @@ NotHandled = object()
 
 
 class ExceptionHandler(abc.ABC):
-    status_code = None
 
     def __init__(self):
         handle = self.__class__.handle
@@ -81,10 +80,11 @@ class ExceptionsHandler(ExceptionHandler):
         from ..django import convert_result_to_http_response
 
         handler = self.get_handler(exception)
-        if handler is not None:
-            result = handler.handle(request, exception)
-            return convert_result_to_http_response(request, result, handler.handle_method)
-        return NotHandled
+        if handler is None:
+            return NotHandled
+
+        result = handler.handle(request, exception)
+        return convert_result_to_http_response(request, result, handler.handle_method)
 
 
 class MethodExceptionsHandler(ExceptionHandler):
