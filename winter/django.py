@@ -92,7 +92,6 @@ def _call_controller_method(controller, route: Route, request: Request):
         return exceptions_handler.handle(request, exception)
 
 
-
 def convert_result_to_http_response(request: Request, result: Any, method: ComponentMethod):
     if isinstance(result, django.http.HttpResponse):
         return result

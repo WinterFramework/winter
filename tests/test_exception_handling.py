@@ -9,9 +9,9 @@ from .entities import AuthorizedUser
 
 
 @pytest.mark.parametrize(['url_path', 'expected_status', 'expected_body'], (
-        ('declared_but_not_thrown', HTTPStatus.OK, 'Hello, sir!'),
-        ('declared_and_thrown', HTTPStatus.BAD_REQUEST, {'message': 'declared_and_thrown'}),
-        ('exception_with_custom_handler', HTTPStatus.UNAUTHORIZED, 21),
+    ('declared_but_not_thrown', HTTPStatus.OK, 'Hello, sir!'),
+    ('declared_and_thrown', HTTPStatus.BAD_REQUEST, {'message': 'declared_and_thrown'}),
+    ('exception_with_custom_handler', HTTPStatus.UNAUTHORIZED, 21),
 ))
 def test_controller_with_exceptions(url_path, expected_status, expected_body):
     client = APIClient()
@@ -31,8 +31,8 @@ def test_controller_with_exceptions(url_path, expected_status, expected_body):
 
 
 @pytest.mark.parametrize(['url_path', 'expected_exception_cls'], (
-        ('not_declared_but_thrown', CustomException),
-        ('declared_but_no_handler', ExceptionWithoutHandler),
+    ('not_declared_but_thrown', CustomException),
+    ('declared_but_no_handler', ExceptionWithoutHandler),
 ))
 def test_controller_with_exceptions_throws(url_path, expected_exception_cls):
     client = APIClient()
