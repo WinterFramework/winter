@@ -32,6 +32,8 @@ def test_is_supported_in_page_position_argument_resolver(argument_type, expected
 @pytest.mark.parametrize(('query_string', 'expected_page_position'), (
     ('limit=1&offset=3', PagePosition(1, 3)),
     ('limit=1', PagePosition(1)),
+    ('limit=', PagePosition(None)),
+    ('limit=0', PagePosition(None)),
     ('offset=3', PagePosition(None, 3)),
     ('', PagePosition(None, None)),
     ('offset=0', PagePosition(None, 0)),
