@@ -24,29 +24,32 @@ class PagePositionArgumentResolver(ArgumentResolver):
         return argument.type_ is PagePosition
 
     def resolve_argument(self, argument: ComponentMethodArgument, http_request: Request) -> PagePosition:
-        raw_limit = http_request.query_params.get(self.limit_name)
-        raw_offset = http_request.query_params.get(self.offset_name)
-
-        limit = self._parse_int_param(raw_limit, self.limit_name, min_value=1)
-        offset = self._parse_int_param(raw_offset, self.offset_name, min_value=0)
+        page_position = self._parse_page_position(http_request)
 
         limits = self.limits
         limits_annotation = argument.method.annotations.get_one_or_none(LimitsAnnotation)
         if limits_annotation is not None:
             limits = limits_annotation.limits
 
-        if limits.redirect_to_default and limit is None and limits.default is not None:
+        if limits.redirect_to_default and page_position.limit is None and limits.default is not None:
             parsed_url = furl(http_request.get_full_path())
             parsed_url.args[self.limit_name] = limits.default
             raise RedirectException(redirect_to=parsed_url.url)
 
-        if limit is None:
-            limit = limits.default
+        if page_position.limit is None:
+            page_position = PagePosition(limit=limits.default, offset=page_position.offset)
 
-        if limit is not None and limits.maximum is not None and limit > limits.maximum:
+        if page_position.limit is not None and limits.maximum is not None and page_position.limit > limits.maximum:
             raise MaximumLimitValueExceeded(limits.maximum)
 
-        return PagePosition(limit, offset)
+        return page_position
+
+    def _parse_page_position(self, http_request: Request) -> PagePosition:
+        raw_limit = http_request.query_params.get(self.limit_name)
+        raw_offset = http_request.query_params.get(self.offset_name)
+        limit = self._parse_int_param(raw_limit, self.limit_name, min_value=1)
+        offset = self._parse_int_param(raw_offset, self.offset_name, min_value=0)
+        return PagePosition(limit=limit, offset=offset)
 
     @staticmethod
     def _parse_int_param(raw_param_value: str, param_name: str, min_value: int = 0) -> typing.Optional[int]:
