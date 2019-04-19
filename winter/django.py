@@ -16,10 +16,9 @@ from .controller import build_controller
 from .controller import get_component
 from .core import ComponentMethod
 from .drf.auth import is_authentication_needed
-from .exceptions import MethodExceptionsHandler
-from .exceptions import NotHandled
-from .exceptions import WinterException
-from .exceptions import handle_winter_exception
+from .exceptions.handlers import MethodExceptionsHandler
+from .exceptions.handlers import NotHandled
+from .exceptions.handlers import exceptions_handler
 from .http.throttling import create_throttle_classes
 from .http.urls import rewrite_uritemplate_with_regexps
 from .output_processor import get_output_processor
@@ -72,27 +71,26 @@ def _create_django_view(controller, component, routes: List[Route]):
 
 def _create_dispatch_function(controller, route: Route):
     def dispatch(winter_view, request: Request, **path_variables):
-
-        try:
-            return _call_controller_method(controller, route, request)
-        except WinterException as exception:
-            return handle_winter_exception(exception)
+        return _call_controller_method(controller, route, request)
 
     return dispatch
 
 
 def _call_controller_method(controller, route: Route, request: Request):
     method = route.method
-    arguments = arguments_resolver.resolve_arguments(method, request)
     method_exceptions_handler = MethodExceptionsHandler(method)
     try:
+        arguments = arguments_resolver.resolve_arguments(method, request)
         result = method(controller, **arguments)
         return convert_result_to_http_response(request, result, method)
-    except tuple(method_exceptions_handler.exception_classes) as exception:
+    except method_exceptions_handler.exception_classes as exception:
         result = method_exceptions_handler.handle(request, exception)
         if result is NotHandled:
             raise
         return result
+    except exceptions_handler.auto_handle_exception_classes as exception:
+        return exceptions_handler.handle(request, exception)
+
 
 
 def convert_result_to_http_response(request: Request, result: Any, method: ComponentMethod):

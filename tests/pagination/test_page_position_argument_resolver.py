@@ -36,7 +36,7 @@ def test_is_supported_in_page_position_argument_resolver(argument_type, expected
     ('', PagePosition(None, None)),
     ('offset=0', PagePosition(None, 0)),
 ))
-def test_resolve_argument_in_page_position_argument_resolver(query_string, expected_page_position):
+def test_resolve_argument_ok_in_page_position_argument_resolver(query_string, expected_page_position):
     def func(arg1: int):
         return arg1
 
@@ -59,7 +59,7 @@ def test_resolve_argument_in_page_position_argument_resolver(query_string, expec
     ('limit=none', ParseError, 'Invalid "limit" query parameter value: "none"'),
     ('offset=-20', ValidationError, 'Invalid "offset" query parameter value: "-20"'),
 ))
-def test_resolve_argument_in_page_position_argument_resolver_with_raises(query_string, exception_type, message):
+def test_resolve_argument_fails_in_page_position_argument_resolver(query_string, exception_type, message):
     def func(arg1: int):
         return arg1
 

@@ -8,9 +8,9 @@ from .entities import User
 
 
 @pytest.mark.parametrize(['data', 'expected_body'], (
-    ({'name': 'Winter'}, 'Hello, Winter!'),
-    ({'name': 'Stranger'}, 'Hello, Stranger!'),
-    ({}, 'Hello, stranger!'),
+        ({'name': 'Winter'}, 'Hello, Winter!'),
+        ({'name': 'Stranger'}, 'Hello, Stranger!'),
+        ({}, 'Hello, stranger!'),
 ))
 def test_simple_controller(data, expected_body):
     client = APIClient()
@@ -86,15 +86,15 @@ def test_return_response():
     client.force_authenticate(user)
     response = client.get('/winter-simple/return-response/')
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == []
+    assert response.json() == {'logged_in': True}
 
 
 @pytest.mark.parametrize(('method', 'http_response_status'), (
-    ('get', HTTPStatus.OK),
-    ('post', HTTPStatus.OK),
-    ('patch', HTTPStatus.OK),
-    ('delete', HTTPStatus.NO_CONTENT),
-    ('put', HTTPStatus.OK),
+        ('get', HTTPStatus.OK),
+        ('post', HTTPStatus.OK),
+        ('patch', HTTPStatus.OK),
+        ('delete', HTTPStatus.NO_CONTENT),
+        ('put', HTTPStatus.OK),
 ))
 def test_methods(method, http_response_status):
     client = APIClient()
