@@ -1,4 +1,5 @@
 import typing
+import warnings
 
 import dataclasses
 
@@ -15,6 +16,14 @@ class Limits:
     default: typing.Optional[int]
     maximum: typing.Optional[int]
     redirect_to_default: bool
+
+    def __post_init__(self):
+        if self.redirect_to_default and self.default is None:
+            warnings.warn(
+                'PagePositionArgumentResolver: redirect_to_default_limit is set to True, '
+                'however it has no effect as default_limit is not specified',
+                UserWarning,
+            )
 
 
 @dataclasses.dataclass(frozen=True)

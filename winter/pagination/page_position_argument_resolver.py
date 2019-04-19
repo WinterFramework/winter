@@ -1,5 +1,4 @@
 import typing
-import warnings
 
 from furl import furl
 from rest_framework import exceptions
@@ -31,13 +30,15 @@ class PagePositionArgumentResolver(ArgumentResolver):
         limit = self._parse_int_param(raw_limit, self.limit_name, min_value=1)
         offset = self._parse_int_param(raw_offset, self.offset_name, min_value=0)
 
-        limits_annotation = argument.method.annotations.get_one_or_none(LimitsAnnotation)
-
         limits = self.limits
+        limits_annotation = argument.method.annotations.get_one_or_none(LimitsAnnotation)
         if limits_annotation is not None:
             limits = limits_annotation.limits
 
-        self._try_redirect_to_default_limit(limit, limits, http_request)
+        if limits.redirect_to_default and limit is None and limits.default is not None:
+            parsed_url = furl(http_request.get_full_path())
+            parsed_url.args[self.limit_name] = limits.default
+            raise RedirectException(redirect_to=parsed_url.url)
 
         if limit is None:
             limit = limits.default
@@ -46,24 +47,6 @@ class PagePositionArgumentResolver(ArgumentResolver):
             raise MaximumLimitValueExceeded(limits.maximum)
 
         return PagePosition(limit, offset)
-
-    def _try_redirect_to_default_limit(
-            self,
-            limit: typing.Optional[int],
-            limits: Limits,
-            http_request: Request,
-    ):
-        if limits.redirect_to_default:
-            if limits.default is None:
-                warnings.warn(
-                    'PagePositionArgumentResolver: redirect_to_default_limit is set to True, '
-                    'however it has no effect as default_limit is not specified',
-                    UserWarning,
-                )
-            elif limit is None:
-                parsed_url = furl(http_request.get_full_path())
-                parsed_url.args[self.limit_name] = limits.default
-                raise RedirectException(redirect_to=parsed_url.url)
 
     @staticmethod
     def _parse_int_param(raw_param_value: str, param_name: str, min_value: int = 0) -> typing.Optional[int]:
