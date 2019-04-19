@@ -13,8 +13,8 @@ from ..core import ComponentMethod
 from ..core import ComponentMethodArgument
 from ..drf import get_input_serializer
 from ..drf import get_output_serializer
-from ..exceptions import MethodExceptionsHandler
-from ..exceptions import exceptions_handler
+from ..exceptions.handlers import MethodExceptionsHandler
+from ..exceptions.handlers import exceptions_handler
 from ..response_status import get_default_response_status
 from ..routing import Route
 from ..schema.type_inspection import TypeInfo

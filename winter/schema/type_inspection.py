@@ -22,8 +22,7 @@ _inspectors_by_type: typing.Dict[
 ] = {}
 
 
-def register_type_inspector(*types_: typing.Tuple[typing.Type], checker: typing.Callable = None,
-                            func: typing.Callable = None):
+def register_type_inspector(*types_: typing.Type, checker: typing.Callable = None, func: typing.Callable = None):
     if func is None:
         return lambda func: register_type_inspector(*types_, checker=checker, func=func)
 

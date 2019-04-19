@@ -86,13 +86,13 @@ def test_return_response():
     client.force_authenticate(user)
     response = client.get('/winter-simple/return-response/')
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == []
+    assert response.json() == {'logged_in': True}
 
 
 @pytest.mark.parametrize(('method', 'http_response_status'), (
         ('get', HTTPStatus.OK),
         ('post', HTTPStatus.OK),
-        ('patch',HTTPStatus.OK),
+        ('patch', HTTPStatus.OK),
         ('delete', HTTPStatus.NO_CONTENT),
         ('put', HTTPStatus.OK),
 ))
