@@ -11,10 +11,15 @@ class MaximumLimitValueExceeded(Exception):
 
 
 @dataclasses.dataclass(frozen=True)
-class LimitsAnnotation:
+class Limits:
     default: typing.Optional[int]
     maximum: typing.Optional[int]
     redirect_to_default: bool
+
+
+@dataclasses.dataclass(frozen=True)
+class LimitsAnnotation:
+    limits: Limits
 
 
 def limits(
@@ -23,5 +28,6 @@ def limits(
         maximum: typing.Optional[int],
         redirect_to_default: bool = False,
 ):
-    annotation = LimitsAnnotation(default=default, maximum=maximum, redirect_to_default=redirect_to_default)
+    limits_ = Limits(default=default, maximum=maximum, redirect_to_default=redirect_to_default)
+    annotation = LimitsAnnotation(limits_)
     return annotate(annotation, single=True)

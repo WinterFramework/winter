@@ -5,6 +5,7 @@ from furl import furl
 from rest_framework import exceptions
 from rest_framework.request import Request
 
+from .limits import Limits
 from .limits import LimitsAnnotation
 from .limits import MaximumLimitValueExceeded
 from .page_position import PagePosition
@@ -18,9 +19,7 @@ class PagePositionArgumentResolver(ArgumentResolver):
     def __init__(self, limit_name: str = 'limit', offset_name: str = 'offset'):
         self.limit_name = limit_name
         self.offset_name = offset_name
-        self.default_limit = None
-        self.maximum_limit = None
-        self.redirect_to_default_limit = False
+        self.limits = Limits(default=None, maximum=None, redirect_to_default=False)
 
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
         return argument.type_ is PagePosition
@@ -34,34 +33,28 @@ class PagePositionArgumentResolver(ArgumentResolver):
 
         limits_annotation = argument.method.annotations.get_one_or_none(LimitsAnnotation)
 
-        default_limit = self.default_limit
-        maximum_limit = self.maximum_limit
-        redirect_to_default_limit = self.redirect_to_default_limit
-
+        limits = self.limits
         if limits_annotation is not None:
-            maximum_limit = limits_annotation.maximum
-            default_limit = limits_annotation.default
-            redirect_to_default_limit = limits_annotation.redirect_to_default
+            limits = limits_annotation.limits
 
-        self._try_redirect_to_default_limit(limit, default_limit, redirect_to_default_limit, http_request)
+        self._try_redirect_to_default_limit(limit, limits, http_request)
 
         if limit is None:
-            limit = default_limit
+            limit = limits.default
 
-        if limit is not None and maximum_limit is not None and limit > maximum_limit:
-            raise MaximumLimitValueExceeded(maximum_limit)
+        if limit is not None and limits.maximum is not None and limit > limits.maximum:
+            raise MaximumLimitValueExceeded(limits.maximum)
 
         return PagePosition(limit, offset)
 
     def _try_redirect_to_default_limit(
             self,
             limit: typing.Optional[int],
-            default_limit: typing.Optional[int],
-            redirect_to_default_limit: bool,
+            limits: Limits,
             http_request: Request,
     ):
-        if redirect_to_default_limit:
-            if default_limit is None:
+        if limits.redirect_to_default:
+            if limits.default is None:
                 warnings.warn(
                     'PagePositionArgumentResolver: redirect_to_default_limit is set to True, '
                     'however it has no effect as default_limit is not specified',
@@ -69,7 +62,7 @@ class PagePositionArgumentResolver(ArgumentResolver):
                 )
             elif limit is None:
                 parsed_url = furl(http_request.get_full_path())
-                parsed_url.args[self.limit_name] = default_limit
+                parsed_url.args[self.limit_name] = limits.default
                 raise RedirectException(redirect_to=parsed_url.url)
 
     @staticmethod
