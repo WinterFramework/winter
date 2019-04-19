@@ -56,7 +56,7 @@ class PagePositionArgumentResolver(ArgumentResolver):
 
     @staticmethod
     def _parse_int_param(raw_param_value: str, param_name: str) -> typing.Optional[int]:
-        if raw_param_value is None:
+        if not raw_param_value:
             return None
 
         try:
