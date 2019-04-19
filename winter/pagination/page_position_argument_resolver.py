@@ -9,6 +9,7 @@ from .limits import LimitsAnnotation
 from .limits import MaximumLimitValueExceeded
 from .page_position import PagePosition
 from ..argument_resolver import ArgumentResolver
+from ..core import ComponentMethod
 from ..core import ComponentMethodArgument
 from ..exceptions import RedirectException
 
@@ -25,11 +26,7 @@ class PagePositionArgumentResolver(ArgumentResolver):
 
     def resolve_argument(self, argument: ComponentMethodArgument, http_request: Request) -> PagePosition:
         page_position = self._parse_page_position(http_request)
-
-        limits = self.limits
-        limits_annotation = argument.method.annotations.get_one_or_none(LimitsAnnotation)
-        if limits_annotation is not None:
-            limits = limits_annotation.limits
+        limits = self._get_limits(argument.method)
 
         if limits.redirect_to_default and page_position.limit is None and limits.default is not None:
             parsed_url = furl(http_request.get_full_path())
@@ -43,6 +40,12 @@ class PagePositionArgumentResolver(ArgumentResolver):
             raise MaximumLimitValueExceeded(limits.maximum)
 
         return page_position
+
+    def _get_limits(self, method: ComponentMethod) -> Limits:
+        limits_annotation = method.annotations.get_one_or_none(LimitsAnnotation)
+        if limits_annotation is not None:
+            return limits_annotation.limits
+        return self.limits
 
     def _parse_page_position(self, http_request: Request) -> PagePosition:
         raw_limit = http_request.query_params.get(self.limit_name)
