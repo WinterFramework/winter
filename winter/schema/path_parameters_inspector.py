@@ -6,7 +6,6 @@ from drf_yasg import openapi
 from .generation import get_argument_info
 from .method_arguments_inspector import MethodArgumentsInspector
 from ..core import ComponentMethodArgument
-from ..routing import Route
 
 if typing.TYPE_CHECKING:  # pragma: no cover
     from ..routing import Route
@@ -29,7 +28,7 @@ class PathParametersInspector(MethodArgumentsInspector):
 
         return parameters
 
-    def _path_arguments(self, route: Route) -> typing.List[ComponentMethodArgument]:
+    def _path_arguments(self, route: 'Route') -> typing.List[ComponentMethodArgument]:
         path_arguments = []
         for path_variable in route.path_variables:
             argument = route.method.get_argument(path_variable)

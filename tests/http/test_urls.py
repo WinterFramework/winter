@@ -14,15 +14,15 @@ class _OneTwoEnum(enum.Enum):
 
 
 @pytest.mark.parametrize(('url_path', 'param_type', 'expected_url_path', 'example_url'), (
-        (r'/{param}/', int, r'/(?P<param>\d+)/', r'/1/'),
-        (r'/{param}/', str, r'/(?P<param>[^/]+)/', r'/test/'),
-        (r'/{param}/', _OneTwoEnum, r'/(?P<param>((one)|(two)))/', r'/one/'),
-        (
-                r'/{param}/',
-                uuid.UUID,
-                r'/(?P<param>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/',
-                fr'/{uuid.uuid4()}/'
-        ),
+    (r'/{param}/', int, r'/(?P<param>\d+)/', r'/1/'),
+    (r'/{param}/', str, r'/(?P<param>[^/]+)/', r'/test/'),
+    (r'/{param}/', _OneTwoEnum, r'/(?P<param>((one)|(two)))/', r'/one/'),
+    (
+        r'/{param}/',
+        uuid.UUID,
+        r'/(?P<param>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/',
+        fr'/{uuid.uuid4()}/',
+    ),
 ))
 def test_rewrite_uritemplate_with_regexps(url_path, param_type, expected_url_path, example_url):
     def method(param: param_type):

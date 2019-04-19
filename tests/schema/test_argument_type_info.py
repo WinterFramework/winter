@@ -37,17 +37,15 @@ class IntegerEnum(IntEnum):
     (IntegerValueEnum, {'type': openapi.TYPE_INTEGER, 'enum': [1, 2], 'description': '', 'default': None}),
     (StringValueEnum, {'type': openapi.TYPE_STRING, 'enum': ['red', 'green'], 'description': '', 'default': None}),
     (MixedValueEnum, {'type': openapi.TYPE_STRING, 'enum': [123, 'green'], 'description': '', 'default': None}),
-    (List[IntegerValueEnum],
-     {
-         'type': openapi.TYPE_ARRAY, 'items': {'type': openapi.TYPE_INTEGER, 'enum': [1, 2]}, 'description': '',
-         'default': None,
-     }),
-    (List[StringValueEnum],
-     {
-         'type': openapi.TYPE_ARRAY, 'items': {'type': openapi.TYPE_STRING, 'enum': ['red', 'green']},
-         'description': '',
-         'default': None,
-     }),
+    (List[IntegerValueEnum], {
+        'type': openapi.TYPE_ARRAY, 'items': {'type': openapi.TYPE_INTEGER, 'enum': [1, 2]}, 'description': '',
+        'default': None,
+    }),
+    (List[StringValueEnum], {
+        'type': openapi.TYPE_ARRAY, 'items': {'type': openapi.TYPE_STRING, 'enum': ['red', 'green']},
+        'description': '',
+        'default': None,
+    }),
 ])
 def test_get_argument_type_info(type_hint, expected_type_info):
     def func(arg_1: type_hint):

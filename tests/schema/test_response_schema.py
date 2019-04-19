@@ -13,9 +13,9 @@ from ..controllers import ControllerWithExceptions
 
 
 @pytest.mark.parametrize(('return_type', 'expected_response'), (
-        (str, openapi.Schema(type=openapi.TYPE_STRING)),
-        (None, openapi.Response(description='')),
-        (object, openapi.Response(description='')),
+    (str, openapi.Schema(type=openapi.TYPE_STRING)),
+    (None, openapi.Response(description='')),
+    (object, openapi.Response(description='')),
 ))
 def test_build_response_schema(return_type, expected_response):
     @winter.route('')
@@ -41,7 +41,7 @@ def test_build_response_schema(return_type, expected_response):
     }),
     (ControllerWithExceptions, 'with_custom_handler', {
         '200': openapi.Schema(type=openapi.TYPE_STRING),
-        '401': openapi.Schema(type=openapi.TYPE_INTEGER)
+        '401': openapi.Schema(type=openapi.TYPE_INTEGER),
     }),
     (ControllerWithExceptions, 'not_declared_but_thrown', {
         '200': openapi.Schema(type=openapi.TYPE_STRING),

@@ -94,8 +94,7 @@ def create_throttle_classes(
     for route in routes:
 
         throttling_annotation = (
-            route.method.annotations.get_one_or_none(ThrottlingAnnotation) or
-            base_throttling_annotation
+            route.method.annotations.get_one_or_none(ThrottlingAnnotation) or base_throttling_annotation
         )
 
         if getattr(throttling_annotation, 'rate', None) is not None:

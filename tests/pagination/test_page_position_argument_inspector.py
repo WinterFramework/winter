@@ -8,8 +8,8 @@ from winter.routing import get_route
 
 
 @pytest.mark.parametrize(('argument_type', 'must_return_parameters'), (
-        (PagePosition, True),
-        (object, False),
+    (PagePosition, True),
+    (object, False),
 ))
 def test_page_position_argument_inspector(argument_type, must_return_parameters):
     class SimpleController:

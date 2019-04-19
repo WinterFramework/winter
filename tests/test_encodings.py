@@ -39,6 +39,7 @@ class Dataclass:
     date: datetime.date
     nested: NestedDataclass
 
+
 def generator():
     yield Enum.NUMBER
 

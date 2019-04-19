@@ -39,8 +39,8 @@ def test_invalid_media_types(media_type, expected_message):
 
 
 @pytest.mark.parametrize(('first', 'second'), (
-        ('type/subtype', '  type / subtype  '),
-        ('type/subtype;charset=utf-8', '  type / subtype; charset = utf-8  '),
+    ('type/subtype', '  type / subtype  '),
+    ('type/subtype;charset=utf-8', '  type / subtype; charset = utf-8  '),
 ))
 def test_comparing_media_types(first, second):
     first_media_type = MediaType(first)

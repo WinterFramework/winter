@@ -11,12 +11,12 @@ from .utils import get_request
 
 
 @pytest.mark.parametrize(('argument_name', 'query_string', 'expected_value'), (
-        ('without_default', 'without_default=1', 1),
-        ('optional', 'optional=value', 'value'),
-        ('optional', '', None),
-        ('with_default', 'with_default=value', 'value'),
-        ('with_default', '', 'default'),
-        ('array', 'array=1&array=2', [1, 2]),
+    ('without_default', 'without_default=1', 1),
+    ('optional', 'optional=value', 'value'),
+    ('optional', '', None),
+    ('with_default', 'with_default=value', 'value'),
+    ('with_default', '', 'default'),
+    ('array', 'array=1&array=2', [1, 2]),
 ))
 def test_query_parameter_resolver(argument_name, query_string, expected_value):
     @winter.query_parameter('without_default')
@@ -39,8 +39,8 @@ def test_query_parameter_resolver(argument_name, query_string, expected_value):
 
 
 @pytest.mark.parametrize(('query_string', 'expected_exception_message'), (
-        ('query_param=invalid_int', 'Invalid query parameter "query_param" value "invalid_int"'),
-        ('', 'Missing required query parameter "query_param"'),
+    ('query_param=invalid_int', 'Invalid query parameter "query_param" value "invalid_int"'),
+    ('', 'Missing required query parameter "query_param"'),
 ))
 def test_query_parameter_resolver_with_raises_parse_error(query_string, expected_exception_message):
     @winter.query_parameter('query_param')
@@ -59,8 +59,8 @@ def test_query_parameter_resolver_with_raises_parse_error(query_string, expected
 
 
 @pytest.mark.parametrize(('argument_name', 'expected_is_supported'), (
-        ('query_param', True),
-        ('invalid_query_param', False),
+    ('query_param', True),
+    ('invalid_query_param', False),
 ))
 def test_is_supported(argument_name, expected_is_supported):
     @winter.query_parameter(argument_name)
