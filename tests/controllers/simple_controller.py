@@ -36,9 +36,7 @@ class SimpleController:
 
     @winter.route_get('return-response/')
     def return_response(self, request: Request) -> Response:
-        data = {
-            'logged_in': bool(request.user),
-        }
+        data = {'logged_in': bool(request.user)}
         return Response(data=data)
 
     @winter.route_get('get/')
