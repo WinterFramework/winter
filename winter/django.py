@@ -88,7 +88,7 @@ def _call_controller_method(controller, route: Route, request: Request):
         if result is NotHandled:
             raise
         return result
-    except exceptions_handler.auto_throws_exception_classes as exception:
+    except exceptions_handler.auto_handle_exception_classes as exception:
         return exceptions_handler.handle(request, exception)
 
 

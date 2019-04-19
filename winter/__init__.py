@@ -47,7 +47,7 @@ def _default_configuration():
     register_controller_method_inspector(PathParametersInspector())
     register_controller_method_inspector(QueryParametersInspector())
     register_output_processor_resolver(PageOutputProcessorResolver())
-    exceptions_handler.add_handler(RedirectException, RedirectExceptionHandler, auto_throws=True)
+    exceptions_handler.add_handler(RedirectException, RedirectExceptionHandler, auto_handle=True)
     schema.setup()
     pagination.setup()
 
