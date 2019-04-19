@@ -1,7 +1,4 @@
 import typing
-from collections import defaultdict
-from typing import DefaultDict
-from typing import Set
 from typing import Type
 
 import dataclasses
@@ -11,8 +8,6 @@ from ..core import annotate
 
 if typing.TYPE_CHECKING:
     from .handlers import ExceptionHandler
-
-_throws: DefaultDict[object, Set[Type[Exception]]] = defaultdict(set)
 
 
 @dataclasses.dataclass
