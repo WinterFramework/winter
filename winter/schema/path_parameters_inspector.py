@@ -1,39 +1,37 @@
+import typing
 from typing import List
 
-import docstring_parser
 from drf_yasg import openapi
 
-from .controller_method_inspector import ControllerMethodInspector
-from .generation import get_argument_type_info
-from ..core import ComponentMethod
-from ..routing import get_route
+from .generation import get_argument_info
+from .method_arguments_inspector import MethodArgumentsInspector
+from ..core import ComponentMethodArgument
+
+if typing.TYPE_CHECKING:  # pragma: no cover
+    from ..routing import Route
 
 
-class PathParametersInspector(ControllerMethodInspector):
+class PathParametersInspector(MethodArgumentsInspector):
 
-    def inspect_parameters(self, method: ComponentMethod) -> List[openapi.Parameter]:
-        docstring = docstring_parser.parse(method.func.__doc__)
-        params_docs = {param_doc.arg_name: param_doc for param_doc in docstring.params}
-        route = get_route(method)
+    def inspect_parameters(self, route: 'Route') -> List[openapi.Parameter]:
         parameters = []
 
-        for path_variable_name in route.path_variables:
-            argument = method.get_argument(path_variable_name)
-            if not argument:
-                continue
-            param_doc = params_docs.get(path_variable_name)
-            description = param_doc.description if param_doc else ''
-            type_info = get_argument_type_info(argument)
-            if type_info is None:
-                type_info = {'type': openapi.TYPE_STRING}
-                description += ' (Note: parameter type can be wrong)'
+        for argument in self._path_arguments(route):
+            parameter_data = get_argument_info(argument)
             parameter = openapi.Parameter(
                 name=argument.name,
-                description=description,
                 required=True,
                 in_=openapi.IN_PATH,
-                **type_info,
+                **parameter_data,
             )
             parameters.append(parameter)
 
         return parameters
+
+    def _path_arguments(self, route: 'Route') -> typing.List[ComponentMethodArgument]:
+        path_arguments = []
+        for path_variable in route.path_variables:
+            argument = route.method.get_argument(path_variable)
+            if argument is not None:
+                path_arguments.append(argument)
+        return path_arguments

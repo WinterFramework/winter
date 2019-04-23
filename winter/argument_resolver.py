@@ -35,22 +35,17 @@ class ArgumentsResolver(ArgumentResolver):
     def __init__(self):
         super().__init__()
         self._argument_resolvers: List[ArgumentResolver] = []
+        self._cache = {}
 
     def add_argument_resolver(self, argument_resolver: ArgumentResolver):
         self._argument_resolvers.append(argument_resolver)
 
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
-        return any(argument_resolver.is_supported(argument) for argument_resolver in self._argument_resolvers)
+        # ArgumentsResolver must resolve all arguments
+        return True
 
     def resolve_argument(self, argument: ComponentMethodArgument, http_request: Request) -> Any:
-        try:
-            argument_resolver = next(
-                argument_resolver for argument_resolver in self._argument_resolvers
-                if argument_resolver.is_supported(argument)
-            )
-        except StopIteration:
-            raise ArgumentNotSupported(argument)
-
+        argument_resolver = self._get_argument_resolver(argument)
         return argument_resolver.resolve_argument(argument, http_request)
 
     def resolve_arguments(
@@ -64,10 +59,20 @@ class ArgumentsResolver(ArgumentResolver):
 
         return resolved_arguments
 
+    def _get_argument_resolver(self, argument: ComponentMethodArgument) -> 'ArgumentResolver':
+        if argument in self._cache:
+            return self._cache[argument]
+        for argument_resolver in self._argument_resolvers:
+            if argument_resolver.is_supported(argument):
+                self._cache[argument] = argument_resolver
+                return argument_resolver
+        raise ArgumentNotSupported(argument)
+
 
 class GenericArgumentResolver(ArgumentResolver):
 
     def __init__(self, arg_name: str, arg_type: Type, resolve_argument: Callable):
+        super().__init__()
         self._arg_name = arg_name
         self._arg_type = arg_type
         self._resolve_argument = resolve_argument
@@ -76,7 +81,7 @@ class GenericArgumentResolver(ArgumentResolver):
         return argument.name == self._arg_name and argument.type_ == self._arg_type
 
     def resolve_argument(self, argument: ComponentMethodArgument, http_request: Request):
-        return self._resolve_argument(http_request)
+        return self._resolve_argument(argument, http_request)
 
 
 arguments_resolver = ArgumentsResolver()

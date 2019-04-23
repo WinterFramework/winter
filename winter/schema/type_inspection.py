@@ -12,24 +12,22 @@ import dataclasses
 from drf_yasg import openapi
 from rest_framework.settings import api_settings as rest_settings
 
-from ..type_utils import UnionType
 from ..type_utils import get_origin_type
 from ..type_utils import is_optional
 
 TYPE_DECIMAL = openapi.TYPE_STRING if rest_settings.COERCE_DECIMAL_TO_STRING else openapi.TYPE_NUMBER
-_resolvers_by_type: typing.Dict[
+_inspectors_by_type: typing.Dict[
     typing.Type,
-    typing.List[typing.Tuple[typing.Callable, typing.Optional[typing.Callable]]]
+    typing.List[typing.Tuple[typing.Callable, typing.Optional[typing.Callable]]],
 ] = {}
 
 
-def register_type_inspector(*types: typing.Tuple[typing.Type], checker: typing.Callable = None,
-                            func: typing.Callable = None):
+def register_type_inspector(*types_: typing.Type, checker: typing.Callable = None, func: typing.Callable = None):
     if func is None:
-        return lambda func: register_type_inspector(*types, checker=checker, func=func)
-    
-    for type_ in types:
-        callables = _resolvers_by_type.setdefault(type_, [])
+        return lambda func: register_type_inspector(*types_, checker=checker, func=func)
+
+    for type_ in types_:
+        callables = _inspectors_by_type.setdefault(type_, [])
         callables.append((func, checker))
     return func
 
@@ -193,16 +191,22 @@ def inspect_new_type(hint_class) -> TypeInfo:
 def inspect_type(hint_class) -> TypeInfo:
     origin_type = get_origin_type(hint_class)
 
-    if inspect.isclass(origin_type):
-        types = origin_type.mro()
-    else:
-        types = type(origin_type).mro()
+    types_ = origin_type.mro() if inspect.isclass(origin_type) else type(origin_type).mro()
 
-    for type_ in types:
-        data = _resolvers_by_type.get(type_, [])
+    for type_ in types_:
+        inspectors = _inspectors_by_type.get(type_, [])
+        type_info = _inspect_type(hint_class, inspectors)
 
-        for resolver, checker in data:
-            if checker is None or checker(hint_class):
-                return resolver(hint_class)
+        if type_info is not None:
+            return type_info
 
     raise InspectorNotFound(hint_class)
+
+
+def _inspect_type(
+        hint_class,
+        inspectors: typing.List[typing.Tuple[typing.Callable, typing.Optional[typing.Callable]]],
+) -> typing.Optional[TypeInfo]:
+    for inspector, checker in inspectors:
+        if checker is None or checker(hint_class):
+            return inspector(hint_class)

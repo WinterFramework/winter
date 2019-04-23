@@ -1,13 +1,15 @@
-import inspect
+import typing
 from typing import Optional
 
 import dataclasses
-import django.http
 import pydantic
+import rest_framework.request
 from rest_framework.exceptions import ParseError
 
 from . import type_utils
+from .argument_resolver import ArgumentNotSupported
 from .argument_resolver import ArgumentResolver
+from .core import ArgumentDoesNotHaveDefault
 from .core import ComponentMethod
 from .core import ComponentMethodArgument
 from .core.annotation_decorator import annotate_method
@@ -35,30 +37,60 @@ def get_query_param_mapping(method: ComponentMethod, map_to: str) -> Optional[st
 
 class QueryParameterResolver(ArgumentResolver):
 
+    def __init__(self):
+        super().__init__()
+        self._cache = {}
+
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
-        return get_query_param_mapping(argument.method, argument.name) is not None
+        return self._get_cached_data(argument) is not None
 
-    def resolve_argument(self, argument: ComponentMethodArgument, http_request: django.http.HttpRequest):
-        query_parameters = http_request.GET
-        query_parameter_name = get_query_param_mapping(argument.method, argument.name)
-        if query_parameter_name not in query_parameters:
-            default = argument.parameter.default
-            if default is not inspect.Parameter.empty:
-                return default
-            elif type_utils.is_optional(argument.type_):
-                return None
-            else:
-                raise ParseError(f'Missing required query parameter "{query_parameter_name}"')
-        if type_utils.is_iterable(argument.type_):
-            query_parameter_value = query_parameters.getlist(query_parameter_name)
-        else:
-            query_parameter_value = query_parameters[query_parameter_name]
+    def resolve_argument(self, argument: ComponentMethodArgument, http_request: rest_framework.request.Request):
+        query_parameters = http_request.query_params
 
-        @pydantic.dataclasses.dataclass
-        class FieldData:
-            value: argument.type_
+        cached_data = self._get_cached_data(argument)
+
+        if cached_data is None:
+            raise ArgumentNotSupported(argument)
+
+        parameter_name, pydantic_data_class, is_iterable = cached_data
+
+        if parameter_name not in query_parameters:
+            try:
+                return argument.get_default()
+            except ArgumentDoesNotHaveDefault:
+                raise ParseError(f'Missing required query parameter "{parameter_name}"')
+
+        value = self._get_value(query_parameters, parameter_name, is_iterable)
 
         try:
-            return FieldData(query_parameter_value).value
+            return pydantic_data_class(value).value
         except pydantic.ValidationError:
-            raise ParseError(f'Invalid query parameter "{query_parameter_name}" value "{query_parameter_value}"')
+            raise ParseError(f'Invalid query parameter "{parameter_name}" value "{value}"')
+
+    def _get_value(self, parameters, parameter_name, is_iterable):
+        if is_iterable:
+            return parameters.getlist(parameter_name)
+        else:
+            return parameters[parameter_name]
+
+    def _get_cached_data(self, argument: ComponentMethodArgument):
+
+        if argument in self._cache:
+            return self._cache[argument]
+
+        parameter_name = get_query_param_mapping(argument.method, argument.name)
+        if parameter_name is None:
+            self._cache[argument] = None
+            return None
+
+        pydantic_data_class = self._create_pydantic_class(argument.type_)
+        is_iterable = type_utils.is_iterable(argument.type_)
+        cached_data = self._cache[argument] = parameter_name, pydantic_data_class, is_iterable
+        return cached_data
+
+    def _create_pydantic_class(self, type_) -> typing.Type:
+        @pydantic.dataclasses.dataclass
+        class PydanticDataclass:
+            value: type_
+
+        return PydanticDataclass

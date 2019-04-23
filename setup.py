@@ -1,5 +1,7 @@
 import os
-from setuptools import find_packages, setup
+
+from setuptools import find_packages
+from setuptools import setup
 
 here = os.path.abspath(os.path.dirname(__file__))
 about = {}
@@ -10,6 +12,7 @@ with open(os.path.join(here, 'winter', '__version__.py')) as f:
 def read_requirements(req_file):
     with open(os.path.join('requirements', req_file)) as req:
         return [line.strip() for line in req.readlines() if line.strip() and not line.strip().startswith('#')]
+
 
 requirements = read_requirements('base.txt')
 

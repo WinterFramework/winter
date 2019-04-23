@@ -7,6 +7,7 @@ from rest_framework.request import Request
 from tests.controllers.controller_with_path_parameters import ControllerWithPathParameters
 from tests.controllers.controller_with_path_parameters import OneTwoEnum
 from tests.controllers.controller_with_path_parameters import OneTwoEnumWithInt
+from winter.argument_resolver import ArgumentNotSupported
 from winter.controller import get_component
 from winter.core import Component
 from winter.path_parameters_argument_resolver import PathParametersArgumentResolver
@@ -46,7 +47,21 @@ def test_is_supported_path_parameter(controller_class, method_name, arg_name, ex
     resolver = PathParametersArgumentResolver()
 
     # Act
-    result = resolver.is_supported(argument)
+    is_supported = resolver.is_supported(argument)
+    second_is_supported = resolver.is_supported(argument)
 
     # Assert
-    assert result == expected_value
+    assert is_supported == second_is_supported == expected_value
+
+
+def test_with_raises_argument_not_supported():
+    component = get_component(ControllerWithPathParameters)
+    argument = component.get_method('test').get_argument('param6')
+    resolver = PathParametersArgumentResolver()
+    http_request = Mock(spec=Request)
+    http_request.path_info = f'/controller_with_path_parameters/123/456/one/{uuid_}/2/'
+
+    with pytest.raises(ArgumentNotSupported) as exception:
+        resolver.resolve_argument(argument, http_request)
+
+    assert str(exception.value) == 'Unable to resolve argument param6: str'

@@ -1,5 +1,6 @@
 import time
 import typing
+import uuid
 
 import dataclasses
 from django.core.cache import cache as default_cache
@@ -26,6 +27,8 @@ class Throttling:
 
 
 def throttling(rate: typing.Optional[str], scope: typing.Optional[str] = None):
+    if scope is None:
+        scope = uuid.uuid4()
     return annotate(ThrottlingAnnotation(rate, scope), single=True)
 
 
@@ -64,9 +67,7 @@ class BaseRateThrottle(BaseThrottle):
 
         if user_pk is not None:
             return str(user_pk)
-
         return super().get_ident(request)
-
 
     def _get_throttling(self, request) -> typing.Optional[Throttling]:
         return self.throttling_by_http_method.get(request.method.lower())
@@ -88,16 +89,15 @@ def create_throttle_classes(
         routes: typing.List['Route'],
 ) -> typing.Tuple[typing.Type[BaseRateThrottle], ...]:
     base_throttling_annotation = component.annotations.get_one_or_none(ThrottlingAnnotation)
-    throttling_by_http_method_: typing.Dict[str, typing.Optional[Throttling]] = {}
+    throttling_by_http_method_: typing.Dict[str, Throttling] = {}
 
     for route in routes:
 
-        throttling_annotation = route.method.annotations.get_one_or_none(ThrottlingAnnotation)
+        throttling_annotation = (
+            route.method.annotations.get_one_or_none(ThrottlingAnnotation) or base_throttling_annotation
+        )
 
-        if throttling_annotation is None:
-            throttling_annotation = base_throttling_annotation
-
-        if throttling_annotation is not None and throttling_annotation.rate is not None:
+        if getattr(throttling_annotation, 'rate', None) is not None:
             num_requests, duration = _parse_rate(throttling_annotation.rate)
             throttling_ = Throttling(num_requests, duration, throttling_annotation.scope)
             throttling_by_http_method_[route.http_method.lower()] = throttling_

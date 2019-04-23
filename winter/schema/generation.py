@@ -5,17 +5,19 @@ import docstring_parser
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from .controller_method_inspector import get_controller_method_inspectors
+from .method_arguments_inspector import get_method_arguments_inspectors
 from .type_inspection import InspectorNotFound
 from .type_inspection import inspect_type
+from .utils import update_doc_with_invalid_hype_hint
 from ..core import ComponentMethod
 from ..core import ComponentMethodArgument
 from ..drf import get_input_serializer
 from ..drf import get_output_serializer
-from ..exceptions import exceptions_handler
-from ..exceptions import get_throws
+from ..exceptions.handlers import MethodExceptionsHandler
+from ..exceptions.handlers import exceptions_handler
 from ..response_status import get_default_response_status
 from ..routing import Route
+from ..schema.type_inspection import TypeInfo
 
 
 def generate_swagger_for_operation(view_func, controller, route: Route):
@@ -26,7 +28,7 @@ def generate_swagger_for_operation(view_func, controller, route: Route):
         request_body = input_serializer.class_
     else:
         request_body = None
-    manual_parameters = _build_method_parameters(method)
+    manual_parameters = _build_method_parameters(route)
     responses = build_responses_schemas(route)
     swagger_auto_schema(
         operation_id=f'{controller.__class__.__name__}.{method.func.__name__}',
@@ -39,46 +41,59 @@ def generate_swagger_for_operation(view_func, controller, route: Route):
 
 def build_responses_schemas(route: Route):
     responses = {}
-    response_status = str(get_default_response_status(route))
-    try:
-        responses[response_status] = build_response_schema(route)
-    except InspectorNotFound:
-        responses[response_status] = openapi.Response(description='Success')
-    for exception_cls in get_throws(route.method):
-        handler = exceptions_handler.get_handler(exception_cls)
+    http_method = route.http_method
+    response_status = str(get_default_response_status(http_method, route.method))
+
+    responses[response_status] = build_response_schema(route.method)
+    method_exceptions_handler = MethodExceptionsHandler(route.method)
+
+    for exception_cls in method_exceptions_handler.exception_classes:
+        handler = method_exceptions_handler.get_handler(exception_cls)
+        if handler is None:
+            handler = exceptions_handler.get_handler(exception_cls)
         if handler is None:
             continue
-        response_status = str(get_default_response_status(handler.route))
-        try:
-            responses[response_status] = build_response_schema(handler.route)
-        except InspectorNotFound:
-            continue
+        response_status = str(get_default_response_status(http_method, handler.handle_method))
+        responses[response_status] = build_response_schema(handler.handle_method)
     return responses
 
 
-def build_response_schema(route):
-    method = route.method
+def build_response_schema(method: ComponentMethod):
     output_serializer = get_output_serializer(method)
     if output_serializer is not None:
         return output_serializer.class_(**output_serializer.kwargs)
 
     type_hints = typing.get_type_hints(method.func)
     return_value_type = type_hints.get('return', None)
-    type_info = inspect_type(return_value_type)
-    return type_info.get_openapi_schema()
+    try:
+        type_info = inspect_type(return_value_type)
+    except InspectorNotFound:
+        return openapi.Response(description='')
+    else:
+        return type_info.get_openapi_schema()
 
 
-def _build_method_parameters(method: ComponentMethod) -> List[openapi.Parameter]:
+def _build_method_parameters(route: Route) -> List[openapi.Parameter]:
     parameters = []
-    for method_inspector in get_controller_method_inspectors():
-        parameters += method_inspector.inspect_parameters(method)
+    for method_inspector in get_method_arguments_inspectors():
+        parameters += method_inspector.inspect_parameters(route)
     return parameters
 
 
-def get_argument_type_info(argument: ComponentMethodArgument) -> typing.Optional[dict]:
+def get_argument_info(argument: ComponentMethodArgument) -> dict:
     try:
         type_info = inspect_type(argument.type_)
+        invalid_hype_hint = False
     except InspectorNotFound:
-        return None
-    else:
-        return type_info.as_dict()
+        type_info = TypeInfo(openapi.TYPE_STRING)
+        invalid_hype_hint = True
+    type_info_data = type_info.as_dict()
+
+    description = argument.description
+
+    if invalid_hype_hint:
+        description = update_doc_with_invalid_hype_hint(description)
+    default = argument.get_default(None)
+    type_info_data['description'] = description
+    type_info_data['default'] = default
+    return type_info_data

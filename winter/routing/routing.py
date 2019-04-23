@@ -39,12 +39,8 @@ def route_put(url_path='', produces: Optional[Tuple[MediaType]] = None, consumes
 
 
 def get_route(method: ComponentMethod) -> Route:
-    route_annotations = method.component.annotations
-    component_route_annotation = route_annotations.get_one_or_none(RouteAnnotation)
-    component_url = component_route_annotation.url_path if component_route_annotation is not None else ''
-
     route_annotation = method.annotations.get_one(RouteAnnotation)
-    url_path = component_url + route_annotation.url_path
+    url_path = get_url_path(method)
     route = Route(
         route_annotation.http_method,
         url_path,
@@ -53,3 +49,12 @@ def get_route(method: ComponentMethod) -> Route:
         route_annotation.consumes,
     )
     return route
+
+
+def get_url_path(method: ComponentMethod) -> str:
+    route_annotations = method.component.annotations
+    component_route_annotation = route_annotations.get_one_or_none(RouteAnnotation)
+    component_url = component_route_annotation.url_path if component_route_annotation is not None else ''
+    route_annotation = method.annotations.get_one(RouteAnnotation)
+    url_path = component_url + route_annotation.url_path
+    return url_path

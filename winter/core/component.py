@@ -1,5 +1,4 @@
 import inspect
-import types
 import typing
 
 from .annotations import Annotations
@@ -15,6 +14,12 @@ class Component:
         self.component_cls = component_cls
         self.annotations = Annotations()
         self._methods: typing.Dict[str, 'ComponentMethod'] = {}
+
+    def __repr__(self):
+        return str(self)
+
+    def __str__(self):
+        return f'Component(component_cls={self.component_cls.__name__})'
 
     @property
     def methods(self):
@@ -42,7 +47,7 @@ class Component:
         return cls._components
 
     @classmethod
-    def get_by_cls(cls, component_cls):
+    def get_by_cls(cls, component_cls) -> 'Component':
         if not inspect.isclass(component_cls):
             cls._raise_invalid_class(component_cls)
         component_ = cls._components.get(component_cls)

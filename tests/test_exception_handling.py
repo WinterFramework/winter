@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 import pytest
 from rest_framework.test import APIClient
 
@@ -7,8 +9,9 @@ from .entities import AuthorizedUser
 
 
 @pytest.mark.parametrize(['url_path', 'expected_status', 'expected_body'], (
-        ('declared_but_not_thrown', 200, 'Hello, sir!'),
-        ('declared_and_thrown', 400, {'message': 'declared_and_thrown'}),
+    ('declared_but_not_thrown', HTTPStatus.OK, 'Hello, sir!'),
+    ('declared_and_thrown', HTTPStatus.BAD_REQUEST, {'message': 'declared_and_thrown'}),
+    ('exception_with_custom_handler', HTTPStatus.UNAUTHORIZED, 21),
 ))
 def test_controller_with_exceptions(url_path, expected_status, expected_body):
     client = APIClient()
@@ -21,12 +24,15 @@ def test_controller_with_exceptions(url_path, expected_status, expected_body):
 
     # Assert
     assert response.status_code == expected_status
-    assert response.json() == expected_body
+    if response.status_code == HTTPStatus.FOUND:
+        assert response['Location'] == expected_body
+    else:
+        assert response.json() == expected_body
 
 
 @pytest.mark.parametrize(['url_path', 'expected_exception_cls'], (
-        ('not_declared_but_thrown', CustomException),
-        ('declared_but_no_handler', ExceptionWithoutHandler),
+    ('not_declared_but_thrown', CustomException),
+    ('declared_but_no_handler', ExceptionWithoutHandler),
 ))
 def test_controller_with_exceptions_throws(url_path, expected_exception_cls):
     client = APIClient()
@@ -37,4 +43,3 @@ def test_controller_with_exceptions_throws(url_path, expected_exception_cls):
     # Act
     with pytest.raises(expected_exception_cls):
         client.get(url)
-
