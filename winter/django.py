@@ -39,11 +39,10 @@ class SessionAuthentication(rest_framework.authentication.SessionAuthentication)
 
 def create_django_urls(controller_class: Type) -> List:
     component = get_component(controller_class)
-    controller = build_controller(component.component_cls)
     django_urls = []
 
     for url_path, routes in _group_routes_by_url_path(component.methods):
-        django_view = _create_django_view(controller, component, routes)
+        django_view = _create_django_view(controller_class, component, routes)
         winter_url_path = f'^{url_path}$'
         methods = (route.method for route in routes)
         django_url_path = rewrite_uritemplate_with_regexps(winter_url_path, methods)
@@ -53,7 +52,7 @@ def create_django_urls(controller_class: Type) -> List:
     return django_urls
 
 
-def _create_django_view(controller, component, routes: List[Route]):
+def _create_django_view(controller_class, component, routes: List[Route]):
     class WinterView(rest_framework.views.APIView):
         authentication_classes = (SessionAuthentication,)
         permission_classes = (IsAuthenticated,) if is_authentication_needed(component) else ()
@@ -61,16 +60,19 @@ def _create_django_view(controller, component, routes: List[Route]):
         swagger_schema = SwaggerAutoSchema
 
     for route in routes:
-        dispatch = _create_dispatch_function(controller, route)
+        dispatch = _create_dispatch_function(controller_class, route)
         dispatch.method = route.method
         dispatch_method_name = route.http_method.lower()
         setattr(WinterView, dispatch_method_name, dispatch)
-        generate_swagger_for_operation(dispatch, controller, route)
+        generate_swagger_for_operation(dispatch, controller_class, route)
     return WinterView().as_view()
 
 
-def _create_dispatch_function(controller, route: Route):
+def _create_dispatch_function(controller_class, route: Route):
+    component = get_component(controller_class)
+
     def dispatch(winter_view, request: Request, **path_variables):
+        controller = build_controller(component.component_cls)
         return _call_controller_method(controller, route, request)
 
     return dispatch
