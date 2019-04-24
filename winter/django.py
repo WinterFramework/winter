@@ -69,8 +69,9 @@ def _create_django_view(controller_class, component, routes: List[Route]):
 
 
 def _create_dispatch_function(controller_class, route: Route):
+    component = get_component(controller_class)
+
     def dispatch(winter_view, request: Request, **path_variables):
-        component = get_component(controller_class)
         controller = build_controller(component.component_cls)
         return _call_controller_method(controller, route, request)
 
