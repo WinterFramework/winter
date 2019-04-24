@@ -56,10 +56,8 @@ class ExceptionsHandler(ExceptionHandler):
             *,
             auto_handle: bool = False,
     ):
-        from ..controller import build_controller
-
         assert exception_cls not in self._handlers
-        self._handlers[exception_cls] = build_controller(handler_cls)
+        self._handlers[exception_cls] = handler_cls()
 
         if auto_handle:
             self._auto_handle_exceptions.add(exception_cls)

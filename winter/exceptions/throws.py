@@ -18,10 +18,8 @@ class ExceptionAnnotation:
 
 def throws(exception_cls: Type[Exception], handler_cls: typing.Optional[typing.Type['ExceptionHandler']] = None):
     """Decorator to use on methods."""
-    from ..controller import build_controller
-
     if handler_cls is not None:
-        handler = build_controller(handler_cls)
+        handler = handler_cls()
     else:
         handler = None
 
