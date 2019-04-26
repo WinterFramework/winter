@@ -1,5 +1,3 @@
-import time
-
 from django.http import HttpRequest
 from django.http import QueryDict
 from rest_framework.request import Request

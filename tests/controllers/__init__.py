@@ -8,3 +8,17 @@ from .controller_with_throttling import ControllerWithThrottlingOnController
 from .controller_with_throttling import ControllerWithThrottlingOnMethod
 from .no_authentication_controller import NoAuthenticationController
 from .simple_controller import SimpleController
+
+
+__all__ = (
+    'ControllerWithExceptions',
+    'ControllerWithLimits',
+    'ControllerWithMediaTypesRouting',
+    'ControllerWithOutputTemplate',
+    'ControllerWithPathParameters',
+    'ControllerWithSerializer',
+    'ControllerWithThrottlingOnController',
+    'ControllerWithThrottlingOnMethod',
+    'NoAuthenticationController',
+    'SimpleController',
+)

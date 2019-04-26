@@ -10,3 +10,18 @@ from .component_method import component_method
 from .component_method_argument import ArgumentDoesNotHaveDefault
 from .component_method_argument import ComponentMethodArgument
 from .utils import cached_property
+
+__all__ = (
+    'annotate',
+    'annotate_class',
+    'annotate_method',
+    'WinterApplication',
+    'Component',
+    'component',
+    'is_component',
+    'ComponentMethod',
+    'component_method',
+    'ArgumentDoesNotHaveDefault',
+    'ComponentMethodArgument',
+    'cached_property',
+)
