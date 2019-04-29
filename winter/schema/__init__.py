@@ -9,18 +9,6 @@ from .path_parameters_inspector import PathParametersInspector
 from .query_parameters_inspector import QueryParametersInspector
 from .type_inspection import register_type_inspector
 
-__all__ = (
-    'MethodArgumentsInspector',
-    'get_method_arguments_inspectors',
-    'register_controller_method_inspector',
-    'inspect_enum_class',
-    'generate_swagger_for_operation',
-    'PathParametersInspector',
-    'QueryParametersInspector',
-    'register_type_inspector',
-    'setup',
-)
-
 
 def setup():
     from drf_yasg.inspectors.field import hinting_type_info
