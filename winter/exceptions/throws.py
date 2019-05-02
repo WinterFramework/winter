@@ -7,7 +7,7 @@ from ..core import ComponentMethod
 from ..core import annotate
 
 if typing.TYPE_CHECKING:
-    from .handlers import ExceptionHandler
+    from .handlers import ExceptionHandler  # noqa: F401
 
 
 @dataclasses.dataclass

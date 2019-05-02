@@ -13,11 +13,6 @@ from typing import Type
 import dataclasses
 from django.utils.functional import Promise
 
-__all__ = (
-    'JSONEncoder',
-    'register_encoder',
-)
-
 _encoder_map: Dict[Type, Tuple[Callable, bool]] = {}
 
 NoneType = type(None)
