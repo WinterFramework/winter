@@ -1,9 +1,12 @@
 import typing
 
 import pytest
+from dateutil import parser
 from rest_framework.exceptions import ParseError
+from rest_framework.test import APIClient
 
 import winter
+from tests.entities import AuthorizedUser
 from winter.argument_resolver import ArgumentNotSupported
 from winter.core import ComponentMethod
 from winter.query_parameter import QueryParameterResolver
@@ -91,3 +94,21 @@ def test_query_parameter_resolver_with_raises_argument_not_supported():
         resolver.resolve_argument(argument, request)
 
     assert str(exception.value) == 'Unable to resolve argument invalid_query_param: int'
+
+
+@pytest.mark.parametrize(('date', 'date_time', 'boolean'), (
+    ('2019-05-02', '2019-05-02 22:28:31', 'false'),
+    ('2019-05-01', '2019-05-01 22:28:31', 'true'),
+))
+def test_query_parameter(date, date_time, boolean):
+    client = APIClient()
+    user = AuthorizedUser()
+    client.force_authenticate(user)
+    expected_date = {
+        'date': parser.parse(date).date(),
+        'date_time': parser.parse(date_time),
+        'boolean': boolean == 'true',
+    }
+
+    http_response = client.get(f'/with-query-parameter/?date={date}&date_time={date_time}&boolean={boolean}')
+    assert http_response.data == expected_date
