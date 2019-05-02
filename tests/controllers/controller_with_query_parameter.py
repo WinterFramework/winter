@@ -21,5 +21,4 @@ class ControllerWithQueryParameters:
             'date': date,
             'date_time': date_time,
             'boolean': boolean,
-
         }
