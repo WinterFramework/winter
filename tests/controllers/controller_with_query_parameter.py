@@ -1,4 +1,5 @@
 import datetime
+from typing import Optional
 
 import winter
 
@@ -9,6 +10,7 @@ class ControllerWithQueryParameters:
 
     @winter.query_parameter('date')
     @winter.query_parameter('boolean')
+    @winter.query_parameter('optional_boolean')
     @winter.query_parameter('date_time')
     @winter.route_get('/')
     def root(
@@ -16,9 +18,11 @@ class ControllerWithQueryParameters:
             date: datetime.date,
             date_time: datetime.datetime,
             boolean: bool,
+            optional_boolean: Optional[bool] = None,
     ) -> dict:
         return {
             'date': date,
             'date_time': date_time,
             'boolean': boolean,
+            'optional_boolean': optional_boolean,
         }
