@@ -99,6 +99,7 @@ def test_query_parameter_resolver_with_raises_argument_not_supported():
 
 @pytest.mark.parametrize(('date', 'date_time', 'boolean', 'optional_boolean'), (
     ('2019-05-02', '2019-05-02 22:28:31', 'false', None),
+    ('2019-05-02', '2019-05-02 22:28:31', 'false', ''),
     ('2019-05-01', '2019-05-01 22:28:31', 'true', 'true'),
     ('2019-05-01', '2019-05-01 22:28:31', 'true', 'false'),
 ))
