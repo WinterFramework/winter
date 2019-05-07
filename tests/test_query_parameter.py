@@ -4,6 +4,7 @@ import pytest
 from dateutil import parser
 from rest_framework.exceptions import ParseError
 from rest_framework.test import APIClient
+from uritemplate import URITemplate
 
 import winter
 from tests.entities import AuthorizedUser
@@ -96,11 +97,13 @@ def test_query_parameter_resolver_with_raises_argument_not_supported():
     assert str(exception.value) == 'Unable to resolve argument invalid_query_param: int'
 
 
-@pytest.mark.parametrize(('date', 'date_time', 'boolean'), (
-    ('2019-05-02', '2019-05-02 22:28:31', 'false'),
-    ('2019-05-01', '2019-05-01 22:28:31', 'true'),
+@pytest.mark.parametrize(('date', 'date_time', 'boolean', 'optional_boolean'), (
+    ('2019-05-02', '2019-05-02 22:28:31', 'false', None),
+    ('2019-05-02', '2019-05-02 22:28:31', 'false', ''),
+    ('2019-05-01', '2019-05-01 22:28:31', 'true', 'true'),
+    ('2019-05-01', '2019-05-01 22:28:31', 'true', 'false'),
 ))
-def test_query_parameter(date, date_time, boolean):
+def test_query_parameter(date, date_time, boolean, optional_boolean):
     client = APIClient()
     user = AuthorizedUser()
     client.force_authenticate(user)
@@ -108,7 +111,20 @@ def test_query_parameter(date, date_time, boolean):
         'date': parser.parse(date).date(),
         'date_time': parser.parse(date_time),
         'boolean': boolean == 'true',
+        'optional_boolean': optional_boolean == 'true' if optional_boolean is not None else None,
+    }
+    base_uri = URITemplate('/with-query-parameter/{?date,date_time,boolean,optional_boolean}')
+    query_params = {
+        'date': date,
+        'date_time': date_time,
+        'boolean': boolean,
     }
 
-    http_response = client.get(f'/with-query-parameter/?date={date}&date_time={date_time}&boolean={boolean}')
+    if optional_boolean is not None:
+        query_params['optional_boolean'] = optional_boolean
+
+    base_uri = base_uri.expand(**query_params)
+
+    # Act
+    http_response = client.get(base_uri)
     assert http_response.data == expected_date
