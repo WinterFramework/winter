@@ -8,6 +8,7 @@ from uritemplate import URITemplate
 
 import winter
 from tests.entities import AuthorizedUser
+from winter import map_query_parameter
 from winter.argument_resolver import ArgumentNotSupported
 from winter.core import ComponentMethod
 from winter.query_parameters import QueryParameterArgumentResolver
@@ -92,6 +93,26 @@ def test_query_parameter_resolver_with_raises_argument_not_supported():
         resolver.resolve_argument(argument, request)
 
     assert str(exception.value) == 'Unable to resolve argument invalid_query_param: int'
+
+
+@pytest.mark.parametrize(('query_string', 'expected_exception_message'), (
+    ('query_param=invalid_int', 'Invalid query parameter "query_param" value "invalid_int"'),
+    ('', 'Missing required query parameter "query_param"'),
+))
+def test_query_parameter_resolver_with_raises_parse_error(query_string, expected_exception_message):
+    @winter.route_get('{?query_param}')
+    def method(query_param: int):
+        return query_param
+
+    resolver = QueryParameterArgumentResolver()
+
+    argument = method.get_argument('query_param')
+    request = get_request(query_string)
+
+    with pytest.raises(ParseError) as exception:
+        resolver.resolve_argument(argument, request)
+
+    assert str(exception.value) == expected_exception_message
 
 
 @pytest.mark.parametrize(('date', 'date_time', 'boolean', 'optional_boolean', 'array', 'string'), (

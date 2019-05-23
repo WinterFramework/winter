@@ -8,7 +8,6 @@ from .route_annotation import RouteAnnotation
 from ..core import ComponentMethod
 from ..core import annotate
 from ..http import MediaType
-from ..query_parameters import MapQueryParameterAnnotation
 from ..query_parameters import QueryParameterAnnotation
 from ..routing.route import Route
 
@@ -24,13 +23,28 @@ def route(
 
     def wrapper(func_or_method):
         annotate_ = annotate(route_annotation, single=True)
-        func_or_method = annotate_(func_or_method)
+        method = annotate_(func_or_method)
+        if hasattr(method, 'annotations'):
+            existing_annotations = method.annotations.get(QueryParameterAnnotation)
+        else:
+            existing_annotations = []
 
         for query_annotation in query_annotations:
-            annotate_ = annotate(query_annotation, unique=True)
-            func_or_method = annotate_(func_or_method)
+            for existing_annotation in existing_annotations:
+                if existing_annotation.map_to == query_annotation.map_to:
+                    raise ValueError(f'The argument is already mapped '
+                                     f'from {existing_annotation.name}: {query_annotation.name}')
 
-        return func_or_method
+        for query_annotation in query_annotations:
+            for existing_annotation in existing_annotations:
+                if existing_annotation.name == query_annotation.name:
+                    existing_annotation.explode = query_annotation.explode
+                    break
+            else:
+                annotate_ = annotate(query_annotation, unique=True)
+                method = annotate_(method)
+
+        return method
 
     return wrapper
 
@@ -79,12 +93,9 @@ def get_url_path(method: ComponentMethod) -> str:
 
 def get_query_param_annotations(url_path: str) -> List[QueryParameterAnnotation]:
     query_param_annotations = []
-    uri_template_variables = URITemplate(url_path).variables
-    for variable in uri_template_variables:
-        if variable.operator == '?':
-            for variable_name, variable_params in variable.variables:
-                query_param_annotations.extend([
-                    QueryParameterAnnotation(name=variable_name, explode=variable_params['explode']),
-                    MapQueryParameterAnnotation(name=variable_name, map_to=variable_name),
-                ])
+    query_variables = (variable for variable in URITemplate(url_path).variables if variable.operator == '?')
+    for variable in query_variables:
+        for variable_name, variable_params in variable.variables:
+            annotation = QueryParameterAnnotation(name=variable_name, explode=variable_params['explode'])
+            query_param_annotations.append(annotation)
     return query_param_annotations

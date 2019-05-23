@@ -1,6 +1,5 @@
 import typing
 from typing import Optional
-from typing import Tuple
 
 import dataclasses
 import pydantic
@@ -16,34 +15,45 @@ from .core import ComponentMethodArgument
 from .core.annotation_decorator import annotate_method
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass
 class QueryParameterAnnotation:
     name: str
+    map_to: str = None
     explode: bool = False
 
+    def __post_init__(self):
+        if self.map_to is None:
+            self.map_to = self.name
 
-@dataclasses.dataclass(frozen=True)
-class MapQueryParameterAnnotation:
-    name: str
-    map_to: str
+    def __eq__(self, other):
+        return isinstance(other, QueryParameterAnnotation) and (self.name == other.name or self.map_to == other.map_to)
 
 
 def map_query_parameter(name: str, *, to: str):
-    annotation = MapQueryParameterAnnotation(name, to)
-    return annotate_method(annotation)
+    annotation = QueryParameterAnnotation(name, to)
+
+    def wrapper(func_or_method):
+        if not isinstance(func_or_method, ComponentMethod):
+            return annotate_method(annotation)(func_or_method)
+        annotations = func_or_method.annotations.get(QueryParameterAnnotation)
+        for existing_annotation in annotations:
+            if existing_annotation.map_to == to:
+                raise ValueError()
+
+        for existing_annotation in annotations:
+            if existing_annotation.name == annotation.name:
+                existing_annotation.map_to = to
+                return func_or_method
+        return annotate_method(annotation)(func_or_method)
+
+    return wrapper
 
 
-def get_query_param(method: ComponentMethod, mapped_to: str) -> Tuple[Optional[str], Optional[bool]]:
-    map_query_param_annotations = method.annotations.get(MapQueryParameterAnnotation)
-    for map_query_param_annotation in map_query_param_annotations:
-        if map_query_param_annotation.map_to == mapped_to:
-            name = map_query_param_annotation.name
-            query_param_annotations = method.annotations.get(QueryParameterAnnotation)
-            for query_param_annotation in query_param_annotations:
-                if query_param_annotation.name == name:
-                    return name, query_param_annotation.explode
-            raise ValueError(f'Query parameter is mapped but not registered: {name}')
-    return None, None
+def get_query_param_annotation(method: ComponentMethod, mapped_to: str) -> Optional[QueryParameterAnnotation]:
+    for query_param_annotation in method.annotations.get(QueryParameterAnnotation):
+        if query_param_annotation.map_to == mapped_to:
+            return query_param_annotation
+    return None
 
 
 class QueryParameterArgumentResolver(ArgumentResolver):
@@ -82,10 +92,12 @@ class QueryParameterArgumentResolver(ArgumentResolver):
         if argument in self._cache:
             return self._cache[argument]
 
-        parameter_name, explode = get_query_param(argument.method, argument.name)
-        if parameter_name is None:
+        query_param_annotation = get_query_param_annotation(argument.method, argument.name)
+        if query_param_annotation is None:
             self._cache[argument] = None
             return None
+
+        parameter_name, explode = query_param_annotation.name, query_param_annotation.explode
 
         pydantic_data_class = self._create_pydantic_class(argument.type_)
         is_iterable = type_utils.is_iterable(argument.type_)
