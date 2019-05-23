@@ -42,7 +42,4 @@ class PathParametersArgumentResolver(ArgumentResolver):
         path_variables = list(itertools.chain.from_iterable(
             variable.variable_names for variable in uri_template.variables if variable.operator != '?'
         ))
-        print(url_path)
-        print(uri_template.variables)
-        print(path_variables)
         return path_variables
