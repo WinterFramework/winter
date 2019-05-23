@@ -1,10 +1,15 @@
+from typing import List
 from typing import Optional
 from typing import Tuple
+
+from uritemplate import URITemplate
 
 from .route_annotation import RouteAnnotation
 from ..core import ComponentMethod
 from ..core import annotate
 from ..http import MediaType
+from ..query_parameters import MapQueryParameterAnnotation
+from ..query_parameters import QueryParameterAnnotation
 from ..routing.route import Route
 
 
@@ -14,8 +19,9 @@ def route(
         produces: Optional[Tuple[MediaType]] = None,
         consumes: Optional[Tuple[MediaType]] = None,
 ):
-    annotation = RouteAnnotation(url_path, http_method, produces, consumes)
-    return annotate(annotation)
+    route_annotation = RouteAnnotation(url_path, http_method, produces, consumes)
+    query_annotations = get_query_param_annotations(url_path)
+    return annotate(route_annotation, *query_annotations)
 
 
 def route_get(url_path='', produces: Optional[Tuple[MediaType]] = None, consumes: Optional[Tuple[MediaType]] = None):
@@ -58,3 +64,16 @@ def get_url_path(method: ComponentMethod) -> str:
     route_annotation = method.annotations.get_one(RouteAnnotation)
     url_path = component_url + route_annotation.url_path
     return url_path
+
+
+def get_query_param_annotations(url_path: str) -> List[QueryParameterAnnotation]:
+    query_param_annotations = []
+    uri_template_variables = URITemplate(url_path).variables
+    for variable in uri_template_variables:
+        if variable.operator == '?':
+            for variable_name, variable_params in variable.variables:
+                query_param_annotations.extend([
+                    QueryParameterAnnotation(name=variable_name, explode=variable_params['explode']),
+                    MapQueryParameterAnnotation(name=variable_name, map_to=variable_name),
+                ])
+    return query_param_annotations

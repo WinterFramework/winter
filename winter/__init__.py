@@ -17,7 +17,7 @@ from .exceptions.throws import throws
 from .output_processor import register_output_processor_resolver
 from .pagination import PagePositionArgumentResolver
 from .pagination.page import PageOutputProcessorResolver
-from .query_parameter import query_parameter
+from .query_parameters import map_query_parameter
 from .response_entity import ResponseEntity
 from .response_status import response_status
 from .routing import route
@@ -29,8 +29,8 @@ from .routing import route_put
 
 
 def _default_configuration():
-    from .path_parameters_argument_resolver import PathParametersArgumentResolver
-    from .query_parameter import QueryParameterResolver
+    from .path_parameters import PathParametersArgumentResolver
+    from .query_parameters import QueryParameterArgumentResolver
     from .drf import DRFBodyArgumentResolver
     from .drf import HttpRequestArgumentResolver
     from .schema import PathParametersInspector
@@ -40,7 +40,7 @@ def _default_configuration():
     from . import pagination
 
     arguments_resolver.add_argument_resolver(DRFBodyArgumentResolver())
-    arguments_resolver.add_argument_resolver(QueryParameterResolver())
+    arguments_resolver.add_argument_resolver(QueryParameterArgumentResolver())
     arguments_resolver.add_argument_resolver(PathParametersArgumentResolver())
     arguments_resolver.add_argument_resolver(PagePositionArgumentResolver())
     arguments_resolver.add_argument_resolver(HttpRequestArgumentResolver())

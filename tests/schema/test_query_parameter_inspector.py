@@ -7,9 +7,8 @@ from winter.schema import QueryParametersInspector
 
 class ControllerForQueryParameter:
 
-    @winter.route_get()
-    @winter.query_parameter('valid_query_param')
-    @winter.query_parameter('mapped_query_param', map_to='invalid_query_param')
+    @winter.route_get('{?valid_query_param,mapped_query_param}')
+    @winter.map_query_parameter('mapped_query_param', to='invalid_query_param')
     def simple_method(
             self,
             valid_query_param: int,

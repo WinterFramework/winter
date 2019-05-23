@@ -1,5 +1,6 @@
 import enum
 import inspect
+import re
 import types
 import typing
 import uuid
@@ -34,6 +35,7 @@ def rewrite_uritemplate_with_regexps(url_path: str, methods: typing.Iterable[Com
             )
         regexp = get_regexp(*argument_types)
         url_path = url_path.replace(f'{{{variable_name}}}', f'(?P<{variable_name}>{regexp})')
+    url_path = _remove_query_params_regexp.sub('', url_path)
     return url_path
 
 
@@ -67,3 +69,6 @@ def uuid_regexp(cls: uuid.UUID):
 def enum_regexp(cls: enum.Enum):
     values = (f'({e.value})' for e in cls)
     return '(' + '|'.join(values) + ')'
+
+
+_remove_query_params_regexp = re.compile(r'{\?[^}]*}')

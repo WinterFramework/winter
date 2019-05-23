@@ -19,8 +19,7 @@ class Dataclass:
 @winter.route('winter-simple/')
 class SimpleController:
 
-    @winter.query_parameter('name')
-    @winter.route_get()
+    @winter.route_get('{?name}')
     def hello(self, name: str = 'stranger') -> str:
         return f'Hello, {name}!'
 

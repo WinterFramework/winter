@@ -10,7 +10,7 @@ import winter
 from tests.entities import AuthorizedUser
 from winter.argument_resolver import ArgumentNotSupported
 from winter.core import ComponentMethod
-from winter.query_parameter import QueryParameterResolver
+from winter.query_parameters import QueryParameterArgumentResolver
 from .utils import get_request
 
 
@@ -23,10 +23,7 @@ from .utils import get_request
     ('array', 'array=1&array=2', [1, 2]),
 ))
 def test_query_parameter_resolver(argument_name, query_string, expected_value):
-    @winter.query_parameter('without_default')
-    @winter.query_parameter('optional')
-    @winter.query_parameter('with_default')
-    @winter.query_parameter('array')
+    @winter.route_get('{?without_default,optional,with_default,array*}')
     def method(
             without_default: int,
             optional: typing.Optional[str],
@@ -35,7 +32,7 @@ def test_query_parameter_resolver(argument_name, query_string, expected_value):
     ):
         return without_default, optional, array, with_default
 
-    resolver = QueryParameterResolver()
+    resolver = QueryParameterArgumentResolver()
 
     argument = method.get_argument(argument_name)
     request = get_request(query_string)
@@ -47,11 +44,11 @@ def test_query_parameter_resolver(argument_name, query_string, expected_value):
     ('', 'Missing required query parameter "query_param"'),
 ))
 def test_query_parameter_resolver_with_raises_parse_error(query_string, expected_exception_message):
-    @winter.query_parameter('query_param')
+    @winter.route_get('{?query_param}')
     def method(query_param: int):
         return query_param
 
-    resolver = QueryParameterResolver()
+    resolver = QueryParameterArgumentResolver()
 
     argument = method.get_argument('query_param')
     request = get_request(query_string)
@@ -67,11 +64,11 @@ def test_query_parameter_resolver_with_raises_parse_error(query_string, expected
     ('invalid_query_param', False),
 ))
 def test_is_supported(argument_name, expected_is_supported):
-    @winter.query_parameter(argument_name)
+    @winter.route_get('{?' + argument_name + '}')
     def method(query_param: int):
         return query_param
 
-    resolver = QueryParameterResolver()
+    resolver = QueryParameterArgumentResolver()
 
     argument = method.get_argument('query_param')
     is_supported = resolver.is_supported(argument)
@@ -86,7 +83,7 @@ def test_query_parameter_resolver_with_raises_argument_not_supported():
 
     method = ComponentMethod(method)
 
-    resolver = QueryParameterResolver()
+    resolver = QueryParameterArgumentResolver()
     request = get_request('invalid_query_param=1')
 
     argument = method.get_argument('invalid_query_param')
@@ -97,27 +94,36 @@ def test_query_parameter_resolver_with_raises_argument_not_supported():
     assert str(exception.value) == 'Unable to resolve argument invalid_query_param: int'
 
 
-@pytest.mark.parametrize(('date', 'date_time', 'boolean', 'optional_boolean'), (
-    ('2019-05-02', '2019-05-02 22:28:31', 'false', None),
-    ('2019-05-02', '2019-05-02 22:28:31', 'false', ''),
-    ('2019-05-01', '2019-05-01 22:28:31', 'true', 'true'),
-    ('2019-05-01', '2019-05-01 22:28:31', 'true', 'false'),
+@pytest.mark.parametrize(('date', 'date_time', 'boolean', 'optional_boolean', 'array', 'string'), (
+    ('2019-05-02', '2019-05-02 22:28:31', 'false', None, [10, 20], 'xyz'),
+    ('2019-05-02', '2019-05-02 22:28:31', 'false', '', [10, 20], 'xyz'),
+    ('2019-05-01', '2019-05-01 22:28:31', 'true', 'true', [10, 20], 'xyz'),
+    ('2019-05-01', '2019-05-01 22:28:31', 'true', 'false', [10, 20], 'xyz'),
 ))
-def test_query_parameter(date, date_time, boolean, optional_boolean):
+def test_query_parameter(date, date_time, boolean, optional_boolean, array, string):
     client = APIClient()
     user = AuthorizedUser()
     client.force_authenticate(user)
-    expected_date = {
+    expected_data = {
         'date': parser.parse(date).date(),
         'date_time': parser.parse(date_time),
         'boolean': boolean == 'true',
         'optional_boolean': optional_boolean == 'true' if optional_boolean is not None else None,
+        'array': array,
+        'expanded_array': list(map(str, array)),
+        'string': string,
     }
-    base_uri = URITemplate('/with-query-parameter/{?date,date_time,boolean,optional_boolean}')
+    base_uri = URITemplate(
+        '/with-query-parameter/'
+        '{?date,date_time,boolean,optional_boolean,array,expanded_array*,string}'
+    )
     query_params = {
         'date': date,
         'date_time': date_time,
         'boolean': boolean,
+        'array': ','.join(map(str, array)),
+        'expanded_array': array,
+        'string': string,
     }
 
     if optional_boolean is not None:
@@ -127,4 +133,4 @@ def test_query_parameter(date, date_time, boolean, optional_boolean):
 
     # Act
     http_response = client.get(base_uri)
-    assert http_response.data == expected_date
+    assert http_response.data == expected_data

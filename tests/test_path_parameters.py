@@ -10,7 +10,7 @@ from tests.controllers.controller_with_path_parameters import OneTwoEnumWithInt
 from winter.argument_resolver import ArgumentNotSupported
 from winter.controller import get_component
 from winter.core import Component
-from winter.path_parameters_argument_resolver import PathParametersArgumentResolver
+from winter.path_parameters import PathParametersArgumentResolver
 
 uuid_ = uuid.uuid4()
 
@@ -51,7 +51,8 @@ def test_is_supported_path_parameter(controller_class, method_name, arg_name, ex
     second_is_supported = resolver.is_supported(argument)
 
     # Assert
-    assert is_supported == second_is_supported == expected_value
+    assert is_supported == expected_value
+    assert second_is_supported == expected_value
 
 
 def test_with_raises_argument_not_supported():
