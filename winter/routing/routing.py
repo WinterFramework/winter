@@ -21,7 +21,18 @@ def route(
 ):
     route_annotation = RouteAnnotation(url_path, http_method, produces, consumes)
     query_annotations = get_query_param_annotations(url_path)
-    return annotate(route_annotation, *query_annotations)
+
+    def wrapper(func_or_method):
+        annotate_ = annotate(route_annotation, single=True)
+        func_or_method = annotate_(func_or_method)
+
+        for query_annotation in query_annotations:
+            annotate_ = annotate(query_annotation, unique=True)
+            func_or_method = annotate_(func_or_method)
+
+        return func_or_method
+
+    return wrapper
 
 
 def route_get(url_path='', produces: Optional[Tuple[MediaType]] = None, consumes: Optional[Tuple[MediaType]] = None):
