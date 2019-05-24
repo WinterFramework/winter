@@ -33,7 +33,7 @@ def route(
             for existing_annotation in existing_annotations:
                 if existing_annotation.map_to == query_annotation.map_to:
                     raise ValueError(f'The argument is already mapped '
-                                     f'from {existing_annotation.name}: {query_annotation.name}')
+                                     f'from {existing_annotation.name}: {query_annotation.map_to}')
 
         for query_annotation in query_annotations:
             for existing_annotation in existing_annotations:

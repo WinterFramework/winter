@@ -8,7 +8,6 @@ from uritemplate import URITemplate
 
 import winter
 from tests.entities import AuthorizedUser
-from winter import map_query_parameter
 from winter.argument_resolver import ArgumentNotSupported
 from winter.core import ComponentMethod
 from winter.query_parameters import QueryParameterArgumentResolver
@@ -113,6 +112,43 @@ def test_query_parameter_resolver_with_raises_parse_error(query_string, expected
         resolver.resolve_argument(argument, request)
 
     assert str(exception.value) == expected_exception_message
+
+
+def test_duplicate_routing_map_to():
+    with pytest.raises(ValueError) as exception:
+        @winter.route_get('{?query_param}')
+        @winter.map_query_parameter('x', to='query_param')
+        def method(query_param: int):
+            return query_param
+
+    assert str(exception.value) == 'The argument is already mapped from x: query_param'
+
+
+def test_duplicate_map_query_parameter_map_to():
+    with pytest.raises(ValueError) as exception:
+        @winter.map_query_parameter('x', to='query_param')
+        @winter.route_get('{?query_param}')
+        def method(query_param: int):
+            return query_param
+
+    assert str(exception.value) == 'The argument is already mapped from query_param: query_param'
+
+
+def test_orphan_map_query_parameter_fails():
+    @winter.map_query_parameter('x', to='x_param')
+    @winter.map_query_parameter('y', to='y_param')
+    def method(x_param: int, y_param: int = 1):
+        return 0
+
+    resolver = QueryParameterArgumentResolver()
+
+    argument = method.get_argument('x_param')
+    request = get_request('?x=1')
+
+    with pytest.raises(ParseError) as exception:
+        resolver.resolve_argument(argument, request)
+
+    assert str(exception.value) == 'Missing required query parameter "x"'
 
 
 @pytest.mark.parametrize(('date', 'date_time', 'boolean', 'optional_boolean', 'array', 'string'), (

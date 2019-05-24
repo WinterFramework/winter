@@ -38,7 +38,7 @@ def map_query_parameter(name: str, *, to: str):
         annotations = func_or_method.annotations.get(QueryParameterAnnotation)
         for existing_annotation in annotations:
             if existing_annotation.map_to == to:
-                raise ValueError()
+                raise ValueError(f'The argument is already mapped from {existing_annotation.name}: {annotation.map_to}')
 
         for existing_annotation in annotations:
             if existing_annotation.name == annotation.name:

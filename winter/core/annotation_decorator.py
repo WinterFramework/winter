@@ -9,7 +9,7 @@ from .component_method import ComponentMethod
 class annotate_base(abc.ABC):
     _supported_classes = ()
 
-    def __init__(self, annotation: typing.Any, unique=False, single=False):
+    def __init__(self, annotation: typing.Any, *, unique=False, single=False):
         self.annotation = annotation
         self.unique = unique
         self.single = single
