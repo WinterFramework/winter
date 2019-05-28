@@ -1,10 +1,10 @@
 import typing
-from typing import Optional
 
 import dataclasses
 import pydantic
 import rest_framework.request
 from rest_framework.exceptions import ParseError
+from uritemplate import URITemplate
 
 from . import type_utils
 from .argument_resolver import ArgumentNotSupported
@@ -13,47 +13,51 @@ from .core import ArgumentDoesNotHaveDefault
 from .core import ComponentMethod
 from .core import ComponentMethodArgument
 from .core.annotation_decorator import annotate_method
+from .routing.routing import get_url_path
 
 
 @dataclasses.dataclass
-class QueryParameterAnnotation:
+class MapQueryParameterAnnotation:
     name: str
     map_to: str = None
-    explode: bool = False
-
-    def __post_init__(self):
-        if self.map_to is None:
-            self.map_to = self.name
 
     def __eq__(self, other):
-        return isinstance(other, QueryParameterAnnotation) and (self.name == other.name or self.map_to == other.map_to)
+        return isinstance(other, MapQueryParameterAnnotation) and (
+                self.name == other.name or self.map_to == other.map_to)
+
+
+@dataclasses.dataclass
+class QueryParameter:
+    name: str
+    map_to: str
+    explode: bool
 
 
 def map_query_parameter(name: str, *, to: str):
-    annotation = QueryParameterAnnotation(name, to)
-
-    def wrapper(func_or_method):
-        if not isinstance(func_or_method, ComponentMethod):
-            return annotate_method(annotation)(func_or_method)
-        annotations = func_or_method.annotations.get(QueryParameterAnnotation)
-        for existing_annotation in annotations:
-            if existing_annotation.map_to == to:
-                raise ValueError(f'The argument is already mapped from {existing_annotation.name}: {annotation.map_to}')
-
-        for existing_annotation in annotations:
-            if existing_annotation.name == annotation.name:
-                existing_annotation.map_to = to
-                return func_or_method
-        return annotate_method(annotation)(func_or_method)
-
-    return wrapper
+    annotation = MapQueryParameterAnnotation(name, to)
+    return annotate_method(annotation, unique=True)
 
 
-def get_query_param_annotation(method: ComponentMethod, mapped_to: str) -> Optional[QueryParameterAnnotation]:
-    for query_param_annotation in method.annotations.get(QueryParameterAnnotation):
-        if query_param_annotation.map_to == mapped_to:
-            return query_param_annotation
-    return None
+def get_query_parameters(method: ComponentMethod) -> typing.List[QueryParameter]:
+    url_path = get_url_path(method)
+    query_parameters = []
+    map_query_parameters_annotations = method.annotations.get(MapQueryParameterAnnotation)
+    map_to_by_names = {
+        map_query_parameter.name: map_query_parameter.map_to
+        for map_query_parameter in map_query_parameters_annotations
+    }
+
+    query_variables = (variable for variable in URITemplate(url_path).variables if variable.operator == '?')
+    for variable in query_variables:
+        for variable_name, variable_params in variable.variables:
+            map_to = map_to_by_names.get(variable_name, variable_name)
+            query_parameter = QueryParameter(
+                name=variable_name,
+                map_to=map_to,
+                explode=variable_params['explode'],
+            )
+            query_parameters.append(query_parameter)
+    return query_parameters
 
 
 class QueryParameterArgumentResolver(ArgumentResolver):
@@ -92,12 +96,18 @@ class QueryParameterArgumentResolver(ArgumentResolver):
         if argument in self._cache:
             return self._cache[argument]
 
-        query_param_annotation = get_query_param_annotation(argument.method, argument.name)
-        if query_param_annotation is None:
+        query_parameters = get_query_parameters(argument.method)
+        query_parameter = next((
+            query_parameter
+            for query_parameter in query_parameters
+            if query_parameter.map_to == argument.name),
+            None,
+        )
+        if query_parameter is None:
             self._cache[argument] = None
             return None
 
-        parameter_name, explode = query_param_annotation.name, query_param_annotation.explode
+        parameter_name, explode = query_parameter.name, query_parameter.explode
 
         pydantic_data_class = self._create_pydantic_class(argument.type_)
         is_iterable = type_utils.is_iterable(argument.type_)

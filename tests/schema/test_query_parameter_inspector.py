@@ -24,7 +24,7 @@ def test_query_parameter_inspector():
     parameters = inspector.inspect_parameters(route)
 
     # Assert
-    assert len(parameters) == 2
+    assert len(parameters) == 2, parameters
     parameter_by_name = {parameter.name: parameter for parameter in parameters}
     valid_parameter = parameter_by_name['valid_query_param']
     assert valid_parameter.type == openapi.TYPE_INTEGER

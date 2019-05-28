@@ -10,6 +10,7 @@ import winter
 from tests.entities import AuthorizedUser
 from winter.argument_resolver import ArgumentNotSupported
 from winter.core import ComponentMethod
+from winter.core.annotations import AlreadyAnnotated
 from winter.query_parameters import QueryParameterArgumentResolver
 from .utils import get_request
 
@@ -78,10 +79,10 @@ def test_is_supported(argument_name, expected_is_supported):
 
 
 def test_query_parameter_resolver_with_raises_argument_not_supported():
+
+    @winter.core.ComponentMethod
     def method(invalid_query_param: int):
         return invalid_query_param
-
-    method = ComponentMethod(method)
 
     resolver = QueryParameterArgumentResolver()
     request = get_request('invalid_query_param=1')
@@ -115,26 +116,29 @@ def test_query_parameter_resolver_with_raises_parse_error(query_string, expected
 
 
 def test_duplicate_routing_map_to():
-    with pytest.raises(ValueError) as exception:
-        @winter.route_get('{?query_param}')
+    with pytest.raises(AlreadyAnnotated) as exception:
+        @winter.map_query_parameter('y', to='query_param')
         @winter.map_query_parameter('x', to='query_param')
         def method(query_param: int):
             return query_param
-
-    assert str(exception.value) == 'The argument is already mapped from x: query_param'
+    message = "Cannot annotate twice: <class 'winter.query_parameters.MapQueryParameterAnnotation'>"
+    assert str(exception.value) == message
 
 
 def test_duplicate_map_query_parameter_map_to():
-    with pytest.raises(ValueError) as exception:
-        @winter.map_query_parameter('x', to='query_param')
+    with pytest.raises(AlreadyAnnotated) as exception:
+        @winter.map_query_parameter('x', to='query_param1')
+        @winter.map_query_parameter('x', to='query_param2')
         @winter.route_get('{?query_param}')
         def method(query_param: int):
             return query_param
 
-    assert str(exception.value) == 'The argument is already mapped from query_param: query_param'
+    message = "Cannot annotate twice: <class 'winter.query_parameters.MapQueryParameterAnnotation'>"
+    assert str(exception.value) == message
 
 
 def test_orphan_map_query_parameter_fails():
+    @winter.route_get('{?x,y}')
     @winter.map_query_parameter('x', to='x_param')
     @winter.map_query_parameter('y', to='y_param')
     def method(x_param: int, y_param: int = 1):
