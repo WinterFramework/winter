@@ -20,6 +20,7 @@ from .exceptions.handlers import MethodExceptionsHandler
 from .exceptions.handlers import NotHandled
 from .exceptions.handlers import exceptions_handler
 from .http.throttling import create_throttle_classes
+from .http.urls import remove_query_params
 from .http.urls import rewrite_uritemplate_with_regexps
 from .output_processor import get_output_processor
 from .response_entity import ResponseEntity
@@ -115,5 +116,6 @@ def _group_routes_by_url_path(methods: List[ComponentMethod]):
     result = defaultdict(list)
     for method in methods:
         route = get_route(method)
-        result[route.url_path].append(route)
+        url_path = remove_query_params(route.url_path)
+        result[url_path].append(route)
     return result.items()
