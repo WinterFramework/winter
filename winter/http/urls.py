@@ -39,6 +39,10 @@ def rewrite_uritemplate_with_regexps(url_path: str, methods: typing.Iterable[Com
     return url_path
 
 
+def remove_query_params(url_path: str) -> str:
+    return _remove_query_params_regexp.sub('', url_path)
+
+
 def get_regexp(type_=None) -> str:
     origin_type = get_origin_type(type_)
 
