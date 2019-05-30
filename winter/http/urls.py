@@ -35,7 +35,6 @@ def rewrite_uritemplate_with_regexps(url_path: str, methods: typing.Iterable[Com
             )
         regexp = get_regexp(*argument_types)
         url_path = url_path.replace(f'{{{variable_name}}}', f'(?P<{variable_name}>{regexp})')
-    url_path = _remove_query_params_regexp.sub('', url_path)
     return url_path
 
 
