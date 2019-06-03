@@ -134,10 +134,10 @@ class TodoController:
         self._check_index(todo_index)
         del todo_list[todo_index]
 
-    def _check_index(self, todo_index):
+    def _check_index(self, todo_index: int):
         if todo_index < 0 or todo_index >= len(todo_list):
             raise NotFoundException(todo_index=todo_index)
 
-    def _build_todo_dto(self, todo_index):
+    def _build_todo_dto(self, todo_index: int):
         return TodoDTO(todo_index=todo_index, todo=todo_list[todo_index])
 ```
