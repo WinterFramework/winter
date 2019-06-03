@@ -44,6 +44,7 @@ To implement CRUD:
 ```python
 from http import HTTPStatus
 from typing import List
+from typing import Optional
 
 import winter
 from dataclasses import dataclass
@@ -62,13 +63,13 @@ class NewTodoDTO:
     todo: str
 
 
-class UpdateTodoDTOSerializer(serializers.Serializer):
+class TodoUpdateDTOSerializer(serializers.Serializer):
     todo_index = serializers.IntegerField()
     todo = serializers.CharField()
 
 
 @dataclass
-class UpdateTodoDTO:
+class TodoUpdateDTO:
     todo: str
 
 
@@ -97,7 +98,6 @@ todo_list: List[str] = []
 class TodoController:
     @winter.route_post('')
     @winter.input_serializer(NewTodoDTOSerializer, 'new_todo_dto')
-    @winter.exceptions_handler()
     def create_todo(self, new_todo_dto: NewTodoDTO) -> TodoDTO:
         todo_list.append(new_todo_dto.todo)
         return self._build_todo_dto(len(todo_list) - 1)
@@ -108,29 +108,36 @@ class TodoController:
         self._check_index(todo_index)
         return self._build_todo_dto(todo_index)
 
-    @winter.route_get()
-    def get_todo_list(self, page_position: PagePosition) -> Page[TodoDTO]:
-        dto_list = [self._build_todo_dto(todo_index) for todo_index in range(len(todo_list))]
+    @winter.route_get('{?q}')
+    def get_todo_list(self, page_position: PagePosition, q: Optional[str] = None) -> Page[TodoDTO]:
+        q = q if q is None else q.lower()
+        dto_list = [
+            TodoDTO(todo_index=todo_index, todo=todo)
+            for todo_index, todo in enumerate(todo_list)
+            if q is None or q in todo.lower()
+        ]
         limit = page_position.limit
         offset = page_position.offset
         paginated_dto_list = dto_list[offset: offset + limit]
         return Page(total_count=len(dto_list), items=paginated_dto_list, position=page_position)
 
     @winter.route_get('{todo_index}/')
-    @winter.input_serializer(UpdateTodoDTOSerializer, 'updated_todo_dto')
-    def update_todo(self, todo_index: int, updated_todo_dto: UpdateTodoDTO):
+    @winter.input_serializer(TodoUpdateDTOSerializer, 'todo_update_dto')
+    @winter.throws(NotFoundException, handler_cls=NotFoundExceptionHandler)
+    def update_todo(self, todo_index: int, todo_update_dto: TodoUpdateDTO):
         self._check_index(todo_index)
-        todo_list[todo_index] = updated_todo_dto.todo
+        todo_list[todo_index] = todo_update_dto.todo
 
     @winter.route_get('{todo_index}/')
+    @winter.throws(NotFoundException, handler_cls=NotFoundExceptionHandler)
     def delete_todo(self, todo_index: int):
         self._check_index(todo_index)
         del todo_list[todo_index]
 
-    def _check_index(self, todo_index):
+    def _check_index(self, todo_index: int):
         if todo_index < 0 or todo_index >= len(todo_list):
             raise NotFoundException(todo_index=todo_index)
 
-    def _build_todo_dto(self, todo_index):
+    def _build_todo_dto(self, todo_index: int):
         return TodoDTO(todo_index=todo_index, todo=todo_list[todo_index])
 ```
