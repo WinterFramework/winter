@@ -54,12 +54,21 @@ from winter.pagination import Page
 from winter.pagination import PagePosition
 
 
+@dataclass
+class NewTodoDTO:
+    todo: str
+
+
 class NewTodoDTOSerializer(serializers.Serializer):
     todo = serializers.CharField()
 
+    def to_internal_value(self, data) -> NewTodoDTO:
+        data = super().to_internal_value(data)
+        return NewTodoDTO(**data)
+
 
 @dataclass
-class NewTodoDTO:
+class TodoUpdateDTO:
     todo: str
 
 
@@ -67,10 +76,9 @@ class TodoUpdateDTOSerializer(serializers.Serializer):
     todo_index = serializers.IntegerField()
     todo = serializers.CharField()
 
-
-@dataclass
-class TodoUpdateDTO:
-    todo: str
+    def to_internal_value(self, data) -> TodoUpdateDTO:
+        data = super().to_internal_value(data)
+        return TodoUpdateDTO(**data)
 
 
 @dataclass
