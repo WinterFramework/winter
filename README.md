@@ -89,13 +89,13 @@ class TodoDTO:
 
 class NotFoundException(Exception):
     def __init__(self, todo_index: int):
-        self.todo_index = todo_index
+        self.index = todo_index
 
 
 class NotFoundExceptionHandler(winter.ExceptionHandler):
     @winter.response_status(HTTPStatus.NOT_FOUND)
     def handle(self, request: Request, exception: NotFoundException) -> str:
-        return f'Index {exception.todo_index} out of bounds'
+        return f'Index {exception.index} out of bounds'
 
 
 todo_list: List[str] = []
