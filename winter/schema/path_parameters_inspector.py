@@ -30,7 +30,7 @@ class PathParametersInspector(MethodArgumentsInspector):
 
     def _path_arguments(self, route: 'Route') -> typing.List[ComponentMethodArgument]:
         path_arguments = []
-        for path_variable in route.path_variables:
+        for path_variable in route.get_path_variables():
             argument = route.method.get_argument(path_variable)
             if argument is not None:
                 path_arguments.append(argument)
