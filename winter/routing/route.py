@@ -5,7 +5,6 @@ import uritemplate
 from uritemplate import URITemplate
 
 from ..core import ComponentMethod
-from ..http import MediaType
 from .query_parameters.map_query_parameter_annotation import MapQueryParameterAnnotation
 from .query_parameters.query_parameter import QueryParameter
 
@@ -19,13 +18,9 @@ class Route:
         http_method: str,
         url_path_with_query_parameters: str,
         method: ComponentMethod,
-        produces: typing.Tuple[MediaType] = None,
-        consumes: typing.Tuple[MediaType] = None,
     ):
         self._url_path_with_query_parameters = url_path_with_query_parameters
         self.method = method
-        self.produces = produces
-        self.consumes = consumes
         self.http_method = http_method
 
     @property
