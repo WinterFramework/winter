@@ -10,8 +10,8 @@ import winter
 from tests.entities import AuthorizedUser
 from winter.argument_resolver import ArgumentNotSupported
 from winter.core.annotations import AlreadyAnnotated
-from winter.routing.query_parameters.query_parameter_argument_resolver import QueryParameterArgumentResolver
-from .utils import get_request
+from winter.routing import QueryParameterArgumentResolver
+from tests.utils import get_request
 
 
 @pytest.mark.parametrize(('argument_name', 'query_string', 'expected_value'), (

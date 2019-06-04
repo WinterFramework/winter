@@ -29,8 +29,8 @@ from .routing import route_put
 
 
 def _default_configuration():
-    from .path_parameters import PathParametersArgumentResolver
-    from .routing.query_parameters import QueryParameterArgumentResolver
+    from .routing import PathParametersArgumentResolver
+    from .routing import QueryParameterArgumentResolver
     from .drf import DRFBodyArgumentResolver
     from .drf import HttpRequestArgumentResolver
     from .schema import PathParametersInspector

@@ -1,13 +1,14 @@
 import typing
 
 import pydantic
-import rest_framework.request
 from rest_framework.exceptions import ParseError
+from rest_framework.request import Request
 
-from ... import type_utils
+from winter import type_utils
+from winter.core import ArgumentDoesNotHaveDefault
+from ..routing import get_route
 from ...argument_resolver import ArgumentNotSupported
 from ...argument_resolver import ArgumentResolver
-from ...core import ArgumentDoesNotHaveDefault
 from ...core import ComponentMethodArgument
 
 
@@ -20,7 +21,7 @@ class QueryParameterArgumentResolver(ArgumentResolver):
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
         return self._get_cached_data(argument) is not None
 
-    def resolve_argument(self, argument: ComponentMethodArgument, http_request: rest_framework.request.Request):
+    def resolve_argument(self, argument: ComponentMethodArgument, http_request: Request):
         query_parameters = http_request.query_params
 
         cached_data = self._get_cached_data(argument)
@@ -44,7 +45,6 @@ class QueryParameterArgumentResolver(ArgumentResolver):
             raise ParseError(f'Invalid query parameter "{parameter_name}" value "{value}"')
 
     def _get_cached_data(self, argument: ComponentMethodArgument):
-        from .. import get_route
 
         if argument in self._cache:
             return self._cache[argument]
