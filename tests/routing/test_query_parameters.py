@@ -9,10 +9,9 @@ from uritemplate import URITemplate
 import winter
 from tests.entities import AuthorizedUser
 from winter.argument_resolver import ArgumentNotSupported
-from winter.core import ComponentMethod
 from winter.core.annotations import AlreadyAnnotated
-from winter.query_parameters import QueryParameterArgumentResolver
-from .utils import get_request
+from winter.routing import QueryParameterArgumentResolver
+from tests.utils import get_request
 
 
 @pytest.mark.parametrize(('argument_name', 'query_string', 'expected_value'), (
@@ -80,7 +79,7 @@ def test_is_supported(argument_name, expected_is_supported):
 
 def test_query_parameter_resolver_with_raises_argument_not_supported():
 
-    @winter.core.ComponentMethod
+    @winter.route_get()
     def method(invalid_query_param: int):
         return invalid_query_param
 
@@ -121,7 +120,7 @@ def test_duplicate_routing_map_to():
         @winter.map_query_parameter('x', to='query_param')
         def method(query_param: int):
             return query_param
-    message = "Cannot annotate twice: <class 'winter.query_parameters.MapQueryParameterAnnotation'>"
+    message = "Cannot annotate twice: <class 'winter.routing.query_parameters.map_query_parameter_annotation.MapQueryParameterAnnotation'>"
     assert str(exception.value) == message
 
 
@@ -133,7 +132,7 @@ def test_duplicate_map_query_parameter_map_to():
         def method(query_param: int):
             return query_param
 
-    message = "Cannot annotate twice: <class 'winter.query_parameters.MapQueryParameterAnnotation'>"
+    message = "Cannot annotate twice: <class 'winter.routing.query_parameters.map_query_parameter_annotation.MapQueryParameterAnnotation'>"
     assert str(exception.value) == message
 
 

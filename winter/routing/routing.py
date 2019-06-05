@@ -45,8 +45,6 @@ def get_route(method: ComponentMethod) -> Route:
         route_annotation.http_method,
         url_path,
         method,
-        route_annotation.produces,
-        route_annotation.consumes,
     )
     return route
 

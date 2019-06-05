@@ -1,14 +1,10 @@
-import itertools
-from typing import List
-
-import uritemplate
 from django.urls import get_resolver
 from rest_framework.request import Request
 
-from .argument_resolver import ArgumentNotSupported
-from .argument_resolver import ArgumentResolver
-from .core import ComponentMethodArgument
-from .routing.routing import get_url_path
+from ..routing import get_route
+from ...argument_resolver import ArgumentNotSupported
+from ...argument_resolver import ArgumentResolver
+from ...core import ComponentMethodArgument
 
 
 class PathParametersArgumentResolver(ArgumentResolver):
@@ -22,8 +18,8 @@ class PathParametersArgumentResolver(ArgumentResolver):
         if argument in self._cache:
             return self._cache[argument]
 
-        url_path = get_url_path(argument.method)
-        path_variables = self.get_path_variable_names(url_path)
+        route = get_route(argument.method)
+        path_variables = route.get_path_variables()
         is_supported = self._cache[argument] = argument.name in path_variables
         return is_supported
 
@@ -35,11 +31,3 @@ class PathParametersArgumentResolver(ArgumentResolver):
             raise ArgumentNotSupported(argument)
 
         return argument.type_(callback_kwargs[argument.name])
-
-    @staticmethod
-    def get_path_variable_names(url_path: str) -> List[str]:
-        uri_template = uritemplate.URITemplate(url_path)
-        path_variables = list(itertools.chain.from_iterable(
-            variable.variable_names for variable in uri_template.variables if variable.operator != '?'
-        ))
-        return path_variables

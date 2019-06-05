@@ -6,7 +6,6 @@ from drf_yasg import openapi
 from .generation import get_argument_info
 from .method_arguments_inspector import MethodArgumentsInspector
 from ..core import ComponentMethodArgument
-from ..query_parameters import get_query_parameters
 
 if typing.TYPE_CHECKING:  # pragma: no cover
     from ..routing import Route
@@ -33,7 +32,7 @@ class QueryParametersInspector(MethodArgumentsInspector):
 
     def _query_arguments(self, route: 'Route') -> typing.List[typing.Tuple[ComponentMethodArgument, str]]:
         query_arguments = []
-        query_parameters = get_query_parameters(route.method)
+        query_parameters = route.get_query_parameters()
 
         for query_parameter in query_parameters:
             argument = route.method.get_argument(query_parameter.map_to)

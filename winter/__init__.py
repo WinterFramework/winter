@@ -17,7 +17,7 @@ from .exceptions.throws import throws
 from .output_processor import register_output_processor_resolver
 from .pagination import PagePositionArgumentResolver
 from .pagination.page import PageOutputProcessorResolver
-from .query_parameters import map_query_parameter
+from .routing.query_parameters import map_query_parameter
 from .response_entity import ResponseEntity
 from .response_status import response_status
 from .routing import route
@@ -29,8 +29,8 @@ from .routing import route_put
 
 
 def _default_configuration():
-    from .path_parameters import PathParametersArgumentResolver
-    from .query_parameters import QueryParameterArgumentResolver
+    from .routing import PathParametersArgumentResolver
+    from .routing import QueryParameterArgumentResolver
     from .drf import DRFBodyArgumentResolver
     from .drf import HttpRequestArgumentResolver
     from .schema import PathParametersInspector

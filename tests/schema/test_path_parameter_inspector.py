@@ -7,11 +7,12 @@ from winter.schema import PathParametersInspector
 
 class ControllerForTestingInspectors:
 
-    @winter.route_post('{valid_param}/{invalid_param}/{not_in_method}/')
+    @winter.route_post('{valid_param}/{invalid_param}/{not_in_method}/{?query_parameter}')
     def simple_method(
             self,
             valid_param: int,
             invalid_param: object,
+            query_parameter: int,
     ):
         """
         :param valid_param: Valid doc
