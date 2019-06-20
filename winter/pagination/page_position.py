@@ -2,6 +2,8 @@ import typing
 
 import dataclasses
 
+from .sort import Sort
+
 
 @dataclasses.dataclass(frozen=True)
 class PagePosition:
