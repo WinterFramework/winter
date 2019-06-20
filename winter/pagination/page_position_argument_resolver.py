@@ -89,11 +89,8 @@ class PagePositionArgumentResolver(ArgumentResolver):
 
     @staticmethod
     def _parse_order(field: str) -> Order:
-        if not field:
-            raise exceptions.ParseError('An empty sorting part found')
-
         is_desc = False
-        if field[0] == '-':
+        if field.startswith('-'):
             is_desc = True
             field = field[1:]
 
