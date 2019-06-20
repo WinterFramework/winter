@@ -8,7 +8,7 @@ from rest_framework.request import Request as DRFRequest
 from winter.core import ComponentMethod
 from winter.pagination import PagePosition
 from winter.pagination import PagePositionArgumentResolver
-from winter.pagination.sort import Sort
+from winter.pagination import Sort
 
 
 @pytest.mark.parametrize(('argument_type', 'expected_is_supported'), (

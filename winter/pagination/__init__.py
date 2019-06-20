@@ -6,6 +6,7 @@ from .page_position import PagePosition
 from .page_position_argument_inspector import PagePositionArgumentsInspector
 from .page_position_argument_resolver import PagePositionArgumentResolver
 from .serializer import PageSerializer
+from .sort import Sort
 from ..exceptions.handlers import BadRequestExceptionHandler
 from ..exceptions.handlers import exceptions_handler
 
