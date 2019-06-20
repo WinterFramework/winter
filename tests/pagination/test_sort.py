@@ -95,3 +95,8 @@ def test_sort_hash():
 def test_sort_by_fails_for_zero_fields():
     with pytest.raises(ValueError, match='Specify at least one field.'):
         Sort.by()
+
+
+def test_order_to_string():
+    assert str(Order('id', SortDirection.ASC)) == 'id'
+    assert str(Order('id', SortDirection.DESC)) == '-id'

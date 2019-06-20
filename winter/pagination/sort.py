@@ -14,6 +14,9 @@ class Order:
     field: str
     direction: SortDirection = SortDirection.ASC
 
+    def __str__(self):
+        return ('-' if self.direction == SortDirection.DESC else '') + self.field
+
 
 class Sort:
 
@@ -41,8 +44,7 @@ class Sort:
         return Sort(*orders)
 
     def __repr__(self):
-        sort_parts = (('-' if order.direction == SortDirection.DESC else '') + order.field for order in self.orders)
-        sort_fields = ','.join(sort_parts)
+        sort_fields = ','.join(self.orders)
         return f'Sort({sort_fields})'
 
     def __eq__(self, other):
