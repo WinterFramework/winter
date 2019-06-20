@@ -1,20 +1,21 @@
 from enum import Enum
 from typing import Collection
 
-from pydantic.dataclasses import dataclass
+from dataclasses import dataclass
+
+
+class SortDirection(Enum):
+    ASC = 'ASC'
+    DESC = 'DESC'
+
+
+@dataclass
+class Order:
+    field: str
+    direction: SortDirection = SortDirection.ASC
 
 
 class Sort:
-
-    @dataclass
-    class Order:
-
-        class Direction(Enum):
-            ASC = 'ASC'
-            DESC = 'DESC'
-
-        direction: Direction = Direction.ASC
-        field: str
 
     def __init__(self, *orders: Order):
         self._orders = list(orders)
@@ -28,19 +29,32 @@ class Sort:
         if len(fields) == 0:
             raise ValueError('Specify at least one field.')
 
-        orders = (Sort.Order(field=field) for field in fields)
+        orders = (Order(field=field) for field in fields)
         return Sort(*orders)
 
     def and_(self, sort: 'Sort') -> 'Sort':
         self._orders.extend(sort.orders)
         return self
 
-    def asc(self):
-        self._set_direction(Sort.Order.Direction.ASC)
+    def asc(self) -> 'Sort':
+        return self._set_direction(SortDirection.ASC)
 
-    def desc(self):
-        self._set_direction(Sort.Order.Direction.DESC)
+    def desc(self) -> 'Sort':
+        return self._set_direction(SortDirection.DESC)
 
-    def _set_direction(self, direction: Order.Direction):
+    def _set_direction(self, direction: SortDirection) -> 'Sort':
         for order in self._orders:
             order.direction = direction
+        return self
+
+    def __repr__(self):
+        sort_parts = (('-' if order.direction == SortDirection.DESC else '') + order.field for order in self.orders)
+        return ','.join(sort_parts)
+
+    def __eq__(self, other):
+        if not isinstance(other, Sort):
+            return False
+        return self.orders == other.orders
+
+    def __hash__(self):
+        return hash(tuple((order.field, order.direction) for order in self.orders))
