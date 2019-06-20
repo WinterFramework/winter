@@ -8,6 +8,7 @@ from rest_framework.request import Request as DRFRequest
 from winter.core import ComponentMethod
 from winter.pagination import PagePosition
 from winter.pagination import PagePositionArgumentResolver
+from winter.pagination import Sort
 
 
 @pytest.mark.parametrize(('argument_type', 'expected_is_supported'), (
@@ -37,6 +38,11 @@ def test_is_supported_in_page_position_argument_resolver(argument_type, expected
     ('offset=3', PagePosition(None, 3)),
     ('', PagePosition(None, None)),
     ('offset=0', PagePosition(None, 0)),
+    ('limit=10&offset=20&order_by=-id,name', PagePosition(10, 20, Sort.by('id').desc().and_(Sort.by('name')))),
+    ('order_by= x', PagePosition(None, None, Sort.by(' x'))),
+    ('order_by=- x', PagePosition(None, None, Sort.by(' x').desc())),
+    ('order_by= -x', PagePosition(None, None, Sort.by(' -x'))),
+    ('order_by=', PagePosition(None, None)),
 ))
 def test_resolve_argument_ok_in_page_position_argument_resolver(query_string, expected_page_position):
     def func(arg1: int):
@@ -60,6 +66,8 @@ def test_resolve_argument_ok_in_page_position_argument_resolver(query_string, ex
 @pytest.mark.parametrize(('query_string', 'exception_type', 'message'), (
     ('limit=none', ParseError, 'Invalid "limit" query parameter value: "none"'),
     ('offset=-20', ValidationError, 'Invalid "offset" query parameter value: "-20"'),
+    ('order_by=id,', ParseError, 'An empty sorting part found'),
+    ('order_by=-', ParseError, 'An empty sorting part found'),
 ))
 def test_resolve_argument_fails_in_page_position_argument_resolver(query_string, exception_type, message):
     def func(arg1: int):
