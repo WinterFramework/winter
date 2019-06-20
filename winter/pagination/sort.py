@@ -1,5 +1,5 @@
+import itertools
 from enum import Enum
-from typing import Collection
 
 from dataclasses import dataclass
 
@@ -9,7 +9,7 @@ class SortDirection(Enum):
     DESC = 'DESC'
 
 
-@dataclass
+@dataclass(frozen=True)
 class Order:
     field: str
     direction: SortDirection = SortDirection.ASC
@@ -18,11 +18,7 @@ class Order:
 class Sort:
 
     def __init__(self, *orders: Order):
-        self._orders = list(orders)
-
-    @property
-    def orders(self) -> Collection[Order]:
-        return tuple(self._orders)
+        self.orders = tuple(orders)
 
     @staticmethod
     def by(*fields: str) -> 'Sort':
@@ -33,23 +29,21 @@ class Sort:
         return Sort(*orders)
 
     def and_(self, sort: 'Sort') -> 'Sort':
-        self._orders.extend(sort.orders)
-        return self
+        orders = itertools.chain(self.orders, sort.orders)
+        return Sort(*orders)
 
     def asc(self) -> 'Sort':
-        return self._set_direction(SortDirection.ASC)
+        orders = (Order(field=order.field, direction=SortDirection.ASC) for order in self.orders)
+        return Sort(*orders)
 
     def desc(self) -> 'Sort':
-        return self._set_direction(SortDirection.DESC)
-
-    def _set_direction(self, direction: SortDirection) -> 'Sort':
-        for order in self._orders:
-            order.direction = direction
-        return self
+        orders = (Order(field=order.field, direction=SortDirection.DESC) for order in self.orders)
+        return Sort(*orders)
 
     def __repr__(self):
         sort_parts = (('-' if order.direction == SortDirection.DESC else '') + order.field for order in self.orders)
-        return ','.join(sort_parts)
+        sort_fields = ','.join(sort_parts)
+        return f'Sort({sort_fields})'
 
     def __eq__(self, other):
         if not isinstance(other, Sort):
@@ -57,4 +51,4 @@ class Sort:
         return self.orders == other.orders
 
     def __hash__(self):
-        return hash(tuple((order.field, order.direction) for order in self.orders))
+        return hash(self.orders)
