@@ -18,7 +18,7 @@ class Order:
 class Sort:
 
     def __init__(self, *orders: Order):
-        self.orders = tuple(orders)
+        self.orders = orders
 
     @staticmethod
     def by(*fields: str) -> 'Sort':
