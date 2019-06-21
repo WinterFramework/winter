@@ -1,5 +1,5 @@
-import itertools
 from enum import Enum
+from typing import Collection
 
 from dataclasses import dataclass
 
@@ -9,7 +9,7 @@ class SortDirection(Enum):
     DESC = 'DESC'
 
 
-@dataclass(frozen=True)
+@dataclass
 class Order:
     field: str
     direction: SortDirection = SortDirection.ASC
@@ -21,7 +21,11 @@ class Order:
 class Sort:
 
     def __init__(self, *orders: Order):
-        self.orders = orders
+        self._orders = list(orders)
+
+    @property
+    def orders(self) -> Collection[Order]:
+        return tuple(self._orders)
 
     @staticmethod
     def by(*fields: str) -> 'Sort':
@@ -32,20 +36,23 @@ class Sort:
         return Sort(*orders)
 
     def and_(self, sort: 'Sort') -> 'Sort':
-        orders = itertools.chain(self.orders, sort.orders)
-        return Sort(*orders)
+        self._orders.extend(sort.orders)
+        return self
 
     def asc(self) -> 'Sort':
-        orders = (Order(field=order.field, direction=SortDirection.ASC) for order in self.orders)
-        return Sort(*orders)
+        return self._set_direction(SortDirection.ASC)
 
     def desc(self) -> 'Sort':
-        orders = (Order(field=order.field, direction=SortDirection.DESC) for order in self.orders)
-        return Sort(*orders)
+        return self._set_direction(SortDirection.DESC)
+
+    def _set_direction(self, direction: SortDirection) -> 'Sort':
+        for order in self._orders:
+            order.direction = direction
+        return self
 
     def __repr__(self):
-        sort_fields = ','.join(self.orders)
-        return f'Sort({sort_fields})'
+        sort_parts = (('-' if order.direction == SortDirection.DESC else '') + order.field for order in self.orders)
+        return "Sort('{}')".format(','.join(sort_parts))
 
     def __eq__(self, other):
         if not isinstance(other, Sort):
@@ -53,4 +60,4 @@ class Sort:
         return self.orders == other.orders
 
     def __hash__(self):
-        return hash(self.orders)
+        return hash(tuple((order.field, order.direction) for order in self.orders))
