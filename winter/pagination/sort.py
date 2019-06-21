@@ -44,8 +44,8 @@ class Sort:
         return Sort(*orders)
 
     def __repr__(self):
-        sort_fields = ','.join(self.orders)
-        return f'Sort({sort_fields})'
+        sort_fields = ','.join(map(str, self.orders))
+        return f"Sort('{sort_fields}')"
 
     def __eq__(self, other):
         if not isinstance(other, Sort):

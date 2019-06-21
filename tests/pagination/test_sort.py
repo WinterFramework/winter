@@ -100,3 +100,12 @@ def test_sort_by_fails_for_zero_fields():
 def test_order_to_string():
     assert str(Order('id', SortDirection.ASC)) == 'id'
     assert str(Order('id', SortDirection.DESC)) == '-id'
+
+
+def test_repr_sort():
+    sort = Sort(
+        Order('foo', SortDirection.ASC),
+        Order('bar', SortDirection.DESC),
+    )
+
+    assert repr(sort) == "Sort('foo,-bar')"
