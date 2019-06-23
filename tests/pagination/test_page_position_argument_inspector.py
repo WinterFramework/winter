@@ -57,6 +57,7 @@ def test_page_position_argument_inspector_with_allowed_order_by_fields():
         required=False,
         in_=openapi.IN_QUERY,
         type=openapi.TYPE_STRING,
+        enum=['id'],
     )
 
     expected_parameters = [

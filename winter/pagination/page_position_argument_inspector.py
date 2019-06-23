@@ -49,6 +49,7 @@ class PagePositionArgumentsInspector(MethodArgumentsInspector):
                 required=False,
                 in_=openapi.IN_QUERY,
                 type=openapi.TYPE_STRING,
+                enum=list(allowed_order_by_fields),
             )
 
         for argument in route.method.arguments:
