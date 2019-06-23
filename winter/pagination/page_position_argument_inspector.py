@@ -34,7 +34,7 @@ class PagePositionArgumentsInspector(MethodArgumentsInspector):
             description='Comma separated order by fields',
             required=False,
             in_=openapi.IN_QUERY,
-            type=openapi.TYPE_INTEGER,
+            type=openapi.TYPE_STRING,
         )
 
     def inspect_parameters(self, route: 'Route') -> List[openapi.Parameter]:
@@ -48,8 +48,7 @@ class PagePositionArgumentsInspector(MethodArgumentsInspector):
                 description='Comma separated order by fields',
                 required=False,
                 in_=openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
-                enum=list(allowed_order_by_fields),
+                type=openapi.TYPE_STRING,
             )
 
         for argument in route.method.arguments:

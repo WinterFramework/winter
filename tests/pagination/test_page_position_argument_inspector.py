@@ -42,7 +42,7 @@ def test_page_position_argument_inspector(argument_type, must_return_parameters)
 def test_page_position_argument_inspector_with_allowed_order_by_fields():
     class SimpleController:
         @winter.route_get('')
-        @winter.pagination.order_by_fields(['id'])
+        @winter.pagination.order_by(['id'])
         def method(self, arg1: PagePosition):
             return arg1
 
@@ -56,8 +56,7 @@ def test_page_position_argument_inspector_with_allowed_order_by_fields():
         description='Comma separated order by fields',
         required=False,
         in_=openapi.IN_QUERY,
-        type=openapi.TYPE_INTEGER,
-        enum=['id'],
+        type=openapi.TYPE_STRING,
     )
 
     expected_parameters = [

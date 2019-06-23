@@ -9,7 +9,7 @@ from .serializer import PageSerializer
 from .sort import Order
 from .sort import Sort
 from .sort import SortDirection
-from .sort import order_by_fields
+from .sort import order_by
 from ..exceptions.handlers import BadRequestExceptionHandler
 from ..exceptions.handlers import exceptions_handler
 

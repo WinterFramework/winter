@@ -77,7 +77,7 @@ def test_resolve_argument_ok_in_page_position_argument_resolver(query_string, ex
 ))
 def test_resolve_argument_fails_in_page_position_argument_resolver(query_string, exception_type, message):
 
-    @winter.pagination.order_by_fields(['id'])
+    @winter.pagination.order_by(['id'])
     def method(arg1: int):
         return arg1
 
