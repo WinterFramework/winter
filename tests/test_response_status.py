@@ -27,6 +27,5 @@ def test_response_status_with_invalid_status():
     response_status = 1
     message = f'{response_status} is not a valid HTTPStatus'
 
-
     with pytest.raises(ValueError, match=message):
         winter.response_status(response_status)
