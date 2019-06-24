@@ -7,7 +7,9 @@ from rest_framework.request import Request
 from .input_data import InputDataAnnotation
 from .input_data_exception_handler import InvalidInputDataException
 from .. import ArgumentResolver
+from .. import type_utils
 from ..core import ComponentMethodArgument
+from ..type_utils import is_iterable
 
 
 class InputDataArgumentResolver(ArgumentResolver):
@@ -21,13 +23,8 @@ class InputDataArgumentResolver(ArgumentResolver):
         return self._get_origin_dataclass(argument) is not None
 
     def resolve_argument(self, argument: ComponentMethodArgument, http_request: Request):
-        origin_dataclass  = self._get_origin_dataclass(argument)
-        request_data = {
-            key: http_request.data.get(key)
-            for key in http_request.data.keys()
-            if key in origin_dataclass.__annotations__
-        }
-        validated_data = self._get_validated_data(request_data, argument)
+        origin_dataclass = self._get_origin_dataclass(argument)
+        validated_data = self._get_validated_data(http_request, argument)
         return origin_dataclass(**validated_data)
 
     def _get_origin_dataclass(
@@ -55,14 +52,48 @@ class InputDataArgumentResolver(ArgumentResolver):
 
         return origin_dataclass
 
-    def _get_validated_data(self, request_data: typing.Dict[str, typing.Any], argument: ComponentMethodArgument):
+    def _get_validated_data(self, http_request: Request, argument: ComponentMethodArgument):
+        origin_dataclass = self._get_origin_dataclass(argument)
+        fields = dataclasses.fields(origin_dataclass)
+
+        input_data, missing_fields = self._get_input_data(fields, http_request)
+        errors = {}
+        if missing_fields:
+            errors['non_field_error'] = f'Missing fields: {",".join(missing_fields)}'
+
         pydantic_dataclass = self._pydantic_dataclasses[argument]
+
+        validated_data = {}
+
         try:
-            return dataclasses.asdict(pydantic_dataclass(**request_data))
+            validated_data = dataclasses.asdict(pydantic_dataclass(**input_data))
         except pydantic.error_wrappers.ValidationError as exception:
-            errors = exception.errors()
-            data = {
-                error['loc'][0]: error['msg']
-                for error in errors
-            }
-            raise InvalidInputDataException(data)
+            for error in exception.errors():
+                field = error['loc'][0]
+                if field not in missing_fields:
+                    errors[field] = error['msg']
+        if errors:
+            raise InvalidInputDataException(errors)
+        return validated_data
+
+    def _get_input_data(self, fields: typing.List[dataclasses.Field], http_request: Request):
+
+        input_data = {}
+        missing_fields = set()
+
+        for field in fields:
+            if is_iterable(field.type):
+                field_data = http_request.data.getlist(field.name)
+            else:
+                field_data = http_request.data.get(field.name)
+
+            if not field_data:
+                if field.default is not dataclasses.MISSING:
+                    field_data = field.default
+                elif type_utils.is_optional(field.type):
+                    field_data = None
+                else:
+                    missing_fields.add(field.name)
+
+            input_data[field.name] = field_data
+        return input_data, missing_fields

@@ -1,4 +1,5 @@
 import enum
+import typing
 
 import dataclasses
 
@@ -15,7 +16,11 @@ class InputData:
     id: int
     name: str
     is_god: bool
+    optional_status: typing.Optional[Status]
     status: Status
+    items: typing.List[int]
+    optional_items: typing.Optional[typing.List[int]]
+    with_default: int = 5
 
 
 @winter.controller

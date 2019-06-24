@@ -15,13 +15,23 @@ def test_input_data():
         'name': 'test name',
         'is_god': True,
         'status': 'active',
+        'items': [1],
     }
-    expected_data = data.copy()
+    expected_data = {
+        'id': 1,
+        'with_default': 5,
+        'name': 'test name',
+        'is_god': True,
+        'status': 'active',
+        'optional_status': None,
+        'items': [1],
+        'optional_items': None,
+    }
 
     # Act
     response = client.post('/with-input-data/', data=data)
 
-    assert response.status_code == HTTPStatus.OK
+    assert response.status_code == HTTPStatus.OK, response.json()
     assert response.json() == expected_data
 
 
@@ -32,15 +42,17 @@ def test_input_data_with_errors():
 
     data = {
         'id': 'invalid integer',
-        'name': 'test name',
         'is_god': False,
         'status': 'invalid status',
         'invalid_key': 'data',
+        'items': ['invalid integer'],
     }
 
     expected_data = {
         'id': 'value is not a valid integer',
         'status': 'value is not a valid enumeration member',
+        'items': 'value is not a valid integer',
+        'non_field_error': 'Missing fields: name',
     }
 
     # Act
