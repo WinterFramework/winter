@@ -6,5 +6,3 @@ class QueryParameter:
     name: str
     map_to: str
     explode: bool
-
-

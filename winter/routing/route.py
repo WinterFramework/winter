@@ -53,4 +53,3 @@ class Route:
                 )
                 query_parameters.append(query_parameter)
         return query_parameters
-

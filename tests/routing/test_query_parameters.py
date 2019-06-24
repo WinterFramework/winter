@@ -94,33 +94,16 @@ def test_query_parameter_resolver_with_raises_argument_not_supported():
     assert str(exception.value) == 'Unable to resolve argument invalid_query_param: int'
 
 
-@pytest.mark.parametrize(('query_string', 'expected_exception_message'), (
-    ('query_param=invalid_int', 'Invalid query parameter "query_param" value "invalid_int"'),
-    ('', 'Missing required query parameter "query_param"'),
-))
-def test_query_parameter_resolver_with_raises_parse_error(query_string, expected_exception_message):
-    @winter.route_get('{?query_param}')
-    def method(query_param: int):
-        return query_param
-
-    resolver = QueryParameterArgumentResolver()
-
-    argument = method.get_argument('query_param')
-    request = get_request(query_string)
-
-    with pytest.raises(ParseError) as exception:
-        resolver.resolve_argument(argument, request)
-
-    assert str(exception.value) == expected_exception_message
-
-
 def test_duplicate_routing_map_to():
     with pytest.raises(AlreadyAnnotated) as exception:
         @winter.map_query_parameter('y', to='query_param')
         @winter.map_query_parameter('x', to='query_param')
         def method(query_param: int):
             return query_param
-    message = "Cannot annotate twice: <class 'winter.routing.query_parameters.map_query_parameter_annotation.MapQueryParameterAnnotation'>"
+    message = (
+        "Cannot annotate twice: <class 'winter.routing.query_parameters."
+        "map_query_parameter_annotation.MapQueryParameterAnnotation'>"
+    )
     assert str(exception.value) == message
 
 
@@ -132,7 +115,10 @@ def test_duplicate_map_query_parameter_map_to():
         def method(query_param: int):
             return query_param
 
-    message = "Cannot annotate twice: <class 'winter.routing.query_parameters.map_query_parameter_annotation.MapQueryParameterAnnotation'>"
+    message = (
+        "Cannot annotate twice: <class 'winter.routing.query_parameters."
+        "map_query_parameter_annotation.MapQueryParameterAnnotation'>"
+    )
     assert str(exception.value) == message
 
 
@@ -175,7 +161,7 @@ def test_query_parameter(date, date_time, boolean, optional_boolean, array, stri
     }
     base_uri = URITemplate(
         '/with-query-parameter/'
-        '{?date,date_time,boolean,optional_boolean,array,expanded_array*,string}'
+        '{?date,date_time,boolean,optional_boolean,array,expanded_array*,string}',
     )
     query_params = {
         'date': date,
