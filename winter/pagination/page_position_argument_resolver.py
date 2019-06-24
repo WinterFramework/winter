@@ -25,7 +25,7 @@ class PagePositionArgumentResolver(ArgumentResolver):
         limit_name: str = 'limit',
         offset_name: str = 'offset',
         order_by_name: str = 'order_by',
-        allow_any_order_by_field: bool = False
+        allow_any_order_by_field: bool = False,
     ):
         self.allow_any_order_by_field = allow_any_order_by_field
         self.limit_name = limit_name

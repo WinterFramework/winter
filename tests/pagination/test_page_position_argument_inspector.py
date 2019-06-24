@@ -53,11 +53,11 @@ def test_page_position_argument_inspector_with_allowed_order_by_fields():
 
     order_by_parameter = openapi.Parameter(
         name=resolver.order_by_name,
-        description='Comma separated order by fields',
+        description='Comma separated order by fields. Allowed fields: id',
         required=False,
         in_=openapi.IN_QUERY,
-        type=openapi.TYPE_STRING,
-        enum=['id'],
+        type=openapi.TYPE_ARRAY,
+        items={'type': openapi.TYPE_STRING},
     )
 
     expected_parameters = [
