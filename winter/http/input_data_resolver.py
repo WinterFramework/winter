@@ -82,18 +82,22 @@ class InputDataArgumentResolver(ArgumentResolver):
         missing_fields = set()
 
         for field in fields:
-            if is_iterable(field.type):
-                field_data = http_request.data.getlist(field.name)
-            else:
-                field_data = http_request.data.get(field.name)
-
-            if not field_data:
-                if field.default is not dataclasses.MISSING:
-                    field_data = field.default
-                elif type_utils.is_optional(field.type):
-                    field_data = None
-                else:
-                    missing_fields.add(field.name)
-
+            field_data = self._get_field_data(field, missing_fields, http_request)
             input_data[field.name] = field_data
         return input_data, missing_fields
+
+    def _get_field_data(self, field: dataclasses.Field, missing_fields: typing.Set, http_request: Request):
+        if is_iterable(field.type):
+            field_data = http_request.data.getlist(field.name)
+        else:
+            field_data = http_request.data.get(field.name)
+
+        if not field_data:
+            if field.default is not dataclasses.MISSING:
+                field_data = field.default
+            elif type_utils.is_optional(field.type):
+                field_data = None
+            else:
+                missing_fields.add(field.name)
+                field_data = None
+        return field_data
