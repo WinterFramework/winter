@@ -5,6 +5,7 @@ from rest_framework.exceptions import ParseError
 from rest_framework.exceptions import ValidationError
 from rest_framework.request import Request as DRFRequest
 
+import winter
 from winter.core import ComponentMethod
 from winter.pagination import PagePosition
 from winter.pagination import PagePositionArgumentResolver
@@ -51,7 +52,7 @@ def test_resolve_argument_ok_in_page_position_argument_resolver(query_string, ex
     method = ComponentMethod(func)
     argument = method.get_argument('arg1')
 
-    resolver = PagePositionArgumentResolver()
+    resolver = PagePositionArgumentResolver(allow_any_order_by_field=True)
 
     request = Mock(spec=DRFRequest)
     request.query_params = QueryDict(query_string)
@@ -68,12 +69,18 @@ def test_resolve_argument_ok_in_page_position_argument_resolver(query_string, ex
     ('offset=-20', ValidationError, 'Invalid "offset" query parameter value: "-20"'),
     ('order_by=id,', ParseError, 'An empty sorting part found'),
     ('order_by=-', ParseError, 'An empty sorting part found'),
+    (
+        'order_by=not_allowed_order_by_field',
+        ParseError,
+        'Field "not_allowed_order_by_field" does not allowed as order by field',
+    ),
 ))
 def test_resolve_argument_fails_in_page_position_argument_resolver(query_string, exception_type, message):
-    def func(arg1: int):
+
+    @winter.pagination.order_by(['id'])
+    def method(arg1: int):
         return arg1
 
-    method = ComponentMethod(func)
     argument = method.get_argument('arg1')
 
     request = Mock(spec=DRFRequest)
