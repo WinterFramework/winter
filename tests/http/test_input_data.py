@@ -35,6 +35,7 @@ def test_input_data_with_errors():
         'name': 'test name',
         'is_god': False,
         'status': 'invalid status',
+        'invalid_key': 'data',
     }
 
     expected_data = {

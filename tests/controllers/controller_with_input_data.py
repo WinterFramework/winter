@@ -1,6 +1,6 @@
 import enum
 
-import pydantic
+import dataclasses
 
 import winter
 
@@ -10,7 +10,7 @@ class Status(enum.Enum):
     SUPER_ACTIVE = 'super_active'
 
 
-@pydantic.dataclasses.dataclass
+@dataclasses.dataclass
 class InputData:
     id: int
     name: str
