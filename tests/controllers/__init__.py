@@ -1,4 +1,5 @@
 from .controller_with_exceptions import ControllerWithExceptions
+from .controller_with_input_data import ControllerWithInputData
 from .controller_with_limits import ControllerWithLimits
 from .controller_with_media_types_routing import ControllerWithMediaTypesRouting
 from .controller_with_output_template import ControllerWithOutputTemplate
