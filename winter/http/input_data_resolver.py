@@ -58,6 +58,7 @@ class InputDataArgumentResolver(ArgumentResolver):
 
         input_data, missing_fields = self._get_input_data(fields, http_request)
         errors = {}
+
         if missing_fields:
             errors['non_field_error'] = f'Missing fields: {",".join(missing_fields)}'
 
@@ -68,10 +69,7 @@ class InputDataArgumentResolver(ArgumentResolver):
         try:
             validated_data = dataclasses.asdict(pydantic_dataclass(**input_data))
         except pydantic.error_wrappers.ValidationError as exception:
-            for error in exception.errors():
-                field = error['loc'][0]
-                if field not in missing_fields:
-                    errors[field] = error['msg']
+            self._update_errors(errors, exception.errors(), missing_fields)
         if errors:
             raise InvalidInputDataException(errors)
         return validated_data
@@ -93,11 +91,20 @@ class InputDataArgumentResolver(ArgumentResolver):
             field_data = http_request.data.get(field.name)
 
         if not field_data:
-            if field.default is not dataclasses.MISSING:
-                field_data = field.default
-            elif type_utils.is_optional(field.type):
-                field_data = None
-            else:
-                missing_fields.add(field.name)
-                field_data = None
+            field_data = self._get_default(field, missing_fields)
         return field_data
+
+    def _get_default(self, field: dataclasses.Field, missing_fields: typing.Set):
+        if field.default is not dataclasses.MISSING:
+            return field.default
+        elif type_utils.is_optional(field.type):
+            return None
+        else:
+            missing_fields.add(field.name)
+            return dataclasses.MISSING
+
+    def _update_errors(self, errors: typing.Dict[str, str], pydantic_errors: typing.Dict, missing_fields: typing.Set):
+        for error in pydantic_errors:
+            field = error['loc'][0]
+            if field not in missing_fields:
+                errors[field] = error['msg']
