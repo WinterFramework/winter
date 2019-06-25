@@ -9,9 +9,9 @@ from .limits import LimitsAnnotation
 from .limits import MaximumLimitValueExceeded
 from .page_position import PagePosition
 from .sort import Order
+from .sort import OrderByAnnotation
 from .sort import Sort
 from .sort import SortDirection
-from .sort import get_allowed_order_by_fields
 from ..argument_resolver import ArgumentResolver
 from ..core import ComponentMethod
 from ..core import ComponentMethodArgument
@@ -32,6 +32,8 @@ class PagePositionArgumentResolver(ArgumentResolver):
         self.offset_name = offset_name
         self.order_by_name = order_by_name
         self.limits = Limits(default=None, maximum=None, redirect_to_default=False)
+
+        self._default_sorts = {}
 
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
         return argument.type_ is PagePosition
@@ -87,12 +89,13 @@ class PagePositionArgumentResolver(ArgumentResolver):
         return param_value
 
     def _parse_sort_properties(self, raw_param_value: str, argument: ComponentMethodArgument) -> typing.Optional[Sort]:
+
         if not raw_param_value:
-            return None
+            return self._get_default_sort(argument)
 
         sort_parts = raw_param_value.split(',')
-        allowed_order_by_fields = get_allowed_order_by_fields(argument.method)
-        orders = (self._parse_order(sort_part, allowed_order_by_fields) for sort_part in sort_parts)
+        order_by_annotations = argument.method.annotations.get_one_or_none(OrderByAnnotation)
+        orders = (self._parse_order(sort_part, order_by_annotations.allowed_fields) for sort_part in sort_parts)
         return Sort(*orders)
 
     def _parse_order(self, field: str, allowed_order_by_fields: typing.FrozenSet[str]) -> Order:
@@ -109,3 +112,18 @@ class PagePositionArgumentResolver(ArgumentResolver):
 
         direction = SortDirection.DESC if is_desc else SortDirection.ASC
         return Order(direction=direction, field=field)
+
+    def _get_default_sort(self, argument: ComponentMethodArgument):
+
+        if argument in self._default_sorts:
+            return self._default_sorts.get(argument)
+
+        order_by_annotation = argument.method.annotations.get_one_or_none(OrderByAnnotation)
+        if order_by_annotation is not None and order_by_annotation.default:
+            sort_parts = order_by_annotation.default.split(',')
+            orders = [self._parse_order(sort_part, order_by_annotation.allowed_fields) for sort_part in sort_parts]
+            sort = Sort(*orders)
+        else:
+            sort = None
+        self._default_sorts[argument] = sort
+        return sort

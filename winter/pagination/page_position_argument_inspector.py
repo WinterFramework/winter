@@ -3,9 +3,9 @@ from typing import TYPE_CHECKING
 
 from drf_yasg import openapi
 
-from winter.pagination.sort import get_allowed_order_by_fields
 from .page_position import PagePosition
 from .page_position_argument_resolver import PagePositionArgumentResolver
+from .sort import OrderByAnnotation
 from ..schema import MethodArgumentsInspector
 
 if TYPE_CHECKING:
@@ -39,12 +39,16 @@ class PagePositionArgumentsInspector(MethodArgumentsInspector):
         parameters.append(self.limit_parameter)
         parameters.append(self.offset_parameter)
 
-        allowed_order_by_fields = get_allowed_order_by_fields(route.method)
-        if allowed_order_by_fields:
-            allowed_order_by_fields = ','.join(map(str, allowed_order_by_fields))
+        order_by_annotation = route.method.annotations.get_one_or_none(OrderByAnnotation)
+        if order_by_annotation:
+            allowed_order_by_fields = ','.join(map(str, order_by_annotation.allowed_fields))
+            default_part = f' Default is "{order_by_annotation.default}"' if order_by_annotation.default else ''
             order_by_parameter = openapi.Parameter(
                 name=self._page_position_argument_resolver.order_by_name,
-                description=f'Comma separated order by fields. Allowed fields: {allowed_order_by_fields}',
+                description=(
+                    f'Comma separated order by fields. '
+                    f'Allowed fields: {allowed_order_by_fields}.{default_part}'
+                ),
                 required=False,
                 in_=openapi.IN_QUERY,
                 type=openapi.TYPE_ARRAY,

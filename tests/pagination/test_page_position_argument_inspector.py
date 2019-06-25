@@ -38,10 +38,14 @@ def test_page_position_argument_inspector(argument_type, must_return_parameters)
     assert parameters == expected_parameters
 
 
-def test_page_position_argument_inspector_with_allowed_order_by_fields():
+@pytest.mark.parametrize(('default', 'description'), (
+    (None, 'Comma separated order by fields. Allowed fields: id.'),
+    ('id', 'Comma separated order by fields. Allowed fields: id. Default is "id"'),
+))
+def test_page_position_argument_inspector_with_allowed_order_by_fields(default, description):
     class SimpleController:
         @winter.route_get('')
-        @winter.pagination.order_by(['id'])
+        @winter.pagination.order_by(['id'], default=default)
         def method(self, arg1: PagePosition):
             return arg1
 
@@ -52,7 +56,7 @@ def test_page_position_argument_inspector_with_allowed_order_by_fields():
 
     order_by_parameter = openapi.Parameter(
         name=resolver.order_by_name,
-        description='Comma separated order by fields. Allowed fields: id',
+        description=description,
         required=False,
         in_=openapi.IN_QUERY,
         type=openapi.TYPE_ARRAY,
