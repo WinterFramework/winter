@@ -42,10 +42,11 @@ def test_is_supported_in_page_position_argument_resolver(argument_type, expected
     ('limit=10&offset=20&order_by=-id,name', PagePosition(10, 20, Sort.by('id').desc().and_(Sort.by('name')))),
     ('order_by= x', PagePosition(None, None, Sort.by(' x'))),
     ('order_by=- x', PagePosition(None, None, Sort.by(' x').desc())),
+    ('order_by= -x', PagePosition(None, None, Sort.by(' -x'))),
     ('order_by=', PagePosition(None, None)),
 ))
 def test_resolve_argument_ok_in_page_position_argument_resolver(query_string, expected_page_position):
-    @winter.pagination.order_by(['name', 'id', 'email', 'x', ' x'])
+    @winter.pagination.order_by(['name', 'id', 'email', 'x', ' x', ' -x'])
     def method(page_position: PagePosition):
         return page_position
 
