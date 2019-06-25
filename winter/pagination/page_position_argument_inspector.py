@@ -45,11 +45,11 @@ class PagePositionArgumentsInspector(MethodArgumentsInspector):
                 type=openapi.TYPE_ARRAY,
                 items={'type': openapi.TYPE_STRING},
             )
+        has_page_position_argument = any(argument.type_ == PagePosition for argument in route.method.arguments)
+        if has_page_position_argument:
+            parameters.append(self.limit_parameter)
+            parameters.append(self.offset_parameter)
+            if order_by_parameter is not None:
+                parameters.append(order_by_parameter)
 
-        for argument in route.method.arguments:
-            if argument.type_ == PagePosition:
-                parameters.append(self.limit_parameter)
-                parameters.append(self.offset_parameter)
-                if order_by_parameter is not None:
-                    parameters.append(order_by_parameter)
         return parameters
