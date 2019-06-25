@@ -27,7 +27,7 @@ class InputData:
 @winter.route('with-input-data/')
 class ControllerWithInputData:
 
-    @winter.input_data(InputData, to='data')
+    @winter.request_body('data')
     @winter.route_post()
     def method(self, data: InputData) -> InputData:
         return data

@@ -13,7 +13,7 @@ from .exceptions.handlers import ExceptionHandler
 from .exceptions.handlers import RedirectExceptionHandler
 from .exceptions.handlers import exceptions_handler
 from .exceptions.throws import throws
-from .http.input_data import input_data
+from .http.request_body import request_body
 from .output_processor import register_output_processor_resolver
 from .pagination import PagePositionArgumentResolver
 from .pagination.page import PageOutputProcessorResolver
@@ -39,8 +39,8 @@ def _default_configuration():
     from . import schema
     from . import pagination
     from .http import InputDataArgumentResolver
-    from winter.http.input_data_exception_handler import InvalidInputDataException
-    from winter.http.input_data_exception_handler import InvalidInputDataExceptionHandler
+    from .http.request_body_exception_handler import InvalidRequestBodyException
+    from .http.request_body_exception_handler import InvalidRequestBodyExceptionHandler
 
     arguments_resolver.add_argument_resolver(DRFBodyArgumentResolver())
     arguments_resolver.add_argument_resolver(InputDataArgumentResolver())
@@ -52,7 +52,7 @@ def _default_configuration():
     register_controller_method_inspector(QueryParametersInspector())
     register_output_processor_resolver(PageOutputProcessorResolver())
     exceptions_handler.add_handler(RedirectException, RedirectExceptionHandler, auto_handle=True)
-    exceptions_handler.add_handler(InvalidInputDataException, InvalidInputDataExceptionHandler, auto_handle=True)
+    exceptions_handler.add_handler(InvalidRequestBodyException, InvalidRequestBodyExceptionHandler, auto_handle=True)
     schema.setup()
     pagination.setup()
 
