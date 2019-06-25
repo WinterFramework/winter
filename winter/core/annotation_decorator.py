@@ -48,7 +48,7 @@ class annotate_class(annotate_base):
 class annotate_method(annotate_base):
     _supported_classes = (ComponentMethod, types.FunctionType)
 
-    def __call__(self, func_or_method: typing.Union[types.FunctionType, ComponentMethod]):
+    def __call__(self, func_or_method: typing.Union[types.FunctionType, ComponentMethod]) -> ComponentMethod:
         method = ComponentMethod.get_or_create(func_or_method)
         method.annotations.add(self.annotation, unique=self.unique, single=self.single)
         return method

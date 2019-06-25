@@ -12,7 +12,7 @@ def request_body(argument_name: str):
 
     def wrapper(func_or_method):
         annotation = RequestBodyAnnotation(argument_name)
-        annotation_decorator =  annotate_method(annotation, single=True)
+        annotation_decorator = annotate_method(annotation, single=True)
         method = annotation_decorator(func_or_method)
         argument = method.get_argument(argument_name)
         method_name = method.func.__name__

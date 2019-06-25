@@ -6,7 +6,6 @@ from ..exceptions.handlers import ExceptionHandler
 from ..response_status import response_status
 
 
-
 class InvalidRequestBodyException(Exception):
 
     def __init__(self, errors_by_fields: typing.Dict[str, str], missing_fields: typing.Iterable[str]):
