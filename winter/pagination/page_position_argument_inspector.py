@@ -29,21 +29,18 @@ class PagePositionArgumentsInspector(MethodArgumentsInspector):
             in_=openapi.IN_QUERY,
             type=openapi.TYPE_INTEGER,
         )
-        self.default_order_by_parameter = openapi.Parameter(
-            name=page_position_argument_resolver.order_by_name,
-            description='Comma separated order by fields',
-            required=False,
-            in_=openapi.IN_QUERY,
-            type=openapi.TYPE_ARRAY,
-            items={'type': openapi.TYPE_STRING},
-        )
 
     def inspect_parameters(self, route: 'Route') -> List[openapi.Parameter]:
         parameters = []
+        has_page_position_argument = any(argument.type_ == PagePosition for argument in route.method.arguments)
+        if not has_page_position_argument:
+            return []
+
+        parameters.append(self.limit_parameter)
+        parameters.append(self.offset_parameter)
+
         allowed_order_by_fields = get_allowed_order_by_fields(route.method)
-        if not allowed_order_by_fields:
-            order_by_parameter = self.default_order_by_parameter
-        else:
+        if allowed_order_by_fields:
             allowed_order_by_fields = ','.join(map(str, allowed_order_by_fields))
             order_by_parameter = openapi.Parameter(
                 name=self._page_position_argument_resolver.order_by_name,
@@ -53,10 +50,6 @@ class PagePositionArgumentsInspector(MethodArgumentsInspector):
                 type=openapi.TYPE_ARRAY,
                 items={'type': openapi.TYPE_STRING},
             )
+            parameters.append(order_by_parameter)
 
-        for argument in route.method.arguments:
-            if argument.type_ == PagePosition:
-                parameters.append(self.limit_parameter)
-                parameters.append(self.offset_parameter)
-                parameters.append(order_by_parameter)
         return parameters

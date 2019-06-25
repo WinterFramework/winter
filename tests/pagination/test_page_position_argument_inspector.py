@@ -27,7 +27,6 @@ def test_page_position_argument_inspector(argument_type, must_return_parameters)
         expected_parameters = [
             inspector.limit_parameter,
             inspector.offset_parameter,
-            inspector.default_order_by_parameter,
         ]
     else:
         expected_parameters = []
