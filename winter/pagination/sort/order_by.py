@@ -10,6 +10,5 @@ def order_by(allowed_fields: typing.Iterable[str], default: typing.Optional[str]
         assert all(field in allowed_fields for field in default.split(',')), (
             'Not all field in default in allowed_fields'
         )
-    allowed_fields = frozenset(allowed_fields)
     annotation = OrderByAnnotation(allowed_fields, default)
     return annotate_method(annotation, single=True)
