@@ -3,9 +3,9 @@ from typing import TYPE_CHECKING
 
 from drf_yasg import openapi
 
-from winter.pagination.sort import get_allowed_order_by_fields
 from .page_position import PagePosition
 from .page_position_argument_resolver import PagePositionArgumentResolver
+from .sort import OrderByAnnotation
 from ..schema import MethodArgumentsInspector
 
 if TYPE_CHECKING:
@@ -29,34 +29,36 @@ class PagePositionArgumentsInspector(MethodArgumentsInspector):
             in_=openapi.IN_QUERY,
             type=openapi.TYPE_INTEGER,
         )
-        self.default_order_by_parameter = openapi.Parameter(
-            name=page_position_argument_resolver.order_by_name,
-            description='Comma separated order by fields',
-            required=False,
-            in_=openapi.IN_QUERY,
-            type=openapi.TYPE_ARRAY,
-            items={'type': openapi.TYPE_STRING},
-        )
 
     def inspect_parameters(self, route: 'Route') -> List[openapi.Parameter]:
         parameters = []
-        allowed_order_by_fields = get_allowed_order_by_fields(route.method)
-        if not allowed_order_by_fields:
-            order_by_parameter = self.default_order_by_parameter
-        else:
-            allowed_order_by_fields = ','.join(map(str, allowed_order_by_fields))
+        has_page_position_argument = any(argument.type_ == PagePosition for argument in route.method.arguments)
+        if not has_page_position_argument:
+            return []
+
+        parameters.append(self.limit_parameter)
+        parameters.append(self.offset_parameter)
+
+        order_by_annotation = route.method.annotations.get_one_or_none(OrderByAnnotation)
+        if order_by_annotation:
+            allowed_order_by_fields = ','.join(map(str, order_by_annotation.allowed_fields))
+            default_sort = (
+                str(order_by_annotation.default_sort)
+                if order_by_annotation.default_sort is not None else
+                None
+            )
             order_by_parameter = openapi.Parameter(
                 name=self._page_position_argument_resolver.order_by_name,
-                description=f'Comma separated order by fields. Allowed fields: {allowed_order_by_fields}',
+                description=(
+                    f'Comma separated order by fields. '
+                    f'Allowed fields: {allowed_order_by_fields}.'
+                ),
                 required=False,
                 in_=openapi.IN_QUERY,
                 type=openapi.TYPE_ARRAY,
                 items={'type': openapi.TYPE_STRING},
+                default=default_sort,
             )
+            parameters.append(order_by_parameter)
 
-        for argument in route.method.arguments:
-            if argument.type_ == PagePosition:
-                parameters.append(self.limit_parameter)
-                parameters.append(self.offset_parameter)
-                parameters.append(order_by_parameter)
         return parameters
