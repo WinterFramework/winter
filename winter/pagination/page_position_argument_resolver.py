@@ -33,8 +33,6 @@ class PagePositionArgumentResolver(ArgumentResolver):
         self.order_by_name = order_by_name
         self.limits = Limits(default=None, maximum=None, redirect_to_default=False)
 
-        self._default_sorts = {}
-
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
         return argument.type_ is PagePosition
 
