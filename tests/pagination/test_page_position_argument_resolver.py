@@ -40,13 +40,10 @@ def test_is_supported_in_page_position_argument_resolver(argument_type, expected
     ('', PagePosition(None, None)),
     ('offset=0', PagePosition(None, 0)),
     ('limit=10&offset=20&order_by=-id,name', PagePosition(10, 20, Sort.by('id').desc().and_(Sort.by('name')))),
-    ('order_by= x', PagePosition(None, None, Sort.by(' x'))),
-    ('order_by=- x', PagePosition(None, None, Sort.by(' x').desc())),
-    ('order_by= -x', PagePosition(None, None, Sort.by(' -x'))),
     ('order_by=', PagePosition(None, None)),
 ))
 def test_resolve_argument_ok_in_page_position_argument_resolver(query_string, expected_page_position):
-    @winter.pagination.order_by(['name', 'id', 'email', 'x', ' x', ' -x'])
+    @winter.pagination.order_by(['name', 'id', 'email', 'x',])
     def method(page_position: PagePosition):
         return page_position
 
@@ -64,15 +61,15 @@ def test_resolve_argument_ok_in_page_position_argument_resolver(query_string, ex
     assert page_position == expected_page_position
 
 
-@pytest.mark.parametrize(('query_string', 'default', 'expected_page_position'), (
-    ('limit=1&offset=3', 'name', PagePosition(1, 3, Sort.by('name'))),
+@pytest.mark.parametrize(('query_string', 'default_sort', 'expected_page_position'), (
+    ('limit=1&offset=3', ('-name',), PagePosition(1, 3, Sort.by('name').desc())),
 ))
 def test_resolve_argument_ok_in_page_position_argument_resolver_with_default(
     query_string,
-    default,
+    default_sort,
     expected_page_position,
 ):
-    @winter.pagination.order_by(['name', 'id', 'email',], default=default)
+    @winter.pagination.order_by(['name', 'id', 'email',], default_sort=default_sort)
     def method(page_position: PagePosition):
         return page_position
 
@@ -92,12 +89,12 @@ def test_resolve_argument_ok_in_page_position_argument_resolver_with_default(
 @pytest.mark.parametrize(('query_string', 'exception_type', 'message'), (
     ('limit=none', ParseError, 'Invalid "limit" query parameter value: "none"'),
     ('offset=-20', ValidationError, 'Invalid "offset" query parameter value: "-20"'),
-    ('order_by=id,', ParseError, 'An empty sorting part found'),
-    ('order_by=-', ParseError, 'An empty sorting part found'),
+    ('order_by=id,', ParseError, 'Invalid field for order: ""'),
+    ('order_by=-', ParseError, 'Invalid field for order: "-"'),
     (
         'order_by=not_allowed_order_by_field',
         ParseError,
-        'Field "not_allowed_order_by_field" does not allowed as order by field',
+        'Fields do not allowed as order by fields: "not_allowed_order_by_field"',
     ),
 ))
 def test_resolve_argument_fails_in_page_position_argument_resolver(query_string, exception_type, message):

@@ -69,7 +69,7 @@ def test_page_response():
     response = client.get('/winter-simple/page-response/', data=data)
 
     # Assert
-    assert response.status_code == HTTPStatus.OK
+    assert response.status_code == HTTPStatus.OK, response.content
     assert response.json() == expected_body
 
 
