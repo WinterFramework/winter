@@ -18,6 +18,11 @@ Item = typing.TypeVar('Item')
 uuid_regexp = re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')
 
 
+class MissingException(Exception):
+    pass
+
+
+
 def converter(type_: typing.Type, validator: typing.Callable = None):
     def wrapper(func):
         converters = _converters.setdefault(type_, [])
@@ -33,13 +38,19 @@ def convert(value, hint_class: typing.Type[Item]) -> Item:
     types_ = origin_type.mro() if inspect.isclass(origin_type) else type(origin_type).mro()
 
     for type_ in types_:
-        converters = _converters.get(type_, [])
-
-        for converter_, checker in converters:
-            if checker is None or checker(hint_class):
-                return converter_(value, hint_class)
-
+        result = _convert(value, hint_class, type_)
+        if result is not dataclasses.MISSING:
+            return result
     raise ConvertException.invalid_type(value)
+
+
+def _convert(value, hint_class: typing.Type[Item], type_: typing.Type) -> typing.Optional[Item]:
+    converters = _converters.get(type_, [])
+
+    for converter_, checker in converters:
+        if checker is None or checker(hint_class):
+            return converter_(value, hint_class)
+    return dataclasses.MISSING
 
 
 @converter(object, validator=is_optional)
@@ -51,7 +62,7 @@ def optional_converter(value, type_: typing.Type[Item]) -> Item:
 
 
 @converter(object, validator=dataclasses.is_dataclass)
-def dataclass_converter(value: typing.Dict[str, typing.Any], type_: typing.Type[Item]) -> Item:
+def convert_dataclass(value: typing.Dict[str, typing.Any], type_: typing.Type[Item]) -> Item:
     if not isinstance(value, dict):
         raise ConvertException.invalid_type(value, 'object')
 
@@ -62,20 +73,15 @@ def dataclass_converter(value: typing.Dict[str, typing.Any], type_: typing.Type[
     for field in dataclasses.fields(type_):
         field_data = value.get(field.name, dataclasses.MISSING)
 
-        if field_data is dataclasses.MISSING:
-            if field.default is not dataclasses.MISSING:
-                field_data = field.default
-            elif is_optional(field.type):
-                field_data = None
-            else:
-                missing_fields.append(field.name)
-                continue
         try:
-            field_data = convert(field_data, field.type)
+            field_data = _convert_dataclass_field(field_data, field)
         except ConvertException as e:
             errors[field.name] = e.errors
+        except MissingException:
+            missing_fields.append(field.name)
         else:
             converted_data[field.name] = field_data
+
     if missing_fields:
         missing_fields = '", "'.join(missing_fields)
         errors[ConvertException.NON_FIELD_ERROR] = ConvertException.MISSING_FIELDS_PATTERN.format(
@@ -85,6 +91,17 @@ def dataclass_converter(value: typing.Dict[str, typing.Any], type_: typing.Type[
     if errors:
         raise ConvertException(errors)
     return type_(**converted_data)
+
+
+def _convert_dataclass_field(value, field: dataclasses.Field):
+    if value is dataclasses.MISSING:
+        if field.default is not dataclasses.MISSING:
+            value = field.default
+        elif is_optional(field.type):
+            value = None
+        else:
+            raise MissingException
+    return convert(value, field.type)
 
 
 @converter(int)
