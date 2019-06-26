@@ -72,7 +72,9 @@ def convert_dataclass(value: typing.Dict[str, typing.Any], type_: typing.Type[It
 
     for field in dataclasses.fields(type_):
         field_data = value.get(field.name, dataclasses.MISSING)
-        update_converted_data(field_data, field, missing_fields, errors, converted_data)
+        field_data = convert_dataclass_field(field_data, field, missing_fields, errors)
+        if field_data is not dataclasses.MISSING:
+            converted_data[field.name] = field_data
 
     if missing_fields:
         missing_fields = '", "'.join(missing_fields)
@@ -85,12 +87,11 @@ def convert_dataclass(value: typing.Dict[str, typing.Any], type_: typing.Type[It
     return type_(**converted_data)
 
 
-def update_converted_data(
+def convert_dataclass_field(
     value,
     field: dataclasses.Field,
     missing_fields: typing.List[str],
-    errors: typing.Dict,
-    converted_data: typing.Dict[str, typing.Any]
+    errors: typing.Dict[str, str],
 ):
     try:
         value = _convert_dataclass_field(value, field)
@@ -99,8 +100,8 @@ def update_converted_data(
     except MissingException:
         missing_fields.append(field.name)
     else:
-        converted_data[field.name] = value
-
+        return value
+    return dataclasses.MISSING
 
 
 def _convert_dataclass_field(value, field: dataclasses.Field):
