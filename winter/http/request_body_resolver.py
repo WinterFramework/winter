@@ -45,33 +45,32 @@ class InputDataArgumentResolver(ArgumentResolver):
         missing_fields = set()
 
         for field in fields:
-            field_data, is_missing = self._get_field_data(field, http_request)
+            field_data = self._get_field_data(field, http_request)
+            is_missing = field_data is dataclasses.MISSING
             if is_missing:
                 missing_fields.add(field.name)
             input_data[field.name] = field_data
         return input_data, missing_fields
 
-    def _get_field_data(self, field: dataclasses.Field, http_request: Request) -> typing.Tuple[typing.Any, bool]:
+    def _get_field_data(self, field: dataclasses.Field, http_request: Request) -> typing.Any:
         if is_iterable(field.type):
             field_data = http_request.data.getlist(field.name)
         else:
             field_data = http_request.data.get(field.name)
 
         if not field_data:
-            field_data, is_missing = self._get_default(field)
+            field_data = self._get_default(field)
         else:
-            is_missing = False
-        return field_data, is_missing
+            field_data = dataclasses.MISSING
+        return field_data
 
-    def _get_default(self, field: dataclasses.Field) -> typing.Tuple[typing.Any, bool]:
-        is_missing = False
+    def _get_default(self, field: dataclasses.Field) -> typing.Any:
         if field.default is not dataclasses.MISSING:
-            return field.default, is_missing
+            return field.default
         elif type_utils.is_optional(field.type):
-            return None, is_missing
+            return None
         else:
-            is_missing = True
-            return dataclasses.MISSING, is_missing
+            return dataclasses.MISSING
 
     def _get_pydantic_dataclass(self, origin_dataclass: typing.Type) -> typing.Type:
         if origin_dataclass in self._pydantic_dataclasses:
