@@ -8,10 +8,10 @@ from .limits import Limits
 from .limits import LimitsAnnotation
 from .limits import MaximumLimitValueExceeded
 from .page_position import PagePosition
-from .sort import Order
+from .sort import OrderByAnnotation
 from .sort import Sort
-from .sort import SortDirection
-from .sort import get_allowed_order_by_fields
+from .sort.check_sort import check_sort
+from .sort.parse_sort import parse_sort
 from ..argument_resolver import ArgumentResolver
 from ..core import ComponentMethod
 from ..core import ComponentMethodArgument
@@ -66,7 +66,7 @@ class PagePositionArgumentResolver(ArgumentResolver):
     def _parse_page_position(self, argument: ComponentMethodArgument, http_request: Request) -> PagePosition:
         raw_limit = http_request.query_params.get(self.limit_name)
         raw_offset = http_request.query_params.get(self.offset_name)
-        raw_order_by = http_request.query_params.get(self.order_by_name)
+        raw_order_by = http_request.query_params.get(self.order_by_name, '')
         limit = self._parse_int_param(raw_limit, self.limit_name)
         offset = self._parse_int_param(raw_offset, self.offset_name)
         sort = self._parse_sort_properties(raw_order_by, argument)
@@ -87,25 +87,11 @@ class PagePositionArgumentResolver(ArgumentResolver):
         return param_value
 
     def _parse_sort_properties(self, raw_param_value: str, argument: ComponentMethodArgument) -> typing.Optional[Sort]:
-        if not raw_param_value:
-            return None
+        sort = parse_sort(raw_param_value)
+        order_by_annotations = argument.method.annotations.get_one_or_none(OrderByAnnotation)
 
-        sort_parts = raw_param_value.split(',')
-        allowed_order_by_fields = get_allowed_order_by_fields(argument.method)
-        orders = (self._parse_order(sort_part, allowed_order_by_fields) for sort_part in sort_parts)
-        return Sort(*orders)
+        if sort is None:
+            return order_by_annotations and order_by_annotations.default_sort
+        check_sort(sort, order_by_annotations.allowed_fields)
 
-    def _parse_order(self, field: str, allowed_order_by_fields: typing.FrozenSet[str]) -> Order:
-        is_desc = False
-        if field.startswith('-'):
-            is_desc = True
-            field = field[1:]
-
-        if not field:
-            raise exceptions.ParseError('An empty sorting part found')
-
-        if field not in allowed_order_by_fields and (not self.allow_any_order_by_field or allowed_order_by_fields):
-            raise exceptions.ParseError(f'Field "{field}" does not allowed as order by field')
-
-        direction = SortDirection.DESC if is_desc else SortDirection.ASC
-        return Order(direction=direction, field=field)
+        return sort

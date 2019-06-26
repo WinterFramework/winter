@@ -3,8 +3,8 @@ from drf_yasg import openapi
 
 import winter
 from winter.pagination import PagePosition
-from winter.pagination import PagePositionArgumentsInspector
 from winter.pagination import PagePositionArgumentResolver
+from winter.pagination import PagePositionArgumentsInspector
 from winter.routing import get_route
 
 
@@ -38,10 +38,12 @@ def test_page_position_argument_inspector(argument_type, must_return_parameters)
     assert parameters == expected_parameters
 
 
-def test_page_position_argument_inspector_with_allowed_order_by_fields():
+@pytest.mark.parametrize(('default_sort', 'default_in_parameter'), ((None, None), (('id',), 'id')))
+def test_page_position_argument_inspector_with_allowed_order_by_fields(default_sort, default_in_parameter):
+    
     class SimpleController:
         @winter.route_get('')
-        @winter.pagination.order_by(['id'])
+        @winter.pagination.order_by(['id'], default_sort=default_sort)
         def method(self, arg1: PagePosition):
             return arg1
 
@@ -52,11 +54,12 @@ def test_page_position_argument_inspector_with_allowed_order_by_fields():
 
     order_by_parameter = openapi.Parameter(
         name=resolver.order_by_name,
-        description='Comma separated order by fields. Allowed fields: id',
+        description='Comma separated order by fields. Allowed fields: id.',
         required=False,
         in_=openapi.IN_QUERY,
         type=openapi.TYPE_ARRAY,
         items={'type': openapi.TYPE_STRING},
+        default=default_in_parameter,
     )
 
     expected_parameters = [
