@@ -12,7 +12,7 @@ class Status(enum.Enum):
 
 
 @dataclasses.dataclass
-class InputData:
+class Data:
     id: int
     name: str
     is_god: bool
@@ -29,5 +29,5 @@ class ControllerWithInputData:
 
     @winter.request_body('data')
     @winter.route_post()
-    def method(self, data: InputData) -> InputData:
+    def method(self, data: Data) -> Data:
         return data

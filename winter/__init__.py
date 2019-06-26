@@ -39,8 +39,8 @@ def _default_configuration():
     from . import schema
     from . import pagination
     from .http import InputDataArgumentResolver
-    from .http.request_body_exception_handler import InvalidRequestBodyException
-    from .http.request_body_exception_handler import InvalidRequestBodyExceptionHandler
+    from .converters import ConvertExceptionHandler
+    from .converters import ConvertException
 
     arguments_resolver.add_argument_resolver(DRFBodyArgumentResolver())
     arguments_resolver.add_argument_resolver(InputDataArgumentResolver())
@@ -51,8 +51,8 @@ def _default_configuration():
     register_controller_method_inspector(PathParametersInspector())
     register_controller_method_inspector(QueryParametersInspector())
     register_output_processor_resolver(PageOutputProcessorResolver())
+    exceptions_handler.add_handler(ConvertException, ConvertExceptionHandler, auto_handle=True)
     exceptions_handler.add_handler(RedirectException, RedirectExceptionHandler, auto_handle=True)
-    exceptions_handler.add_handler(InvalidRequestBodyException, InvalidRequestBodyExceptionHandler, auto_handle=True)
     schema.setup()
     pagination.setup()
 

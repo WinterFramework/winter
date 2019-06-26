@@ -1,21 +1,21 @@
 import datetime
 import enum
 import inspect
+import re
 import typing
+import uuid
 
 import dataclasses
 from dateutil import parser
 
+from .convert_exception import ConvertException
 from ..type_utils import get_origin_type
 from ..type_utils import is_optional
 
 _converters = {}
 
-
-class ConvertError(Exception):
-
-    def __init__(self, errors):
-        self.errors = errors
+Item = typing.TypeVar('Item')
+uuid_regexp = re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')
 
 
 def converter(type_: typing.Type, validator: typing.Callable = None):
@@ -27,7 +27,7 @@ def converter(type_: typing.Type, validator: typing.Callable = None):
     return wrapper
 
 
-def convert(data, hint_class):
+def convert(value, hint_class: typing.Type[Item]) -> Item:
     origin_type = get_origin_type(hint_class)
 
     types_ = origin_type.mro() if inspect.isclass(origin_type) else type(origin_type).mro()
@@ -37,49 +37,53 @@ def convert(data, hint_class):
 
         for converter_, checker in converters:
             if checker is None or checker(hint_class):
-                return converter_(data, hint_class)
+                return converter_(value, hint_class)
 
-    raise ConvertError(f'Cannot convert "{data}"')
+    raise ConvertException.invalid_type(value)
 
 
 @converter(object, validator=is_optional)
-def optional_converter(data, type_):
-    if data is None:
+def optional_converter(value, type_: typing.Type[Item]) -> Item:
+    if value is None:
         return None
     type_ = type_.__args__[0]
-    return convert(data, type_)
+    return convert(value, type_)
 
 
 @converter(object, validator=dataclasses.is_dataclass)
-def dataclass_converter(data: typing.Dict[str, typing.Any], type_):
-    if not isinstance(data, dict):
-        raise ConvertError(f'Cannot convert "{data}"')
+def dataclass_converter(value: typing.Dict[str, typing.Any], type_: typing.Type[Item]) -> Item:
+    if not isinstance(value, dict):
+        raise ConvertException.invalid_type(value, 'object')
 
     errors = {}
     converted_data = {}
     missing_fields = []
 
     for field in dataclasses.fields(type_):
-        field_data = data.get(field.name, dataclasses.MISSING)
+        field_data = value.get(field.name, dataclasses.MISSING)
 
         if field_data is dataclasses.MISSING:
-            if is_optional(field.type):
+            if field.default is not dataclasses.MISSING:
+                field_data = field.default
+            elif is_optional(field.type):
                 field_data = None
             else:
                 missing_fields.append(field.name)
                 continue
         try:
             field_data = convert(field_data, field.type)
-        except ConvertError as e:
+        except ConvertException as e:
             errors[field.name] = e.errors
         else:
             converted_data[field.name] = field_data
     if missing_fields:
         missing_fields = '", "'.join(missing_fields)
-        errors['non_field_error'] = f'Missing fields: "{missing_fields}"'
+        errors[ConvertException.NON_FIELD_ERROR] = ConvertException.MISSING_FIELDS_PATTERN.format(
+            missing_fields=missing_fields,
+        )
 
     if errors:
-        raise ConvertError(errors)
+        raise ConvertException(errors)
     return type_(**converted_data)
 
 
@@ -88,7 +92,7 @@ def int_converter(value, type_) -> int:
     try:
         return type_(value)
     except (TypeError, ValueError):
-        raise ConvertError(f'Cannot convert "{value}" to integer')
+        raise ConvertException.cannot_convert(value=value, type_name='integer')
 
 
 @converter(str)
@@ -97,39 +101,40 @@ def convert_srt(value, type_) -> str:
 
 
 @converter(enum.Enum)
-def convert_enum(value, type_):
+def convert_enum(value, type_) -> enum.Enum:
     try:
         return type_(value)
     except ValueError:
         allowed_values = '", "'.join(map(str, (item.value for item in type_)))
-        raise ConvertError(f'Value not in allowed values("{allowed_values}"): "{value}"')
+        errors = ConvertException.NOT_IN_ALLOWED_VALUES_PATTERN.format(value=value, allowed_values=allowed_values)
+        raise ConvertException(errors)
 
 
 # noinspection PyUnusedLocal
 @converter(datetime.date)
-def convert_date(value, type_):
+def convert_date(value, type_) -> datetime.date:
     try:
         return parser.parse(value).date()
     except (ValueError, TypeError):
-        raise ConvertError(f'Cannot convert "{value}" to date')
+        raise ConvertException.cannot_convert(value=value, type_name='date')
 
 
 # noinspection PyUnusedLocal
 @converter(datetime.datetime)
-def convert_datetime(value, type_):
+def convert_datetime(value, type_) -> datetime.datetime:
     try:
         return parser.parse(value)
     except (ValueError, TypeError):
-        raise ConvertError(f'Cannot convert "{value}" to datetime')
+        raise ConvertException.cannot_convert(value=value, type_name='datetime')
 
 
 @converter(list)
-def convert_list(value, type_):
+def convert_list(value, type_) -> list:
     child_types = getattr(type_, '__args__', [])
     child_type = child_types[0] if child_types else str
 
     if not isinstance(value, typing.Iterable):
-        raise ConvertError(f'Cannot convert "{value}" to list')
+        raise ConvertException.cannot_convert(value=value, type_name='list')
 
     updated_value = [
         convert(item, child_type)
@@ -139,15 +144,23 @@ def convert_list(value, type_):
 
 
 @converter(set)
-def convert_set(value, type_):
+def convert_set(value, type_) -> set:
     child_types = getattr(type_, '__args__', [])
     child_type = child_types[0] if child_types else str
 
     if not isinstance(value, typing.Iterable):
-        raise ConvertError(f'Cannot convert "{value}" to set')
+        raise ConvertException.cannot_convert(value=value, type_name='set')
 
     updated_value = {
         convert(item, child_type)
         for item in value
     }
     return updated_value
+
+
+@converter(uuid.UUID)
+def convert_uuid(value, type_):
+    value = str(value)
+    if uuid_regexp.match(value):
+        return type_(value)
+    raise ConvertException.cannot_convert(value=value, type_name='uuid')

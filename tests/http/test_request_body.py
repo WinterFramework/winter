@@ -51,10 +51,10 @@ def test_input_data_with_errors():
     }
 
     expected_data = {
-        'id': 'value is not a valid integer',
-        'status': 'value is not a valid enumeration member',
-        'items': 'value is not a valid integer',
-        'non_field_error': 'Missing fields: name',
+        'id': 'Cannot convert "invalid integer" to integer',
+        'status': 'Value not in allowed values("active", "super_active"): "invalid status"',
+        'items': 'Cannot convert "invalid integer" to integer',
+        'non_field_error': 'Missing fields: "name"',
     }
 
     # Act
