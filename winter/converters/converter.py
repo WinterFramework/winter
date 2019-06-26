@@ -81,10 +81,13 @@ def convert_dataclass(value: typing.Dict[str, typing.Any], type_: typing.Type[It
         errors[ConvertException.NON_FIELD_ERROR] = ConvertException.MISSING_FIELDS_PATTERN.format(
             missing_fields=missing_fields,
         )
+    raise_if_errors(errors)
+    return type_(**converted_data)
 
+
+def raise_if_errors(errors: typing.Dict[str, str]):
     if errors:
         raise ConvertException(errors)
-    return type_(**converted_data)
 
 
 def convert_dataclass_field(
