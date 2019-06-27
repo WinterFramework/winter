@@ -13,7 +13,10 @@ from ..core import ComponentMethodArgument
 class RequestBodyArgumentResolver(ArgumentResolver):
 
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
-        return argument.method.annotations.get_one_or_none(RequestBodyAnnotation) is not None
+        annotation = argument.method.annotations.get_one_or_none(RequestBodyAnnotation)
+        if annotation is None:
+            return False
+        return annotation.argument_name == argument.name
 
     def resolve_argument(self, argument: ComponentMethodArgument, http_request: Request):
         fields = dataclasses.fields(argument.type_)

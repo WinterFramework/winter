@@ -14,5 +14,5 @@ urlpatterns = [
     *winter.django.create_django_urls(controllers.ControllerWithThrottlingOnController),
     *winter.django.create_django_urls(controllers.ControllerWithThrottlingOnMethod),
     *winter.django.create_django_urls(controllers.ControllerWithLimits),
-    *winter.django.create_django_urls(controllers.ControllerWithInputData),
+    *winter.django.create_django_urls(controllers.ControllerWithRequestData),
 ]

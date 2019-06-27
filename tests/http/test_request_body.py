@@ -31,7 +31,7 @@ def test_request_body():
     }
 
     # Act
-    response = client.post('/with-input-data/', data=data)
+    response = client.post('/with-request-data/', data=data)
 
     assert response.status_code == HTTPStatus.OK, response.json()
     assert response.json() == expected_data
@@ -58,7 +58,7 @@ def test_request_body_with_errors():
     }
 
     # Act
-    response = client.post('/with-input-data/', data=data)
+    response = client.post('/with-request-data/', data=data)
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.json() == expected_data

@@ -27,8 +27,9 @@ class Uid(uuid.UUID):
             return False
         return super().__eq__(other)
 
+
 class Number(decimal.Decimal):
-    
+
     def __eq__(self, other):
         if not isinstance(other, __class__):
             return False
@@ -138,7 +139,7 @@ def test_convert_set_with_errors(data, type_, expected_errors):
         typing.List[Status],
         'Value not in allowed values("super", "not_super"): "invalid_status"'
     ),
-    (1, typing.List[Status],'Cannot convert "1" to list'),
+    (1, typing.List[Status], 'Cannot convert "1" to list'),
     (None, typing.List[Status], 'Cannot convert "None" to list'),
 ))
 def test_convert_list_with_errors(data, type_, expected_errors):

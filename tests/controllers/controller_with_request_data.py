@@ -24,10 +24,10 @@ class Data:
 
 
 @winter.controller
-@winter.route('with-input-data/')
-class ControllerWithInputData:
+@winter.route('with-request-data/')
+class ControllerWithRequestData:
 
     @winter.request_body('data')
-    @winter.route_post()
-    def method(self, data: Data) -> Data:
+    @winter.route_post('{?query}')
+    def method(self, query: typing.Optional[str], data: Data) -> Data:
         return data
