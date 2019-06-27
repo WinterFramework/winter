@@ -239,4 +239,13 @@ def test_convert_uuid_with_errors(data, type_, expected_errors):
 def test_convert_decimal(data, type_, expected_instance):
     instance = convert(data, type_)
     assert instance == expected_instance
-    
+
+
+@pytest.mark.parametrize(('data', 'type_', 'expected_errors'), (
+    (None, decimal.Decimal, 'Cannot convert "None" to decimal'),
+    ('invalid decimal', Number, 'Cannot convert "invalid decimal" to decimal'),
+))
+def test_convert_decimal_with_errors(data, type_, expected_errors):
+    with pytest.raises(ConvertException) as ex:
+        convert(data, type_)
+    assert ex.value.errors == expected_errors
