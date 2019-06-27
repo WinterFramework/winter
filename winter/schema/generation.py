@@ -5,6 +5,7 @@ import docstring_parser
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
+from ..http.request_body import RequestBodyAnnotation
 from .method_arguments_inspector import get_method_arguments_inspectors
 from .type_inspection import InspectorNotFound
 from .type_inspection import inspect_type
@@ -24,8 +25,13 @@ def generate_swagger_for_operation(view_func, controller_class, route: Route):
     method = route.method
     docstring = docstring_parser.parse(method.func.__doc__)
     input_serializer = get_input_serializer(method)
+    request_body_annotation = method.annotations.get_one_or_none(RequestBodyAnnotation)
     if input_serializer:
         request_body = input_serializer.class_
+    elif request_body_annotation is not None:
+        argument = method.get_argument(request_body_annotation.argument_name)
+        type_info = inspect_type(argument.type_)
+        request_body = openapi.Schema(title=argument.type_.__name__, **type_info.as_dict())
     else:
         request_body = None
     manual_parameters = _build_method_parameters(route)
