@@ -1,4 +1,5 @@
 import datetime
+import decimal
 import enum
 import typing
 import uuid
@@ -21,6 +22,13 @@ class Id(int):
 
 class Uid(uuid.UUID):
 
+    def __eq__(self, other):
+        if not isinstance(other, __class__):
+            return False
+        return super().__eq__(other)
+
+class Number(decimal.Decimal):
+    
     def __eq__(self, other):
         if not isinstance(other, __class__):
             return False
@@ -222,3 +230,13 @@ def test_convert_uuid_with_errors(data, type_, expected_errors):
     with pytest.raises(ConvertException) as ex:
         convert(data, type_)
     assert ex.value.errors == expected_errors
+
+
+@pytest.mark.parametrize(('data', 'type_', 'expected_instance'), (
+    ('1.05', decimal.Decimal, decimal.Decimal('1.05')),
+    (1.1, Number, Number(1.1)),
+))
+def test_convert_decimal(data, type_, expected_instance):
+    instance = convert(data, type_)
+    assert instance == expected_instance
+    

@@ -1,4 +1,5 @@
 import datetime
+import decimal
 import enum
 import inspect
 import re
@@ -195,3 +196,11 @@ def convert_uuid(value, type_):
     if uuid_regexp.match(value):
         return type_(value)
     raise ConvertException.cannot_convert(value=value, type_name='uuid')
+
+
+@converter(decimal.Decimal)
+def convert_decimal(value, type_):
+    try:
+        return type_(value)
+    except (TypeError, ValueError):
+        raise ConvertException.cannot_convert(value=value, type_name='decimal')
