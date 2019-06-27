@@ -202,5 +202,5 @@ def convert_uuid(value, type_):
 def convert_decimal(value, type_):
     try:
         return type_(value)
-    except (decimal.ConversionSyntax, decimal.InvalidOperation, TypeError):
+    except (decimal.InvalidOperation, TypeError):
         raise ConvertException.cannot_convert(value=value, type_name='decimal')
