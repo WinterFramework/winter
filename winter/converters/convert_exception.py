@@ -1,7 +1,9 @@
 import typing
 
+from rest_framework.exceptions import ParseError
 
-class ConvertException(Exception):
+
+class ConvertException(ParseError):
     NON_FIELD_ERROR = 'non_field_error'
     MISSING_FIELDS_PATTERN = 'Missing fields: "{missing_fields}"'
     NOT_IN_ALLOWED_VALUES_PATTERN = 'Value not in allowed values("{allowed_values}"): "{value}"'

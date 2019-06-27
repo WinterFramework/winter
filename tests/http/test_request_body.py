@@ -7,7 +7,7 @@ from tests.entities import AuthorizedUser
 from winter import request_body
 
 
-def test_input_data():
+def test_request_body():
     client = APIClient()
     user = AuthorizedUser()
     client.force_authenticate(user)
@@ -37,7 +37,7 @@ def test_input_data():
     assert response.json() == expected_data
 
 
-def test_input_data_with_errors():
+def test_request_body_with_errors():
     client = APIClient()
     user = AuthorizedUser()
     client.force_authenticate(user)

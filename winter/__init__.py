@@ -38,12 +38,12 @@ def _default_configuration():
     from .schema import register_controller_method_inspector
     from . import schema
     from . import pagination
-    from .http import InputDataArgumentResolver
+    from .http import RequestBodyArgumentResolver
     from .converters import ConvertExceptionHandler
     from .converters import ConvertException
 
     arguments_resolver.add_argument_resolver(DRFBodyArgumentResolver())
-    arguments_resolver.add_argument_resolver(InputDataArgumentResolver())
+    arguments_resolver.add_argument_resolver(RequestBodyArgumentResolver())
     arguments_resolver.add_argument_resolver(QueryParameterArgumentResolver())
     arguments_resolver.add_argument_resolver(PathParametersArgumentResolver())
     arguments_resolver.add_argument_resolver(PagePositionArgumentResolver())

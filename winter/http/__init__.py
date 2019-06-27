@@ -1,5 +1,5 @@
 from .request_body import request_body
-from .request_body_resolver import InputDataArgumentResolver
+from .request_body_resolver import RequestBodyArgumentResolver
 from .media_type import InvalidMediaTypeException
 from .media_type import MediaType
 from .throttling import throttling

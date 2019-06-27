@@ -10,11 +10,7 @@ from .. import type_utils
 from ..core import ComponentMethodArgument
 
 
-class InputDataArgumentResolver(ArgumentResolver):
-
-    def __init__(self):
-        super().__init__()
-        self._pydantic_dataclasses = {}
+class RequestBodyArgumentResolver(ArgumentResolver):
 
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
         return argument.method.annotations.get_one_or_none(RequestBodyAnnotation) is not None
@@ -24,7 +20,11 @@ class InputDataArgumentResolver(ArgumentResolver):
         input_data = self._get_input_data(fields, http_request)
         return converters.convert(input_data, argument.type_)
 
-    def _get_input_data(self, fields: typing.List[dataclasses.Field], http_request: Request):
+    def _get_input_data(
+        self,
+        fields: typing.List[dataclasses.Field],
+        http_request: Request,
+    ) -> typing.Dict[str, typing.Any]:
 
         input_data = {}
 
