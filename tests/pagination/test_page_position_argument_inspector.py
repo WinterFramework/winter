@@ -40,7 +40,7 @@ def test_page_position_argument_inspector(argument_type, must_return_parameters)
 
 @pytest.mark.parametrize(('default_sort', 'default_in_parameter'), ((None, None), (('id',), 'id')))
 def test_page_position_argument_inspector_with_allowed_order_by_fields(default_sort, default_in_parameter):
-    
+
     class SimpleController:
         @winter.route_get('')
         @winter.pagination.order_by(['id'], default_sort=default_sort)

@@ -12,6 +12,7 @@ install:
 
 before_script:
 - coverage erase
+- flake8 .
 
 script:
 - tox
