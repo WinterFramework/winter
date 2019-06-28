@@ -252,7 +252,6 @@ def test_convert_decimal_with_errors(data, type_, expected_errors):
     assert ex.value.errors == expected_errors
 
 
-
 @pytest.mark.parametrize(('data', 'type_', 'expected_instance'), (
     ({'data': 1}, dict, {'data': 1}),
     ({'data': 1}, typing.Dict, {'data': 1}),
