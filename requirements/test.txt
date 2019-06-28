@@ -6,6 +6,5 @@ pytest-pythonpath>=0.7.1
 pytest-cov>=2.5.1
 pytest-django>=3.2.0
 semver==2.8.1
-flake8==3.7.7
-flake8-commas==2.0.0
-flake8-formatter-abspath==1.0.1
+
+-r flake.txt
