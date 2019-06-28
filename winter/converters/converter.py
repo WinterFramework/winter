@@ -198,7 +198,6 @@ def convert_set(value, type_) -> set:
     return updated_value
 
 
-@converter(typing.Dict)
 @converter(dict)
 def convert_dict(value, type_) -> dict:
     if not isinstance(value, dict):
