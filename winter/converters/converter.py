@@ -55,7 +55,7 @@ def _convert(value, hint_class: typing.Type[Item], type_: typing.Type) -> typing
 
 
 @converter(object, validator=is_optional)
-def optional_converter(value, type_: typing.Type[Item]) -> Item:
+def convert_optional(value, type_: typing.Type[Item]) -> Item:
     if value is None:
         return None
     type_ = type_.__args__[0]
@@ -120,11 +120,19 @@ def _convert_dataclass_field(value, field: dataclasses.Field):
 
 
 @converter(int)
-def int_converter(value, type_) -> int:
+def convert_int(value, type_) -> int:
     try:
         return type_(value)
     except (TypeError, ValueError):
         raise ConvertException.cannot_convert(value=value, type_name='integer')
+
+
+@converter(float)
+def convert_float(value, type_) -> float:
+    try:
+        return type_(value)
+    except (TypeError, ValueError):
+        raise ConvertException.cannot_convert(value=value, type_name='float')
 
 
 @converter(str)
@@ -190,8 +198,27 @@ def convert_set(value, type_) -> set:
     return updated_value
 
 
+@converter(dict)
+def convert_dict(value, type_) -> dict:
+    if not isinstance(value, dict):
+        raise ConvertException.cannot_convert(value=value, type_name='object')
+    key_and_value_type = getattr(type_, '__args__', None)
+
+    if key_and_value_type is None:
+        return value
+
+    if key_and_value_type == typing.Dict.__args__:
+        return value
+
+    key_type, value_type = key_and_value_type
+
+    keys = [convert(key, key_type) for key in value.keys()]
+    values = [convert(value_, value_type) for value_ in value.values()]
+    return dict(zip(keys, values))
+
+
 @converter(uuid.UUID)
-def convert_uuid(value, type_):
+def convert_uuid(value, type_) -> uuid.UUID:
     value = str(value)
     if uuid_regexp.match(value):
         return type_(value)
@@ -199,8 +226,13 @@ def convert_uuid(value, type_):
 
 
 @converter(decimal.Decimal)
-def convert_decimal(value, type_):
+def convert_decimal(value, type_) -> decimal.Decimal:
     try:
         return type_(value)
     except (decimal.InvalidOperation, TypeError):
         raise ConvertException.cannot_convert(value=value, type_name='decimal')
+
+
+@converter(type(typing.Any), validator=lambda type_: type_ is typing.Any)
+def convert_any(value, type_) -> typing.Any:
+    return value

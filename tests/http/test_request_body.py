@@ -1,3 +1,4 @@
+import json
 from http import HTTPStatus
 
 import pytest
@@ -29,9 +30,10 @@ def test_request_body():
         'items': [1, 2],
         'optional_items': None,
     }
+    data = json.dumps(data)
 
     # Act
-    response = client.post('/with-request-data/', data=data)
+    response = client.post('/with-request-data/', data=data, content_type='application/json')
 
     assert response.status_code == HTTPStatus.OK, response.json()
     assert response.json() == expected_data
@@ -56,9 +58,10 @@ def test_request_body_with_errors():
         'items': 'Cannot convert "invalid integer" to integer',
         'non_field_error': 'Missing fields: "name"',
     }
+    data = json.dumps(data)
 
     # Act
-    response = client.post('/with-request-data/', data=data)
+    response = client.post('/with-request-data/', data=data, content_type='application/json')
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.json() == expected_data
