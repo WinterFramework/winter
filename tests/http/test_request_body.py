@@ -1,3 +1,4 @@
+import json
 from http import HTTPStatus
 
 import pytest
@@ -6,8 +7,8 @@ from rest_framework.test import APIClient
 from tests.entities import AuthorizedUser
 from winter import request_body
 
-
-def test_request_body():
+@pytest.mark.parametrize('content_type', ['application/json', None])
+def test_request_body(content_type):
     client = APIClient()
     user = AuthorizedUser()
     client.force_authenticate(user)
@@ -29,15 +30,18 @@ def test_request_body():
         'items': [1, 2],
         'optional_items': None,
     }
+    if content_type == 'application/json':
+        data = json.dumps(data)
 
     # Act
-    response = client.post('/with-request-data/', data=data)
+    response = client.post('/with-request-data/', data=data, content_type=content_type)
 
     assert response.status_code == HTTPStatus.OK, response.json()
     assert response.json() == expected_data
 
 
-def test_request_body_with_errors():
+@pytest.mark.parametrize('content_type', ['application/json', None])
+def test_request_body_with_errors(content_type):
     client = APIClient()
     user = AuthorizedUser()
     client.force_authenticate(user)
@@ -56,9 +60,11 @@ def test_request_body_with_errors():
         'items': 'Cannot convert "invalid integer" to integer',
         'non_field_error': 'Missing fields: "name"',
     }
+    if content_type == 'application/json':
+        data = json.dumps(data)
 
     # Act
-    response = client.post('/with-request-data/', data=data)
+    response = client.post('/with-request-data/', data=data, content_type=content_type)
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.json() == expected_data

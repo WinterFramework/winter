@@ -1,6 +1,7 @@
 import typing
 
 import dataclasses
+from django.http import QueryDict
 from rest_framework.request import Request
 
 from .request_body import RequestBodyAnnotation
@@ -20,7 +21,11 @@ class RequestBodyArgumentResolver(ArgumentResolver):
 
     def resolve_argument(self, argument: ComponentMethodArgument, http_request: Request):
         fields = dataclasses.fields(argument.type_)
-        input_data = self._get_input_data(fields, http_request)
+        if isinstance(http_request.data, QueryDict):
+            input_data = self._get_input_data(fields, http_request)
+        else:
+            input_data = http_request.data
+
         return converters.convert(input_data, argument.type_)
 
     def _get_input_data(
