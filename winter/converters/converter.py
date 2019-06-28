@@ -234,6 +234,6 @@ def convert_decimal(value, type_) -> decimal.Decimal:
         raise ConvertException.cannot_convert(value=value, type_name='decimal')
 
 
-@converter(type(typing.Any))
+@converter(type(typing.Any), validator=lambda type_: type_ is typing.Any)
 def convert_any(value, type_) -> typing.Any:
     return value
