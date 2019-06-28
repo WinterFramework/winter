@@ -55,7 +55,7 @@ def _convert(value, hint_class: typing.Type[Item], type_: typing.Type) -> typing
 
 
 @converter(object, validator=is_optional)
-def optional_converter(value, type_: typing.Type[Item]) -> Item:
+def convert_optional(value, type_: typing.Type[Item]) -> Item:
     if value is None:
         return None
     type_ = type_.__args__[0]
@@ -120,7 +120,7 @@ def _convert_dataclass_field(value, field: dataclasses.Field):
 
 
 @converter(int)
-def int_converter(value, type_) -> int:
+def convert_int(value, type_) -> int:
     try:
         return type_(value)
     except (TypeError, ValueError):
@@ -128,7 +128,7 @@ def int_converter(value, type_) -> int:
 
 
 @converter(float)
-def int_and_converter(value, type_) -> float:
+def convert_float(value, type_) -> float:
     try:
         return type_(value)
     except (TypeError, ValueError):
