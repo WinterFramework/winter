@@ -250,3 +250,26 @@ def test_convert_decimal_with_errors(data, type_, expected_errors):
     with pytest.raises(ConvertException) as ex:
         convert(data, type_)
     assert ex.value.errors == expected_errors
+
+
+
+@pytest.mark.parametrize(('data', 'type_', 'expected_instance'), (
+    ({'data': 1}, dict, {'data': 1}),
+    ({'data': 1}, typing.Dict, {'data': 1}),
+    ({'1': '1'}, typing.Dict[int, int], {1: 1}),
+))
+def test_convert_dict(data, type_, expected_instance):
+    instance = convert(data, type_)
+    assert instance == expected_instance
+
+
+@pytest.mark.parametrize(('data', 'type_', 'expected_errors'), (
+    (None, dict, 'Cannot convert "None" to object'),
+    (None, typing.Dict, 'Cannot convert "None" to object'),
+    ('invalid object', dict, 'Cannot convert "invalid object" to object'),
+    ({'data': 1}, typing.Dict[int, int], 'Cannot convert "data" to integer'),
+))
+def test_convert_decimal_with_errors(data, type_, expected_errors):
+    with pytest.raises(ConvertException) as ex:
+        convert(data, type_)
+    assert ex.value.errors == expected_errors

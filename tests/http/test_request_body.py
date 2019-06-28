@@ -7,6 +7,7 @@ from rest_framework.test import APIClient
 from tests.entities import AuthorizedUser
 from winter import request_body
 
+
 def test_request_body():
     client = APIClient()
     user = AuthorizedUser()

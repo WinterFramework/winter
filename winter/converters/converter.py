@@ -190,6 +190,22 @@ def convert_set(value, type_) -> set:
     return updated_value
 
 
+@converter(dict)
+def convert_dict(value, type_) -> dict:
+    if not isinstance(value, dict):
+        raise ConvertException.cannot_convert(value=value, type_name='object')
+    key_and_value_type = getattr(type_, '__args__', None)
+
+    if key_and_value_type is None:
+        return value
+
+    key_type, value_type = key_and_value_type
+
+    keys = (convert(key, key_type) for key in value.keys())
+    values = (convert(value, value_type) for value in value.values())
+    return dict(zip(keys, values))
+
+
 @converter(uuid.UUID)
 def convert_uuid(value, type_):
     value = str(value)
