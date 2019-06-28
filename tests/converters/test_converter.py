@@ -267,7 +267,8 @@ def test_convert_dict(data, type_, expected_instance):
     (None, dict, 'Cannot convert "None" to object'),
     (None, typing.Dict, 'Cannot convert "None" to object'),
     ('invalid object', dict, 'Cannot convert "invalid object" to object'),
-    ({'data': 1}, typing.Dict[int, int], 'Cannot convert "data" to integer'),
+    ({'data1': 1}, typing.Dict[int, int], 'Cannot convert "data1" to integer'),
+    ({1: 'data2'}, typing.Dict[int, int], 'Cannot convert "data2" to integer'),
 ))
 def test_convert_decimal_with_errors(data, type_, expected_errors):
     with pytest.raises(ConvertException) as ex:
