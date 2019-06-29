@@ -66,7 +66,7 @@ class TypeInfo:
             data['items'] = self.child.as_dict()
 
         if self.nullable:
-            data['x_nullable'] = True
+            data['x-nullable'] = True
 
         if self.enum is not None:
             data['enum'] = self.enum

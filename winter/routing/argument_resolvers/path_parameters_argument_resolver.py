@@ -1,11 +1,10 @@
-import uritemplate
 from django.urls import get_resolver
 from rest_framework.request import Request
 
-from .argument_resolver import ArgumentNotSupported
-from .argument_resolver import ArgumentResolver
-from .core import ComponentMethodArgument
-from .routing.routing import get_url_path
+from ..routing import get_route
+from ...argument_resolver import ArgumentNotSupported
+from ...argument_resolver import ArgumentResolver
+from ...core import ComponentMethodArgument
 
 
 class PathParametersArgumentResolver(ArgumentResolver):
@@ -19,8 +18,8 @@ class PathParametersArgumentResolver(ArgumentResolver):
         if argument in self._cache:
             return self._cache[argument]
 
-        url_path = get_url_path(argument.method)
-        path_variables = uritemplate.variables(url_path)
+        route = get_route(argument.method)
+        path_variables = route.get_path_variables()
         is_supported = self._cache[argument] = argument.name in path_variables
         return is_supported
 

@@ -4,6 +4,7 @@ import enum
 import json
 import uuid
 
+import mock
 import pytest
 import pytz
 from dataclasses import dataclass
@@ -69,7 +70,7 @@ def get_encoder_class():
     (datetime.date(year=2019, month=1, day=1), '2019-01-01'),
     (datetime.time(hour=3, minute=50, second=20), '03:50:20'),
     (datetime.timedelta(hours=10, seconds=20), str(10 * 60 * 60 + 20.0)),
-    (decimal.Decimal(11.0), 11.0),
+    (decimal.Decimal('11.0'), '11.0'),
     (uuid.UUID('c010de13-7f2d-41f9-b4f0-893087e32b92'), 'c010de13-7f2d-41f9-b4f0-893087e32b92'),
     (b'test bytes', 'test bytes'),
     (Dataclass(
@@ -108,3 +109,16 @@ def test_encoder_with_raises(value, exception_type, exception_messages):
         json.dumps(data, cls=encoder_class)
 
     assert exception.value.args[0] in exception_messages
+
+
+@mock.patch('winter.json_encoder.TYPE_DECIMAL', float)
+def test_encode_decimal():
+    encoder_class = get_encoder_class()
+    data = {'key': decimal.Decimal('3.0')}
+    expected_data = {'key': 3.0}
+
+    # Act
+    data = json.loads(json.dumps(data, cls=encoder_class))
+
+    # Assert
+    assert data == expected_data

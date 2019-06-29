@@ -29,14 +29,13 @@ class SampleWinterController:
     def __init__(self, test_repository: TestRepository):
         self._test_repository = test_repository
 
-    @winter.route_get('hello')
-    @winter.query_parameter('name', map_to='names')
+    @winter.route_get('hello{?name}')
+    @winter.map_query_parameter('name', to='names')
     def hello(self, names: List[str] = None) -> str:
         names = ', '.join(names or ['stranger'])
         return f'Hello, {names}!'
 
-    @winter.route_get('foo/{number}')
-    @winter.query_parameter('name')
+    @winter.route_get('foo/{number}{?name}')
     def hello_with_response_code(self, name: str, number: int) -> winter.ResponseEntity:
         """
         :param name: Just a name
@@ -44,8 +43,7 @@ class SampleWinterController:
         """
         return winter.ResponseEntity(f'Hello, {name}! {number}', status.HTTP_201_CREATED)
 
-    @winter.route_get('example')
-    @winter.query_parameter('name')
+    @winter.route_get('example{?name}')
     def second_hello(self, name: str) -> Greeting:
         return Greeting('Welcome', name)
 

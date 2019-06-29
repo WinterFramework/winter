@@ -12,13 +12,10 @@ from typing import Type
 
 import dataclasses
 from django.utils.functional import Promise
-
-__all__ = (
-    'JSONEncoder',
-    'register_encoder',
-)
+from rest_framework.settings import api_settings as rest_settings
 
 _encoder_map: Dict[Type, Tuple[Callable, bool]] = {}
+TYPE_DECIMAL = str if rest_settings.COERCE_DECIMAL_TO_STRING else float
 
 NoneType = type(None)
 
@@ -60,6 +57,7 @@ def register_encoder(func: Callable = None, *, need_recursion=False):
         f'You can not register "{annotation.__name__}" twice. At first unregister it'
     )
     _encoder_map[annotation] = func, need_recursion
+    return func
 
 
 @register_encoder
@@ -89,7 +87,7 @@ def timedelta_encoder(timedelta: datetime.timedelta):
 
 @register_encoder
 def decimal_encoder(number: decimal.Decimal):
-    return float(number)
+    return TYPE_DECIMAL(number)
 
 
 @register_encoder

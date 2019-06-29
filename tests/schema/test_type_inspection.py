@@ -138,3 +138,25 @@ def test_compare_type_info(first, second, is_same):
 ))
 def test_inspect_enum_class(enum_cls, expected_value):
     assert inspect_enum_class(enum_cls) == expected_value
+
+
+@pytest.mark.parametrize(('type_info', 'expected_data'), (
+    (
+        TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_URI, nullable=True),
+        {'format': 'uri', 'type': 'string', 'x-nullable': True},
+    ),
+    (
+        TypeInfo(openapi.TYPE_INTEGER, enum=[1, 2]),
+        {'enum': [1, 2], 'type': 'integer'},
+    ),
+    (
+        TypeInfo(openapi.TYPE_OBJECT, properties={'nested_number': TypeInfo(openapi.TYPE_INTEGER)}),
+        {'properties': {'nested_number': {'type': 'integer'}}, 'type': 'object'},
+    ),
+    (
+        TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_INTEGER)),
+        {'items': {'type': 'integer'}, 'type': 'array'},
+    ),
+))
+def test_as_dict_in_type_info(type_info, expected_data):
+    assert type_info.as_dict() == expected_data

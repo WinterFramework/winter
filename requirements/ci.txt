@@ -3,3 +3,4 @@ tox-travis>=0.10
 codecov>=2.0.9
 
 -r tox.txt
+-r flake.txt

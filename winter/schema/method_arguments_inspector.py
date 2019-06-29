@@ -3,7 +3,7 @@ import typing
 
 from drf_yasg import openapi
 
-if typing.TYPE_CHECKING:  # pragma: no cover
+if typing.TYPE_CHECKING:
     from ..routing import Route
 
 

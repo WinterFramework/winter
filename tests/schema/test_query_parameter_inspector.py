@@ -7,9 +7,8 @@ from winter.schema import QueryParametersInspector
 
 class ControllerForQueryParameter:
 
-    @winter.route_get()
-    @winter.query_parameter('valid_query_param')
-    @winter.query_parameter('mapped_query_param', map_to='invalid_query_param')
+    @winter.route_get('{?valid_query_param,mapped_query_param}')
+    @winter.map_query_parameter('mapped_query_param', to='invalid_query_param')
     def simple_method(
             self,
             valid_query_param: int,
@@ -25,7 +24,7 @@ def test_query_parameter_inspector():
     parameters = inspector.inspect_parameters(route)
 
     # Assert
-    assert len(parameters) == 2
+    assert len(parameters) == 2, parameters
     parameter_by_name = {parameter.name: parameter for parameter in parameters}
     valid_parameter = parameter_by_name['valid_query_param']
     assert valid_parameter.type == openapi.TYPE_INTEGER
