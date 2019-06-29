@@ -8,7 +8,6 @@ import uuid
 
 import dataclasses
 from dateutil import parser
-
 from .convert_exception import ConvertException
 from ..type_utils import get_origin_type
 from ..type_utils import is_optional
@@ -21,7 +20,6 @@ uuid_regexp = re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a
 
 class MissingException(Exception):
     pass
-
 
 
 def converter(type_: typing.Type, validator: typing.Callable = None):

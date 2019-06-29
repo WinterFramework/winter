@@ -96,7 +96,7 @@ class User:
             datetime.date(year=2017, day=21, month=12),
             ['test@test.ru'],
             Contact({123, 456}),
-        )
+        ),
     ),
 ))
 def test_convert(data, expected_instance):
@@ -122,7 +122,7 @@ def test_convert_set(data, type_, expected_instance):
     (
         ['invalid_status'],
         typing.Set[Status],
-        'Value not in allowed values("super", "not_super"): "invalid_status"'
+        'Value not in allowed values("super", "not_super"): "invalid_status"',
     ),
     (1, typing.Set[Status], 'Cannot convert "1" to set'),
     (None, typing.Set[Status], 'Cannot convert "None" to set'),
@@ -137,7 +137,7 @@ def test_convert_set_with_errors(data, type_, expected_errors):
     (
         ['invalid_status'],
         typing.List[Status],
-        'Value not in allowed values("super", "not_super"): "invalid_status"'
+        'Value not in allowed values("super", "not_super"): "invalid_status"',
     ),
     (1, typing.List[Status], 'Cannot convert "1" to list'),
     (None, typing.List[Status], 'Cannot convert "None" to list'),
@@ -252,20 +252,11 @@ def test_convert_decimal_with_errors(data, type_, expected_errors):
     assert ex.value.errors == expected_errors
 
 
-@pytest.mark.parametrize(('data', 'type_', 'expected_instance'), (
-    ('1.05', decimal.Decimal, decimal.Decimal('1.05')),
-    (1.1, Number, Number(1.1)),
-))
-def test_convert_decimal(data, type_, expected_instance):
-    instance = convert(data, type_)
-    assert instance == expected_instance
-
-
 @pytest.mark.parametrize(('data', 'type_', 'expected_errors'), (
     (None, float, 'Cannot convert "None" to float'),
     ('invalid decimal', float, 'Cannot convert "invalid decimal" to float'),
 ))
-def test_convert_decimal_with_errors(data, type_, expected_errors):
+def test_convert_float_with_errors(data, type_, expected_errors):
     with pytest.raises(ConvertException) as ex:
         convert(data, type_)
     assert ex.value.errors == expected_errors
@@ -288,7 +279,7 @@ def test_convert_dict(data, type_, expected_instance):
     ({'data1': 1}, typing.Dict[int, int], 'Cannot convert "data1" to integer'),
     ({1: 'data2'}, typing.Dict[float, float], 'Cannot convert "data2" to float'),
 ))
-def test_convert_decimal_with_errors(data, type_, expected_errors):
+def test_convert_dict_with_errors(data, type_, expected_errors):
     with pytest.raises(ConvertException) as ex:
         convert(data, type_)
     assert ex.value.errors == expected_errors

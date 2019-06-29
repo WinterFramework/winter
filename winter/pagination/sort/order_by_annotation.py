@@ -3,7 +3,7 @@ import typing
 import dataclasses
 
 if typing.TYPE_CHECKING:
-    from .sort import Sort
+    from .sort import Sort  # noqa: F401
 
 
 @dataclasses.dataclass

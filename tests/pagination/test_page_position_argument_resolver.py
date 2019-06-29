@@ -43,7 +43,7 @@ def test_is_supported_in_page_position_argument_resolver(argument_type, expected
     ('order_by=', PagePosition(None, None)),
 ))
 def test_resolve_argument_ok_in_page_position_argument_resolver(query_string, expected_page_position):
-    @winter.pagination.order_by(['name', 'id', 'email', 'x',])
+    @winter.pagination.order_by(['name', 'id', 'email', 'x'])
     def method(page_position: PagePosition):
         return page_position
 
@@ -69,7 +69,7 @@ def test_resolve_argument_ok_in_page_position_argument_resolver_with_default(
     default_sort,
     expected_page_position,
 ):
-    @winter.pagination.order_by(['name', 'id', 'email',], default_sort=default_sort)
+    @winter.pagination.order_by(['name', 'id', 'email'], default_sort=default_sort)
     def method(page_position: PagePosition):
         return page_position
 
@@ -85,6 +85,7 @@ def test_resolve_argument_ok_in_page_position_argument_resolver_with_default(
 
     # Assert
     assert page_position == expected_page_position
+
 
 @pytest.mark.parametrize(('query_string', 'exception_type', 'message'), (
     ('limit=none', ParseError, 'Invalid "limit" query parameter value: "none"'),

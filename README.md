@@ -48,7 +48,6 @@ from typing import Optional
 
 import winter
 from dataclasses import dataclass
-from rest_framework import serializers
 from rest_framework.request import Request
 from winter.pagination import Page
 from winter.pagination import PagePosition
@@ -59,26 +58,9 @@ class NewTodoDTO:
     todo: str
 
 
-class NewTodoDTOSerializer(serializers.Serializer):
-    todo = serializers.CharField()
-
-    def to_internal_value(self, data) -> NewTodoDTO:
-        data = super().to_internal_value(data)
-        return NewTodoDTO(**data)
-
-
 @dataclass
 class TodoUpdateDTO:
     todo: str
-
-
-class TodoUpdateDTOSerializer(serializers.Serializer):
-    todo_index = serializers.IntegerField()
-    todo = serializers.CharField()
-
-    def to_internal_value(self, data) -> TodoUpdateDTO:
-        data = super().to_internal_value(data)
-        return TodoUpdateDTO(**data)
 
 
 @dataclass
@@ -105,7 +87,7 @@ todo_list: List[str] = []
 @winter.route('todo/')
 class TodoController:
     @winter.route_post('')
-    @winter.input_serializer(NewTodoDTOSerializer, 'new_todo_dto')
+    @winter.request_body(argument_name='new_todo_dto')
     def create_todo(self, new_todo_dto: NewTodoDTO) -> TodoDTO:
         todo_list.append(new_todo_dto.todo)
         return self._build_todo_dto(len(todo_list) - 1)
@@ -130,7 +112,7 @@ class TodoController:
         return Page(total_count=len(dto_list), items=paginated_dto_list, position=page_position)
 
     @winter.route_get('{todo_index}/')
-    @winter.input_serializer(TodoUpdateDTOSerializer, 'todo_update_dto')
+    @winter.request_body(argument_name='todo_update_dto')
     @winter.throws(NotFoundException, handler_cls=NotFoundExceptionHandler)
     def update_todo(self, todo_index: int, todo_update_dto: TodoUpdateDTO):
         self._check_index(todo_index)
