@@ -1,6 +1,7 @@
 # requirements for running the tests via pytest
 freezegun==0.3.11
 mock==2.0.0
+# new version of pytest(5.0.0) do not run with pytest-django
 pytest<5.0.0>=3.6
 pytest-pythonpath>=0.7.1
 pytest-cov>=2.5.1

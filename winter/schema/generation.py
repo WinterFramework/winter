@@ -50,11 +50,15 @@ def generate_swagger_for_operation(view_func, controller_class, route: Route):
 
 def get_schema_title(argument: ComponentMethodArgument) -> str:
     title = argument.type_.__name__
-    if title not in _schema_titles:
-        _schema_titles[title] = 1
+    dtos = _schema_titles.setdefault(title, [])
+
+    if argument.type_ not in dtos:
+        dtos.append(argument.type_)
+    index = dtos.index(argument.type_)
+
+    if not index:
         return title
-    _schema_titles[title] += 1
-    index = _schema_titles[title]
+
     return title + f'{index}'
 
 
