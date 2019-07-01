@@ -20,6 +20,8 @@ from ..response_status import get_default_response_status
 from ..routing import Route
 from ..schema.type_inspection import TypeInfo
 
+_schema_titles: typing.Dict[str, int] = {}
+
 
 def generate_swagger_for_operation(view_func, controller_class, route: Route):
     method = route.method
@@ -31,7 +33,8 @@ def generate_swagger_for_operation(view_func, controller_class, route: Route):
     elif request_body_annotation is not None:
         argument = method.get_argument(request_body_annotation.argument_name)
         type_info = inspect_type(argument.type_)
-        request_body = openapi.Schema(title=argument.type_.__name__, **type_info.as_dict())
+        title = get_schema_title(argument)
+        request_body = openapi.Schema(title=title, **type_info.as_dict())
     else:
         request_body = None
     manual_parameters = _build_method_parameters(route)
@@ -43,6 +46,20 @@ def generate_swagger_for_operation(view_func, controller_class, route: Route):
         manual_parameters=manual_parameters,
         responses=responses,
     )(view_func)
+
+
+def get_schema_title(argument: ComponentMethodArgument) -> str:
+    title = argument.type_.__name__
+    dtos = _schema_titles.setdefault(title, [])
+
+    if argument.type_ not in dtos:
+        dtos.append(argument.type_)
+    index = dtos.index(argument.type_)
+
+    if not index:
+        return title
+
+    return title + f'{index}'
 
 
 def build_responses_schemas(route: Route):
