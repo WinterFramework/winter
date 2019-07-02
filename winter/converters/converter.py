@@ -107,14 +107,14 @@ def convert_dataclass_field(
 
 
 def _convert_dataclass_field(value, field: dataclasses.Field):
-    if value is dataclasses.MISSING:
-        if field.default is not dataclasses.MISSING:
-            value = field.default
-        elif is_optional(field.type):
-            value = None
-        else:
-            raise MissingException
-    return convert(value, field.type)
+    if value is not dataclasses.MISSING:
+        return convert(value, field.type)
+    if field.default is not dataclasses.MISSING:
+        return field.default
+    elif is_optional(field.type):
+        return None
+    else:
+        raise MissingException
 
 
 @converter(int)
@@ -205,6 +205,7 @@ def convert_dict(value, type_) -> dict:
     if key_and_value_type is None:
         return value
 
+    # noinspection PyUnresolvedReferences
     if key_and_value_type == typing.Dict.__args__:
         return value
 
@@ -231,6 +232,7 @@ def convert_decimal(value, type_) -> decimal.Decimal:
         raise ConvertException.cannot_convert(value=value, type_name='decimal')
 
 
+# noinspection PyUnusedLocal
 @converter(type(typing.Any), validator=lambda type_: type_ is typing.Any)
 def convert_any(value, type_) -> typing.Any:
     return value

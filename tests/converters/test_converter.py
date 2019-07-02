@@ -12,6 +12,9 @@ from winter.converters.converter import ConvertException
 from winter.converters.converter import convert
 
 
+empty = object()
+
+
 class Id(int):
 
     def __eq__(self, other):
@@ -30,10 +33,10 @@ class Uid(uuid.UUID):
 
 class Number(decimal.Decimal):
 
-    def __eq__(self, other):
+    def __eq__(self, other, **kwargs):
         if not isinstance(other, __class__):
             return False
-        return super().__eq__(other)
+        return super().__eq__(other, **kwargs)
 
 
 class Status(enum.Enum):
@@ -55,6 +58,11 @@ class User:
     contact: Contact
     created_at: typing.Optional[datetime.datetime] = None
     name: str = 'test name'
+
+
+@dataclasses.dataclass(frozen=True)
+class Profile:
+    email: str = empty
 
 
 @pytest.mark.parametrize(('data', 'expected_instance'), (
@@ -177,6 +185,15 @@ def test_convert_without_converter():
     assert ex.value.errors == expected_errors
 
 
+@pytest.mark.parametrize(('data', 'type_', 'expected_instance'), (
+    ({'email': 'test'}, Profile, Profile('test')),
+    ({}, Profile, Profile()),
+))
+def test_convert_dataclass(data, type_, expected_instance):
+    instance = convert(data, type_)
+    assert instance == expected_instance
+
+
 @pytest.mark.parametrize(('data', 'type_', 'expected_errors'), (
     (1, Contact, {
         'non_field_error': 'Invalid type. Need: "object". Got: "1"',
@@ -208,7 +225,7 @@ def test_convert_without_converter():
     ),
 
 ))
-def test_convert_dataclasss_with_errors(data, type_, expected_errors):
+def test_convert_dataclass_with_errors(data, type_, expected_errors):
     with pytest.raises(ConvertException) as ex:
         convert(data, type_)
     assert ex.value.errors == expected_errors
