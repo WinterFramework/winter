@@ -179,6 +179,18 @@ def test_convert_list_with_errors(data, type_, expected_errors):
 
 
 @pytest.mark.parametrize(
+    ('data', 'type_', 'expected_errors'), (
+        ([], str, 'Cannot convert "[]" to string'),
+        (1, str, 'Cannot convert "1" to string'),
+    ),
+)
+def test_convert_string_with_errors(data, type_, expected_errors):
+    with pytest.raises(ConvertException) as ex:
+        convert(data, type_)
+    assert ex.value.errors == expected_errors
+
+
+@pytest.mark.parametrize(
     ('data', 'type_', 'expected_instance'), (
         (['super'], typing.Tuple[Status], (Status.SUPER,)),
         ({1}, typing.Tuple, (1,)),
