@@ -135,6 +135,8 @@ def convert_float(value, type_) -> float:
 
 @converter(str)
 def convert_srt(value, type_) -> str:
+    if not isinstance(value, str):
+        raise ConvertException.cannot_convert(value=value, type_name='string')
     return type_(value)
 
 
@@ -169,7 +171,7 @@ def convert_datetime(value, type_) -> datetime.datetime:
 @converter(list)
 def convert_list(value, type_) -> list:
     child_types = getattr(type_, '__args__', [])
-    child_type = child_types[0] if child_types else str
+    child_type = child_types[0] if child_types else typing.Any
 
     if not isinstance(value, typing.Iterable):
         raise ConvertException.cannot_convert(value=value, type_name='list')
@@ -184,15 +186,34 @@ def convert_list(value, type_) -> list:
 @converter(set)
 def convert_set(value, type_) -> set:
     child_types = getattr(type_, '__args__', [])
-    child_type = child_types[0] if child_types else str
+    child_type = child_types[0] if child_types else typing.Any
 
     if not isinstance(value, typing.Iterable):
         raise ConvertException.cannot_convert(value=value, type_name='set')
 
-    updated_value = {
+    try:
+        updated_value = {
+            convert(item, child_type)
+            for item in value
+        }
+    except TypeError:  # if unhashable type
+        raise ConvertException.cannot_convert(value=value, type_name='set')
+
+    return updated_value
+
+
+@converter(tuple)
+def convert_tuple(value, type_) -> tuple:
+    child_types = getattr(type_, '__args__', [])
+    child_type = child_types[0] if child_types else typing.Any
+
+    if not isinstance(value, typing.Iterable):
+        raise ConvertException.cannot_convert(value=value, type_name='list')
+
+    updated_value = tuple(
         convert(item, child_type)
         for item in value
-    }
+    )
     return updated_value
 
 
@@ -233,6 +254,7 @@ def convert_decimal(value, type_) -> decimal.Decimal:
 
 
 # noinspection PyUnusedLocal
+@converter(typing.TypeVar)
 @converter(type(typing.Any), validator=lambda type_: type_ is typing.Any)
 def convert_any(value, type_) -> typing.Any:
     return value
