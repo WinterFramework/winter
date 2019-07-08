@@ -47,7 +47,7 @@ def create_django_urls(controller_class: Type) -> List:
         methods = (route.method for route in routes)
         django_url_path = rewrite_uritemplate_with_regexps(winter_url_path, methods)
         for route in routes:
-            url_name = f'{controller_class.__name__}.{route.method.name}'
+            url_name = route.method.get_full_name()
             django_urls.append(url(django_url_path, django_view, name=url_name))
     return django_urls
 

@@ -40,7 +40,7 @@ def generate_swagger_for_operation(view_func, controller_class, route: Route):
     manual_parameters = _build_method_parameters(route)
     responses = build_responses_schemas(route)
     swagger_auto_schema(
-        operation_id=f'{controller_class.__name__}.{method.func.__name__}',
+        operation_id=method.get_full_name(),
         operation_description=docstring.short_description,
         request_body=request_body,
         manual_parameters=manual_parameters,
