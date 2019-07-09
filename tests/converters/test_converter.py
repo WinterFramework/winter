@@ -132,6 +132,17 @@ def test_convert_set(data, type_, expected_instance):
 
 
 @pytest.mark.parametrize(
+    ('data', 'type_', 'expected_instance'), (
+        (None, typing.Optional[Status], None),
+        ('super', typing.Optional[Status], Status.SUPER),
+    ),
+)
+def test_convert_optional(data, type_, expected_instance):
+    instance = convert(data, type_)
+    assert instance == expected_instance
+
+
+@pytest.mark.parametrize(
     ('data', 'type_', 'expected_errors'), (
         (
             ['invalid_status'],
