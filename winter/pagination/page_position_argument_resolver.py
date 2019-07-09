@@ -90,7 +90,7 @@ class PagePositionArgumentResolver(ArgumentResolver):
         sort = parse_sort(raw_param_value)
         order_by_annotations = argument.method.annotations.get_one_or_none(OrderByAnnotation)
 
-        if sort is None:
+        if sort is None or order_by_annotations is None:
             return order_by_annotations and order_by_annotations.default_sort
         check_sort(sort, order_by_annotations.allowed_fields)
 
