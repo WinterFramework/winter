@@ -88,10 +88,10 @@ class PagePositionArgumentResolver(ArgumentResolver):
 
     def _parse_sort_properties(self, raw_param_value: str, argument: ComponentMethodArgument) -> typing.Optional[Sort]:
         sort = parse_sort(raw_param_value)
-        order_by_annotations = argument.method.annotations.get_one_or_none(OrderByAnnotation)
+        order_by_annotation = argument.method.annotations.get_one_or_none(OrderByAnnotation)
 
-        if sort is None:
-            return order_by_annotations and order_by_annotations.default_sort
-        check_sort(sort, order_by_annotations.allowed_fields)
+        if sort is None or order_by_annotation is None:
+            return order_by_annotation and order_by_annotation.default_sort
+        check_sort(sort, order_by_annotation.allowed_fields)
 
         return sort
