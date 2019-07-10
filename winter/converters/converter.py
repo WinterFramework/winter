@@ -117,6 +117,24 @@ def _convert_dataclass_field(value, field: dataclasses.Field):
         raise MissingException
 
 
+# noinspection PyUnusedLocal
+@converter(bool)
+def convert_bool(value, type_) -> bool:
+    if isinstance(value, bool):
+        return value
+
+    if isinstance(value, str) and value.lower() in ['true', 'false']:
+        return value.lower() == 'true'
+
+    if value == 0:
+        return False
+
+    if value == 1:
+        return True
+
+    raise ConvertException.cannot_convert(value=value, type_name='bool')
+
+
 @converter(int)
 def convert_int(value, type_) -> int:
     try:
