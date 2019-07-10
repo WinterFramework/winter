@@ -186,4 +186,4 @@ def test_query_parameter(date, date_time, boolean, optional_boolean, array, stri
 
     # Act
     http_response = client.get(base_uri)
-    assert http_response.data == expected_data, base_uri
+    assert http_response.data == expected_data
