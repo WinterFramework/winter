@@ -2,12 +2,12 @@ import typing
 
 import pytest
 from dateutil import parser
-from rest_framework.exceptions import ParseError
 from rest_framework.test import APIClient
 from uritemplate import URITemplate
 
 import winter
 from tests.entities import AuthorizedUser
+from winter import converters
 from winter.argument_resolver import ArgumentNotSupported
 from winter.core.annotations import AlreadyAnnotated
 from winter.routing import QueryParameterArgumentResolver
@@ -43,7 +43,7 @@ def test_query_parameter_resolver(argument_name, query_string, expected_value):
 
 @pytest.mark.parametrize(
     ('query_string', 'expected_exception_message'), (
-        ('query_param=invalid_int', 'Invalid query parameter "query_param" value "invalid_int"'),
+        ('query_param=invalid_int', 'Cannot convert "invalid_int" to integer'),
         ('', 'Missing required query parameter "query_param"'),
     ),
 )
@@ -57,7 +57,7 @@ def test_query_parameter_resolver_with_raises_parse_error(query_string, expected
     argument = method.get_argument('query_param')
     request = get_request(query_string)
 
-    with pytest.raises(ParseError) as exception:
+    with pytest.raises(converters.ConvertException) as exception:
         resolver.resolve_argument(argument, request)
 
     assert str(exception.value) == expected_exception_message
@@ -140,7 +140,7 @@ def test_orphan_map_query_parameter_fails():
     argument = method.get_argument('x_param')
     request = get_request('?x=1')
 
-    with pytest.raises(ParseError) as exception:
+    with pytest.raises(converters.ConvertException) as exception:
         resolver.resolve_argument(argument, request)
 
     assert str(exception.value) == 'Missing required query parameter "x"'

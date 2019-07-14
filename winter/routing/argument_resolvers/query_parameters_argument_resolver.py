@@ -1,6 +1,5 @@
 import typing
 
-from rest_framework.exceptions import ParseError
 from rest_framework.request import Request
 
 from ..routing import get_route
@@ -38,14 +37,10 @@ class QueryParameterArgumentResolver(ArgumentResolver):
             try:
                 return argument.get_default()
             except ArgumentDoesNotHaveDefault:
-                raise ParseError(f'Missing required query parameter "{parameter_name}"')
+                raise converters.ConvertException(f'Missing required query parameter "{parameter_name}"')
 
         value = self._get_value(query_parameters, parameter_name, is_iterable, explode)
-
-        try:
-            return converters.convert(value, argument.type_)
-        except converters.ConvertException:
-            raise ParseError(f'Invalid query parameter "{parameter_name}" value "{value}"')
+        return converters.convert(value, argument.type_)
 
     def _get_query_parameter(self, argument: ComponentMethodArgument) -> typing.Optional[QueryParameter]:
 
