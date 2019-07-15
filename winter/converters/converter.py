@@ -171,6 +171,15 @@ def convert_enum(value, type_) -> enum.Enum:
 # noinspection PyUnusedLocal
 @converter(datetime.date)
 def convert_date(value, type_) -> datetime.date:
+    if isinstance(value, datetime.datetime):
+        return value.date()
+
+    if isinstance(value, datetime.date):
+        return value
+
+    if not isinstance(value, str):
+        raise ConvertException.cannot_convert(value=value, type_name='date')
+
     try:
         return parser.parse(value).date()
     except (ValueError, TypeError):
@@ -180,6 +189,12 @@ def convert_date(value, type_) -> datetime.date:
 # noinspection PyUnusedLocal
 @converter(datetime.datetime)
 def convert_datetime(value, type_) -> datetime.datetime:
+    if isinstance(value, datetime.datetime):
+        return value
+
+    if not isinstance(value, str):
+        raise ConvertException.cannot_convert(value=value, type_name='datetime')
+
     try:
         return parser.parse(value)
     except (ValueError, TypeError):

@@ -231,6 +231,25 @@ def test_convert_tuple_with_errors(data, type_, expected_errors):
 
 
 @pytest.mark.parametrize(
+    ('data', 'type_', 'expected_instance'), (
+        (
+            datetime.datetime(year=2017, day=21, month=12),
+            datetime.datetime,
+            datetime.datetime(year=2017, day=21, month=12),
+        ),
+        (
+            '2001-02-03T04:05:06Z',
+            datetime.datetime,
+            datetime.datetime(year=2001, month=2, day=3, hour=4, minute=5, second=6, tzinfo=tzutc()),
+        ),
+    ),
+)
+def test_convert_datetime(data, type_, expected_instance):
+    instance = convert(data, type_)
+    assert instance == expected_instance
+
+
+@pytest.mark.parametrize(
     ('data', 'type_', 'expected_errors'), (
         (1, datetime.datetime, 'Cannot convert "1" to datetime'),
         ('invalid date', datetime.datetime, 'Cannot convert "invalid date" to datetime'),
@@ -240,6 +259,18 @@ def test_convert_datetime_with_errors(data, type_, expected_errors):
     with pytest.raises(ConvertException) as ex:
         convert(data, type_)
     assert ex.value.errors == expected_errors
+
+
+@pytest.mark.parametrize(
+    ('data', 'type_', 'expected_instance'), (
+        (datetime.date(year=2017, day=21, month=12), datetime.date, datetime.date(year=2017, day=21, month=12)),
+        (datetime.datetime(year=2017, day=21, month=12), datetime.date, datetime.date(year=2017, day=21, month=12)),
+        ('2017-12-21', datetime.date, datetime.date(year=2017, day=21, month=12)),
+    ),
+)
+def test_convert_date(data, type_, expected_instance):
+    instance = convert(data, type_)
+    assert instance == expected_instance
 
 
 @pytest.mark.parametrize(
