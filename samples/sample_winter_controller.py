@@ -2,7 +2,7 @@ from typing import Dict
 from typing import List
 
 import winter
-from pydantic.dataclasses import dataclass
+from dataclasses import dataclass
 from rest_framework import serializers
 from rest_framework import status
 

@@ -4,4 +4,3 @@ Django>=1.11.16
 docstring_parser>=0.1
 drf-yasg>=1.13.0
 furl==2.0.0
-pydantic>=0.15
