@@ -131,14 +131,13 @@ def build_response_schema(method: ComponentMethod):
         return output_serializer.class_(**output_serializer.kwargs)
 
     return_value_type = method.return_value_type
-    if return_value_type in (None, type(None)):
+
+    if (
+        return_value_type in (None, type(None))
+        or (inspect.isclass(return_value_type) and issubclass(return_value_type, (HttpResponseBase, ResponseEntity)))
+    ):
         return openapi.Response(description='')
 
-    if inspect.isclass(return_value_type) and issubclass(return_value_type, HttpResponseBase):
-        return openapi.Response(description='')
-
-    if inspect.isclass(return_value_type) and issubclass(return_value_type, ResponseEntity):
-        return openapi.Response(description='')
     try:
         type_info = inspect_type(return_value_type)
     except InspectorNotFound as e:
