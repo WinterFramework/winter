@@ -1,7 +1,9 @@
+import inspect
 import typing
 from typing import List
 
 import docstring_parser
+from django.http.response import HttpResponseBase
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
@@ -17,14 +19,55 @@ from ..drf import get_output_serializer
 from ..exceptions.handlers import MethodExceptionsHandler
 from ..exceptions.handlers import exceptions_handler
 from ..http.request_body import RequestBodyAnnotation
+from ..response_entity import ResponseEntity
 from ..response_status import get_default_response_status
 from ..routing import Route
 from ..schema.type_inspection import TypeInfo
 
-_schema_titles: typing.Dict[str, int] = {}
+_schema_titles: typing.Dict[str, typing.List] = {}
+
+_generating_swagger_enabled = True
+
+
+def disable_generating_swagger():
+    global _generating_swagger_enabled
+    _generating_swagger_enabled = False
+
+
+def is_generating_swagger_enabled():
+    return _generating_swagger_enabled
+
+
+def enable_generating_swagger():
+    global _generating_swagger_enabled
+    _generating_swagger_enabled = True
+
+
+class InvalidReturnTypeException(Exception):
+
+    def __init__(
+        self,
+        method: ComponentMethod,
+        return_type: typing.Any,
+        message: str,
+    ):
+        self._return_type = return_type
+        self._message = message
+        self._method = method
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}({self})'
+
+    def __str__(self):
+        component_cls = self._method.component.component_cls
+        method_path = f'{component_cls.__module__ }.{component_cls.__name__}.{self._method.name}'
+        return f'{method_path}: -> {self._return_type}: {self._message}'
 
 
 def generate_swagger_for_operation(view_func, controller_class, route: Route):
+    if not _generating_swagger_enabled:
+        return
+
     method = route.method
     docstring = docstring_parser.parse(method.func.__doc__)
     input_serializer = get_input_serializer(method)
@@ -87,14 +130,20 @@ def build_response_schema(method: ComponentMethod):
     if output_serializer is not None:
         return output_serializer.class_(**output_serializer.kwargs)
 
-    type_hints = typing.get_type_hints(method.func)
-    return_value_type = type_hints.get('return', None)
+    return_value_type = method.return_value_type
+    if return_value_type in (None, type(None)):
+        return openapi.Response(description='')
+
+    if inspect.isclass(return_value_type) and issubclass(return_value_type, HttpResponseBase):
+        return openapi.Response(description='')
+
+    if inspect.isclass(return_value_type) and issubclass(return_value_type, ResponseEntity):
+        return openapi.Response(description='')
     try:
         type_info = inspect_type(return_value_type)
-    except InspectorNotFound:
-        return openapi.Response(description='')
-    else:
-        return type_info.get_openapi_schema()
+    except InspectorNotFound as e:
+        raise InvalidReturnTypeException(method, return_value_type, str(e))
+    return type_info.get_openapi_schema()
 
 
 def _build_method_parameters(route: Route) -> List[openapi.Parameter]:

@@ -1,7 +1,10 @@
 from enum import Enum
 
 from .enum_inspector import inspect_enum_class
+from .generation import disable_generating_swagger
+from .generation import enable_generating_swagger
 from .generation import generate_swagger_for_operation
+from .generation import is_generating_swagger_enabled
 from .method_arguments_inspector import MethodArgumentsInspector
 from .method_arguments_inspector import get_method_arguments_inspectors
 from .method_arguments_inspector import register_controller_method_inspector
