@@ -35,7 +35,7 @@ class Controller:
 
     @winter.request_body(argument_name='request_body')
     @winter.route_post(
-        '{path_param}/{?query_param}',
+        '{path_param}/{?query_param,another_query_param}',
         produces=[MediaType.APPLICATION_JSON_UTF8],
         consumes=[MediaType.APPLICATION_JSON_UTF8],
     )
