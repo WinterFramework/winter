@@ -2,10 +2,8 @@ import inspect
 import typing
 from typing import List
 
-import docstring_parser
 from django.http.response import HttpResponseBase
 from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
 
 from .method_arguments_inspector import get_method_arguments_inspectors
 from .type_inspection import InspectorNotFound
@@ -14,11 +12,9 @@ from .utils import update_doc_with_invalid_hype_hint
 from .. import type_utils
 from ..core import ComponentMethod
 from ..core import ComponentMethodArgument
-from ..drf import get_input_serializer
 from ..drf import get_output_serializer
 from ..exceptions.handlers import MethodExceptionsHandler
 from ..exceptions.handlers import exceptions_handler
-from ..http.request_body import RequestBodyAnnotation
 from ..response_entity import ResponseEntity
 from ..response_status import get_default_response_status
 from ..routing import Route
@@ -27,20 +23,6 @@ from ..schema.type_inspection import TypeInfo
 _schema_titles: typing.Dict[str, typing.List] = {}
 
 _generating_swagger_enabled = True
-
-
-def disable_generating_swagger():
-    global _generating_swagger_enabled
-    _generating_swagger_enabled = False
-
-
-def is_generating_swagger_enabled():
-    return _generating_swagger_enabled
-
-
-def enable_generating_swagger():
-    global _generating_swagger_enabled
-    _generating_swagger_enabled = True
 
 
 class InvalidReturnTypeException(Exception):
@@ -60,36 +42,9 @@ class InvalidReturnTypeException(Exception):
 
     def __str__(self):
         component_cls = self._method.component.component_cls
-        method_path = f'{component_cls.__module__ }.{component_cls.__name__}.{self._method.name}'
+        method_full_name = self._method.get_full_name()
+        method_path = f'{component_cls.__module__}.{method_full_name}'
         return f'{method_path}: -> {self._return_type}: {self._message}'
-
-
-def generate_swagger_for_operation(view_func, controller_class, route: Route):
-    if not _generating_swagger_enabled:
-        return
-
-    method = route.method
-    docstring = docstring_parser.parse(method.func.__doc__)
-    input_serializer = get_input_serializer(method)
-    request_body_annotation = method.annotations.get_one_or_none(RequestBodyAnnotation)
-    if input_serializer:
-        request_body = input_serializer.class_
-    elif request_body_annotation is not None:
-        argument = method.get_argument(request_body_annotation.argument_name)
-        type_info = inspect_type(argument.type_)
-        title = get_schema_title(argument)
-        request_body = openapi.Schema(title=title, **type_info.as_dict())
-    else:
-        request_body = None
-    manual_parameters = _build_method_parameters(route)
-    responses = build_responses_schemas(route)
-    swagger_auto_schema(
-        operation_id=f'{controller_class.__name__}.{method.func.__name__}',
-        operation_description=docstring.short_description,
-        request_body=request_body,
-        manual_parameters=manual_parameters,
-        responses=responses,
-    )(view_func)
 
 
 def get_schema_title(argument: ComponentMethodArgument) -> str:
@@ -145,7 +100,7 @@ def build_response_schema(method: ComponentMethod):
     return type_info.get_openapi_schema()
 
 
-def _build_method_parameters(route: Route) -> List[openapi.Parameter]:
+def build_method_parameters(route: Route) -> List['openapi.Parameter']:
     parameters = []
     for method_inspector in get_method_arguments_inspectors():
         parameters += method_inspector.inspect_parameters(route)

@@ -1,32 +1,85 @@
 import typing
 
+from drf_yasg import openapi
 from drf_yasg.inspectors import SwaggerAutoSchema as SwaggerAutoSchemaBase
+from drf_yasg.utils import merge_params
 
+from .generation import build_responses_schemas
+from ..drf.input_serializer import InputSerializer
+from ..http.request_body import RequestBodyAnnotation
+from ..routing import Route
 from ..routing import RouteAnnotation
+from ..schema.generation import build_method_parameters
+from ..schema.generation import get_schema_title
+from ..schema.type_inspection import inspect_type
 
 
 class SwaggerAutoSchema(SwaggerAutoSchemaBase):
 
-    def get_consumes(self):
-        route = self._get_route_annotations()
-        if route is None or route.consumes is None:
-            return super().get_consumes()
-        return [str(media_type) for media_type in route.consumes]
+    def get_operation(self, operation_keys):
+        route = self._get_route()
+        if route is None:
+            return super().get_operation(operation_keys)
+        method = route.method
+        consumes = self._get_consumes(route)
+        produces = self._get_produces(route)
 
-    def get_produces(self):
-        route = self._get_route_annotations()
-        if route is None or route.produces is None:
-            return super().get_produces()
-        return [str(media_type) for media_type in route.produces]
+        body = self._get_request_body_parameters(route)
+        manual_parameters = build_method_parameters(route)
+        parameters = merge_params(body, manual_parameters)
 
-    def _get_route_annotations(self) -> typing.Optional[RouteAnnotation]:
+        operation_id = method.get_full_name()
+        description = method.docstring.get_description()
+        deprecated = self.is_deprecated()
+        responses = self._get_responses(route)
+        tags = self.get_tags(operation_keys)
+
+        return openapi.Operation(
+            operation_id=operation_id,
+            description=description,
+            responses=responses,
+            parameters=parameters,
+            consumes=consumes,
+            produces=produces,
+            deprecated=deprecated,
+            tags=tags,
+        )
+
+    def _get_responses(self, route: Route):
+        responses_schemas = build_responses_schemas(route)
+        return openapi.Responses(responses=self.get_response_schemas(responses_schemas))
+
+    def _get_consumes(self, route: Route):
+        route_annotation = route.method.annotations.get_one_or_none(RouteAnnotation)
+        if route_annotation is None or route_annotation.consumes is None:
+            return self.get_consumes()
+        return [str(media_type) for media_type in route_annotation.consumes]
+
+    def _get_produces(self, route: Route):
+        route_annotation = route.method.annotations.get_one_or_none(RouteAnnotation)
+
+        if route_annotation is None or route_annotation.produces is None:
+            return self.get_produces()
+        return [str(media_type) for media_type in route_annotation.produces]
+
+    def _get_request_body_parameters(self, route: Route) -> typing.List[openapi.Schema]:
+        method = route.method
+        input_serializer = method.annotations.get_one_or_none(InputSerializer)
+        if input_serializer is not None:
+            serializer = input_serializer.class_()
+            schema = self.get_request_body_schema(serializer)
+            return [openapi.Parameter(name='data', in_=openapi.IN_BODY, required=True, schema=schema)]
+        request_body_annotation = method.annotations.get_one_or_none(RequestBodyAnnotation)
+
+        if request_body_annotation is not None:
+            argument = method.get_argument(request_body_annotation.argument_name)
+            type_info = inspect_type(argument.type_)
+            title = get_schema_title(argument)
+            schema = openapi.Schema(title=title, **type_info.as_dict())
+            return [openapi.Parameter(name='data', in_=openapi.IN_BODY, required=True, schema=schema)]
+        return []
+
+    def _get_route(self) -> typing.Optional[Route]:
         view_cls = type(self.view)
         func = getattr(view_cls, self.method.lower(), None)
-        if func is None:
-            return None
-
-        method = getattr(func, 'method', None)
-
-        if method is None:
-            return None
-        return method.annotations.get_one_or_none(RouteAnnotation)
+        return getattr(func, 'route', None)

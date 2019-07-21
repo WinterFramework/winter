@@ -10,12 +10,10 @@ from collections.abc import Iterable
 
 import dataclasses
 from drf_yasg import openapi
-from rest_framework.settings import api_settings as rest_settings
 
 from ..type_utils import get_origin_type
 from ..type_utils import is_optional
 
-TYPE_DECIMAL = openapi.TYPE_STRING if rest_settings.COERCE_DECIMAL_TO_STRING else openapi.TYPE_NUMBER
 _inspectors_by_type: typing.Dict[
     typing.Type,
     typing.List[typing.Tuple[typing.Callable, typing.Optional[typing.Callable]]],
@@ -119,6 +117,9 @@ def inspect_dict(hint_class) -> TypeInfo:
 # noinspection PyUnusedLocal
 @register_type_inspector(decimal.Decimal)
 def inspect_decimal(hint_class) -> TypeInfo:
+    from rest_framework.settings import api_settings as rest_settings
+
+    TYPE_DECIMAL = openapi.TYPE_STRING if rest_settings.COERCE_DECIMAL_TO_STRING else openapi.TYPE_NUMBER
     return TypeInfo(TYPE_DECIMAL, openapi.FORMAT_DECIMAL)
 
 
@@ -182,8 +183,10 @@ def inspect_dataclass(hint_class) -> TypeInfo:
     return TypeInfo(type_=openapi.TYPE_OBJECT, properties=properties)
 
 
-@register_type_inspector(types.FunctionType,
-                         checker=lambda instance: getattr(instance, '__supertype__', None) is not None)
+@register_type_inspector(
+    types.FunctionType,
+    checker=lambda instance: getattr(instance, '__supertype__', None) is not None,
+)
 def inspect_new_type(hint_class) -> TypeInfo:
     return inspect_type(hint_class.__supertype__)
 
@@ -204,8 +207,8 @@ def inspect_type(hint_class) -> TypeInfo:
 
 
 def _inspect_type(
-        hint_class,
-        inspectors: typing.List[typing.Tuple[typing.Callable, typing.Optional[typing.Callable]]],
+    hint_class,
+    inspectors: typing.List[typing.Tuple[typing.Callable, typing.Optional[typing.Callable]]],
 ) -> typing.Optional[TypeInfo]:
     for inspector, checker in inspectors:
         if checker is None or checker(hint_class):
