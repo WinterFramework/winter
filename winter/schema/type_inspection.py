@@ -117,9 +117,8 @@ def inspect_dict(hint_class) -> TypeInfo:
 # noinspection PyUnusedLocal
 @register_type_inspector(decimal.Decimal)
 def inspect_decimal(hint_class) -> TypeInfo:
-    from rest_framework.settings import api_settings as rest_settings
-
-    TYPE_DECIMAL = openapi.TYPE_STRING if rest_settings.COERCE_DECIMAL_TO_STRING else openapi.TYPE_NUMBER
+    from rest_framework.settings import api_settings
+    TYPE_DECIMAL = openapi.TYPE_STRING if api_settings.COERCE_DECIMAL_TO_STRING else openapi.TYPE_NUMBER
     return TypeInfo(TYPE_DECIMAL, openapi.FORMAT_DECIMAL)
 
 
