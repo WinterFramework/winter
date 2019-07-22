@@ -2,7 +2,7 @@ from types import MappingProxyType
 
 from django import urls
 
-from winter.core import ComponentMethod
+from ..core import ComponentMethod
 
 
 def reverse(method: ComponentMethod, args=(), kwargs=MappingProxyType({})):
