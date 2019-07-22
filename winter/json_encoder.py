@@ -12,10 +12,8 @@ from typing import Type
 
 import dataclasses
 from django.utils.functional import Promise
-from rest_framework.settings import api_settings as rest_settings
 
 _encoder_map: Dict[Type, Tuple[Callable, bool]] = {}
-TYPE_DECIMAL = str if rest_settings.COERCE_DECIMAL_TO_STRING else float
 
 NoneType = type(None)
 
@@ -87,6 +85,8 @@ def timedelta_encoder(timedelta: datetime.timedelta):
 
 @register_encoder
 def decimal_encoder(number: decimal.Decimal):
+    from rest_framework.settings import api_settings
+    TYPE_DECIMAL = str if api_settings.COERCE_DECIMAL_TO_STRING else float
     return TYPE_DECIMAL(number)
 
 

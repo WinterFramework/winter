@@ -1,9 +1,9 @@
+import inspect
 import typing
 from typing import List
 
-import docstring_parser
+from django.http.response import HttpResponseBase
 from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
 
 from .method_arguments_inspector import get_method_arguments_inspectors
 from .type_inspection import InspectorNotFound
@@ -12,41 +12,36 @@ from .utils import update_doc_with_invalid_hype_hint
 from .. import type_utils
 from ..core import ComponentMethod
 from ..core import ComponentMethodArgument
-from ..drf import get_input_serializer
 from ..drf import get_output_serializer
 from ..exceptions.handlers import MethodExceptionsHandler
 from ..exceptions.handlers import exceptions_handler
-from ..http.request_body import RequestBodyAnnotation
+from ..response_entity import ResponseEntity
 from ..response_status import get_default_response_status
 from ..routing import Route
 from ..schema.type_inspection import TypeInfo
 
-_schema_titles: typing.Dict[str, int] = {}
+_schema_titles: typing.Dict[str, typing.List] = {}
 
 
-def generate_swagger_for_operation(view_func, controller_class, route: Route):
-    method = route.method
-    docstring = docstring_parser.parse(method.func.__doc__)
-    input_serializer = get_input_serializer(method)
-    request_body_annotation = method.annotations.get_one_or_none(RequestBodyAnnotation)
-    if input_serializer:
-        request_body = input_serializer.class_
-    elif request_body_annotation is not None:
-        argument = method.get_argument(request_body_annotation.argument_name)
-        type_info = inspect_type(argument.type_)
-        title = get_schema_title(argument)
-        request_body = openapi.Schema(title=title, **type_info.as_dict())
-    else:
-        request_body = None
-    manual_parameters = _build_method_parameters(route)
-    responses = build_responses_schemas(route)
-    swagger_auto_schema(
-        operation_id=method.get_full_name(),
-        operation_description=docstring.short_description,
-        request_body=request_body,
-        manual_parameters=manual_parameters,
-        responses=responses,
-    )(view_func)
+class CanNotInspectReturnType(Exception):
+
+    def __init__(
+        self,
+        method: ComponentMethod,
+        return_type: typing.Any,
+        message: str,
+    ):
+        self._return_type = return_type
+        self._message = message
+        self._method = method
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}({self})'
+
+    def __str__(self):
+        component_cls = self._method.component.component_cls
+        method_path = f'{component_cls.__module__}.{self._method.full_name}'
+        return f'{method_path}: -> {self._return_type}: {self._message}'
 
 
 def get_schema_title(argument: ComponentMethodArgument) -> str:
@@ -87,17 +82,22 @@ def build_response_schema(method: ComponentMethod):
     if output_serializer is not None:
         return output_serializer.class_(**output_serializer.kwargs)
 
-    type_hints = typing.get_type_hints(method.func)
-    return_value_type = type_hints.get('return', None)
+    return_value_type = method.return_value_type
+
+    if (
+        return_value_type in (None, type(None))
+        or (inspect.isclass(return_value_type) and issubclass(return_value_type, (HttpResponseBase, ResponseEntity)))
+    ):
+        return openapi.Response(description='')
+
     try:
         type_info = inspect_type(return_value_type)
-    except InspectorNotFound:
-        return openapi.Response(description='')
-    else:
-        return type_info.get_openapi_schema()
+    except InspectorNotFound as e:
+        raise CanNotInspectReturnType(method, return_value_type, str(e))
+    return type_info.get_openapi_schema()
 
 
-def _build_method_parameters(route: Route) -> List[openapi.Parameter]:
+def build_method_parameters(route: Route) -> List['openapi.Parameter']:
     parameters = []
     for method_inspector in get_method_arguments_inspectors():
         parameters += method_inspector.inspect_parameters(route)

@@ -62,6 +62,10 @@ class ComponentMethod:
         return f'{self.component.component_cls.__name__}.{self.name}'
 
     @property
+    def full_name(self) -> str:
+        return f'{self.component.component_cls.__name__}.{self.name}'
+
+    @property
     def arguments(self) -> typing.Collection[ComponentMethodArgument]:
         return tuple(self._arguments.values())
 
