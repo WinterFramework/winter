@@ -6,6 +6,4 @@ from ..core import ComponentMethod
 
 
 def reverse(method: ComponentMethod, args=(), kwargs=MappingProxyType({})):
-    name = method.get_full_name()
-
-    return urls.reverse(name, args=args, kwargs=kwargs)
+    return urls.reverse(method.full_name, args=args, kwargs=kwargs)

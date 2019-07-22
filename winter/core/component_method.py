@@ -58,9 +58,6 @@ class ComponentMethod:
     def component(self):
         return self._component
 
-    def get_full_name(self) -> str:
-        return f'{self.component.component_cls.__name__}.{self.name}'
-
     @property
     def full_name(self) -> str:
         return f'{self.component.component_cls.__name__}.{self.name}'
