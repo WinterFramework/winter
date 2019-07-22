@@ -22,8 +22,6 @@ from ..schema.type_inspection import TypeInfo
 
 _schema_titles: typing.Dict[str, typing.List] = {}
 
-_generating_swagger_enabled = True
-
 
 class CanNotInspectReturnType(Exception):
 
