@@ -8,6 +8,7 @@ from typing import Type
 
 from rest_framework.request import Request
 
+from . import type_utils
 from .core import ComponentMethod
 from .core import ComponentMethodArgument
 
@@ -15,7 +16,8 @@ from .core import ComponentMethodArgument
 class ArgumentNotSupported(Exception):
 
     def __init__(self, argument: ComponentMethodArgument):
-        super().__init__(f'Unable to resolve argument {argument.name}: {argument.type_.__name__}')
+        type_name = type_utils.get_type_name(argument.type_)
+        super().__init__(f'Unable to resolve argument {argument.name}: {type_name}')
 
 
 class ArgumentResolver(abc.ABC):

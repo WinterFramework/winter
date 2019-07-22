@@ -1,7 +1,6 @@
 import typing
 
 from furl import furl
-from rest_framework import exceptions
 from rest_framework.request import Request
 
 from .limits import Limits
@@ -12,10 +11,12 @@ from .sort import OrderByAnnotation
 from .sort import Sort
 from .sort.check_sort import check_sort
 from .sort.parse_sort import parse_sort
+from .. import converters
 from ..argument_resolver import ArgumentResolver
 from ..core import ComponentMethod
 from ..core import ComponentMethodArgument
 from ..exceptions import RedirectException
+from ..positive_integer.positive_integer import PositiveInteger
 
 
 class PagePositionArgumentResolver(ArgumentResolver):
@@ -64,34 +65,20 @@ class PagePositionArgumentResolver(ArgumentResolver):
         return self.limits
 
     def _parse_page_position(self, argument: ComponentMethodArgument, http_request: Request) -> PagePosition:
-        raw_limit = http_request.query_params.get(self.limit_name)
-        raw_offset = http_request.query_params.get(self.offset_name)
+        raw_limit = http_request.query_params.get(self.limit_name) or None
+        raw_offset = http_request.query_params.get(self.offset_name) or None
         raw_order_by = http_request.query_params.get(self.order_by_name, '')
-        limit = self._parse_int_param(raw_limit, self.limit_name)
-        offset = self._parse_int_param(raw_offset, self.offset_name)
+        limit = converters.convert(raw_limit, typing.Optional[PositiveInteger])
+        offset = converters.convert(raw_offset, typing.Optional[PositiveInteger])
         sort = self._parse_sort_properties(raw_order_by, argument)
         return PagePosition(limit=limit, offset=offset, sort=sort)
 
-    @staticmethod
-    def _parse_int_param(raw_param_value: str, param_name: str) -> typing.Optional[int]:
-        if not raw_param_value:
-            return None
-
-        try:
-            param_value = int(raw_param_value)
-        except (ValueError, TypeError):
-            raise exceptions.ParseError(f'Invalid "{param_name}" query parameter value: "{raw_param_value}"')
-
-        if param_value < 0:
-            raise exceptions.ValidationError(f'Invalid "{param_name}" query parameter value: "{raw_param_value}"')
-        return param_value
-
     def _parse_sort_properties(self, raw_param_value: str, argument: ComponentMethodArgument) -> typing.Optional[Sort]:
         sort = parse_sort(raw_param_value)
-        order_by_annotations = argument.method.annotations.get_one_or_none(OrderByAnnotation)
+        order_by_annotation = argument.method.annotations.get_one_or_none(OrderByAnnotation)
 
-        if sort is None:
-            return order_by_annotations and order_by_annotations.default_sort
-        check_sort(sort, order_by_annotations.allowed_fields)
+        if sort is None or order_by_annotation is None:
+            return order_by_annotation and order_by_annotation.default_sort
+        check_sort(sort, order_by_annotation.allowed_fields)
 
         return sort

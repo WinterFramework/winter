@@ -5,17 +5,18 @@ import docstring_parser
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from ..http.request_body import RequestBodyAnnotation
 from .method_arguments_inspector import get_method_arguments_inspectors
 from .type_inspection import InspectorNotFound
 from .type_inspection import inspect_type
 from .utils import update_doc_with_invalid_hype_hint
+from .. import type_utils
 from ..core import ComponentMethod
 from ..core import ComponentMethodArgument
 from ..drf import get_input_serializer
 from ..drf import get_output_serializer
 from ..exceptions.handlers import MethodExceptionsHandler
 from ..exceptions.handlers import exceptions_handler
+from ..http.request_body import RequestBodyAnnotation
 from ..response_status import get_default_response_status
 from ..routing import Route
 from ..schema.type_inspection import TypeInfo
@@ -49,7 +50,7 @@ def generate_swagger_for_operation(view_func, controller_class, route: Route):
 
 
 def get_schema_title(argument: ComponentMethodArgument) -> str:
-    title = argument.type_.__name__
+    title = type_utils.get_type_name(argument.type_)
     dtos = _schema_titles.setdefault(title, [])
 
     if argument.type_ not in dtos:

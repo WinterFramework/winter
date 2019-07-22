@@ -2,26 +2,28 @@ import typing
 
 import pytest
 from dateutil import parser
-from rest_framework.exceptions import ParseError
 from rest_framework.test import APIClient
 from uritemplate import URITemplate
 
 import winter
 from tests.entities import AuthorizedUser
+from winter import converters
 from winter.argument_resolver import ArgumentNotSupported
 from winter.core.annotations import AlreadyAnnotated
 from winter.routing import QueryParameterArgumentResolver
 from tests.utils import get_request
 
 
-@pytest.mark.parametrize(('argument_name', 'query_string', 'expected_value'), (
-    ('without_default', 'without_default=1', 1),
-    ('optional', 'optional=value', 'value'),
-    ('optional', '', None),
-    ('with_default', 'with_default=value', 'value'),
-    ('with_default', '', 'default'),
-    ('array', 'array=1&array=2', [1, 2]),
-))
+@pytest.mark.parametrize(
+    ('argument_name', 'query_string', 'expected_value'), (
+        ('without_default', 'without_default=1', 1),
+        ('optional', 'optional=value', 'value'),
+        ('optional', '', None),
+        ('with_default', 'with_default=value', 'value'),
+        ('with_default', '', 'default'),
+        ('array', 'array=1&array=2', [1, 2]),
+    ),
+)
 def test_query_parameter_resolver(argument_name, query_string, expected_value):
     @winter.route_get('{?without_default,optional,with_default,array*}')
     def method(
@@ -39,10 +41,12 @@ def test_query_parameter_resolver(argument_name, query_string, expected_value):
     assert resolver.resolve_argument(argument, request) == expected_value
 
 
-@pytest.mark.parametrize(('query_string', 'expected_exception_message'), (
-    ('query_param=invalid_int', 'Invalid query parameter "query_param" value "invalid_int"'),
-    ('', 'Missing required query parameter "query_param"'),
-))
+@pytest.mark.parametrize(
+    ('query_string', 'expected_exception_message'), (
+        ('query_param=invalid_int', 'Cannot convert "invalid_int" to integer'),
+        ('', 'Missing required query parameter "query_param"'),
+    ),
+)
 def test_query_parameter_resolver_with_raises_parse_error(query_string, expected_exception_message):
     @winter.route_get('{?query_param}')
     def method(query_param: int):
@@ -53,16 +57,18 @@ def test_query_parameter_resolver_with_raises_parse_error(query_string, expected
     argument = method.get_argument('query_param')
     request = get_request(query_string)
 
-    with pytest.raises(ParseError) as exception:
+    with pytest.raises(converters.ConvertException) as exception:
         resolver.resolve_argument(argument, request)
 
     assert str(exception.value) == expected_exception_message
 
 
-@pytest.mark.parametrize(('argument_name', 'expected_is_supported'), (
-    ('query_param', True),
-    ('invalid_query_param', False),
-))
+@pytest.mark.parametrize(
+    ('argument_name', 'expected_is_supported'), (
+        ('query_param', True),
+        ('invalid_query_param', False),
+    ),
+)
 def test_is_supported(argument_name, expected_is_supported):
     @winter.route_get('{?' + argument_name + '}')
     def method(query_param: int):
@@ -134,18 +140,19 @@ def test_orphan_map_query_parameter_fails():
     argument = method.get_argument('x_param')
     request = get_request('?x=1')
 
-    with pytest.raises(ParseError) as exception:
+    with pytest.raises(converters.ConvertException) as exception:
         resolver.resolve_argument(argument, request)
 
     assert str(exception.value) == 'Missing required query parameter "x"'
 
 
-@pytest.mark.parametrize(('date', 'date_time', 'boolean', 'optional_boolean', 'array', 'string'), (
-    ('2019-05-02', '2019-05-02 22:28:31', 'false', None, [10, 20], 'xyz'),
-    ('2019-05-02', '2019-05-02 22:28:31', 'false', '', [10, 20], 'xyz'),
-    ('2019-05-01', '2019-05-01 22:28:31', 'true', 'true', [10, 20], 'xyz'),
-    ('2019-05-01', '2019-05-01 22:28:31', 'true', 'false', [10, 20], 'xyz'),
-))
+@pytest.mark.parametrize(
+    ('date', 'date_time', 'boolean', 'optional_boolean', 'array', 'string'), (
+        ('2019-05-02', '2019-05-02 22:28:31', 'false', None, [10, 20], 'xyz'),
+        ('2019-05-01', '2019-05-01 22:28:31', 'true', 'true', [10, 20], 'xyz'),
+        ('2019-05-01', '2019-05-01 22:28:31', 'true', 'false', [10, 20], 'xyz'),
+    ),
+)
 def test_query_parameter(date, date_time, boolean, optional_boolean, array, string):
     client = APIClient()
     user = AuthorizedUser()

@@ -406,3 +406,34 @@ def test_convert_dict_with_errors(data, type_, expected_errors):
 def test_convert_any():
     instance = object()
     assert convert(instance, typing.Any) is instance
+
+
+@pytest.mark.parametrize(
+    ('data', 'type_', 'expected_instance'), (
+        (True, bool, True),
+        (False, bool, False),
+        ('True', bool, True),
+        ('true', bool, True),
+        ('false', bool, False),
+        ('False', bool, False),
+        (1, bool, True),
+        (1.0, bool, True),
+        (0, bool, False),
+        (0.0, bool, False),
+    ),
+)
+def test_convert_bool(data, type_, expected_instance):
+    instance = convert(data, type_)
+    assert instance == expected_instance
+
+
+@pytest.mark.parametrize(
+    ('data', 'type_', 'expected_errors'), (
+        ('', bool, 'Cannot convert "" to bool'),
+        ('invalid_bool', bool, 'Cannot convert "invalid_bool" to bool'),
+    ),
+)
+def test_convert_bool_with_errors(data, type_, expected_errors):
+    with pytest.raises(ConvertException) as ex:
+        convert(data, type_)
+    assert ex.value.errors == expected_errors

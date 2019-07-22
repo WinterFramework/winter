@@ -7,7 +7,7 @@ UnionType = type(Union)
 
 
 def is_optional(typing: object) -> bool:
-    return is_union(typing) and NoneType in typing.__args__
+    return is_union(typing) and NoneType in (getattr(typing, '__args__', []) or [])
 
 
 def is_iterable(typing: object) -> bool:
@@ -29,3 +29,20 @@ def get_origin_type(hint_class):
 def is_origin_type_subclasses(hint_class, check_class):
     origin_type = get_origin_type(hint_class)
     return inspect.isclass(origin_type) and issubclass(origin_type, check_class)
+
+
+def get_type_name(type_):
+    if inspect.isclass(type_):
+        return type_.__name__
+
+    if is_optional(type_):
+        base_type = type_.__args__[0]
+        base_type_name = get_type_name(base_type)
+        return f'Optional[{base_type_name}]'
+
+    type_name = repr(type_)
+    if type_name.startswith('typing.'):
+        type_name = type_name[7:]
+        return type_name
+
+    return type(type_).__name__
