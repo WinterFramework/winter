@@ -16,10 +16,10 @@ def test_reverse_with_args():
     uid = uuid.uuid4()
     url = reverse(
         ControllerWithPathParameters.test,
-        args=('param1', 'one', '1', uid, '1'),
+        args=('param1', 1, 'one', uid, '1'),
     )
     # Assert
-    assert url == f'/controller_with_path_parameters/param1/one/1/{uid}/1/'
+    assert url == f'/controller_with_path_parameters/param1/1/one/{uid}/1/'
 
 
 def test_reverse_with_kwargs():
@@ -28,11 +28,11 @@ def test_reverse_with_kwargs():
         ControllerWithPathParameters.test,
         kwargs={
             'param1': 'param1',
-            'param2': 'one',
-            'param3': '1',
+            'param2': '1',
+            'param3': 'one',
             'param4': uid,
             'param5': '1',
         },
     )
     # Assert
-    assert url == f'/controller_with_path_parameters/param1/one/1/{uid}/1/'
+    assert url == f'/controller_with_path_parameters/param1/1/one/{uid}/1/'
