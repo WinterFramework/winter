@@ -1,4 +1,4 @@
-from winter import converters
+from .. import converters
 
 
 class PositiveInteger(int):
