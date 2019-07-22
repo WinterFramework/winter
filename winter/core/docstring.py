@@ -7,7 +7,8 @@ class Docstring:
         self._docstring = docstring_parser.parse(doc)
         self.params_docs = {param_doc.arg_name: param_doc for param_doc in self._docstring.params}
 
-    def get_description(self):
+    @property
+    def short_description(self) -> str:
         return self._docstring.short_description
 
     def get_argument_description(self, argument_name: str) -> str:

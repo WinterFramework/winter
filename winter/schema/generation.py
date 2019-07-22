@@ -25,7 +25,7 @@ _schema_titles: typing.Dict[str, typing.List] = {}
 _generating_swagger_enabled = True
 
 
-class InvalidReturnTypeException(Exception):
+class CanNotInspectReturnType(Exception):
 
     def __init__(
         self,
@@ -42,8 +42,7 @@ class InvalidReturnTypeException(Exception):
 
     def __str__(self):
         component_cls = self._method.component.component_cls
-        method_full_name = self._method.get_full_name()
-        method_path = f'{component_cls.__module__}.{method_full_name}'
+        method_path = f'{component_cls.__module__}.{self._method.full_name}'
         return f'{method_path}: -> {self._return_type}: {self._message}'
 
 
@@ -96,7 +95,7 @@ def build_response_schema(method: ComponentMethod):
     try:
         type_info = inspect_type(return_value_type)
     except InspectorNotFound as e:
-        raise InvalidReturnTypeException(method, return_value_type, str(e))
+        raise CanNotInspectReturnType(method, return_value_type, str(e))
     return type_info.get_openapi_schema()
 
 

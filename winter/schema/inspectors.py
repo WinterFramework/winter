@@ -28,8 +28,8 @@ class SwaggerAutoSchema(SwaggerAutoSchemaBase):
         manual_parameters = build_method_parameters(route)
         parameters = merge_params(body, manual_parameters)
 
-        operation_id = method.get_full_name()
-        description = method.docstring.get_description()
+        operation_id = method.full_name
+        description = method.docstring.short_description
         deprecated = self.is_deprecated()
         responses = self._get_responses(route)
         tags = self.get_tags(operation_keys)
@@ -62,7 +62,7 @@ class SwaggerAutoSchema(SwaggerAutoSchemaBase):
             return self.get_produces()
         return [str(media_type) for media_type in route_annotation.produces]
 
-    def _get_request_body_parameters(self, route: Route) -> typing.List[openapi.Schema]:
+    def _get_request_body_parameters(self, route: Route) -> typing.List[openapi.Parameter]:
         method = route.method
         input_serializer = method.annotations.get_one_or_none(InputSerializer)
         if input_serializer is not None:

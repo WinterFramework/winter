@@ -3,7 +3,7 @@ import pytest
 import winter.core
 from rest_framework import serializers
 
-from winter.schema.generation import InvalidReturnTypeException
+from winter.schema.generation import CanNotInspectReturnType
 from winter.schema.generation import build_response_schema
 
 
@@ -30,10 +30,10 @@ def test_with_output_serializer():
 
 def test_with_invalid_return_type():
 
-    with pytest.raises(InvalidReturnTypeException) as e:
+    with pytest.raises(CanNotInspectReturnType) as e:
         build_response_schema(Controller.with_invalid_return_type)
 
     assert repr(e.value) == (
-        'InvalidReturnTypeException(tests.schema.test_build_response_schema.Controller.with_invalid_return_type: '
+        'CanNotInspectReturnType(tests.schema.test_build_response_schema.Controller.with_invalid_return_type: '
         "-> <class 'object'>: Unknown type: <class 'object'>)"
     )
