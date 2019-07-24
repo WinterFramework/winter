@@ -54,8 +54,8 @@ class User:
     id: Id
     status: Status
     birthday: datetime.date
-    emails: typing.List[str]
     contact: Contact
+    emails: typing.List[str] = dataclasses.field(default_factory=list)
     created_at: typing.Optional[datetime.datetime] = None
     name: str = 'test name'
 
@@ -83,8 +83,8 @@ class Profile:
                 Id(1),
                 Status.SUPER,
                 datetime.date(year=2017, day=21, month=12),
-                ['test@test.ru'],
                 Contact({123, 456}),
+                ['test@test.ru'],
                 datetime.datetime(year=2001, month=2, day=3, hour=4, minute=5, second=6, tzinfo=tzutc()),
                 'name',
             ),
@@ -94,7 +94,6 @@ class Profile:
                 'id': 1,
                 'status': 'super',
                 'birthday': '2017-12-21',
-                'emails': ['test@test.ru'],
                 'contact': {
                     'phones': ['123', '456'],
                 },
@@ -103,8 +102,9 @@ class Profile:
                 Id(1),
                 Status.SUPER,
                 datetime.date(year=2017, day=21, month=12),
-                ['test@test.ru'],
                 Contact({123, 456}),
+                [],
+                name='test name',
             ),
         ),
     ),
@@ -303,7 +303,7 @@ def test_convert_dataclass(data, type_, expected_instance):
             },
             User,
             {
-                'non_field_error': 'Missing fields: "id", "status", "birthday", "emails"',
+                'non_field_error': 'Missing fields: "id", "status", "birthday"',
                 'contact': {
                     'phones': 'Cannot convert "123" to set',
                 },
