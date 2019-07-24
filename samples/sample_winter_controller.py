@@ -1,10 +1,11 @@
 from typing import Dict
 from typing import List
 
-import winter
 from dataclasses import dataclass
 from rest_framework import serializers
 from rest_framework import status
+
+import winter
 
 
 class GreetingSerializer(serializers.Serializer):
