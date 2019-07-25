@@ -234,6 +234,7 @@ def test_convert_tuple_with_errors(data, type_, expected_errors):
     ('data', 'type_', 'expected_errors'), (
         (1, datetime.datetime, 'Cannot convert "1" to datetime'),
         ('invalid date', datetime.datetime, 'Cannot convert "invalid date" to datetime'),
+        (None, datetime.datetime, 'Cannot convert "None" to datetime'),
     ),
 )
 def test_convert_datetime_with_errors(data, type_, expected_errors):
@@ -246,6 +247,7 @@ def test_convert_datetime_with_errors(data, type_, expected_errors):
     ('data', 'type_', 'expected_errors'), (
         (1, datetime.date, 'Cannot convert "1" to date'),
         ('invalid date', datetime.date, 'Cannot convert "invalid date" to date'),
+        (None, datetime.date, 'Cannot convert "None" to date'),
     ),
 )
 def test_convert_date_with_errors(data, type_, expected_errors):
