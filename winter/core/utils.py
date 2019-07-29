@@ -9,5 +9,12 @@ class cached_property:
     def __get__(self, instance, cls=None):
         if instance is None:
             return self
+        if self.name in instance.__dict__:
+            return instance.__dict__[self.name]
         res = instance.__dict__[self.name] = self.func(instance)
         return res
+
+    def __set__(self, instance, value):
+        if instance is None:
+            return self
+        raise AttributeError("can't set attribute")
