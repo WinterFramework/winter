@@ -15,6 +15,4 @@ class cached_property:
         return res
 
     def __set__(self, instance, value):
-        if instance is None:
-            return self
         raise AttributeError("can't set attribute")
