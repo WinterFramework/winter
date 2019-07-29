@@ -9,7 +9,7 @@ from .sort import OrderByAnnotation
 from ..schema import MethodArgumentsInspector
 
 if TYPE_CHECKING:
-    from winter.routing import Route
+    from ..routing import Route
 
 
 class PagePositionArgumentsInspector(MethodArgumentsInspector):

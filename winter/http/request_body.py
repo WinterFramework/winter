@@ -1,6 +1,6 @@
 import dataclasses
 
-from winter.core import annotate_method
+from ..core import annotate_method
 
 
 @dataclasses.dataclass

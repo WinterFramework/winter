@@ -12,11 +12,12 @@ from winter.schema.generation import build_responses_schemas
 from ..controllers import ControllerWithExceptions
 
 
-@pytest.mark.parametrize(('return_type', 'expected_response'), (
-    (str, openapi.Schema(type=openapi.TYPE_STRING)),
-    (None, openapi.Response(description='')),
-    (object, openapi.Response(description='')),
-))
+@pytest.mark.parametrize(
+    ('return_type', 'expected_response'), (
+        (str, openapi.Schema(type=openapi.TYPE_STRING)),
+        (None, openapi.Response(description='')),
+    ),
+)
 def test_build_response_schema(return_type, expected_response):
     @winter.route('')
     class SimpleController:
@@ -32,24 +33,36 @@ def test_build_response_schema(return_type, expected_response):
     assert isinstance(schema, openapi.SwaggerDict)
 
 
-@pytest.mark.parametrize('controller_class, method_name, expected_responses', [
-    (ControllerWithExceptions, 'declared_and_thrown', {
-        '200': openapi.Schema(type=openapi.TYPE_STRING),
-        '400': openapi.Schema(type=openapi.TYPE_OBJECT, properties={
-            'message': openapi.Schema(type=openapi.TYPE_STRING),
-        }),
-    }),
-    (ControllerWithExceptions, 'with_custom_handler', {
-        '200': openapi.Schema(type=openapi.TYPE_STRING),
-        '401': openapi.Schema(type=openapi.TYPE_INTEGER),
-    }),
-    (ControllerWithExceptions, 'not_declared_but_thrown', {
-        '200': openapi.Schema(type=openapi.TYPE_STRING),
-    }),
-    (ControllerWithExceptions, 'declared_but_no_handler', {
-        '200': openapi.Schema(type=openapi.TYPE_STRING),
-    }),
-])
+@pytest.mark.parametrize(
+    'controller_class, method_name, expected_responses', [
+        (
+            ControllerWithExceptions, 'declared_and_thrown', {
+                '200': openapi.Schema(type=openapi.TYPE_STRING),
+                '400': openapi.Schema(
+                    type=openapi.TYPE_OBJECT, properties={
+                        'message': openapi.Schema(type=openapi.TYPE_STRING),
+                    },
+                ),
+            },
+        ),
+        (
+            ControllerWithExceptions, 'with_custom_handler', {
+                '200': openapi.Schema(type=openapi.TYPE_STRING),
+                '401': openapi.Schema(type=openapi.TYPE_INTEGER),
+            },
+        ),
+        (
+            ControllerWithExceptions, 'not_declared_but_thrown', {
+                '200': openapi.Schema(type=openapi.TYPE_STRING),
+            },
+        ),
+        (
+            ControllerWithExceptions, 'declared_but_no_handler', {
+                '200': openapi.Schema(type=openapi.TYPE_STRING),
+            },
+        ),
+    ],
+)
 def test_response_schema(controller_class: Type, method_name: str, expected_responses: Dict):
     component = get_component(controller_class)
     method = component.get_method(method_name)

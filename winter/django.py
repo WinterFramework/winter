@@ -26,8 +26,6 @@ from .response_entity import ResponseEntity
 from .response_status import get_default_response_status
 from .routing.routing import Route
 from .routing.routing import get_route
-from .schema import generate_swagger_for_operation
-from .schema.inspectors import SwaggerAutoSchema
 
 
 class SessionAuthentication(rest_framework.authentication.SessionAuthentication):
@@ -47,8 +45,7 @@ def create_django_urls(controller_class: Type) -> List:
         methods = (route.method for route in routes)
         django_url_path = rewrite_uritemplate_with_regexps(winter_url_path, methods)
         for route in routes:
-            url_name = f'{controller_class.__name__}.{route.method.name}'
-            django_urls.append(url(django_url_path, django_view, name=url_name))
+            django_urls.append(url(django_url_path, django_view, name=route.method.full_name))
     return django_urls
 
 
@@ -57,14 +54,12 @@ def _create_django_view(controller_class, component, routes: List[Route]):
         authentication_classes = (SessionAuthentication,)
         permission_classes = (IsAuthenticated,) if is_authentication_needed(component) else ()
         throttle_classes = create_throttle_classes(component, routes)
-        swagger_schema = SwaggerAutoSchema
 
     for route in routes:
         dispatch = _create_dispatch_function(controller_class, route)
-        dispatch.method = route.method
+        dispatch.route = route
         dispatch_method_name = route.http_method.lower()
         setattr(WinterView, dispatch_method_name, dispatch)
-        generate_swagger_for_operation(dispatch, controller_class, route)
     return WinterView().as_view()
 
 

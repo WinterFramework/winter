@@ -111,6 +111,8 @@ def _convert_dataclass_field(value, field: dataclasses.Field):
         return convert(value, field.type)
     if field.default is not dataclasses.MISSING:
         return field.default
+    if field.default_factory is not dataclasses.MISSING:
+        return field.default_factory()
     elif is_optional(field.type):
         return None
     else:
