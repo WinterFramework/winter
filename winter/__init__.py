@@ -14,6 +14,7 @@ from .exceptions.handlers import RedirectExceptionHandler
 from .exceptions.handlers import exceptions_handler
 from .exceptions.throws import throws
 from .http.request_body import request_body
+from .http.response_header import response_header
 from .output_processor import register_output_processor_resolver
 from .pagination import PagePositionArgumentResolver
 from .pagination.page import PageOutputProcessorResolver
