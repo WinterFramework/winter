@@ -15,6 +15,7 @@ from .exceptions.handlers import exceptions_handler
 from .exceptions.throws import throws
 from .http.request_body import request_body
 from .http.response_header import response_header
+from .http.response_header import ResponseHeader
 from .output_processor import register_output_processor_resolver
 from .pagination import PagePositionArgumentResolver
 from .pagination.page import PageOutputProcessorResolver
@@ -40,11 +41,13 @@ def _default_configuration():
     from . import schema
     from . import pagination
     from .http import RequestBodyArgumentResolver
+    from .http import ResponseHeaderArgumentResolver
     from .converters import ConvertExceptionHandler
     from .converters import ConvertException
 
     arguments_resolver.add_argument_resolver(DRFBodyArgumentResolver())
     arguments_resolver.add_argument_resolver(RequestBodyArgumentResolver())
+    arguments_resolver.add_argument_resolver(ResponseHeaderArgumentResolver())
     arguments_resolver.add_argument_resolver(QueryParameterArgumentResolver())
     arguments_resolver.add_argument_resolver(PathParametersArgumentResolver())
     arguments_resolver.add_argument_resolver(PagePositionArgumentResolver())
