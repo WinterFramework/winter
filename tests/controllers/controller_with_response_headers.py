@@ -9,5 +9,5 @@ class ControllerWithResponseHeaders:
     @winter.response_header('x-header1', 'header1')
     @winter.route_get('one-header/')
     def method(self, header1: ResponseHeader[str]) -> str:
-        header1.set('Hello!')
+        header1.set('test header')
         return 'OK'
