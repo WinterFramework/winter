@@ -31,19 +31,28 @@ from .routing.query_parameters import map_query_parameter
 
 
 def _default_configuration():
+    from . import schema
+    from . import pagination
+    from .converters import ConvertExceptionHandler
+    from .converters import ConvertException
+
+    _add_argument_resolvers()
+    _register_controller_method_inspectors()
+
+    register_output_processor_resolver(PageOutputProcessorResolver())
+    exceptions_handler.add_handler(ConvertException, ConvertExceptionHandler, auto_handle=True)
+    exceptions_handler.add_handler(RedirectException, RedirectExceptionHandler, auto_handle=True)
+    schema.setup()
+    pagination.setup()
+
+
+def _add_argument_resolvers():
     from .routing import PathParametersArgumentResolver
     from .routing import QueryParameterArgumentResolver
     from .drf import DRFBodyArgumentResolver
     from .drf import HttpRequestArgumentResolver
-    from .schema import PathParametersInspector
-    from .schema import QueryParametersInspector
-    from .schema import register_controller_method_inspector
-    from . import schema
-    from . import pagination
     from .http import RequestBodyArgumentResolver
     from .http import ResponseHeaderArgumentResolver
-    from .converters import ConvertExceptionHandler
-    from .converters import ConvertException
 
     arguments_resolver.add_argument_resolver(DRFBodyArgumentResolver())
     arguments_resolver.add_argument_resolver(RequestBodyArgumentResolver())
@@ -52,13 +61,15 @@ def _default_configuration():
     arguments_resolver.add_argument_resolver(PathParametersArgumentResolver())
     arguments_resolver.add_argument_resolver(PagePositionArgumentResolver())
     arguments_resolver.add_argument_resolver(HttpRequestArgumentResolver())
+
+
+def _register_controller_method_inspectors():
+    from .schema import PathParametersInspector
+    from .schema import QueryParametersInspector
+    from .schema import register_controller_method_inspector
+
     register_controller_method_inspector(PathParametersInspector())
     register_controller_method_inspector(QueryParametersInspector())
-    register_output_processor_resolver(PageOutputProcessorResolver())
-    exceptions_handler.add_handler(ConvertException, ConvertExceptionHandler, auto_handle=True)
-    exceptions_handler.add_handler(RedirectException, RedirectExceptionHandler, auto_handle=True)
-    schema.setup()
-    pagination.setup()
 
 
 _default_configuration()
