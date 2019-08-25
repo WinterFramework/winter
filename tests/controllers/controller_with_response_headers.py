@@ -6,8 +6,14 @@ from winter import ResponseHeader
 @winter.route('with-response-headers/')
 class ControllerWithResponseHeaders:
 
-    @winter.response_header('x-header1', 'header1')
-    @winter.route_get('one-header/')
-    def method(self, header1: ResponseHeader[str]) -> str:
-        header1.set('test header')
+    @winter.response_header('x-header', 'header')
+    @winter.route_get('str-header/')
+    def str_header(self, header: ResponseHeader[str]) -> str:
+        header.set('test header')
+        return 'OK'
+
+    @winter.response_header('x-header', 'header')
+    @winter.route_get('int-header/')
+    def int_header(self, header: ResponseHeader[int]) -> str:
+        header.set(123)
         return 'OK'
