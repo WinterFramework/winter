@@ -1,3 +1,5 @@
+from uuid import UUID
+
 import winter
 from winter import ResponseHeader
 
@@ -16,4 +18,10 @@ class ControllerWithResponseHeaders:
     @winter.route_get('int-header/')
     def int_header(self, header: ResponseHeader[int]) -> str:
         header.set(123)
+        return 'OK'
+
+    @winter.response_header('x-header', 'header')
+    @winter.route_get('uuid-header/{?uid}')
+    def uuid_header(self, uid: UUID, header: ResponseHeader[UUID]) -> str:
+        header.set(uid)
         return 'OK'

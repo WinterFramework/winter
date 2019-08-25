@@ -18,7 +18,7 @@ class _BaseResponseHeader:
         self._header_name = header_name
 
     def set(self, value: T):
-        self._headers[self._header_name] = self._value_type(value)  # TODO: use smart conversion
+        self._headers[self._header_name] = convert(value, self._value_type)
 
 
 class _ResponseHeader:
