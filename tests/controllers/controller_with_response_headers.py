@@ -25,3 +25,11 @@ class ControllerWithResponseHeaders:
     def uuid_header(self, uid: UUID, header: ResponseHeader[UUID]) -> str:
         header.set(uid)
         return 'OK'
+
+    @winter.response_header('x-header1', 'header1')
+    @winter.response_header('x-header2', 'header2')
+    @winter.route_get('two-headers/')
+    def two_headers(self, header1: ResponseHeader[str], header2: ResponseHeader[str]) -> str:
+        header1.set('header1')
+        header2.set('header2')
+        return 'OK'

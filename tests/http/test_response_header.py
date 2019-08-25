@@ -44,3 +44,17 @@ def test_uuid_response_header():
     assert response.status_code == HTTPStatus.OK
     assert response.json() == 'OK'
     assert response['x-header'] == str(uid)
+
+
+def test_two_response_headers():
+    client = APIClient()
+    user = AuthorizedUser()
+    client.force_authenticate(user)
+
+    # Act
+    response = client.get('/with-response-headers/two-headers/', content_type='application/json')
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == 'OK'
+    assert response['x-header1'] == 'header1'
+    assert response['x-header2'] == 'header2'
