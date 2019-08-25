@@ -50,3 +50,4 @@ def response_header(header_name: str, argument_name: str):
 
 
 ResponseHeader = _ResponseHeader()
+ResponseHeaders = MutableMapping[str, str]

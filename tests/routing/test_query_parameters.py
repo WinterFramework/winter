@@ -38,7 +38,7 @@ def test_query_parameter_resolver(argument_name, query_string, expected_value):
 
     argument = method.get_argument(argument_name)
     request = get_request(query_string)
-    assert resolver.resolve_argument(argument, request) == expected_value
+    assert resolver.resolve_argument(argument, request, {}) == expected_value
 
 
 @pytest.mark.parametrize(
@@ -58,7 +58,7 @@ def test_query_parameter_resolver_with_raises_parse_error(query_string, expected
     request = get_request(query_string)
 
     with pytest.raises(converters.ConvertException) as exception:
-        resolver.resolve_argument(argument, request)
+        resolver.resolve_argument(argument, request, {})
 
     assert str(exception.value) == expected_exception_message
 
@@ -95,7 +95,7 @@ def test_query_parameter_resolver_with_raises_argument_not_supported():
     argument = method.get_argument('invalid_query_param')
 
     with pytest.raises(ArgumentNotSupported) as exception:
-        resolver.resolve_argument(argument, request)
+        resolver.resolve_argument(argument, request, {})
 
     assert str(exception.value) == 'Unable to resolve argument invalid_query_param: int'
 
@@ -141,7 +141,7 @@ def test_orphan_map_query_parameter_fails():
     request = get_request('?x=1')
 
     with pytest.raises(converters.ConvertException) as exception:
-        resolver.resolve_argument(argument, request)
+        resolver.resolve_argument(argument, request, {})
 
     assert str(exception.value) == 'Missing required query parameter "x"'
 

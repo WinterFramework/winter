@@ -1,6 +1,7 @@
 from django.urls import get_resolver
 from rest_framework.request import Request
 
+from winter.http import ResponseHeaders
 from ..routing import get_route
 from ...argument_resolver import ArgumentNotSupported
 from ...argument_resolver import ArgumentResolver
@@ -23,8 +24,8 @@ class PathParametersArgumentResolver(ArgumentResolver):
         is_supported = self._cache[argument] = argument.name in path_variables
         return is_supported
 
-    def resolve_argument(self, argument: ComponentMethodArgument, http_request: Request):
-        resolver_match = self._url_resolver.resolve(http_request.path_info)
+    def resolve_argument(self, argument: ComponentMethodArgument, request: Request, response_headers: ResponseHeaders):
+        resolver_match = self._url_resolver.resolve(request.path_info)
         callback, callback_args, callback_kwargs = resolver_match
 
         if argument.name not in callback_kwargs:

@@ -38,7 +38,7 @@ def test_resolve_arguments_returns_empty_dict_for_empty_arguments():
     arguments_resolver = ArgumentsResolver()
 
     # Act
-    resolved_arguments = arguments_resolver.resolve_arguments(method, http_request=Mock())
+    resolved_arguments = arguments_resolver.resolve_arguments(method, request=Mock(), response_headers={})
 
     # Assert
     assert resolved_arguments == expected_resolved_arguments
@@ -60,7 +60,7 @@ def test_resolve_arguments_resolves_argument_with_the_first_resolver():
     arguments_resolver.add_argument_resolver(resolver)
 
     # Act
-    resolved_arguments = arguments_resolver.resolve_arguments(method, http_request=Mock())
+    resolved_arguments = arguments_resolver.resolve_arguments(method, request=Mock(), response_headers={})
 
     # Assert
     assert resolved_arguments == expected_resolved_arguments
@@ -85,7 +85,7 @@ def test_resolve_arguments_resolves_argument_with_the_second_resolver():
     arguments_resolver.add_argument_resolver(resolver2)
 
     # Act
-    resolved_arguments = arguments_resolver.resolve_arguments(method, http_request=Mock())
+    resolved_arguments = arguments_resolver.resolve_arguments(method, request=Mock(), response_headers={})
 
     # Assert
     assert resolved_arguments == expected_resolved_arguments
@@ -102,14 +102,14 @@ def test_resolve_arguments_fails():
     # Assert
     with pytest.raises(ArgumentNotSupported, match=f'Unable to resolve argument {arg_name}: int'):
         # Act
-        arguments_resolver.resolve_arguments(method, http_request=Mock())
+        arguments_resolver.resolve_arguments(method, request=Mock(), response_headers={})
 
 
 def test_arguments_resolver_is_supported_true():
     def func(self, argument: int):
         return None
 
-    def resolve_argument(argument: ComponentMethodArgument, http_request):
+    def resolve_argument(argument: ComponentMethodArgument, request, response_headers):
         return argument.type_
 
     arguments_resolver = ArgumentsResolver()
@@ -125,4 +125,4 @@ def test_arguments_resolver_is_supported_true():
 
     # Assert
     assert arguments_resolver.is_supported(argument)
-    assert arguments_resolver.resolve_argument(argument, request) == argument.type_
+    assert arguments_resolver.resolve_argument(argument, request, {}) == argument.type_

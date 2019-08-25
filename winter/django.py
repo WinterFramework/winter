@@ -10,8 +10,8 @@ import rest_framework.views
 from django.conf.urls import url
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
+from rest_framework.response import Response
 
-from winter.http import ResponseHeaderArgumentResolver
 from .argument_resolver import arguments_resolver
 from .controller import build_controller
 from .controller import get_component
@@ -20,6 +20,7 @@ from .drf.auth import is_authentication_needed
 from .exceptions.handlers import MethodExceptionsHandler
 from .exceptions.handlers import NotHandled
 from .exceptions.handlers import exceptions_handler
+from .http import ResponseHeaders
 from .http.throttling import create_throttle_classes
 from .http.urls import rewrite_uritemplate_with_regexps
 from .output_processor import get_output_processor
@@ -77,17 +78,24 @@ def _create_dispatch_function(controller_class, route: Route):
 def _call_controller_method(controller, route: Route, request: Request):
     method = route.method
     method_exceptions_handler = MethodExceptionsHandler(method)
+    response_headers = {}
+    response: Response
     try:
-        arguments = arguments_resolver.resolve_arguments(method, request)
+        arguments = arguments_resolver.resolve_arguments(method, request, response_headers)
         result = method(controller, **arguments)
-        return convert_result_to_http_response(request, result, method)
+        response = convert_result_to_http_response(request, result, method)
     except method_exceptions_handler.exception_classes as exception:
         result = method_exceptions_handler.handle(request, exception)
         if result is NotHandled:
             raise
-        return result
+        response = result
     except exceptions_handler.auto_handle_exception_classes as exception:
-        return exceptions_handler.handle(request, exception)
+        response = exceptions_handler.handle(request, exception)
+
+    for header_name, header_value in response_headers.items():
+        response[header_name] = header_value
+
+    return response
 
 
 def convert_result_to_http_response(request: Request, result: Any, method: ComponentMethod):
@@ -104,9 +112,7 @@ def convert_result_to_http_response(request: Request, result: Any, method: Compo
         body = output_processor.process_output(body, request)
     if isinstance(body, django.http.response.HttpResponseBase):
         return body
-    r = next(r for r in arguments_resolver._argument_resolvers if isinstance(r, ResponseHeaderArgumentResolver))
-    headers = r._ResponseHeaderArgumentResolver__response_headers_by_request.get(request, {})
-    return rest_framework.response.Response(body, status=status_code, headers=headers)
+    return rest_framework.response.Response(body, status=status_code)
 
 
 def _group_routes_by_url_path(methods: List[ComponentMethod]):

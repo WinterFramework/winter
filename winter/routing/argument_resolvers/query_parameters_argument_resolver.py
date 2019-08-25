@@ -9,6 +9,7 @@ from ...argument_resolver import ArgumentNotSupported
 from ...argument_resolver import ArgumentResolver
 from ...core import ArgumentDoesNotHaveDefault
 from ...core import ComponentMethodArgument
+from ...http import ResponseHeaders
 from ...routing.query_parameters import QueryParameter
 
 
@@ -21,8 +22,8 @@ class QueryParameterArgumentResolver(ArgumentResolver):
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
         return self._get_query_parameter(argument) is not None
 
-    def resolve_argument(self, argument: ComponentMethodArgument, http_request: Request):
-        query_parameters = http_request.query_params
+    def resolve_argument(self, argument: ComponentMethodArgument, request: Request, response_headers: ResponseHeaders):
+        query_parameters = request.query_params
 
         query_parameter = self._get_query_parameter(argument)
 

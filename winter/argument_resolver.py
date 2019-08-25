@@ -4,6 +4,7 @@ from typing import Any
 from typing import Callable
 from typing import Dict
 from typing import List
+from typing import TYPE_CHECKING
 from typing import Type
 
 from rest_framework.request import Request
@@ -11,6 +12,9 @@ from rest_framework.request import Request
 from . import type_utils
 from .core import ComponentMethod
 from .core import ComponentMethodArgument
+
+if TYPE_CHECKING:
+    from .http import ResponseHeaders
 
 
 class ArgumentNotSupported(Exception):
@@ -21,14 +25,14 @@ class ArgumentNotSupported(Exception):
 
 
 class ArgumentResolver(abc.ABC):
-    """IArgumentResolver is used to map http request contents to controller method arguments."""
+    """ArgumentResolver interface is used to map http request contents to controller method arguments."""
 
     @abstractmethod
     def is_supported(self, argument: ComponentMethodArgument) -> bool:  # pragma: no cover
         pass
 
     @abstractmethod
-    def resolve_argument(self, argument: ComponentMethodArgument, http_request: Request):  # pragma: no cover
+    def resolve_argument(self, argument: ComponentMethodArgument, request: Request, response_headers: 'ResponseHeaders'):  # pragma: no cover
         pass
 
 
@@ -46,18 +50,19 @@ class ArgumentsResolver(ArgumentResolver):
         # ArgumentsResolver must resolve all arguments
         return True
 
-    def resolve_argument(self, argument: ComponentMethodArgument, http_request: Request) -> Any:
+    def resolve_argument(self, argument: ComponentMethodArgument, request: Request, response_headers: 'ResponseHeaders') -> Any:
         argument_resolver = self._get_argument_resolver(argument)
-        return argument_resolver.resolve_argument(argument, http_request)
+        return argument_resolver.resolve_argument(argument, request, response_headers)
 
     def resolve_arguments(
-            self,
-            method: ComponentMethod,
-            http_request: Request,
+        self,
+        method: ComponentMethod,
+        request: Request,
+        response_headers: 'ResponseHeaders',
     ) -> Dict[str, Any]:
         resolved_arguments = {}
         for argument in method.arguments:
-            resolved_arguments[argument.name] = self.resolve_argument(argument, http_request)
+            resolved_arguments[argument.name] = self.resolve_argument(argument, request, response_headers)
 
         return resolved_arguments
 
@@ -82,8 +87,8 @@ class GenericArgumentResolver(ArgumentResolver):
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
         return argument.name == self._arg_name and argument.type_ == self._arg_type
 
-    def resolve_argument(self, argument: ComponentMethodArgument, http_request: Request):
-        return self._resolve_argument(argument, http_request)
+    def resolve_argument(self, argument: ComponentMethodArgument, request: Request, response_headers: 'ResponseHeaders'):
+        return self._resolve_argument(argument, request, response_headers)
 
 
 arguments_resolver = ArgumentsResolver()
