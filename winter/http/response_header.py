@@ -1,18 +1,33 @@
+from typing import MutableMapping
 from typing import Type
+from typing import TypeVar
 
 import dataclasses
 
 from winter.core import annotate_method
+from winter.converters import convert
+
+T = TypeVar('T')
 
 
 class _BaseResponseHeader:
-    pass
+    _value_type: Type[T] = None
+
+    def __init__(self, headers: MutableMapping[str, str], header_name: str):
+        self._headers = headers
+        self._header_name = header_name
+
+    def set(self, value: T):
+        self._headers[self._header_name] = self._value_type(value)  # TODO: use smart conversion
 
 
 class _ResponseHeader:
     def __getitem__(self, value_type: Type):
         assert isinstance(value_type, type), 'value_type must be a type'
-        return type(f'ResponseHeader[{value_type.__name__}]', (_BaseResponseHeader,), {})
+        payload = {
+            '_value_type': value_type,
+        }
+        return type(f'ResponseHeader[{value_type.__name__}]', (_BaseResponseHeader,), payload)
 
 
 @dataclasses.dataclass

@@ -11,6 +11,7 @@ from django.conf.urls import url
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 
+from winter.http import ResponseHeaderArgumentResolver
 from .argument_resolver import arguments_resolver
 from .controller import build_controller
 from .controller import get_component
@@ -103,7 +104,9 @@ def convert_result_to_http_response(request: Request, result: Any, method: Compo
         body = output_processor.process_output(body, request)
     if isinstance(body, django.http.response.HttpResponseBase):
         return body
-    return rest_framework.response.Response(body, status=status_code)
+    r = next(r for r in arguments_resolver._argument_resolvers if isinstance(r, ResponseHeaderArgumentResolver))
+    headers = r._ResponseHeaderArgumentResolver__response_headers_by_request.get(request, {})
+    return rest_framework.response.Response(body, status=status_code, headers=headers)
 
 
 def _group_routes_by_url_path(methods: List[ComponentMethod]):

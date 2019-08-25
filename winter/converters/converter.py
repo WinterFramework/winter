@@ -154,7 +154,7 @@ def convert_float(value, type_) -> float:
 
 
 @converter(str)
-def convert_srt(value, type_) -> str:
+def convert_str(value, type_) -> str:
     if not isinstance(value, str):
         raise ConvertException.cannot_convert(value=value, type_name='string')
     return type_(value)
