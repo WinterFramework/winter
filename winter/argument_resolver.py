@@ -32,7 +32,12 @@ class ArgumentResolver(abc.ABC):
         pass
 
     @abstractmethod
-    def resolve_argument(self, argument: ComponentMethodArgument, request: Request, response_headers: 'ResponseHeaders'):  # pragma: no cover
+    def resolve_argument(
+        self,
+        argument: ComponentMethodArgument,
+        request: Request,
+        response_headers: 'ResponseHeaders',
+    ):  # pragma: no cover
         pass
 
 
@@ -50,7 +55,12 @@ class ArgumentsResolver(ArgumentResolver):
         # ArgumentsResolver must resolve all arguments
         return True
 
-    def resolve_argument(self, argument: ComponentMethodArgument, request: Request, response_headers: 'ResponseHeaders') -> Any:
+    def resolve_argument(
+        self,
+        argument: ComponentMethodArgument,
+        request: Request,
+        response_headers: 'ResponseHeaders',
+    ) -> Any:
         argument_resolver = self._get_argument_resolver(argument)
         return argument_resolver.resolve_argument(argument, request, response_headers)
 
@@ -87,7 +97,12 @@ class GenericArgumentResolver(ArgumentResolver):
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
         return argument.name == self._arg_name and argument.type_ == self._arg_type
 
-    def resolve_argument(self, argument: ComponentMethodArgument, request: Request, response_headers: 'ResponseHeaders'):
+    def resolve_argument(
+        self,
+        argument: ComponentMethodArgument,
+        request: Request,
+        response_headers: 'ResponseHeaders',
+    ):
         return self._resolve_argument(argument, request, response_headers)
 
 

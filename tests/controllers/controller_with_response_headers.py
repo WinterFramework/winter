@@ -1,7 +1,7 @@
 from uuid import UUID
 
 import winter
-from winter import ResponseHeader
+from winter.http import ResponseHeader
 
 
 @winter.controller

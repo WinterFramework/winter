@@ -12,5 +12,10 @@ class HttpRequestArgumentResolver(ArgumentResolver):
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
         return inspect.isclass(argument.type_) and issubclass(argument.type_, HttpRequest)
 
-    def resolve_argument(self, argument: ComponentMethodArgument, request: HttpRequest, response_headers: ResponseHeaders):
+    def resolve_argument(
+        self,
+        argument: ComponentMethodArgument,
+        request: HttpRequest,
+        response_headers: ResponseHeaders,
+    ):
         return request

@@ -3,8 +3,8 @@ from typing import Union
 
 import dataclasses
 
-from .core import ComponentMethod
-from .core import annotate
+from winter.core import ComponentMethod
+from winter.core import annotate
 
 _default_http_method_statuses = {
     'get': HTTPStatus.OK,

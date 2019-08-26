@@ -20,12 +20,11 @@ from .drf.auth import is_authentication_needed
 from .exceptions.handlers import MethodExceptionsHandler
 from .exceptions.handlers import NotHandled
 from .exceptions.handlers import exceptions_handler
-from .http import ResponseHeaders
 from .http.throttling import create_throttle_classes
 from .http.urls import rewrite_uritemplate_with_regexps
 from .output_processor import get_output_processor
-from .response_entity import ResponseEntity
-from .response_status import get_default_response_status
+from winter.http.response_entity import ResponseEntity
+from winter.http.response_status import get_default_response_status
 from .routing.routing import Route
 from .routing.routing import get_route
 

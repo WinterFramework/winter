@@ -38,7 +38,12 @@ class PagePositionArgumentResolver(ArgumentResolver):
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
         return argument.type_ is PagePosition
 
-    def resolve_argument(self, argument: ComponentMethodArgument, request: Request, response_headers: ResponseHeaders) -> PagePosition:
+    def resolve_argument(
+        self,
+        argument: ComponentMethodArgument,
+        request: Request,
+        response_headers: ResponseHeaders,
+    ) -> PagePosition:
         page_position = self._parse_page_position(argument, request)
         limits = self._get_limits(argument.method)
 

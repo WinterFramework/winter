@@ -15,8 +15,8 @@ from ..core import ComponentMethodArgument
 from ..drf import get_output_serializer
 from ..exceptions.handlers import MethodExceptionsHandler
 from ..exceptions.handlers import exceptions_handler
-from ..response_entity import ResponseEntity
-from ..response_status import get_default_response_status
+from winter.http.response_entity import ResponseEntity
+from winter.http.response_status import get_default_response_status
 from ..routing import Route
 from ..schema.type_inspection import TypeInfo
 

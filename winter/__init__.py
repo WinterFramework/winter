@@ -15,12 +15,10 @@ from .exceptions.handlers import exceptions_handler
 from .exceptions.throws import throws
 from .http.request_body import request_body
 from .http.response_header import response_header
-from .http.response_header import ResponseHeader
 from .output_processor import register_output_processor_resolver
 from .pagination import PagePositionArgumentResolver
-from .pagination.page import PageOutputProcessorResolver
-from .response_entity import ResponseEntity
-from .response_status import response_status
+from winter.http.response_entity import ResponseEntity
+from winter.http.response_status import response_status
 from .routing import route
 from .routing import route_delete
 from .routing import route_get
@@ -33,15 +31,12 @@ from .routing.query_parameters import map_query_parameter
 def _default_configuration():
     from . import schema
     from . import pagination
-    from .converters import ConvertExceptionHandler
-    from .converters import ConvertException
 
     _add_argument_resolvers()
     _register_controller_method_inspectors()
+    _register_output_processor_resolvers()
+    _add_exception_handlers()
 
-    register_output_processor_resolver(PageOutputProcessorResolver())
-    exceptions_handler.add_handler(ConvertException, ConvertExceptionHandler, auto_handle=True)
-    exceptions_handler.add_handler(RedirectException, RedirectExceptionHandler, auto_handle=True)
     schema.setup()
     pagination.setup()
 
@@ -70,6 +65,20 @@ def _register_controller_method_inspectors():
 
     register_controller_method_inspector(PathParametersInspector())
     register_controller_method_inspector(QueryParametersInspector())
+
+
+def _register_output_processor_resolvers():
+    from .pagination.page import PageOutputProcessorResolver
+
+    register_output_processor_resolver(PageOutputProcessorResolver())
+
+
+def _add_exception_handlers():
+    from .converters import ConvertExceptionHandler
+    from .converters import ConvertException
+
+    exceptions_handler.add_handler(ConvertException, ConvertExceptionHandler, auto_handle=True)
+    exceptions_handler.add_handler(RedirectException, RedirectExceptionHandler, auto_handle=True)
 
 
 _default_configuration()

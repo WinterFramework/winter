@@ -9,7 +9,7 @@ from .exceptions import RedirectException
 from .throws import get_throws
 from ..core import ComponentMethod
 from ..core import annotate
-from ..response_status import response_status
+from winter.http.response_status import response_status
 
 NotHandled = object()
 

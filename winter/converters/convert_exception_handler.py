@@ -4,7 +4,7 @@ from rest_framework.request import Request
 
 from .converter import ConvertException
 from ..exceptions.handlers import ExceptionHandler
-from ..response_status import response_status
+from winter.http.response_status import response_status
 
 
 class ConvertExceptionHandler(ExceptionHandler):
