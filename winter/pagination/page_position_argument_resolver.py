@@ -16,7 +16,6 @@ from ..argument_resolver import ArgumentResolver
 from ..core import ComponentMethod
 from ..core import ComponentMethodArgument
 from ..exceptions import RedirectException
-from ..http import ResponseHeaders
 from ..positive_integer.positive_integer import PositiveInteger
 
 
@@ -42,7 +41,7 @@ class PagePositionArgumentResolver(ArgumentResolver):
         self,
         argument: ComponentMethodArgument,
         request: Request,
-        response_headers: ResponseHeaders,
+        response_headers: typing.MutableMapping[str, str],
     ) -> PagePosition:
         page_position = self._parse_page_position(argument, request)
         limits = self._get_limits(argument.method)

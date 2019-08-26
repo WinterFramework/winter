@@ -10,7 +10,6 @@ import rest_framework.views
 from django.conf.urls import url
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
-from rest_framework.response import Response
 
 from .argument_resolver import arguments_resolver
 from .controller import build_controller
@@ -19,12 +18,12 @@ from .core import ComponentMethod
 from .drf.auth import is_authentication_needed
 from .exceptions.handlers import MethodExceptionsHandler
 from .exceptions.handlers import NotHandled
-from .exceptions.handlers import exceptions_handler
+from .exceptions.handlers import exception_handlers_registry
+from .http import ResponseEntity
+from .http.default_response_status import get_default_response_status
 from .http.throttling import create_throttle_classes
 from .http.urls import rewrite_uritemplate_with_regexps
 from .output_processor import get_output_processor
-from winter.http.response_entity import ResponseEntity
-from winter.http.response_status import get_default_response_status
 from .routing.routing import Route
 from .routing.routing import get_route
 
@@ -78,23 +77,39 @@ def _call_controller_method(controller, route: Route, request: Request):
     method = route.method
     method_exceptions_handler = MethodExceptionsHandler(method)
     response_headers = {}
-    response: Response
     try:
         arguments = arguments_resolver.resolve_arguments(method, request, response_headers)
         result = method(controller, **arguments)
         response = convert_result_to_http_response(request, result, method)
     except method_exceptions_handler.exception_classes as exception:
-        result = method_exceptions_handler.handle(request, exception)
-        if result is NotHandled:
+        response = _handle_exception(exception, method_exceptions_handler, request, response_headers)
+        if response is None:
             raise
-        response = result
-    except exceptions_handler.auto_handle_exception_classes as exception:
-        response = exceptions_handler.handle(request, exception)
+    except exception_handlers_registry.auto_handle_exception_classes as exception:
+        handler = exception_handlers_registry.get_handler(exception)
+        if handler is None:
+            raise
+
+        response = _handle_exception(exception, handler, request, response_headers)
+        if response is None:
+            raise
 
     for header_name, header_value in response_headers.items():
         response[header_name] = header_value
 
     return response
+
+
+def _handle_exception(exception, handler, request, response_headers):
+    method = ComponentMethod.get_or_create(handler.__class__.handle)
+    arguments = arguments_resolver.resolve_arguments(method, request, response_headers, {
+        'exception': exception,
+        'response_headers': response_headers,
+    })
+    result = method(handler, **arguments)
+    if result is NotHandled:
+        return None
+    return convert_result_to_http_response(request, result, method)
 
 
 def convert_result_to_http_response(request: Request, result: Any, method: ComponentMethod):
@@ -118,5 +133,6 @@ def _group_routes_by_url_path(methods: List[ComponentMethod]):
     result = defaultdict(list)
     for method in methods:
         route = get_route(method)
-        result[route.url_path].append(route)
+        if route is not None:
+            result[route.url_path].append(route)
     return result.items()

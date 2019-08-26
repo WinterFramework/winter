@@ -1,9 +1,10 @@
+from typing import MutableMapping
+
 from rest_framework.request import Request
 
 from .input_serializer import get_input_serializer
 from ..argument_resolver import ArgumentResolver
 from ..core import ComponentMethodArgument
-from ..http import ResponseHeaders
 
 
 class DRFBodyArgumentResolver(ArgumentResolver):
@@ -14,7 +15,12 @@ class DRFBodyArgumentResolver(ArgumentResolver):
             return False
         return input_serializer.destination_argument_name == argument.name
 
-    def resolve_argument(self, argument: ComponentMethodArgument, request: Request, response_headers: ResponseHeaders):
+    def resolve_argument(
+        self,
+        argument: ComponentMethodArgument,
+        request: Request,
+        response_headers: MutableMapping[str, str],
+    ):
         input_serializer = get_input_serializer(argument.method)
         serializer_class = input_serializer.class_
         serializer_kwargs = input_serializer.kwargs

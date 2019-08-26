@@ -4,8 +4,8 @@ from typing import TypeVar
 
 import dataclasses
 
-from winter.core import annotate_method
-from winter.converters import convert
+from ..converters import convert
+from ..core import annotate_method
 
 T = TypeVar('T')
 
@@ -50,4 +50,3 @@ def response_header(header_name: str, argument_name: str):
 
 
 ResponseHeader = _ResponseHeader()
-ResponseHeaders = MutableMapping[str, str]

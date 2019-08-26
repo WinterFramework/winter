@@ -1,10 +1,10 @@
 import inspect
+from typing import MutableMapping
 
 from rest_framework.request import Request as HttpRequest
 
 from ..argument_resolver import ArgumentResolver
 from ..core import ComponentMethodArgument
-from ..http import ResponseHeaders
 
 
 class HttpRequestArgumentResolver(ArgumentResolver):
@@ -16,6 +16,6 @@ class HttpRequestArgumentResolver(ArgumentResolver):
         self,
         argument: ComponentMethodArgument,
         request: HttpRequest,
-        response_headers: ResponseHeaders,
+        response_headers: MutableMapping[str, str],
     ):
         return request

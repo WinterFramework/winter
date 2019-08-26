@@ -1,11 +1,12 @@
+from typing import MutableMapping
+
 from rest_framework.request import Request
 
-from winter.http.response_header import _BaseResponseHeader
-from winter.type_utils import is_origin_type_subclasses
-from .response_header import ResponseHeaderAnnotation
-from .response_header import ResponseHeaders
+from .response_header_annotation import ResponseHeaderAnnotation
+from .response_header_annotation import _BaseResponseHeader
 from .. import ArgumentResolver
 from ..core import ComponentMethodArgument
+from ..type_utils import is_origin_type_subclasses
 
 
 class ResponseHeaderArgumentResolver(ArgumentResolver):
@@ -16,7 +17,12 @@ class ResponseHeaderArgumentResolver(ArgumentResolver):
         annotations = argument.method.annotations.get(ResponseHeaderAnnotation)
         return any(annotation.argument_name == argument.name for annotation in annotations)
 
-    def resolve_argument(self, argument: ComponentMethodArgument, request: Request, response_headers: ResponseHeaders):
+    def resolve_argument(
+        self,
+        argument: ComponentMethodArgument,
+        request: Request,
+        response_headers: MutableMapping[str, str],
+    ):
         annotations = argument.method.annotations.get(ResponseHeaderAnnotation)
         annotation = next(annotation for annotation in annotations if annotation.argument_name == argument.name)
         header_name = annotation.header_name

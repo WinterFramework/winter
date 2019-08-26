@@ -1,4 +1,5 @@
-import typing
+from typing import MutableMapping
+from typing import Optional
 
 from rest_framework.request import Request
 
@@ -9,7 +10,6 @@ from ...argument_resolver import ArgumentNotSupported
 from ...argument_resolver import ArgumentResolver
 from ...core import ArgumentDoesNotHaveDefault
 from ...core import ComponentMethodArgument
-from ...http import ResponseHeaders
 from ...routing.query_parameters import QueryParameter
 
 
@@ -22,7 +22,12 @@ class QueryParameterArgumentResolver(ArgumentResolver):
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
         return self._get_query_parameter(argument) is not None
 
-    def resolve_argument(self, argument: ComponentMethodArgument, request: Request, response_headers: ResponseHeaders):
+    def resolve_argument(
+        self,
+        argument: ComponentMethodArgument,
+        request: Request,
+        response_headers: MutableMapping[str, str],
+    ):
         query_parameters = request.query_params
 
         query_parameter = self._get_query_parameter(argument)
@@ -43,12 +48,14 @@ class QueryParameterArgumentResolver(ArgumentResolver):
         value = self._get_value(query_parameters, parameter_name, is_iterable, explode)
         return converters.convert(value, argument.type_)
 
-    def _get_query_parameter(self, argument: ComponentMethodArgument) -> typing.Optional[QueryParameter]:
-
+    def _get_query_parameter(self, argument: ComponentMethodArgument) -> Optional[QueryParameter]:
         if argument in self._query_parameters:
             return self._query_parameters[argument]
 
         route = get_route(argument.method)
+        if route is None:
+            return None
+
         query_parameter = next(
             (
                 query_parameter

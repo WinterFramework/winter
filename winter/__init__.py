@@ -10,15 +10,15 @@ from .drf import output_serializer
 from .drf import output_template
 from .exceptions import RedirectException
 from .exceptions.handlers import ExceptionHandler
-from .exceptions.handlers import RedirectExceptionHandler
-from .exceptions.handlers import exceptions_handler
+from winter.http.exception_handlers import RedirectExceptionHandler
+from .exceptions.handlers import exception_handlers_registry
 from .exceptions.throws import throws
-from .http.request_body import request_body
-from .http.response_header import response_header
+from .http import ResponseEntity
+from .http import request_body
+from .http import response_header
+from .http import response_status
 from .output_processor import register_output_processor_resolver
 from .pagination import PagePositionArgumentResolver
-from winter.http.response_entity import ResponseEntity
-from winter.http.response_status import response_status
 from .routing import route
 from .routing import route_delete
 from .routing import route_get
@@ -74,11 +74,11 @@ def _register_output_processor_resolvers():
 
 
 def _add_exception_handlers():
-    from .converters import ConvertExceptionHandler
+    from winter.http.exception_handlers import ConvertExceptionHandler
     from .converters import ConvertException
 
-    exceptions_handler.add_handler(ConvertException, ConvertExceptionHandler, auto_handle=True)
-    exceptions_handler.add_handler(RedirectException, RedirectExceptionHandler, auto_handle=True)
+    exception_handlers_registry.add_handler(ConvertException, ConvertExceptionHandler, auto_handle=True)
+    exception_handlers_registry.add_handler(RedirectException, RedirectExceptionHandler, auto_handle=True)
 
 
 _default_configuration()
