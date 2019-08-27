@@ -6,7 +6,6 @@ from winter import GenericArgumentResolver
 from winter.argument_resolver import ArgumentNotSupported
 from winter.core import ComponentMethod
 from winter.core import ComponentMethodArgument
-from .utils import get_request
 
 
 @pytest.mark.parametrize('arg_name, arg_type, resolver_arg_name, resolver_arg_type, expected_supported', [
