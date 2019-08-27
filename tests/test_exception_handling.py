@@ -6,7 +6,6 @@ from rest_framework.test import APIClient
 from winter.argument_resolver import ArgumentNotSupported
 from .controllers.controller_with_exceptions import CustomException
 from .controllers.controller_with_exceptions import ExceptionWithoutHandler
-from .controllers.controller_with_exceptions import WithUnknownArgumentException
 from .entities import AuthorizedUser
 
 
