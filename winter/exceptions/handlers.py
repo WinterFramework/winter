@@ -69,8 +69,12 @@ class MethodExceptionsHandler:
         self._handlers_by_exception = get_throws(self._method)
 
     @property
-    def exception_classes(self) -> Tuple[Type[Exception], ...]:
+    def declared_exception_classes(self) -> Tuple[Type[Exception], ...]:
         return tuple(self._handlers_by_exception.keys())
+
+    @property
+    def exception_classes(self) -> Tuple[Type[Exception], ...]:
+        return self.declared_exception_classes + exceptions_handler.auto_handle_exception_classes
 
     def get_handler(self, exception: Union[Type[Exception], Exception]) -> Optional[ExceptionHandler]:
         exception_type = type(exception) if isinstance(exception, Exception) else exception

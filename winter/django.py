@@ -85,10 +85,6 @@ def _call_controller_method(controller, route: Route, request: Request):
         response = method_exceptions_handler.handle(exception, request, response_headers)
         if response is None:
             raise
-    except exceptions_handler.auto_handle_exception_classes as exception:
-        response = exceptions_handler.handle(exception, request, response_headers)
-        if response is None:
-            raise
 
     _fill_response_headers(response, response_headers)
     return response
