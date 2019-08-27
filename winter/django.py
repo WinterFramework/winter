@@ -80,17 +80,15 @@ def _call_controller_method(controller, route: Route, request: Request):
     try:
         arguments = arguments_resolver.resolve_arguments(method, request, response_headers)
         result = method(controller, **arguments)
-        response = convert_result_to_http_response(request, result, method)
     except method_exceptions_handler.exception_classes as exception:
         handler = method_exceptions_handler.get_handler(exception)
         if handler is None:
             handler = exception_handlers_registry.get_handler(exception)
         if handler is None:
             raise
-        method = ComponentMethod.get_or_create(handler.__class__.handle)
         result = method_exceptions_handler.handle(exception, request, response_headers)
         assert result is not NotHandled
-        response = convert_result_to_http_response(request, result, method)
+        method = ComponentMethod.get_or_create(handler.__class__.handle)
     except exception_handlers_registry.auto_handle_exception_classes as exception:
         handler = exception_handlers_registry.get_handler(exception)
         if handler is None:
@@ -104,7 +102,8 @@ def _call_controller_method(controller, route: Route, request: Request):
         result = method(handler, **arguments)
         if result is NotHandled:
             raise
-        response = convert_result_to_http_response(request, result, method)
+
+    response = convert_result_to_http_response(request, result, method)
 
     for header_name, header_value in response_headers.items():
         response[header_name] = header_value
