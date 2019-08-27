@@ -74,7 +74,7 @@ def _register_output_processor_resolvers():
 
 
 def _add_exception_handlers():
-    from winter.http.exception_handlers import ConvertExceptionHandler
+    from .http.exception_handlers import ConvertExceptionHandler
     from .converters import ConvertException
 
     exceptions_handler.add_handler(ConvertException, ConvertExceptionHandler, auto_handle=True)
