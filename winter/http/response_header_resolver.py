@@ -24,7 +24,7 @@ class ResponseHeaderArgumentResolver(ArgumentResolver):
         response_headers: MutableMapping[str, str],
     ):
         annotations = argument.method.annotations.get(ResponseHeaderAnnotation)
-        annotation = next(annotation for annotation in annotations if annotation.argument_name == argument.name)
+        annotation = [annotation for annotation in annotations if annotation.argument_name == argument.name][0]
         header_name = annotation.header_name
         header = argument.type_(response_headers, header_name)
         return header

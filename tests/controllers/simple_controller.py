@@ -57,3 +57,7 @@ class SimpleController:
     @winter.route_put('put/')
     def put(self):
         return None
+
+    @winter.response_status(HTTPStatus.OK)
+    def no_route(self):
+        return None

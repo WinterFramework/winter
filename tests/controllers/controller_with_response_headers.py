@@ -33,3 +33,7 @@ class ControllerWithResponseHeaders:
         header1.set('header1')
         header2.set('header2')
         return 'OK'
+
+    @winter.route_get('header-without-annotation/')
+    def header_without_annotation(self, header: ResponseHeader[str]) -> str:
+        return 'OK'

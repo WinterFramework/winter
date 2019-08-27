@@ -40,8 +40,8 @@ class WithUnknownArgumentExceptionHandler(winter.ExceptionHandler):
         return 'Bad Request'
 
 
-winter.exceptions_handler.add_handler(CustomException, CustomExceptionHandler)
-winter.exceptions_handler.add_handler(WithUnknownArgumentException, WithUnknownArgumentExceptionHandler)
+winter.exception_handlers_registry.add_handler(CustomException, CustomExceptionHandler)
+winter.exception_handlers_registry.add_handler(WithUnknownArgumentException, WithUnknownArgumentExceptionHandler)
 
 
 @winter.controller

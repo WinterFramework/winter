@@ -28,6 +28,20 @@ def test_generic_argument_resolver_is_supported(arg_name, arg_type, resolver_arg
     resolve_argument_mock.assert_not_called()
 
 
+def test_generic_argument_resolver_resolve_argument():
+    resolve_argument_mock = Mock()
+    generic_argument_resolver = GenericArgumentResolver('a', int, resolve_argument_mock)
+    argument = ComponentMethodArgument(Mock(), 'a', int)
+    request = Mock()
+    response_headers = Mock()
+
+    # Act
+    generic_argument_resolver.resolve_argument(argument, request, response_headers)
+
+    # Assert
+    resolve_argument_mock.assert_called_once_with(argument, request, response_headers)
+
+
 def test_resolve_arguments_returns_empty_dict_for_empty_arguments():
     def func():
         pass

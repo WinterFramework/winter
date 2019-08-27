@@ -1,9 +1,11 @@
 import uuid
 from http import HTTPStatus
 
+import pytest
 from rest_framework.test import APIClient
 
 from tests.entities import AuthorizedUser
+from winter.argument_resolver import ArgumentNotSupported
 
 
 def test_str_response_header():
@@ -58,3 +60,13 @@ def test_two_response_headers():
     assert response.json() == 'OK'
     assert response['x-header1'] == 'header1'
     assert response['x-header2'] == 'header2'
+
+
+def test_header_without_annotation():
+    client = APIClient()
+    user = AuthorizedUser()
+    client.force_authenticate(user)
+
+    with pytest.raises(ArgumentNotSupported):
+        # Act
+        response = client.get('/with-response-headers/header-without-annotation/', content_type='application/json')

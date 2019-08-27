@@ -21,11 +21,11 @@ class ExceptionHandler(abc.ABC):
         pass
 
 
-class ExceptionsHandler:
+class ExceptionHandlersRegistry:
     HandlersMap = Dict[Type[Exception], ExceptionHandler]
 
     def __init__(self):
-        self._handlers: ExceptionsHandler.HandlersMap = {}
+        self._handlers: ExceptionHandlersRegistry.HandlersMap = {}
         self._auto_handle_exceptions = set()
         super().__init__()
 
@@ -57,10 +57,6 @@ class ExceptionsHandler:
                 return handler
         return None
 
-    def handle(self, exception: Exception, request: Request, response_headers: MutableMapping[str, str]):
-        handler = self.get_handler(exception)
-        return _handle_exception(exception, handler, request, response_headers)
-
 
 class MethodExceptionsHandler:
     def __init__(self, method: ComponentMethod):
@@ -74,7 +70,7 @@ class MethodExceptionsHandler:
 
     @property
     def exception_classes(self) -> Tuple[Type[Exception], ...]:
-        return self.declared_exception_classes + exceptions_handler.auto_handle_exception_classes
+        return self.declared_exception_classes + exception_handlers_registry.auto_handle_exception_classes
 
     def get_handler(self, exception: Union[Type[Exception], Exception]) -> Optional[ExceptionHandler]:
         exception_type = type(exception) if isinstance(exception, Exception) else exception
@@ -87,7 +83,7 @@ class MethodExceptionsHandler:
     def handle(self, exception: Exception, request: Request, response_headers: MutableMapping[str, str]):
         handler = self.get_handler(exception)
         if handler is None:
-            handler = exceptions_handler.get_handler(exception)
+            handler = exception_handlers_registry.get_handler(exception)
         return _handle_exception(exception, handler, request, response_headers)
 
 
@@ -106,4 +102,4 @@ def _handle_exception(exception, handler: Optional[ExceptionHandler], request, r
     return convert_result_to_http_response(request, result, handle_method)
 
 
-exceptions_handler = ExceptionsHandler()
+exception_handlers_registry = ExceptionHandlersRegistry()

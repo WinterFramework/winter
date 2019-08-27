@@ -14,7 +14,7 @@ from ..core import ComponentMethod
 from ..core import ComponentMethodArgument
 from ..drf import get_output_serializer
 from ..exceptions.handlers import MethodExceptionsHandler
-from ..exceptions.handlers import exceptions_handler
+from ..exceptions.handlers import exception_handlers_registry
 from ..http import ResponseEntity
 from ..http.default_response_status import get_default_response_status
 from ..routing import Route
@@ -69,7 +69,7 @@ def build_responses_schemas(route: Route):
     for exception_cls in method_exceptions_handler.declared_exception_classes:
         handler = method_exceptions_handler.get_handler(exception_cls)
         if handler is None:
-            handler = exceptions_handler.get_handler(exception_cls)
+            handler = exception_handlers_registry.get_handler(exception_cls)
         if handler is None:
             continue
         handle_method = ComponentMethod.get_or_create(handler.__class__.handle)
