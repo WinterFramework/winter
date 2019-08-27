@@ -11,11 +11,11 @@ from .sort import Sort
 from .sort import SortDirection
 from .sort import order_by
 from winter.http.exception_handlers import BadRequestExceptionHandler
-from ..exceptions.handlers import exception_handlers_registry
+from ..exceptions.handlers import exceptions_handler
 
 
 def setup():
     from ..schema import register_type_inspector
 
     register_type_inspector(Page, func=inspect_page)
-    exception_handlers_registry.add_handler(MaximumLimitValueExceeded, BadRequestExceptionHandler, auto_handle=True)
+    exceptions_handler.add_handler(MaximumLimitValueExceeded, BadRequestExceptionHandler, auto_handle=True)

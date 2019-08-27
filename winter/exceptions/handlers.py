@@ -21,11 +21,11 @@ class ExceptionHandler(abc.ABC):
         pass
 
 
-class ExceptionHandlersRegistry:
+class ExceptionsHandler:
     HandlersMap = Dict[Type[Exception], ExceptionHandler]
 
     def __init__(self):
-        self._handlers: ExceptionHandlersRegistry.HandlersMap = {}
+        self._handlers: ExceptionsHandler.HandlersMap = {}
         self._auto_handle_exceptions = set()
         super().__init__()
 
@@ -57,8 +57,12 @@ class ExceptionHandlersRegistry:
                 return handler
         return None
 
+    def handle(self, exception: Exception, request: Request, response_headers: MutableMapping[str, str]):
+        handler = self.get_handler(exception)
+        return _handle_exception(exception, handler, request, response_headers)
 
-class MethodExceptionsHandler(ExceptionHandler):
+
+class MethodExceptionsHandler:
     def __init__(self, method: ComponentMethod):
         super().__init__()
         self._method = method
@@ -79,16 +83,23 @@ class MethodExceptionsHandler(ExceptionHandler):
     def handle(self, exception: Exception, request: Request, response_headers: MutableMapping[str, str]):
         handler = self.get_handler(exception)
         if handler is None:
-            handler = exception_handlers_registry.get_handler(exception)
-            if handler is None:
-                return NotHandled
-
-        handle_method = ComponentMethod.get_or_create(handler.__class__.handle)
-        arguments = arguments_resolver.resolve_arguments(handle_method, request, response_headers, {
-            'exception': exception,
-            'response_headers': response_headers,
-        })
-        return handle_method(handler, **arguments)
+            handler = exceptions_handler.get_handler(exception)
+        return _handle_exception(exception, handler, request, response_headers)
 
 
-exception_handlers_registry = ExceptionHandlersRegistry()
+def _handle_exception(exception, handler: Optional[ExceptionHandler], request, response_headers):
+    from ..django import convert_result_to_http_response
+
+    if handler is None:
+        return None
+
+    handle_method = ComponentMethod.get_or_create(handler.__class__.handle)
+    arguments = arguments_resolver.resolve_arguments(handle_method, request, response_headers, {
+        'exception': exception,
+        'response_headers': response_headers,
+    })
+    result = handle_method(handler, **arguments)
+    return convert_result_to_http_response(request, result, handle_method)
+
+
+exceptions_handler = ExceptionsHandler()

@@ -11,7 +11,7 @@ from .drf import output_template
 from .exceptions import RedirectException
 from .exceptions.handlers import ExceptionHandler
 from winter.http.exception_handlers import RedirectExceptionHandler
-from .exceptions.handlers import exception_handlers_registry
+from .exceptions.handlers import exceptions_handler
 from .exceptions.throws import throws
 from .http import ResponseEntity
 from .http import request_body
@@ -77,8 +77,8 @@ def _add_exception_handlers():
     from winter.http.exception_handlers import ConvertExceptionHandler
     from .converters import ConvertException
 
-    exception_handlers_registry.add_handler(ConvertException, ConvertExceptionHandler, auto_handle=True)
-    exception_handlers_registry.add_handler(RedirectException, RedirectExceptionHandler, auto_handle=True)
+    exceptions_handler.add_handler(ConvertException, ConvertExceptionHandler, auto_handle=True)
+    exceptions_handler.add_handler(RedirectException, RedirectExceptionHandler, auto_handle=True)
 
 
 _default_configuration()

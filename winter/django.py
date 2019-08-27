@@ -18,7 +18,7 @@ from .core import ComponentMethod
 from .drf.auth import is_authentication_needed
 from .exceptions.handlers import MethodExceptionsHandler
 from .exceptions.handlers import NotHandled
-from .exceptions.handlers import exception_handlers_registry
+from .exceptions.handlers import exceptions_handler
 from .http import ResponseEntity
 from .http.default_response_status import get_default_response_status
 from .http.throttling import create_throttle_classes
@@ -80,30 +80,15 @@ def _call_controller_method(controller, route: Route, request: Request):
     try:
         arguments = arguments_resolver.resolve_arguments(method, request, response_headers)
         result = method(controller, **arguments)
+        response = convert_result_to_http_response(request, result, method)
     except method_exceptions_handler.exception_classes as exception:
-        handler = method_exceptions_handler.get_handler(exception)
-        if handler is None:
-            handler = exception_handlers_registry.get_handler(exception)
-        if handler is None:
+        response = method_exceptions_handler.handle(exception, request, response_headers)
+        if response is None:
             raise
-        result = method_exceptions_handler.handle(exception, request, response_headers)
-        assert result is not NotHandled
-        method = ComponentMethod.get_or_create(handler.__class__.handle)
-    except exception_handlers_registry.auto_handle_exception_classes as exception:
-        handler = exception_handlers_registry.get_handler(exception)
-        if handler is None:
+    except exceptions_handler.auto_handle_exception_classes as exception:
+        response = exceptions_handler.handle(exception, request, response_headers)
+        if response is None:
             raise
-
-        method = ComponentMethod.get_or_create(handler.__class__.handle)
-        arguments = arguments_resolver.resolve_arguments(method, request, response_headers, {
-            'exception': exception,
-            'response_headers': response_headers,
-        })
-        result = method(handler, **arguments)
-        if result is NotHandled:
-            raise
-
-    response = convert_result_to_http_response(request, result, method)
 
     for header_name, header_value in response_headers.items():
         response[header_name] = header_value

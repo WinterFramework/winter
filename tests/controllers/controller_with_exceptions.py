@@ -31,7 +31,7 @@ class AnotherExceptionHandler(winter.ExceptionHandler):
         return 21
 
 
-winter.exception_handlers_registry.add_handler(CustomException, CustomExceptionHandler)
+winter.exceptions_handler.add_handler(CustomException, CustomExceptionHandler)
 
 
 @winter.controller
