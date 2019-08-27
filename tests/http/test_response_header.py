@@ -69,4 +69,4 @@ def test_header_without_annotation():
 
     with pytest.raises(ArgumentNotSupported):
         # Act
-        response = client.get('/with-response-headers/header-without-annotation/', content_type='application/json')
+        client.get('/with-response-headers/header-without-annotation/', content_type='application/json')
