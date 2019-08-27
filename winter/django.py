@@ -90,10 +90,13 @@ def _call_controller_method(controller, route: Route, request: Request):
         if response is None:
             raise
 
+    _fill_response_headers(response, response_headers)
+    return response
+
+
+def _fill_response_headers(response, response_headers):
     for header_name, header_value in response_headers.items():
         response[header_name] = header_value
-
-    return response
 
 
 def convert_result_to_http_response(request: Request, result: Any, method: ComponentMethod):
