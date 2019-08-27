@@ -103,26 +103,3 @@ def test_resolve_arguments_fails():
     with pytest.raises(ArgumentNotSupported, match=f'Unable to resolve argument {arg_name}: int'):
         # Act
         arguments_resolver.resolve_arguments(method, request=Mock(), response_headers={})
-
-
-def test_arguments_resolver_is_supported_true():
-    def func(self, argument: int):
-        return None
-
-    def resolve_argument(argument: ComponentMethodArgument, request, response_headers):
-        return argument.type_
-
-    arguments_resolver = ArgumentsResolver()
-    resolver = GenericArgumentResolver(
-        arg_name='argument',
-        arg_type=int,
-        resolve_argument=resolve_argument,
-    )
-    arguments_resolver.add_argument_resolver(resolver)
-    method = ComponentMethod(func)
-    argument = method.get_argument('argument')
-    request = get_request()
-
-    # Assert
-    assert arguments_resolver.is_supported(argument)
-    assert arguments_resolver.resolve_argument(argument, request, {}) == argument.type_

@@ -84,8 +84,11 @@ class MethodExceptionsHandler(ExceptionHandler):
                 return NotHandled
 
         handle_method = ComponentMethod.get_or_create(handler.__class__.handle)
-        arguments = arguments_resolver.resolve_arguments(handle_method, request, response_headers)
-        return handle_method(exception, **arguments)
+        arguments = arguments_resolver.resolve_arguments(handle_method, request, response_headers, {
+            'exception': exception,
+            'response_headers': response_headers,
+        })
+        return handle_method(handler, **arguments)
 
 
 exception_handlers_registry = ExceptionHandlersRegistry()
