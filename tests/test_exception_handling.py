@@ -3,8 +3,10 @@ from http import HTTPStatus
 import pytest
 from rest_framework.test import APIClient
 
+from winter.argument_resolver import ArgumentNotSupported
 from .controllers.controller_with_exceptions import CustomException
 from .controllers.controller_with_exceptions import ExceptionWithoutHandler
+from .controllers.controller_with_exceptions import WithUnknownArgumentException
 from .entities import AuthorizedUser
 
 
@@ -42,4 +44,15 @@ def test_controller_with_exceptions_throws(url_path, expected_exception_cls):
 
     # Act
     with pytest.raises(expected_exception_cls):
+        client.get(url)
+
+
+def test_exception_handler_with_unknown_argument():
+    client = APIClient()
+    user = AuthorizedUser()
+    client.force_authenticate(user)
+    url = '/controller_with_exceptions/with_unknown_argument_exception/'
+
+    # Act
+    with pytest.raises(ArgumentNotSupported):
         client.get(url)

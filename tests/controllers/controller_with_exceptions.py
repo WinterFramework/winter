@@ -4,10 +4,13 @@ import winter
 
 
 class CustomException(Exception):
-
     def __init__(self, message: str):
         super().__init__(message)
         self.message = message
+
+
+class WithUnknownArgumentException(Exception):
+    pass
 
 
 class ExceptionWithoutHandler(Exception):
@@ -31,7 +34,14 @@ class AnotherExceptionHandler(winter.ExceptionHandler):
         return 21
 
 
+class WithUnknownArgumentExceptionHandler(winter.ExceptionHandler):
+    @winter.response_status(400)
+    def handle(self, exception: CustomException, unknown_argument: int) -> str:
+        return 'Bad Request'
+
+
 winter.exceptions_handler.add_handler(CustomException, CustomExceptionHandler)
+winter.exceptions_handler.add_handler(WithUnknownArgumentException, WithUnknownArgumentExceptionHandler)
 
 
 @winter.controller
@@ -61,3 +71,8 @@ class ControllerWithExceptions:
     @winter.route_get('exception_with_custom_handler/')
     def with_custom_handler(self) -> str:
         raise CustomException('message')
+
+    @winter.throws(WithUnknownArgumentException)
+    @winter.route_get('with_unknown_argument_exception/')
+    def with_unknown_argument_handler(self) -> str:
+        raise WithUnknownArgumentException()
