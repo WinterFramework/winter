@@ -1,33 +1,21 @@
-from typing import MutableMapping
-from typing import Type
-from typing import TypeVar
-
 import dataclasses
 
 from ..converters import convert
 from ..core import annotate_method
 
-T = TypeVar('T')
 
-
-class _BaseResponseHeader:
-    _value_type: Type[T] = None
-
-    def __init__(self, headers: MutableMapping[str, str], header_name: str):
-        self._headers = headers
-        self._header_name = header_name
-
-    def set(self, value: T):
-        self._headers[self._header_name] = convert(value, self._value_type)
-
-
-class _ResponseHeader:
-    def __getitem__(self, value_type: Type):
+class _ResponseHeaderMeta(type):
+    def __getitem__(self, value_type):
         assert isinstance(value_type, type), 'value_type must be a type'
-        payload = {
-            '_value_type': value_type,
-        }
-        return type(f'ResponseHeader[{value_type.__name__}]', (_BaseResponseHeader,), payload)
+        return _ResponseHeaderMeta.__new__(
+            type(self),
+            f'{self.__name__}[{value_type.__name__}]',
+            (self, ),
+            {
+                '_value_type': value_type,
+            },
+
+        )
 
 
 @dataclasses.dataclass
@@ -49,4 +37,18 @@ def response_header(header_name: str, argument_name: str):
     return wrapper
 
 
-ResponseHeader = _ResponseHeader()
+class ResponseHeader(metaclass=_ResponseHeaderMeta):
+    _value_type = str
+
+    def __init__(self, headers, header_name):
+        self._headers = headers
+        self._header_name = header_name
+
+    def __str__(self):
+        return f'{self.__class__.__name__}(headers={self._headers}, header_name={self._header_name})'
+
+    def __repr__(self):
+        return str(self)
+
+    def set(self, value):
+        self._headers[self._header_name] = convert(value, self._value_type)

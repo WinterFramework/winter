@@ -2,8 +2,8 @@ from typing import MutableMapping
 
 from rest_framework.request import Request
 
+from .response_header_annotation import ResponseHeader
 from .response_header_annotation import ResponseHeaderAnnotation
-from .response_header_annotation import _BaseResponseHeader
 from .. import ArgumentResolver
 from ..core import ComponentMethodArgument
 from ..type_utils import is_origin_type_subclasses
@@ -12,7 +12,7 @@ from ..type_utils import is_origin_type_subclasses
 class ResponseHeaderArgumentResolver(ArgumentResolver):
 
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
-        if not is_origin_type_subclasses(argument.type_, _BaseResponseHeader):
+        if not is_origin_type_subclasses(argument.type_, ResponseHeader):
             return False
         annotations = argument.method.annotations.get(ResponseHeaderAnnotation)
         return any(annotation.argument_name == argument.name for annotation in annotations)
