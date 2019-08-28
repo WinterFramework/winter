@@ -6,6 +6,18 @@ from rest_framework.test import APIClient
 
 from tests.entities import AuthorizedUser
 from winter.argument_resolver import ArgumentNotSupported
+from winter.http import ResponseHeader
+
+
+def test_response_header_sets_header():
+    headers = {}
+    header = ResponseHeader[uuid.UUID](headers, 'My-Header')
+    uid = uuid.uuid4()
+
+    # Act
+    header.set(uid)
+
+    assert headers['my-header'] == uid
 
 
 def test_str_response_header():

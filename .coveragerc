@@ -12,6 +12,7 @@ exclude_lines =
     # Don't complain about missing debug-only code:
     if self/.debug
     if typing.TYPE_CHECKING:
+    def __repr__
 
     # Don't complain if tests don't hit defensive assertion code:
     raise AssertionError

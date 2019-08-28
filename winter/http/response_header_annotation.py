@@ -1,3 +1,6 @@
+from typing import Any
+from typing import MutableMapping
+
 import dataclasses
 
 from ..converters import convert
@@ -40,15 +43,12 @@ def response_header(header_name: str, argument_name: str):
 class ResponseHeader(metaclass=_ResponseHeaderMeta):
     _value_type = str
 
-    def __init__(self, headers, header_name):
+    def __init__(self, headers: MutableMapping[str, Any], header_name: str):
         self._headers = headers
-        self._header_name = header_name
-
-    def __str__(self):
-        return f'{self.__class__.__name__}(headers={self._headers}, header_name={self._header_name})'
+        self._header_name = header_name.lower()
 
     def __repr__(self):
-        return str(self)
+        return f'{self.__class__.__name__}({self._header_name!r})'
 
     def set(self, value):
         self._headers[self._header_name] = convert(value, self._value_type)
