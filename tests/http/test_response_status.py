@@ -3,7 +3,7 @@ from http import HTTPStatus
 import pytest
 
 import winter
-from winter.response_status import get_default_response_status
+from winter.http.default_response_status import get_default_response_status
 
 
 @pytest.mark.parametrize('as_int', [True, False])

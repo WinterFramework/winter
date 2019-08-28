@@ -37,12 +37,17 @@ class PagePositionArgumentResolver(ArgumentResolver):
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
         return argument.type_ is PagePosition
 
-    def resolve_argument(self, argument: ComponentMethodArgument, http_request: Request) -> PagePosition:
-        page_position = self._parse_page_position(argument, http_request)
+    def resolve_argument(
+        self,
+        argument: ComponentMethodArgument,
+        request: Request,
+        response_headers: typing.MutableMapping[str, str],
+    ) -> PagePosition:
+        page_position = self._parse_page_position(argument, request)
         limits = self._get_limits(argument.method)
 
         if limits.redirect_to_default and page_position.limit is None and limits.default is not None:
-            parsed_url = furl(http_request.get_full_path())
+            parsed_url = furl(request.get_full_path())
             parsed_url.args[self.limit_name] = limits.default
             raise RedirectException(redirect_to=parsed_url.url)
 

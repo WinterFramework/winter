@@ -1,0 +1,30 @@
+from typing import MutableMapping
+
+from rest_framework.request import Request
+
+from .response_header_annotation import ResponseHeader
+from .response_header_annotation import ResponseHeaderAnnotation
+from .. import ArgumentResolver
+from ..core import ComponentMethodArgument
+from ..type_utils import is_origin_type_subclasses
+
+
+class ResponseHeaderArgumentResolver(ArgumentResolver):
+
+    def is_supported(self, argument: ComponentMethodArgument) -> bool:
+        if not is_origin_type_subclasses(argument.type_, ResponseHeader):
+            return False
+        annotations = argument.method.annotations.get(ResponseHeaderAnnotation)
+        return any(annotation.argument_name == argument.name for annotation in annotations)
+
+    def resolve_argument(
+        self,
+        argument: ComponentMethodArgument,
+        request: Request,
+        response_headers: MutableMapping[str, str],
+    ):
+        annotations = argument.method.annotations.get(ResponseHeaderAnnotation)
+        annotation = [annotation for annotation in annotations if annotation.argument_name == argument.name][0]
+        header_name = annotation.header_name
+        header = argument.type_(response_headers, header_name)
+        return header

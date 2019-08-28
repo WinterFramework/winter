@@ -1,0 +1,39 @@
+from uuid import UUID
+
+import winter
+from winter.http import ResponseHeader
+
+
+@winter.controller
+@winter.route('with-response-headers/')
+class ControllerWithResponseHeaders:
+
+    @winter.response_header('x-header', 'header')
+    @winter.route_get('str-header/')
+    def str_header(self, header: ResponseHeader[str]) -> str:
+        header.set('test header')
+        return 'OK'
+
+    @winter.response_header('x-header', 'header')
+    @winter.route_get('int-header/')
+    def int_header(self, header: ResponseHeader[int]) -> str:
+        header.set(123)
+        return 'OK'
+
+    @winter.response_header('x-header', 'header')
+    @winter.route_get('uuid-header/{?uid}')
+    def uuid_header(self, uid: UUID, header: ResponseHeader[UUID]) -> str:
+        header.set(uid)
+        return 'OK'
+
+    @winter.response_header('x-header1', 'header1')
+    @winter.response_header('x-header2', 'header2')
+    @winter.route_get('two-headers/')
+    def two_headers(self, header1: ResponseHeader[str], header2: ResponseHeader[str]) -> str:
+        header1.set('header1')
+        header2.set('header2')
+        return 'OK'
+
+    @winter.route_get('header-without-annotation/')
+    def header_without_annotation(self, header: ResponseHeader[str]) -> str:
+        return 'OK'

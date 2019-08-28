@@ -17,13 +17,11 @@ from .controller import get_component
 from .core import ComponentMethod
 from .drf.auth import is_authentication_needed
 from .exceptions.handlers import MethodExceptionsHandler
-from .exceptions.handlers import NotHandled
-from .exceptions.handlers import exceptions_handler
+from .http import ResponseEntity
+from .http.default_response_status import get_default_response_status
 from .http.throttling import create_throttle_classes
 from .http.urls import rewrite_uritemplate_with_regexps
 from .output_processor import get_output_processor
-from .response_entity import ResponseEntity
-from .response_status import get_default_response_status
 from .routing.routing import Route
 from .routing.routing import get_route
 
@@ -76,17 +74,23 @@ def _create_dispatch_function(controller_class, route: Route):
 def _call_controller_method(controller, route: Route, request: Request):
     method = route.method
     method_exceptions_handler = MethodExceptionsHandler(method)
+    response_headers = {}
     try:
-        arguments = arguments_resolver.resolve_arguments(method, request)
+        arguments = arguments_resolver.resolve_arguments(method, request, response_headers)
         result = method(controller, **arguments)
-        return convert_result_to_http_response(request, result, method)
+        response = convert_result_to_http_response(request, result, method)
     except method_exceptions_handler.exception_classes as exception:
-        result = method_exceptions_handler.handle(request, exception)
-        if result is NotHandled:
+        response = method_exceptions_handler.handle(exception, request, response_headers)
+        if response is None:
             raise
-        return result
-    except exceptions_handler.auto_handle_exception_classes as exception:
-        return exceptions_handler.handle(request, exception)
+
+    _fill_response_headers(response, response_headers)
+    return response
+
+
+def _fill_response_headers(response, response_headers):
+    for header_name, header_value in response_headers.items():
+        response[header_name] = header_value
 
 
 def convert_result_to_http_response(request: Request, result: Any, method: ComponentMethod):
@@ -110,5 +114,6 @@ def _group_routes_by_url_path(methods: List[ComponentMethod]):
     result = defaultdict(list)
     for method in methods:
         route = get_route(method)
-        result[route.url_path].append(route)
+        if route is not None:
+            result[route.url_path].append(route)
     return result.items()

@@ -1,10 +1,7 @@
 from http import HTTPStatus
-from typing import Union
 
-import dataclasses
-
-from .core import ComponentMethod
-from .core import annotate
+from ..core import ComponentMethod
+from .response_status_annotation import ResponseStatusAnnotation
 
 _default_http_method_statuses = {
     'get': HTTPStatus.OK,
@@ -13,17 +10,6 @@ _default_http_method_statuses = {
     'patch': HTTPStatus.OK,
     'delete': HTTPStatus.NO_CONTENT,
 }
-
-
-@dataclasses.dataclass
-class ResponseStatusAnnotation:
-    status_code: HTTPStatus
-
-
-def response_status(status: Union[HTTPStatus, int]):
-    status = HTTPStatus(status)
-    annotation = ResponseStatusAnnotation(status)
-    return annotate(annotation, single=True)
 
 
 def get_default_response_status(http_method: str, method: ComponentMethod) -> int:

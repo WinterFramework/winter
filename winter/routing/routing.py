@@ -38,8 +38,11 @@ def route_put(url_path='', produces: Optional[Tuple[MediaType]] = None, consumes
     return route(url_path, 'PUT', produces=produces, consumes=consumes)
 
 
-def get_route(method: ComponentMethod) -> Route:
-    route_annotation = method.annotations.get_one(RouteAnnotation)
+def get_route(method: ComponentMethod) -> Optional[Route]:
+    route_annotation = method.annotations.get_one_or_none(RouteAnnotation)
+    if route_annotation is None:
+        return None
+
     url_path = get_url_path(method)
     route = Route(
         route_annotation.http_method,

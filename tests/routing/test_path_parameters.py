@@ -26,11 +26,11 @@ def test_resolve_path_parameter(path, arg_name, expected_value):
     component = Component.get_by_cls(ControllerWithPathParameters)
     argument = component.get_method('test').get_argument(arg_name)
     resolver = PathParametersArgumentResolver()
-    http_request = Mock(spec=Request)
-    http_request.path_info = path
+    request = Mock(spec=Request)
+    request.path_info = path
 
     # Act
-    result = resolver.resolve_argument(argument, http_request)
+    result = resolver.resolve_argument(argument, request, {})
 
     # Assert
     assert result == expected_value
@@ -59,10 +59,10 @@ def test_with_raises_argument_not_supported():
     component = get_component(ControllerWithPathParameters)
     argument = component.get_method('test').get_argument('param6')
     resolver = PathParametersArgumentResolver()
-    http_request = Mock(spec=Request)
-    http_request.path_info = f'/controller_with_path_parameters/123/456/one/{uuid_}/2/'
+    request = Mock(spec=Request)
+    request.path_info = f'/controller_with_path_parameters/123/456/one/{uuid_}/2/'
 
     with pytest.raises(ArgumentNotSupported) as exception:
-        resolver.resolve_argument(argument, http_request)
+        resolver.resolve_argument(argument, request, {})
 
     assert str(exception.value) == 'Unable to resolve argument param6: str'

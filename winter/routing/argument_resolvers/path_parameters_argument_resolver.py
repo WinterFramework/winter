@@ -1,3 +1,5 @@
+from typing import MutableMapping
+
 from django.urls import get_resolver
 from rest_framework.request import Request
 
@@ -19,12 +21,20 @@ class PathParametersArgumentResolver(ArgumentResolver):
             return self._cache[argument]
 
         route = get_route(argument.method)
+        if route is None:
+            return False
+
         path_variables = route.get_path_variables()
         is_supported = self._cache[argument] = argument.name in path_variables
         return is_supported
 
-    def resolve_argument(self, argument: ComponentMethodArgument, http_request: Request):
-        resolver_match = self._url_resolver.resolve(http_request.path_info)
+    def resolve_argument(
+        self,
+        argument: ComponentMethodArgument,
+        request: Request,
+        response_headers: MutableMapping[str, str],
+    ):
+        resolver_match = self._url_resolver.resolve(request.path_info)
         callback, callback_args, callback_kwargs = resolver_match
 
         if argument.name not in callback_kwargs:

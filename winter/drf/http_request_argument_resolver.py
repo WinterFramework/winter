@@ -1,4 +1,5 @@
 import inspect
+from typing import MutableMapping
 
 from rest_framework.request import Request as HttpRequest
 
@@ -11,5 +12,10 @@ class HttpRequestArgumentResolver(ArgumentResolver):
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
         return inspect.isclass(argument.type_) and issubclass(argument.type_, HttpRequest)
 
-    def resolve_argument(self, argument: ComponentMethodArgument, http_request: HttpRequest):
-        return http_request
+    def resolve_argument(
+        self,
+        argument: ComponentMethodArgument,
+        request: HttpRequest,
+        response_headers: MutableMapping[str, str],
+    ):
+        return request

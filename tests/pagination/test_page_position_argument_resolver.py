@@ -44,7 +44,7 @@ def test_resolve_argument_with_order_by_without_order_by_annotation():
     request.query_params = QueryDict('order_by=id')
 
     # Act
-    page_position = resolver.resolve_argument(argument, request)
+    page_position = resolver.resolve_argument(argument, request, {})
 
     # Assert
     assert page_position == PagePosition()
@@ -76,7 +76,7 @@ def test_resolve_argument_ok_in_page_position_argument_resolver(query_string, ex
     request.query_params = QueryDict(query_string)
 
     # Act
-    page_position = resolver.resolve_argument(argument, request)
+    page_position = resolver.resolve_argument(argument, request, {})
 
     # Assert
     assert page_position == expected_page_position
@@ -104,7 +104,7 @@ def test_resolve_argument_ok_in_page_position_argument_resolver_with_default(
     request.query_params = QueryDict(query_string)
 
     # Act
-    page_position = resolver.resolve_argument(argument, request)
+    page_position = resolver.resolve_argument(argument, request, {})
 
     # Assert
     assert page_position == expected_page_position
@@ -138,6 +138,6 @@ def test_resolve_argument_fails_in_page_position_argument_resolver(query_string,
     # Assert
     with pytest.raises(exception_type) as exception_info:
         # Act
-        resolver.resolve_argument(argument, request)
+        resolver.resolve_argument(argument, request, {})
 
     assert exception_info.value.args[0] == message

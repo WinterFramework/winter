@@ -1,60 +1,44 @@
 import abc
-import typing
-from http import HTTPStatus
+from typing import Dict
+from typing import MutableMapping
+from typing import Optional
+from typing import Tuple
+from typing import Type
+from typing import Union
 
 from rest_framework.request import Request
-from rest_framework.response import Response
 
-from .exceptions import RedirectException
 from .throws import get_throws
+from .. import arguments_resolver
 from ..core import ComponentMethod
-from ..core import annotate
-from ..response_status import response_status
 
 NotHandled = object()
 
 
 class ExceptionHandler(abc.ABC):
-
-    def __init__(self):
-        handle = self.__class__.handle
-        self.handle_method = ComponentMethod.get_or_create(handle)
-
     @abc.abstractmethod
-    def handle(self, request: Request, exception: Exception):  # pragma: no cover
+    def handle(self, exception: Exception, **kwargs):  # pragma: no cover
         pass
 
 
-class RedirectExceptionHandler(ExceptionHandler):
-    def handle(self, request: Request, exception: Exception):
-        assert isinstance(exception, RedirectException)
-        return Response(status=HTTPStatus.FOUND, headers={'Location': exception.redirect_to})
-
-
-class BadRequestExceptionHandler(ExceptionHandler):
-    @response_status(400)
-    def handle(self, request: Request, exception: Exception) -> str:
-        return str(exception.args[0])  # stupid Exception implementation (Viva Python!)
-
-
-class ExceptionsHandler(ExceptionHandler):
-    HandlersMap = typing.Dict[typing.Type[Exception], ExceptionHandler]
+class ExceptionHandlersRegistry:
+    HandlersMap = Dict[Type[Exception], ExceptionHandler]
 
     def __init__(self):
-        self._handlers: ExceptionsHandler.HandlersMap = {}
+        self._handlers: ExceptionHandlersRegistry.HandlersMap = {}
         self._auto_handle_exceptions = set()
         super().__init__()
 
     @property
-    def auto_handle_exception_classes(self) -> typing.Tuple[typing.Type[Exception], ...]:
+    def auto_handle_exception_classes(self) -> Tuple[Type[Exception], ...]:
         return tuple(self._auto_handle_exceptions)
 
     def add_handler(
-            self,
-            exception_cls: typing.Type[Exception],
-            handler_cls: typing.Type[ExceptionHandler],
-            *,
-            auto_handle: bool = False,
+        self,
+        exception_cls: Type[Exception],
+        handler_cls: Type[ExceptionHandler],
+        *,
+        auto_handle: bool = False,
     ):
         assert exception_cls not in self._handlers
         self._handlers[exception_cls] = handler_cls()
@@ -63,9 +47,9 @@ class ExceptionsHandler(ExceptionHandler):
             self._auto_handle_exceptions.add(exception_cls)
 
     def get_handler(
-            self,
-            exception: typing.Union[typing.Type[Exception], Exception],
-    ) -> typing.Optional[ExceptionHandler]:
+        self,
+        exception: Union[Type[Exception], Exception],
+    ) -> Optional[ExceptionHandler]:
         exception_type = type(exception) if isinstance(exception, Exception) else exception
 
         for exception_cls, handler in self._handlers.items():
@@ -73,33 +57,22 @@ class ExceptionsHandler(ExceptionHandler):
                 return handler
         return None
 
-    @annotate(None)
-    def handle(self, request: Request, exception: Exception):
-        from ..django import convert_result_to_http_response
 
-        handler = self.get_handler(exception)
-        if handler is None:
-            return NotHandled
-
-        result = handler.handle(request, exception)
-        return convert_result_to_http_response(request, result, handler.handle_method)
-
-
-class MethodExceptionsHandler(ExceptionHandler):
-
+class MethodExceptionsHandler:
     def __init__(self, method: ComponentMethod):
         super().__init__()
         self._method = method
         self._handlers_by_exception = get_throws(self._method)
 
     @property
-    def exception_classes(self) -> typing.Tuple[typing.Type[Exception], ...]:
+    def declared_exception_classes(self) -> Tuple[Type[Exception], ...]:
         return tuple(self._handlers_by_exception.keys())
 
-    def get_handler(
-            self,
-            exception: typing.Union[typing.Type[Exception], Exception],
-    ) -> typing.Optional[ExceptionHandler]:
+    @property
+    def exception_classes(self) -> Tuple[Type[Exception], ...]:
+        return self.declared_exception_classes + exception_handlers_registry.auto_handle_exception_classes
+
+    def get_handler(self, exception: Union[Type[Exception], Exception]) -> Optional[ExceptionHandler]:
         exception_type = type(exception) if isinstance(exception, Exception) else exception
 
         for exception_cls, handler in self._handlers_by_exception.items():
@@ -107,15 +80,26 @@ class MethodExceptionsHandler(ExceptionHandler):
                 return handler
         return None
 
-    @annotate(None)
-    def handle(self, request: Request, exception: Exception):
-        from ..django import convert_result_to_http_response
-
+    def handle(self, exception: Exception, request: Request, response_headers: MutableMapping[str, str]):
         handler = self.get_handler(exception)
-        if handler is not None:
-            result = handler.handle(request, exception)
-            return convert_result_to_http_response(request, result, handler.handle_method)
-        return exceptions_handler.handle(request, exception)
+        if handler is None:
+            handler = exception_handlers_registry.get_handler(exception)
+        return _handle_exception(exception, handler, request, response_headers)
 
 
-exceptions_handler = ExceptionsHandler()
+def _handle_exception(exception, handler: Optional[ExceptionHandler], request, response_headers):
+    from ..django import convert_result_to_http_response
+
+    if handler is None:
+        return None
+
+    handle_method = ComponentMethod.get_or_create(handler.__class__.handle)
+    arguments = arguments_resolver.resolve_arguments(handle_method, request, response_headers, {
+        'exception': exception,
+        'response_headers': response_headers,
+    })
+    result = handle_method(handler, **arguments)
+    return convert_result_to_http_response(request, result, handle_method)
+
+
+exception_handlers_registry = ExceptionHandlersRegistry()

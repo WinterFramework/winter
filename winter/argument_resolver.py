@@ -4,6 +4,9 @@ from typing import Any
 from typing import Callable
 from typing import Dict
 from typing import List
+from typing import Mapping
+from typing import MutableMapping
+from typing import Optional
 from typing import Type
 
 from rest_framework.request import Request
@@ -21,18 +24,23 @@ class ArgumentNotSupported(Exception):
 
 
 class ArgumentResolver(abc.ABC):
-    """IArgumentResolver is used to map http request contents to controller method arguments."""
+    """ArgumentResolver interface is used to map http request contents to controller method arguments."""
 
     @abstractmethod
     def is_supported(self, argument: ComponentMethodArgument) -> bool:  # pragma: no cover
         pass
 
     @abstractmethod
-    def resolve_argument(self, argument: ComponentMethodArgument, http_request: Request):  # pragma: no cover
+    def resolve_argument(
+        self,
+        argument: ComponentMethodArgument,
+        request: Request,
+        response_headers: MutableMapping[str, str],
+    ):  # pragma: no cover
         pass
 
 
-class ArgumentsResolver(ArgumentResolver):
+class ArgumentsResolver:
 
     def __init__(self):
         super().__init__()
@@ -42,24 +50,33 @@ class ArgumentsResolver(ArgumentResolver):
     def add_argument_resolver(self, argument_resolver: ArgumentResolver):
         self._argument_resolvers.append(argument_resolver)
 
-    def is_supported(self, argument: ComponentMethodArgument) -> bool:
-        # ArgumentsResolver must resolve all arguments
-        return True
-
-    def resolve_argument(self, argument: ComponentMethodArgument, http_request: Request) -> Any:
-        argument_resolver = self._get_argument_resolver(argument)
-        return argument_resolver.resolve_argument(argument, http_request)
-
     def resolve_arguments(
-            self,
-            method: ComponentMethod,
-            http_request: Request,
+        self,
+        method: ComponentMethod,
+        request: Request,
+        response_headers: MutableMapping[str, str],
+        context: Optional[Mapping[str, Any]] = None,
     ) -> Dict[str, Any]:
         resolved_arguments = {}
+        if context is None:
+            context = {}
+
         for argument in method.arguments:
-            resolved_arguments[argument.name] = self.resolve_argument(argument, http_request)
+            if argument.name in context:
+                resolved_arguments[argument.name] = context[argument.name]
+            else:
+                resolved_arguments[argument.name] = self._resolve_argument(argument, request, response_headers)
 
         return resolved_arguments
+
+    def _resolve_argument(
+        self,
+        argument: ComponentMethodArgument,
+        request: Request,
+        response_headers: MutableMapping[str, str],
+    ) -> Any:
+        argument_resolver = self._get_argument_resolver(argument)
+        return argument_resolver.resolve_argument(argument, request, response_headers)
 
     def _get_argument_resolver(self, argument: ComponentMethodArgument) -> 'ArgumentResolver':
         if argument in self._cache:
@@ -82,8 +99,13 @@ class GenericArgumentResolver(ArgumentResolver):
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
         return argument.name == self._arg_name and argument.type_ == self._arg_type
 
-    def resolve_argument(self, argument: ComponentMethodArgument, http_request: Request):
-        return self._resolve_argument(argument, http_request)
+    def resolve_argument(
+        self,
+        argument: ComponentMethodArgument,
+        request: Request,
+        response_headers: MutableMapping[str, str],
+    ):
+        return self._resolve_argument(argument, request, response_headers)
 
 
 arguments_resolver = ArgumentsResolver()
