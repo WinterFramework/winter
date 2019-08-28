@@ -10,13 +10,13 @@ from .drf import output_serializer
 from .drf import output_template
 from .exceptions import RedirectException
 from .exceptions.handlers import ExceptionHandler
-from winter.http.exception_handlers import RedirectExceptionHandler
 from .exceptions.handlers import exception_handlers_registry
 from .exceptions.throws import throws
 from .http import ResponseEntity
 from .http import request_body
 from .http import response_header
 from .http import response_status
+from .http.exception_handlers import RedirectExceptionHandler
 from .output_processor import register_output_processor_resolver
 from .pagination import PagePositionArgumentResolver
 from .routing import route

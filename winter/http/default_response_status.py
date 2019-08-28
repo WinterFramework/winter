@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
-from winter.core import ComponentMethod
-from winter.http.response_status_annotation import ResponseStatusAnnotation
+from ..core import ComponentMethod
+from .response_status_annotation import ResponseStatusAnnotation
 
 _default_http_method_statuses = {
     'get': HTTPStatus.OK,
