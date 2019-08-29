@@ -1,4 +1,5 @@
 from collections import defaultdict
+from functools import wraps
 from typing import Any
 from typing import List
 from typing import Type
@@ -53,6 +54,10 @@ def _create_django_view(controller_class, component, routes: List[Route]):
         permission_classes = (IsAuthenticated,) if is_authentication_needed(component) else ()
         throttle_classes = create_throttle_classes(component, routes)
 
+    # It's useful for New Relic APM
+    WinterView.__module__ = controller_class.__module__
+    WinterView.__qualname__ = controller_class.__qualname__
+
     for route in routes:
         dispatch = _create_dispatch_function(controller_class, route)
         dispatch.route = route
@@ -64,6 +69,7 @@ def _create_django_view(controller_class, component, routes: List[Route]):
 def _create_dispatch_function(controller_class, route: Route):
     component = get_component(controller_class)
 
+    @wraps(route.method.func)
     def dispatch(winter_view, request: Request, **path_variables):
         controller = build_controller(component.component_cls)
         return _call_controller_method(controller, route, request)
