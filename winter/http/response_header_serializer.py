@@ -25,16 +25,21 @@ class ResponseHeadersSerializer:
         self._serializers.append(serializer)
 
     def serialize(self, value, header_name: str) -> str:
+        serializer = self._get_serializer(header_name)
+        if serializer is not None:
+            return serializer.serialize(value, header_name)
+
         serializer = self._get_serializer(header_name, type(value))
-        if serializer is None:
-            return str(value)
+        if serializer is not None:
+            return serializer.serialize(value, header_name)
 
-        return serializer.serialize(value, header_name)
+        return str(value)
 
-    def _get_serializer(self, header_name: str, value_type: Optional[Type]) -> Optional[ResponseHeaderSerializer]:
-        for serializer in self._serializers:
-            if serializer.is_supported(header_name):
-                return serializer
+    def _get_serializer(
+        self,
+        header_name: str,
+        value_type: Optional[Type] = None,
+    ) -> Optional[ResponseHeaderSerializer]:
         for serializer in self._serializers:
             if serializer.is_supported(header_name, value_type):
                 return serializer
