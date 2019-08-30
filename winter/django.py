@@ -95,8 +95,10 @@ def _call_controller_method(controller, route: Route, request: Request):
 
 
 def _fill_response_headers(response, response_headers):
+    from .http import response_headers_serializer
+
     for header_name, header_value in response_headers.items():
-        response[header_name] = header_value
+        response[header_name] = response_headers_serializer.serialize(header_value, header_name)
 
 
 def convert_result_to_http_response(request: Request, result: Any, method: ComponentMethod):
