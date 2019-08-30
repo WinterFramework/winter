@@ -22,7 +22,7 @@ class _ResponseHeaderMeta(type):
 
 @dataclasses.dataclass
 class ResponseHeaderAnnotation:
-    # TODO: add inspector for this annotation
+    # TODO: add inspector for this annotation (https://github.com/mofr/winter/issues/135)
     header_name: str
     argument_name: str
 
@@ -50,5 +50,5 @@ class ResponseHeader(metaclass=_ResponseHeaderMeta):
         return f'{self.__class__.__name__}({self._header_name!r})'
 
     def set(self, value):
-        # TODO: add value validation against self._value_type
+        # TODO: add value validation against self._value_type (https://github.com/mofr/winter/issues/136)
         self._headers[self._header_name] = value
