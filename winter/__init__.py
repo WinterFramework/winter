@@ -61,7 +61,6 @@ def _add_argument_resolvers():
 
 
 def _add_response_header_serializers():
-    from .http import response_headers_serializer
     from .http.response_header_serializers import DateTimeResponseHeaderSerializer
     from .http.response_header_serializers import LastModifiedResponseHeaderSerializer
 
