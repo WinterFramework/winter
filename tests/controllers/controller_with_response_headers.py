@@ -1,6 +1,8 @@
 import datetime
 from uuid import UUID
 
+import pytz
+
 import winter
 from winter.http import ResponseHeader
 
@@ -25,6 +27,12 @@ class ControllerWithResponseHeaders:
     @winter.route_get('datetime-isoformat-header/{?now}')
     def datetime_isoformat_header(self, now: float, header: ResponseHeader[datetime.datetime]) -> str:
         header.set(datetime.datetime.fromtimestamp(now))
+        return 'OK'
+
+    @winter.response_header('Last-Modified', 'header')
+    @winter.route_get('last-modified-header/{?now}')
+    def last_modified_header(self, now: float, header: ResponseHeader[datetime.datetime]) -> str:
+        header.set(datetime.datetime.fromtimestamp(now).astimezone(pytz.timezone('Asia/Novosibirsk')))
         return 'OK'
 
     @winter.response_header('x-header', 'header')

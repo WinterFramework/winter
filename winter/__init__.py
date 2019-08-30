@@ -33,6 +33,7 @@ def _default_configuration():
     from . import pagination
 
     _add_argument_resolvers()
+    _add_response_header_serializers()
     _register_controller_method_inspectors()
     _register_output_processor_resolvers()
     _add_exception_handlers()
@@ -56,6 +57,15 @@ def _add_argument_resolvers():
     arguments_resolver.add_argument_resolver(PathParametersArgumentResolver())
     arguments_resolver.add_argument_resolver(PagePositionArgumentResolver())
     arguments_resolver.add_argument_resolver(HttpRequestArgumentResolver())
+
+
+def _add_response_header_serializers():
+    from .http import response_headers_serializer
+    from .http.response_header_serializers import DateTimeResponseHeaderSerializer
+    from .http.response_header_serializers import LastModifiedResponseHeaderSerializer
+
+    response_headers_serializer.add_serializer(DateTimeResponseHeaderSerializer())
+    response_headers_serializer.add_serializer(LastModifiedResponseHeaderSerializer())
 
 
 def _register_controller_method_inspectors():
