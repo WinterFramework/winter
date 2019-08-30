@@ -1,3 +1,4 @@
+import datetime
 from uuid import UUID
 
 import winter
@@ -18,6 +19,12 @@ class ControllerWithResponseHeaders:
     @winter.route_get('int-header/')
     def int_header(self, header: ResponseHeader[int]) -> str:
         header.set(123)
+        return 'OK'
+
+    @winter.response_header('x-header', 'header')
+    @winter.route_get('datetime-isoformat-header/{?now}')
+    def datetime_isoformat_header(self, now: float, header: ResponseHeader[datetime.datetime]) -> str:
+        header.set(datetime.datetime.fromtimestamp(now))
         return 'OK'
 
     @winter.response_header('x-header', 'header')

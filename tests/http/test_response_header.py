@@ -1,3 +1,4 @@
+import datetime
 import uuid
 from http import HTTPStatus
 
@@ -44,6 +45,23 @@ def test_int_response_header():
     assert response.status_code == HTTPStatus.OK
     assert response.json() == 'OK'
     assert response['x-header'] == '123'
+
+
+def test_datetime_isoformat_response_header():
+    client = APIClient()
+    user = AuthorizedUser()
+    client.force_authenticate(user)
+    now = datetime.datetime.now()
+
+    # Act
+    response = client.get(
+        f'/with-response-headers/datetime-isoformat-header/?now={now.timestamp()}',
+        content_type='application/json',
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == 'OK'
+    assert response['x-header'] == now.isoformat()
 
 
 def test_uuid_response_header():

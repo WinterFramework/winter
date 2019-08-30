@@ -23,12 +23,12 @@ class _ResponseHeaderMeta(type):
 
 @dataclasses.dataclass
 class ResponseHeaderAnnotation:
+    # TODO: add inspector for this annotation
     header_name: str
     argument_name: str
 
 
 def response_header(header_name: str, argument_name: str):
-
     def wrapper(func_or_method):
         annotation = ResponseHeaderAnnotation(header_name, argument_name)
         annotation_decorator = annotate_method(annotation)
@@ -51,4 +51,5 @@ class ResponseHeader(metaclass=_ResponseHeaderMeta):
         return f'{self.__class__.__name__}({self._header_name!r})'
 
     def set(self, value):
-        self._headers[self._header_name] = convert(value, self._value_type)
+        # TODO: add value validation against self._value_type
+        self._headers[self._header_name] = value
