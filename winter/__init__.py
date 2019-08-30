@@ -17,6 +17,7 @@ from .http import request_body
 from .http import response_header
 from .http import response_status
 from .http.exception_handlers import RedirectExceptionHandler
+from .http.response_header_serializer import response_headers_serializer
 from .output_processor import register_output_processor_resolver
 from .pagination import PagePositionArgumentResolver
 from .routing import route
