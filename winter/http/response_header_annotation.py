@@ -3,7 +3,6 @@ from typing import MutableMapping
 
 import dataclasses
 
-from ..converters import convert
 from ..core import annotate_method
 
 
