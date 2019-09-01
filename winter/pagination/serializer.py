@@ -3,10 +3,23 @@ from typing import Type
 
 from rest_framework import serializers
 from rest_framework.request import Request as DRFRequest
+from rest_framework.serializers import SerializerMetaclass
 
 from .page import Page
 from .utils import get_next_page_url
 from .utils import get_previous_page_url
+
+
+class _PageSerializerMeta(SerializerMetaclass):
+
+    def __getitem__(self, child_serializer: Type[serializers.Serializer]) -> Type:
+        assert issubclass(child_serializer, serializers.Field), (
+            'child_serializer should be inherited from serializers.Field'
+        )
+        payloads = {
+            'objects': serializers.ListField(child=child_serializer(), source='items'),
+        }
+        return type(f'SpecificSerializerFor{child_serializer}', (self,), payloads)
 
 
 class _MetaSerializer(serializers.Serializer):
@@ -27,20 +40,5 @@ class _MetaSerializer(serializers.Serializer):
         return self.context['request']
 
 
-class _PageBaseSerializer(serializers.Serializer):
+class PageSerializer(serializers.Serializer, metaclass=_PageSerializerMeta):
     meta = _MetaSerializer(source='*')
-
-
-class _PageSerializerFactory:
-
-    def __getitem__(self, child_serializer: Type[serializers.Serializer]) -> Type:
-        assert issubclass(child_serializer, serializers.Field), \
-            'child_serializer should be inherited from serializers.Field'
-
-        payloads = {
-            'objects': serializers.ListField(child=child_serializer(), source='items'),
-        }
-        return type(f'SpecificSerializerFor{child_serializer}', (_PageBaseSerializer,), payloads)
-
-
-PageSerializer = _PageSerializerFactory()
