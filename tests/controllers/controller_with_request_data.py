@@ -31,3 +31,8 @@ class ControllerWithRequestData:
     @winter.route_post('{?query}')
     def method(self, query: typing.Optional[str], data: Data) -> Data:
         return data
+
+    @winter.request_body('data')
+    @winter.route_post('many/')
+    def many_method(self, data: typing.List[Data]) -> Data:
+        return data

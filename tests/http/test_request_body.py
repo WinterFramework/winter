@@ -39,6 +39,37 @@ def test_request_body():
     assert response.json() == expected_data
 
 
+def test_request_body_as_list():
+    client = APIClient()
+    user = AuthorizedUser()
+    client.force_authenticate(user)
+
+    data = [{
+        'id': 1,
+        'name': 'test name',
+        'is_god': True,
+        'status': 'active',
+        'items': [1, 2],
+    }]
+    expected_data = [{
+        'id': 1,
+        'with_default': 5,
+        'name': 'test name',
+        'is_god': True,
+        'status': 'active',
+        'optional_status': None,
+        'items': [1, 2],
+        'optional_items': None,
+    }]
+    data = json.dumps(data)
+
+    # Act
+    response = client.post('/with-request-data/many/', data=data, content_type='application/json')
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == expected_data
+
+
 def test_request_body_with_errors():
     client = APIClient()
     user = AuthorizedUser()
@@ -67,7 +98,7 @@ def test_request_body_with_errors():
     assert response.json() == expected_data
 
 
-def test_with_argument_not_dataclass():
+def test_with_argument_not_valid_annotation():
     def method(argument: int):
         return argument
 
@@ -75,7 +106,7 @@ def test_with_argument_not_dataclass():
 
     with pytest.raises(AssertionError) as exception:
         annotation_decorator(method)
-    assert exception.value.args == ('Argument should be dataclass in "method"',)
+    assert exception.value.args == ('Invalid request body type',)
 
 
 def test_without_argument():
