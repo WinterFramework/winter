@@ -40,7 +40,7 @@ urlpatterns = [
 ]
 ```
 
-To implement CRUD:
+## Todo list CRUD example:
 ```python
 from http import HTTPStatus
 from typing import List
