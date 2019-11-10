@@ -1,5 +1,5 @@
-import sys
 import functools
+import sys
 
 
 if sys.version_info > (3, 8):
