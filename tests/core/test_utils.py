@@ -28,7 +28,6 @@ def test_cached_property_getter():
 def test_cached_property_setter():
     entity = _Entity()
 
-    with pytest.raises(AttributeError) as exception:
-        entity.method = 3
+    entity.method = 3
 
-    assert exception.value.args == ("can't set attribute",)
+    assert entity.method == 3
