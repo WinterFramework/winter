@@ -16,7 +16,5 @@ else:
         def __get__(self, instance, cls=None):
             if instance is None:
                 return self
-            if self.name in instance.__dict__:
-                return instance.__dict__[self.name]
             res = instance.__dict__[self.name] = self.func(instance)
             return res
