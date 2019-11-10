@@ -1,5 +1,3 @@
-import pytest
-
 from winter.core.utils import cached_property
 
 
