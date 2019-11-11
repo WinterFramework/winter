@@ -1,8 +1,9 @@
+import sys
+
 import datetime
 from http import HTTPStatus
 
 import pytest
-from freezegun import freeze_time
 from rest_framework.test import APIClient
 
 from .entities import AuthorizedUser
@@ -27,6 +28,11 @@ def test_throttling(need_auth):
 
 
 def test_throttling_discards_old_requests():
+    if sys.version_info > (3, 8):
+        return
+
+    from freezegun import freeze_time
+
     client = APIClient()
     user = AuthorizedUser()
     client.force_authenticate(user)
