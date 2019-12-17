@@ -44,6 +44,10 @@ winter.exception_handlers_registry.add_handler(CustomException, CustomExceptionH
 winter.exception_handlers_registry.add_handler(WithUnknownArgumentException, WithUnknownArgumentExceptionHandler)
 
 
+class ChildCustomException(CustomException):
+    pass
+
+
 @winter.controller
 @winter.route('controller_with_exceptions/')
 class ControllerWithExceptions:
@@ -57,6 +61,11 @@ class ControllerWithExceptions:
     @winter.throws(CustomException)
     def declared_and_thrown(self) -> str:
         raise CustomException('declared_and_thrown')
+
+    @winter.route_get('declared_and_thrown_child/')
+    @winter.throws(CustomException)
+    def declared_and_thrown_child(self) -> str:
+        raise ChildCustomException('declared_and_thrown_child')
 
     @winter.route_get('not_declared_but_thrown/')
     def not_declared_but_thrown(self) -> str:

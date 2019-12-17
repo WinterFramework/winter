@@ -12,6 +12,7 @@ from .entities import AuthorizedUser
 @pytest.mark.parametrize(['url_path', 'expected_status', 'expected_body'], (
     ('declared_but_not_thrown', HTTPStatus.OK, 'Hello, sir!'),
     ('declared_and_thrown', HTTPStatus.BAD_REQUEST, {'message': 'declared_and_thrown'}),
+    ('declared_and_thrown_child', HTTPStatus.BAD_REQUEST, {'message': 'declared_and_thrown_child'}),
     ('exception_with_custom_handler', HTTPStatus.UNAUTHORIZED, 21),
 ))
 def test_controller_with_exceptions(url_path, expected_status, expected_body):
