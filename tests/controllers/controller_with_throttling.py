@@ -1,7 +1,7 @@
 import winter
 
 
-@winter.route_get('with-throttling-on-method/')
+@winter.route_get('with-throttling/')
 @winter.no_authentication
 class ControllerWithThrottlingOnMethod:
 

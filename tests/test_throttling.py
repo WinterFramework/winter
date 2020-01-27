@@ -14,8 +14,8 @@ def test_throttling_on_method(need_auth):
         client.force_authenticate(user)
 
     for i in range(1, 10):
-        response = client.get('/with-throttling-on-method/')
-        response_of_same = client.get('/with-throttling-on-method/same/')
+        response = client.get('/with-throttling/')
+        response_of_same = client.get('/with-throttling/same/')
         if i > 5:
             assert response.status_code == response_of_same.status_code == HTTPStatus.TOO_MANY_REQUESTS, i
         else:
@@ -29,5 +29,5 @@ def test_throttling_without_throttling():
 
     for i in range(1, 10):
         client_method = getattr(client, 'get')
-        response = client_method('/with-throttling-on-method/without-throttling/')
+        response = client_method('/with-throttling/without-throttling/')
         assert response.status_code == HTTPStatus.OK, i
