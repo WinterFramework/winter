@@ -96,7 +96,7 @@ def create_throttle_classes(
 
         if getattr(throttling_annotation, 'rate', None) is not None:
             num_requests, duration = _parse_rate(throttling_annotation.rate)
-            throttling_scope = throttling_annotation.scope or route.method.func.__qualname__
+            throttling_scope = throttling_annotation.scope or route.method.full_name
             throttling_ = Throttling(num_requests, duration, throttling_scope)
             throttling_by_http_method_[route.http_method.lower()] = throttling_
 
