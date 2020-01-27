@@ -1,13 +1,12 @@
 import time
 import typing
-import uuid
 
 import dataclasses
 from django.core.cache import cache as default_cache
 from rest_framework.throttling import BaseThrottle
 
 from ..core import Component
-from ..core import annotate
+from ..core import annotate_method
 
 if typing.TYPE_CHECKING:
     from ..routing import Route  # noqa: F401
@@ -27,9 +26,7 @@ class Throttling:
 
 
 def throttling(rate: typing.Optional[str], scope: typing.Optional[str] = None):
-    if scope is None:
-        scope = uuid.uuid4()
-    return annotate(ThrottlingAnnotation(rate, scope), single=True)
+    return annotate_method(ThrottlingAnnotation(rate, scope), single=True)
 
 
 class BaseRateThrottle(BaseThrottle):
@@ -99,7 +96,8 @@ def create_throttle_classes(
 
         if getattr(throttling_annotation, 'rate', None) is not None:
             num_requests, duration = _parse_rate(throttling_annotation.rate)
-            throttling_ = Throttling(num_requests, duration, throttling_annotation.scope)
+            throttling_scope = throttling_annotation.scope or route.method.func.__qualname__
+            throttling_ = Throttling(num_requests, duration, throttling_scope)
             throttling_by_http_method_[route.http_method.lower()] = throttling_
 
     if not throttling_by_http_method_:
