@@ -5,7 +5,6 @@ import dataclasses
 from django.core.cache import cache as default_cache
 from rest_framework.throttling import BaseThrottle
 
-from ..core import Component
 from ..core import annotate_method
 
 if typing.TYPE_CHECKING:
