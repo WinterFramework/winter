@@ -7,7 +7,6 @@ from .controller_with_path_parameters import ControllerWithPathParameters
 from .controller_with_query_parameters import ControllerWithQueryParameters
 from .controller_with_response_headers import ControllerWithResponseHeaders
 from .controller_with_serializer import ControllerWithSerializer
-from .controller_with_throttling import ControllerWithThrottlingOnController
-from .controller_with_throttling import ControllerWithThrottlingOnMethod
+from .controller_with_throttling import ControllerWithThrottling
 from .no_authentication_controller import NoAuthenticationController
 from .simple_controller import SimpleController
