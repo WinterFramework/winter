@@ -52,7 +52,7 @@ def _create_django_view(controller_class, component, routes: List[Route]):
     class WinterView(rest_framework.views.APIView):
         authentication_classes = (SessionAuthentication,)
         permission_classes = (IsAuthenticated,) if is_authentication_needed(component) else ()
-        throttle_classes = create_throttle_classes(component, routes)
+        throttle_classes = create_throttle_classes(routes)
 
     # It's useful for New Relic APM
     WinterView.__module__ = controller_class.__module__

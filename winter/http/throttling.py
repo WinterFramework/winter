@@ -81,18 +81,11 @@ def _parse_rate(rate: str) -> typing.Tuple[int, int]:
     return num_requests, duration
 
 
-def create_throttle_classes(
-        component: Component,
-        routes: typing.List['Route'],
-) -> typing.Tuple[typing.Type[BaseRateThrottle], ...]:
-    base_throttling_annotation = component.annotations.get_one_or_none(ThrottlingAnnotation)
+def create_throttle_classes(routes: typing.List['Route']) -> typing.Tuple[typing.Type[BaseRateThrottle], ...]:
     throttling_by_http_method_: typing.Dict[str, Throttling] = {}
 
     for route in routes:
-
-        throttling_annotation = (
-            route.method.annotations.get_one_or_none(ThrottlingAnnotation) or base_throttling_annotation
-        )
+        throttling_annotation = route.method.annotations.get_one_or_none(ThrottlingAnnotation)
 
         if getattr(throttling_annotation, 'rate', None) is not None:
             num_requests, duration = _parse_rate(throttling_annotation.rate)

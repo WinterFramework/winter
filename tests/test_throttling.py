@@ -7,7 +7,7 @@ from .entities import AuthorizedUser
 
 
 @pytest.mark.parametrize('need_auth', (True, False))
-def test_throttling_on_method(need_auth):
+def test_throttling(need_auth):
     client = APIClient()
     if need_auth:
         user = AuthorizedUser()
