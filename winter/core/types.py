@@ -13,7 +13,7 @@ class TypeWrapper(metaclass=NestedTypeMeta):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if not has_nested_type(self.__class__):
-            raise TypeError('Using TypeWrapper without nested type is forbidden. Use TypeWrapper[T] instead')
+            raise TypeError('Using TypeWrapper without nested type is forbidden, use TypeWrapper[T]')
 
     def _check_nested_type(self, nested_type: Type):
         if not issubclass(nested_type, self.__nested_type__):
