@@ -1,9 +1,8 @@
 import inspect
 import typing
-from typing import List
-
 from django.http.response import HttpResponseBase
 from drf_yasg import openapi
+from typing import List
 
 from .method_arguments_inspector import get_method_arguments_inspectors
 from .type_inspection import InspectorNotFound
@@ -15,7 +14,6 @@ from ..core import ComponentMethodArgument
 from ..drf import get_output_serializer
 from ..exceptions.handlers import MethodExceptionsHandler
 from ..exceptions.handlers import exception_handlers_registry
-from ..http import ResponseEntity
 from ..http.default_response_status import get_default_response_status
 from ..routing import Route
 from ..schema.type_inspection import TypeInfo

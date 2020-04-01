@@ -1,6 +1,5 @@
 from http import HTTPStatus
 from typing import Any
-from typing import Type
 
 from ..core.types import TypeWrapper
 
