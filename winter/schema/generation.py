@@ -85,7 +85,7 @@ def build_response_schema(method: ComponentMethod):
 
     if (
         return_value_type in (None, type(None))
-        or (inspect.isclass(return_value_type) and issubclass(return_value_type, (HttpResponseBase,)))
+        or (inspect.isclass(return_value_type) and issubclass(return_value_type, HttpResponseBase))
     ):
         return openapi.Response(description='')
 
