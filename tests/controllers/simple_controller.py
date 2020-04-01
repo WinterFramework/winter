@@ -30,8 +30,8 @@ class SimpleController:
 
     @winter.route_get('get-response-entity/')
     @winter.response_status(HTTPStatus.ACCEPTED)
-    def return_response_entity(self) -> ResponseEntity:
-        return ResponseEntity(Dataclass(123), status_code=HTTPStatus.OK)
+    def return_response_entity(self) -> ResponseEntity[Dataclass]:
+        return ResponseEntity[Dataclass](Dataclass(123), status_code=HTTPStatus.OK)
 
     @winter.route_get('return-response/')
     def return_response(self, request: Request) -> Response:

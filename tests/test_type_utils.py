@@ -82,9 +82,9 @@ def test_is_origin_type_subclasses(typing_for_check, subclasses_type, expected):
 @pytest.mark.parametrize(
     ('type_', 'expected_type_name'), [
         (int, 'int'),
-        (Dict[int, str], 'Dict[int, str]' if sys.version_info > (3, 6, 8) else 'Dict'),
-        (Tuple[int], 'Tuple[int]' if sys.version_info > (3, 6, 8) else 'Tuple'),
-        (List[int], 'List[int]' if sys.version_info > (3, 6, 8) else 'List'),
+        (Dict[int, str], 'Dict[int, str]' if sys.version_info >= (3, 7, 0) else 'Dict'),
+        (Tuple[int], 'Tuple[int]' if sys.version_info >= (3, 7, 0) else 'Tuple'),
+        (List[int], 'List[int]' if sys.version_info >= (3, 7, 0) else 'List'),
         (Optional[str], 'Optional[str]'),
         (Union[int, str], 'Union[int, str]'),
         (1, 'int'),

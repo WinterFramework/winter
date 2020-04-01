@@ -1,3 +1,4 @@
+import dataclasses
 import datetime
 import decimal
 import enum
@@ -7,10 +8,9 @@ import typing
 import uuid
 from collections import OrderedDict
 from collections.abc import Iterable
-
-import dataclasses
 from drf_yasg import openapi
 
+from ..core.types import has_nested_type
 from ..type_utils import get_origin_type
 from ..type_utils import is_optional
 
@@ -180,6 +180,13 @@ def inspect_dataclass(hint_class) -> TypeInfo:
         for field in fields
     }
     return TypeInfo(type_=openapi.TYPE_OBJECT, properties=properties)
+
+
+@register_type_inspector(object, checker=has_nested_type)
+def inspect_type_wrapper(hint_class) -> TypeInfo:
+    nested_type = hint_class.__nested_type__
+    type_info = inspect_type(nested_type)
+    return type_info
 
 
 @register_type_inspector(
