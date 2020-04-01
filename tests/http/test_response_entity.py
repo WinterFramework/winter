@@ -20,5 +20,5 @@ def test_response_entity_fails_with_wrong_nested_type():
 
 
 def test_response_entity_has_nested_type():
-    assert ResponseEntity[Dataclass].__nested_type__ is Dataclass
-    assert ResponseEntity[Dataclass](Dataclass()).__nested_type__ is Dataclass
+    assert ResponseEntity[Dataclass]._nested_type is Dataclass
+    assert ResponseEntity[Dataclass](Dataclass())._nested_type is Dataclass

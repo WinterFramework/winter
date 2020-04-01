@@ -184,7 +184,7 @@ def inspect_dataclass(hint_class) -> TypeInfo:
 
 @register_type_inspector(object, checker=has_nested_type)
 def inspect_type_wrapper(hint_class) -> TypeInfo:
-    nested_type = hint_class.__nested_type__
+    nested_type = hint_class._nested_type
     type_info = inspect_type(nested_type)
     return type_info
 
