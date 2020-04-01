@@ -37,12 +37,12 @@ class SampleWinterController:
         return f'Hello, {names}!'
 
     @winter.route_get('foo/{number}{?name}')
-    def hello_with_response_code(self, name: str, number: int) -> winter.ResponseEntity:
+    def hello_with_response_code(self, name: str, number: int) -> winter.ResponseEntity[str]:
         """
         :param name: Just a name
         :param number: Just a number
         """
-        return winter.ResponseEntity(f'Hello, {name}! {number}', status.HTTP_201_CREATED)
+        return winter.ResponseEntity[str](f'Hello, {name}! {number}', status.HTTP_201_CREATED)
 
     @winter.route_get('example{?name}')
     def second_hello(self, name: str) -> Greeting:

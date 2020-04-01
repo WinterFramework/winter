@@ -1,16 +1,16 @@
+import dataclasses
 import datetime
 import decimal
+import pytest
 import typing
 import uuid
+from drf_yasg import openapi
 from enum import Enum
 from enum import IntEnum
 from typing import List
 from typing import NewType
 
-import dataclasses
-import pytest
-from drf_yasg import openapi
-
+from winter.core.types import TypeWrapper
 from winter.pagination import Page
 from winter.schema import inspect_enum_class
 from winter.schema.type_inspection import InspectorNotFound
@@ -55,6 +55,10 @@ class IntegerEnum(IntEnum):
     GREEN = 2
 
 
+class DataclassWrapper(TypeWrapper):
+    pass
+
+
 @pytest.mark.parametrize('type_hint, expected_type_info', [
     (TestType, TypeInfo(openapi.TYPE_INTEGER)),
     (Id, TypeInfo(openapi.TYPE_INTEGER)),
@@ -91,6 +95,9 @@ class IntegerEnum(IntEnum):
         'objects': TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_OBJECT, properties={
             'nested_number': TypeInfo(openapi.TYPE_INTEGER),
         })),
+    })),
+    (DataclassWrapper[NestedDataclass], TypeInfo(openapi.TYPE_OBJECT, properties={
+        'nested_number': TypeInfo(openapi.TYPE_INTEGER),
     })),
 ])
 def test_inspect_type(type_hint, expected_type_info):
