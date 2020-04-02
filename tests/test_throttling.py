@@ -1,12 +1,11 @@
 import datetime
 from http import HTTPStatus
 
+import freezegun
 import pytest
 from rest_framework.test import APIClient
 
 from .entities import AuthorizedUser
-import freezegun
-
 
 
 @pytest.mark.parametrize('need_auth', (True, False))
