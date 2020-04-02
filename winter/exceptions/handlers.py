@@ -1,15 +1,11 @@
 import abc
 from typing import Dict
-from typing import MutableMapping
 from typing import Optional
 from typing import Tuple
 from typing import Type
 from typing import Union
 
-from rest_framework.request import Request
-
 from .throws import get_throws
-from .. import arguments_resolver
 from ..core import ComponentMethod
 
 NotHandled = object()
@@ -58,7 +54,7 @@ class ExceptionHandlersRegistry:
         return None
 
 
-class MethodExceptionsHandler:
+class MethodExceptionsManager:
     def __init__(self, method: ComponentMethod):
         super().__init__()
         self._method = method
@@ -78,28 +74,8 @@ class MethodExceptionsHandler:
         for exception_cls, handler in self._handlers_by_exception.items():
             if handler is not None and issubclass(exception_type, exception_cls):
                 return handler
-        return None
 
-    def handle(self, exception: Exception, request: Request, response_headers: MutableMapping[str, str]):
-        handler = self.get_handler(exception)
-        if handler is None:
-            handler = exception_handlers_registry.get_handler(exception)
-        return _handle_exception(exception, handler, request, response_headers)
-
-
-def _handle_exception(exception, handler: Optional[ExceptionHandler], request, response_headers):
-    from ..django import convert_result_to_http_response
-
-    if handler is None:
-        return None
-
-    handle_method = ComponentMethod.get_or_create(handler.__class__.handle)
-    arguments = arguments_resolver.resolve_arguments(handle_method, request, response_headers, {
-        'exception': exception,
-        'response_headers': response_headers,
-    })
-    result = handle_method(handler, **arguments)
-    return convert_result_to_http_response(request, result, handle_method)
+        return exception_handlers_registry.get_handler(exception)
 
 
 exception_handlers_registry = ExceptionHandlersRegistry()
