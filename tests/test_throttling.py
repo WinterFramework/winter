@@ -1,25 +1,35 @@
+import datetime
 from http import HTTPStatus
 
 import pytest
 from rest_framework.test import APIClient
 
 from .entities import AuthorizedUser
+import freezegun
+
 
 
 @pytest.mark.parametrize('need_auth', (True, False))
 def test_throttling(need_auth):
+    now = datetime.datetime.now()
+    duration = datetime.timedelta(milliseconds=150)
+    freezegun.freeze_time()
     client = APIClient()
     if need_auth:
         user = AuthorizedUser()
         client.force_authenticate(user)
 
-    for i in range(1, 10):
-        response = client.get('/with-throttling/')
-        response_of_same = client.get('/with-throttling/same/')
-        if i > 5:
-            assert response.status_code == response_of_same.status_code == HTTPStatus.TOO_MANY_REQUESTS, i
-        else:
-            assert response.status_code == response_of_same.status_code == HTTPStatus.OK, i
+    for i in range(1, 16):
+        with freezegun.freeze_time(now):
+            response = client.get('/with-throttling/')
+            response_from_post = client.post('/with-throttling/')
+            response_of_same = client.get('/with-throttling/same/')
+            if 5 < i < 8 or 13 <= i < 15:
+                assert response.status_code == response_of_same.status_code == HTTPStatus.TOO_MANY_REQUESTS, i
+            else:
+                assert response.status_code == response_of_same.status_code == HTTPStatus.OK, i
+            assert response_from_post.status_code == HTTPStatus.OK
+        now += duration
 
 
 def test_throttling_without_throttling():

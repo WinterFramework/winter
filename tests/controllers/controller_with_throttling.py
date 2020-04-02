@@ -10,6 +10,10 @@ class ControllerWithThrottling:
     def simple_method(self) -> int:
         return 1
 
+    @winter.route_post()
+    def simple_post_method(self) -> int:
+        return 1
+
     @winter.route_get('same/')
     @winter.http.throttling('5/s')
     def same_simple_method(self) -> int:
