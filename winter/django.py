@@ -84,11 +84,12 @@ def _call_controller_method(controller, route: Route, request: Request):
     try:
         arguments = arguments_resolver.resolve_arguments(method, request, response_headers)
         result = method(controller, **arguments)
-        response = convert_result_to_http_response(request, result, method)
     except method_exceptions_handler.exception_classes as exception:
         response = method_exceptions_handler.handle(exception, request, response_headers)
         if response is None:
             raise
+    else:
+        response = convert_result_to_http_response(request, result, method)
 
     _fill_response_headers(response, response_headers)
     return response
