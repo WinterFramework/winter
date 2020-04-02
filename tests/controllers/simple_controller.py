@@ -40,24 +40,24 @@ class SimpleController:
 
     @winter.route_get('get/')
     def get(self):
-        return None
+        pass
 
     @winter.route_post('post/')
     def post(self):
-        return None
+        pass
 
     @winter.route_delete('delete/')
     def delete(self):
-        return None
+        pass
 
     @winter.route_patch('patch/')
     def patch(self):
-        return None
+        pass
 
     @winter.route_put('put/')
     def put(self):
-        return None
+        pass
 
     @winter.response_status(HTTPStatus.OK)
     def no_route(self):
-        return None
+        pass

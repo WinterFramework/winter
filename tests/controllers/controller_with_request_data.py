@@ -34,5 +34,5 @@ class ControllerWithRequestData:
 
     @winter.request_body('data')
     @winter.route_post('many/')
-    def many_method(self, data: typing.List[Data]) -> Data:
+    def many_method(self, data: typing.List[Data]) -> typing.List[Data]:
         return data
