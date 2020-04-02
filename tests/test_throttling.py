@@ -1,4 +1,5 @@
 import datetime
+import sys
 from http import HTTPStatus
 
 import freezegun
@@ -9,6 +10,10 @@ from .entities import AuthorizedUser
 
 
 @pytest.mark.parametrize('need_auth', (True, False))
+@pytest.mark.skipif(
+    sys.version_info >= (3, 8),
+    reason="Not work with Python3.8",
+)
 def test_throttling(need_auth):
     now = datetime.datetime.now()
     duration = datetime.timedelta(milliseconds=150)
