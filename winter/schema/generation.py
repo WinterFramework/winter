@@ -62,10 +62,10 @@ def build_responses_schemas(route: Route):
     response_status = str(get_default_response_status(http_method, route.method))
 
     responses[response_status] = build_response_schema(route.method)
-    method_exceptions_handler = MethodExceptionsManager(route.method)
+    method_exceptions_manager = MethodExceptionsManager(route.method)
 
-    for exception_cls in method_exceptions_handler.declared_exception_classes:
-        handler = method_exceptions_handler.get_handler(exception_cls)
+    for exception_cls in method_exceptions_manager.declared_exception_classes:
+        handler = method_exceptions_manager.get_handler(exception_cls)
         if handler is None:
             handler = exception_handlers_registry.get_handler(exception_cls)
         if handler is None:
