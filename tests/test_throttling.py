@@ -12,7 +12,6 @@ from .entities import AuthorizedUser
 def test_throttling(need_auth):
     now = datetime.datetime.now()
     duration = datetime.timedelta(milliseconds=150)
-    
     client = APIClient()
     if need_auth:
         user = AuthorizedUser()
