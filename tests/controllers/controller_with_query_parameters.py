@@ -1,4 +1,5 @@
 import datetime
+from typing import Any
 
 from typing import Dict
 from typing import List
@@ -22,7 +23,7 @@ class ControllerWithQueryParameters:
         expanded_array: List[str],
         mapped_string: str,
         optional_boolean: Optional[bool] = None,
-    ) -> Dict:
+    ) -> Dict[str, Any]:
         return {
             'date': date,
             'date_time': date_time,

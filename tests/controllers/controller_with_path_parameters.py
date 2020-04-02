@@ -29,12 +29,12 @@ class ControllerWithPathParameters:
 
     @winter.route_get('{param2}/{param3}/{param4}/{param5}/{?param6}')
     def test(
-            self,
-            param1: str,
-            param2: int,
-            param3: OneTwoEnum,
-            param4: uuid.UUID,
-            param5: OneTwoEnumWithInt,
-            param6: str,
+        self,
+        param1: str,
+        param2: int,
+        param3: OneTwoEnum,
+        param4: uuid.UUID,
+        param5: OneTwoEnumWithInt,
+        param6: str,
     ) -> str:
         return 'Hello, sir!'
