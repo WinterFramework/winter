@@ -5,8 +5,8 @@ from rest_framework.exceptions import ParseError
 from rest_framework.request import Request as DRFRequest
 
 import winter
-from winter.core.json import decoder
 from winter.core import ComponentMethod
+from winter.core.json import decoder
 from winter.data.pagination import PagePosition
 from winter.data.pagination import Sort
 from winter.pagination import PagePositionArgumentResolver
