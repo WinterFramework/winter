@@ -17,7 +17,7 @@ from .controller import build_controller
 from .controller import get_component
 from .core import ComponentMethod
 from .drf.auth import is_authentication_needed
-from .exceptions.handlers import MethodExceptionsHandler
+from .exceptions.handlers import MethodExceptionsManager
 from .http import ResponseEntity
 from .http.default_response_status import get_default_response_status
 from .http.throttling import create_throttle_classes
@@ -79,18 +79,24 @@ def _create_dispatch_function(controller_class, route: Route):
 
 def _call_controller_method(controller, route: Route, request: Request):
     method = route.method
-    method_exceptions_handler = MethodExceptionsHandler(method)
+    method_exceptions_manager = MethodExceptionsManager(method)
     response_headers = {}
     try:
         arguments = arguments_resolver.resolve_arguments(method, request, response_headers)
         result = method(controller, **arguments)
-    except method_exceptions_handler.exception_classes as exception:
-        response = method_exceptions_handler.handle(exception, request, response_headers)
-        if response is None:
+    except method_exceptions_manager.exception_classes as exception:
+        handler = method_exceptions_manager.get_handler(exception)
+        if handler is None:
             raise
-    else:
-        response = convert_result_to_http_response(request, result, method)
 
+        method = ComponentMethod.get_or_create(handler.__class__.handle)
+        arguments = arguments_resolver.resolve_arguments(method, request, response_headers, {
+            'exception': exception,
+            'response_headers': response_headers,
+        })
+        result = method(handler, **arguments)
+
+    response = convert_result_to_http_response(request, result, method)
     _fill_response_headers(response, response_headers)
     return response
 
