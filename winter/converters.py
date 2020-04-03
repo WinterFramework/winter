@@ -8,8 +8,9 @@ import uuid
 
 import dataclasses
 from dateutil import parser
-from ..type_utils import get_origin_type
-from ..type_utils import is_optional
+
+from .type_utils import get_origin_type
+from .type_utils import is_optional
 
 _converters = {}
 

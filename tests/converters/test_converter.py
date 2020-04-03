@@ -9,8 +9,7 @@ import pytest
 from dateutil.tz import tzutc
 
 from winter.converters import ConvertException
-from winter.converters.converter import convert
-
+from winter.converters import convert
 
 empty = object()
 
