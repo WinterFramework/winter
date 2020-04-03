@@ -1,1 +1,1 @@
-from .json_encoder import JSONEncoder
+from .encoder import JSONEncoder
