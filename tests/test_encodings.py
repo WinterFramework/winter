@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from django.utils.translation import ugettext
 from django.utils.translation import ugettext_lazy
 
-from winter.json_encoder import JSONEncoder
+from winter.core.json import JSONEncoder
 
 
 class Id(int):

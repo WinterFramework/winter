@@ -1,6 +1,6 @@
 from rest_framework import renderers
 
-from .json_encoder import JSONEncoder
+from winter.core.json import JSONEncoder
 
 
 class JSONRenderer(renderers.JSONRenderer):
