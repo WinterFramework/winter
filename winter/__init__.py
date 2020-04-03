@@ -13,7 +13,7 @@ from .exceptions.handlers import ExceptionHandler
 from .exceptions.handlers import exception_handlers_registry
 from .exceptions.throws import throws
 from .output_processor import register_output_processor_resolver
-from .pagination.page_position_argument_resolver import PagePositionArgumentResolver
+from .pagination import PagePositionArgumentResolver
 from .routing import route
 from .routing import route_delete
 from .routing import route_get

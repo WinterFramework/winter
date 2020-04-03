@@ -9,7 +9,7 @@ from winter import converters
 from winter.core import ComponentMethod
 from winter.data.pagination import PagePosition
 from winter.data.pagination import Sort
-from winter.pagination.page_position_argument_resolver import PagePositionArgumentResolver
+from winter.pagination import PagePositionArgumentResolver
 
 
 @pytest.mark.parametrize(
