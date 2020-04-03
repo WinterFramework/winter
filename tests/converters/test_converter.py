@@ -8,7 +8,7 @@ import dataclasses
 import pytest
 from dateutil.tz import tzutc
 
-from winter.converters.converter import ConvertException
+from winter.converters import ConvertException
 from winter.converters.converter import convert
 
 
