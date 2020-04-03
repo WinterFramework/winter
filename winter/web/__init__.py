@@ -1,4 +1,4 @@
-from .exception_handlers import ConvertExceptionHandler
+from .exception_handlers import DecodeExceptionHandler
 from .media_type import InvalidMediaTypeException
 from .media_type import MediaType
 from .request_body_annotation import request_body

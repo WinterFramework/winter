@@ -12,3 +12,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - winter.pagination classes (Page, PagePosition, Order, Sort, SortDirection) moved to winter.data.pagination
 - winter.json_encoder things (e.g. register_encoder) moved to winter.core.json
 - winter.json_renderer.JSONRenderer moved to winter.django.drf.renderers.JSONRenderer
+- winter.converters moved to winter.core.json.decoder

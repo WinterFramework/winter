@@ -8,8 +8,8 @@ import dataclasses
 import pytest
 from dateutil.tz import tzutc
 
-from winter.converters import ConvertException
-from winter.converters import convert
+from winter.core.json import DecodeException
+from winter.core.json import json_decode
 
 empty = object()
 
@@ -108,8 +108,8 @@ class Profile:
         ),
     ),
 )
-def test_convert(data, expected_instance):
-    instance = convert(data, User)
+def test_decode(data, expected_instance):
+    instance = json_decode(data, User)
     assert instance == expected_instance
 
     for field in dataclasses.fields(User):
@@ -125,8 +125,8 @@ def test_convert(data, expected_instance):
         ([1], typing.Set, {1}),
     ),
 )
-def test_convert_set(data, type_, expected_instance):
-    instance = convert(data, type_)
+def test_decode_set(data, type_, expected_instance):
+    instance = json_decode(data, type_)
     assert instance == expected_instance
 
 
@@ -136,8 +136,8 @@ def test_convert_set(data, type_, expected_instance):
         ('super', typing.Optional[Status], Status.SUPER),
     ),
 )
-def test_convert_optional(data, type_, expected_instance):
-    instance = convert(data, type_)
+def test_decode_optional(data, type_, expected_instance):
+    instance = json_decode(data, type_)
     assert instance == expected_instance
 
 
@@ -148,14 +148,14 @@ def test_convert_optional(data, type_, expected_instance):
             typing.Set[Status],
             'Value not in allowed values("super", "not_super"): "invalid_status"',
         ),
-        (1, typing.Set[Status], 'Cannot convert "1" to set'),
-        (None, typing.Set[Status], 'Cannot convert "None" to set'),
-        ([[]], typing.Set, 'Cannot convert "[[]]" to set'),
+        (1, typing.Set[Status], 'Cannot decode "1" to set'),
+        (None, typing.Set[Status], 'Cannot decode "None" to set'),
+        ([[]], typing.Set, 'Cannot decode "[[]]" to set'),
     ),
 )
-def test_convert_set_with_errors(data, type_, expected_errors):
-    with pytest.raises(ConvertException) as ex:
-        convert(data, type_)
+def test_decode_set_with_errors(data, type_, expected_errors):
+    with pytest.raises(DecodeException) as ex:
+        json_decode(data, type_)
     assert ex.value.errors == expected_errors
 
 
@@ -166,8 +166,8 @@ def test_convert_set_with_errors(data, type_, expected_errors):
         ({1}, list, [1]),
     ),
 )
-def test_convert_list(data, type_, expected_instance):
-    instance = convert(data, type_)
+def test_decode_list(data, type_, expected_instance):
+    instance = json_decode(data, type_)
     assert instance == expected_instance
 
 
@@ -178,25 +178,25 @@ def test_convert_list(data, type_, expected_instance):
             typing.List[Status],
             'Value not in allowed values("super", "not_super"): "invalid_status"',
         ),
-        (1, typing.List[Status], 'Cannot convert "1" to list'),
-        (None, typing.List[Status], 'Cannot convert "None" to list'),
+        (1, typing.List[Status], 'Cannot decode "1" to list'),
+        (None, typing.List[Status], 'Cannot decode "None" to list'),
     ),
 )
-def test_convert_list_with_errors(data, type_, expected_errors):
-    with pytest.raises(ConvertException) as ex:
-        convert(data, type_)
+def test_decode_list_with_errors(data, type_, expected_errors):
+    with pytest.raises(DecodeException) as ex:
+        json_decode(data, type_)
     assert ex.value.errors == expected_errors
 
 
 @pytest.mark.parametrize(
     ('data', 'type_', 'expected_errors'), (
-        ([], str, 'Cannot convert "[]" to string'),
-        (1, str, 'Cannot convert "1" to string'),
+        ([], str, 'Cannot decode "[]" to string'),
+        (1, str, 'Cannot decode "1" to string'),
     ),
 )
-def test_convert_string_with_errors(data, type_, expected_errors):
-    with pytest.raises(ConvertException) as ex:
-        convert(data, type_)
+def test_decode_string_with_errors(data, type_, expected_errors):
+    with pytest.raises(DecodeException) as ex:
+        json_decode(data, type_)
     assert ex.value.errors == expected_errors
 
 
@@ -207,8 +207,8 @@ def test_convert_string_with_errors(data, type_, expected_errors):
         ({1}, tuple, (1,)),
     ),
 )
-def test_convert_tuple(data, type_, expected_instance):
-    instance = convert(data, type_)
+def test_decode_tuple(data, type_, expected_instance):
+    instance = json_decode(data, type_)
     assert instance == expected_instance
 
 
@@ -219,48 +219,48 @@ def test_convert_tuple(data, type_, expected_instance):
             typing.Tuple[Status],
             'Value not in allowed values("super", "not_super"): "invalid_status"',
         ),
-        (1, typing.Tuple[Status], 'Cannot convert "1" to list'),
-        (None, typing.Tuple[Status], 'Cannot convert "None" to list'),
+        (1, typing.Tuple[Status], 'Cannot decode "1" to list'),
+        (None, typing.Tuple[Status], 'Cannot decode "None" to list'),
     ),
 )
-def test_convert_tuple_with_errors(data, type_, expected_errors):
-    with pytest.raises(ConvertException) as ex:
-        convert(data, type_)
+def test_decode_tuple_with_errors(data, type_, expected_errors):
+    with pytest.raises(DecodeException) as ex:
+        json_decode(data, type_)
     assert ex.value.errors == expected_errors
 
 
 @pytest.mark.parametrize(
     ('data', 'type_', 'expected_errors'), (
-        (1, datetime.datetime, 'Cannot convert "1" to datetime'),
-        ('invalid date', datetime.datetime, 'Cannot convert "invalid date" to datetime'),
-        (None, datetime.datetime, 'Cannot convert "None" to datetime'),
+        (1, datetime.datetime, 'Cannot decode "1" to datetime'),
+        ('invalid date', datetime.datetime, 'Cannot decode "invalid date" to datetime'),
+        (None, datetime.datetime, 'Cannot decode "None" to datetime'),
     ),
 )
-def test_convert_datetime_with_errors(data, type_, expected_errors):
-    with pytest.raises(ConvertException) as ex:
-        convert(data, type_)
+def test_decode_datetime_with_errors(data, type_, expected_errors):
+    with pytest.raises(DecodeException) as ex:
+        json_decode(data, type_)
     assert ex.value.errors == expected_errors
 
 
 @pytest.mark.parametrize(
     ('data', 'type_', 'expected_errors'), (
-        (1, datetime.date, 'Cannot convert "1" to date'),
-        ('invalid date', datetime.date, 'Cannot convert "invalid date" to date'),
-        (None, datetime.date, 'Cannot convert "None" to date'),
+        (1, datetime.date, 'Cannot decode "1" to date'),
+        ('invalid date', datetime.date, 'Cannot decode "invalid date" to date'),
+        (None, datetime.date, 'Cannot decode "None" to date'),
     ),
 )
-def test_convert_date_with_errors(data, type_, expected_errors):
-    with pytest.raises(ConvertException) as ex:
-        convert(data, type_)
+def test_decode_date_with_errors(data, type_, expected_errors):
+    with pytest.raises(DecodeException) as ex:
+        json_decode(data, type_)
     assert ex.value.errors == expected_errors
 
 
-def test_convert_without_converter():
+def test_decode_without_decoder():
     data = '123'
     type_ = object
     expected_errors = {'non_field_error': 'Invalid type.'}
-    with pytest.raises(ConvertException) as ex:
-        convert(data, type_)
+    with pytest.raises(DecodeException) as ex:
+        json_decode(data, type_)
     assert ex.value.errors == expected_errors
 
 
@@ -270,8 +270,8 @@ def test_convert_without_converter():
         ({}, Profile, Profile()),
     ),
 )
-def test_convert_dataclass(data, type_, expected_instance):
-    instance = convert(data, type_)
+def test_decode_dataclass(data, type_, expected_instance):
+    instance = json_decode(data, type_)
     assert instance == expected_instance
 
 
@@ -293,7 +293,7 @@ def test_convert_dataclass(data, type_, expected_instance):
             },
             Contact,
             {
-                'phones': 'Cannot convert "invalid_integer" to integer',
+                'phones': 'Cannot decode "invalid_integer" to integer',
             },
         ),
         (
@@ -306,16 +306,16 @@ def test_convert_dataclass(data, type_, expected_instance):
             {
                 'non_field_error': 'Missing fields: "id", "status", "birthday"',
                 'contact': {
-                    'phones': 'Cannot convert "123" to set',
+                    'phones': 'Cannot decode "123" to set',
                 },
             },
         ),
 
     ),
 )
-def test_convert_dataclass_with_errors(data, type_, expected_errors):
-    with pytest.raises(ConvertException) as ex:
-        convert(data, type_)
+def test_decode_dataclass_with_errors(data, type_, expected_errors):
+    with pytest.raises(DecodeException) as ex:
+        json_decode(data, type_)
     assert ex.value.errors == expected_errors
 
 
@@ -325,20 +325,20 @@ def test_convert_dataclass_with_errors(data, type_, expected_errors):
         ('8bd5b7f9-3cd3-4a7e-be17-23df921b7fb7', Uid, Uid('8bd5b7f9-3cd3-4a7e-be17-23df921b7fb7')),
     ),
 )
-def test_convert_uuid(data, type_, expected_instance):
-    instance = convert(data, type_)
+def test_decode_uuid(data, type_, expected_instance):
+    instance = json_decode(data, type_)
     assert instance == expected_instance
 
 
 @pytest.mark.parametrize(
     ('data', 'type_', 'expected_errors'), (
-        ('invalid uuid', uuid.UUID, 'Cannot convert "invalid uuid" to uuid'),
-        ('invalid uuid', Uid, 'Cannot convert "invalid uuid" to uuid'),
+        ('invalid uuid', uuid.UUID, 'Cannot decode "invalid uuid" to uuid'),
+        ('invalid uuid', Uid, 'Cannot decode "invalid uuid" to uuid'),
     ),
 )
-def test_convert_uuid_with_errors(data, type_, expected_errors):
-    with pytest.raises(ConvertException) as ex:
-        convert(data, type_)
+def test_decode_uuid_with_errors(data, type_, expected_errors):
+    with pytest.raises(DecodeException) as ex:
+        json_decode(data, type_)
     assert ex.value.errors == expected_errors
 
 
@@ -348,32 +348,32 @@ def test_convert_uuid_with_errors(data, type_, expected_errors):
         (1.1, Number, Number(1.1)),
     ),
 )
-def test_convert_decimal(data, type_, expected_instance):
-    instance = convert(data, type_)
+def test_decode_decimal(data, type_, expected_instance):
+    instance = json_decode(data, type_)
     assert instance == expected_instance
 
 
 @pytest.mark.parametrize(
     ('data', 'type_', 'expected_errors'), (
-        (None, decimal.Decimal, 'Cannot convert "None" to decimal'),
-        ('invalid decimal', Number, 'Cannot convert "invalid decimal" to decimal'),
+        (None, decimal.Decimal, 'Cannot decode "None" to decimal'),
+        ('invalid decimal', Number, 'Cannot decode "invalid decimal" to decimal'),
     ),
 )
-def test_convert_decimal_with_errors(data, type_, expected_errors):
-    with pytest.raises(ConvertException) as ex:
-        convert(data, type_)
+def test_decode_decimal_with_errors(data, type_, expected_errors):
+    with pytest.raises(DecodeException) as ex:
+        json_decode(data, type_)
     assert ex.value.errors == expected_errors
 
 
 @pytest.mark.parametrize(
     ('data', 'type_', 'expected_errors'), (
-        (None, float, 'Cannot convert "None" to float'),
-        ('invalid decimal', float, 'Cannot convert "invalid decimal" to float'),
+        (None, float, 'Cannot decode "None" to float'),
+        ('invalid decimal', float, 'Cannot decode "invalid decimal" to float'),
     ),
 )
-def test_convert_float_with_errors(data, type_, expected_errors):
-    with pytest.raises(ConvertException) as ex:
-        convert(data, type_)
+def test_decode_float_with_errors(data, type_, expected_errors):
+    with pytest.raises(DecodeException) as ex:
+        json_decode(data, type_)
     assert ex.value.errors == expected_errors
 
 
@@ -384,29 +384,29 @@ def test_convert_float_with_errors(data, type_, expected_errors):
         ({'1': '1'}, typing.Dict[int, int], {1: 1}),
     ),
 )
-def test_convert_dict(data, type_, expected_instance):
-    instance = convert(data, type_)
+def test_decode_dict(data, type_, expected_instance):
+    instance = json_decode(data, type_)
     assert instance == expected_instance
 
 
 @pytest.mark.parametrize(
     ('data', 'type_', 'expected_errors'), (
-        (None, dict, 'Cannot convert "None" to object'),
-        (None, typing.Dict, 'Cannot convert "None" to object'),
-        ('invalid object', dict, 'Cannot convert "invalid object" to object'),
-        ({'data1': 1}, typing.Dict[int, int], 'Cannot convert "data1" to integer'),
-        ({1: 'data2'}, typing.Dict[float, float], 'Cannot convert "data2" to float'),
+        (None, dict, 'Cannot decode "None" to object'),
+        (None, typing.Dict, 'Cannot decode "None" to object'),
+        ('invalid object', dict, 'Cannot decode "invalid object" to object'),
+        ({'data1': 1}, typing.Dict[int, int], 'Cannot decode "data1" to integer'),
+        ({1: 'data2'}, typing.Dict[float, float], 'Cannot decode "data2" to float'),
     ),
 )
-def test_convert_dict_with_errors(data, type_, expected_errors):
-    with pytest.raises(ConvertException) as ex:
-        convert(data, type_)
+def test_decode_dict_with_errors(data, type_, expected_errors):
+    with pytest.raises(DecodeException) as ex:
+        json_decode(data, type_)
     assert ex.value.errors == expected_errors
 
 
-def test_convert_any():
+def test_decode_any():
     instance = object()
-    assert convert(instance, typing.Any) is instance
+    assert json_decode(instance, typing.Any) is instance
 
 
 @pytest.mark.parametrize(
@@ -423,18 +423,18 @@ def test_convert_any():
         (0.0, bool, False),
     ),
 )
-def test_convert_bool(data, type_, expected_instance):
-    instance = convert(data, type_)
+def test_decode_bool(data, type_, expected_instance):
+    instance = json_decode(data, type_)
     assert instance == expected_instance
 
 
 @pytest.mark.parametrize(
     ('data', 'type_', 'expected_errors'), (
-        ('', bool, 'Cannot convert "" to bool'),
-        ('invalid_bool', bool, 'Cannot convert "invalid_bool" to bool'),
+        ('', bool, 'Cannot decode "" to bool'),
+        ('invalid_bool', bool, 'Cannot decode "invalid_bool" to bool'),
     ),
 )
-def test_convert_bool_with_errors(data, type_, expected_errors):
-    with pytest.raises(ConvertException) as ex:
-        convert(data, type_)
+def test_decode_bool_with_errors(data, type_, expected_errors):
+    with pytest.raises(DecodeException) as ex:
+        json_decode(data, type_)
     assert ex.value.errors == expected_errors

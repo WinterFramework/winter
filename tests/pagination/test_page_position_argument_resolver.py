@@ -5,7 +5,7 @@ from rest_framework.exceptions import ParseError
 from rest_framework.request import Request as DRFRequest
 
 import winter
-from winter import converters
+from winter.core.json import decoder
 from winter.core import ComponentMethod
 from winter.data.pagination import PagePosition
 from winter.data.pagination import Sort
@@ -112,8 +112,8 @@ def test_resolve_argument_ok_in_page_position_argument_resolver_with_default(
 
 @pytest.mark.parametrize(
     ('query_string', 'exception_type', 'message'), (
-        ('limit=none', converters.ConvertException, 'Cannot convert "none" to PositiveInteger'),
-        ('offset=-20', converters.ConvertException, 'Cannot convert "-20" to PositiveInteger'),
+        ('limit=none', decoder.DecodeException, 'Cannot decode "none" to PositiveInteger'),
+        ('offset=-20', decoder.DecodeException, 'Cannot decode "-20" to PositiveInteger'),
         ('order_by=id,', ParseError, 'Invalid field for order: ""'),
         ('order_by=-', ParseError, 'Invalid field for order: "-"'),
         (
