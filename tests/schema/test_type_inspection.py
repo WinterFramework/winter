@@ -11,7 +11,7 @@ from typing import List
 from typing import NewType
 
 from winter.core.types import TypeWrapper
-from winter.pagination import Page
+from winter.data.pagination.page import Page
 from winter.schema import inspect_enum_class
 from winter.schema.type_inspection import InspectorNotFound
 from winter.schema.type_inspection import TypeInfo

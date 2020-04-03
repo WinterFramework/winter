@@ -31,12 +31,7 @@ class LimitsAnnotation:
     limits: Limits
 
 
-def limits(
-        *,
-        default: typing.Optional[int],
-        maximum: typing.Optional[int],
-        redirect_to_default: bool = False,
-):
+def limits(*, default: typing.Optional[int], maximum: typing.Optional[int], redirect_to_default: bool = False):
     limits_ = Limits(default=default, maximum=maximum, redirect_to_default=redirect_to_default)
     annotation = LimitsAnnotation(limits_)
     return annotate(annotation, single=True)

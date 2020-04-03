@@ -1,16 +1,16 @@
+import enum
 import itertools
 import typing
-from enum import Enum
 
-from dataclasses import dataclass
+import dataclasses
 
 
-class SortDirection(Enum):
+class SortDirection(enum.Enum):
     ASC = 'ASC'
     DESC = 'DESC'
 
 
-@dataclass(frozen=True)
+@dataclasses.dataclass(frozen=True)
 class Order:
     field: str
     direction: SortDirection = SortDirection.ASC
@@ -19,7 +19,7 @@ class Order:
         return ('-' if self.direction == SortDirection.DESC else '') + self.field
 
 
-@dataclass(frozen=True, init=False, repr=False)
+@dataclasses.dataclass(frozen=True, init=False, repr=False)
 class Sort:
     orders: typing.Tuple[Order]
 

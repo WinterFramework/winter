@@ -3,7 +3,7 @@ import typing
 from rest_framework import exceptions
 
 if typing.TYPE_CHECKING:
-    from .sort import Sort
+    from ...data.pagination.sort import Sort
 
 
 def check_sort(sort: 'Sort', allowed_fields: typing.FrozenSet[str]):

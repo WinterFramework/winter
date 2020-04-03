@@ -12,14 +12,8 @@ from .exceptions import RedirectException
 from .exceptions.handlers import ExceptionHandler
 from .exceptions.handlers import exception_handlers_registry
 from .exceptions.throws import throws
-from .web import ResponseEntity
-from .web import request_body
-from .web import response_header
-from .web import response_status
-from .web.exception_handlers import RedirectExceptionHandler
-from .web.response_header_serializer import response_headers_serializer
 from .output_processor import register_output_processor_resolver
-from .pagination import PagePositionArgumentResolver
+from .pagination.page_position_argument_resolver import PagePositionArgumentResolver
 from .routing import route
 from .routing import route_delete
 from .routing import route_get
@@ -27,6 +21,12 @@ from .routing import route_patch
 from .routing import route_post
 from .routing import route_put
 from .routing.query_parameters import map_query_parameter
+from .web import ResponseEntity
+from .web import request_body
+from .web import response_header
+from .web import response_status
+from .web.exception_handlers import RedirectExceptionHandler
+from .web.response_header_serializer import response_headers_serializer
 
 
 def _default_configuration():
@@ -78,7 +78,7 @@ def _register_controller_method_inspectors():
 
 
 def _register_output_processor_resolvers():
-    from .pagination.page import PageOutputProcessorResolver
+    from .pagination.page.page_processor_resolver import PageOutputProcessorResolver
 
     register_output_processor_resolver(PageOutputProcessorResolver())
 
