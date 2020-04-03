@@ -1,7 +1,7 @@
 import pytest
 
-from winter.http import InvalidMediaTypeException
-from winter.http import MediaType
+from winter.web import InvalidMediaTypeException
+from winter.web import MediaType
 
 
 @pytest.mark.parametrize('media_type, expected_result', [

@@ -4,7 +4,7 @@ from typing import Tuple
 from .route_annotation import RouteAnnotation
 from ..core import ComponentMethod
 from ..core import annotate
-from ..http import MediaType
+from ..web import MediaType
 from ..routing.route import Route
 
 

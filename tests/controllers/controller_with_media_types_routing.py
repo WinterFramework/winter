@@ -1,5 +1,5 @@
 import winter
-from winter.http import MediaType
+from winter.web import MediaType
 
 
 @winter.controller

@@ -1,7 +1,7 @@
 from typing import Tuple
 
 import dataclasses
-from ..http import MediaType
+from ..web import MediaType
 
 
 @dataclasses.dataclass(frozen=True)

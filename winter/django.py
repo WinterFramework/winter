@@ -18,10 +18,10 @@ from .controller import get_component
 from .core import ComponentMethod
 from .drf.auth import is_authentication_needed
 from .exceptions.handlers import MethodExceptionsManager
-from .http import ResponseEntity
-from .http.default_response_status import get_default_response_status
-from .http.throttling import create_throttle_classes
-from .http.urls import rewrite_uritemplate_with_regexps
+from .web import ResponseEntity
+from .web.default_response_status import get_default_response_status
+from .web.throttling import create_throttle_classes
+from .web.urls import rewrite_uritemplate_with_regexps
 from .output_processor import get_output_processor
 from .routing.routing import Route
 from .routing.routing import get_route
@@ -102,7 +102,7 @@ def _call_controller_method(controller, route: Route, request: Request):
 
 
 def _fill_response_headers(response, response_headers):
-    from .http import response_headers_serializer
+    from .web import response_headers_serializer
 
     for header_name, header_value in response_headers.items():
         response[header_name] = response_headers_serializer.serialize(header_value, header_name)

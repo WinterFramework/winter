@@ -11,7 +11,7 @@ from .sort import Sort
 from .sort import SortDirection
 from .sort import order_by
 from ..exceptions.handlers import exception_handlers_registry
-from ..http.exception_handlers import BadRequestExceptionHandler
+from ..web.exception_handlers import BadRequestExceptionHandler
 
 
 def setup():

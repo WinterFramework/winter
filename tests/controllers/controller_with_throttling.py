@@ -6,7 +6,7 @@ import winter
 class ControllerWithThrottling:
 
     @winter.route_get()
-    @winter.http.throttling('5/s')
+    @winter.web.throttling('5/s')
     def simple_method(self) -> int:
         return 1
 
@@ -15,7 +15,7 @@ class ControllerWithThrottling:
         return 1
 
     @winter.route_get('same/')
-    @winter.http.throttling('5/s')
+    @winter.web.throttling('5/s')
     def same_simple_method(self) -> int:
         return 1
 
