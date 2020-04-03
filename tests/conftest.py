@@ -8,7 +8,7 @@ def pytest_configure():
     settings.configure(
         ROOT_URLCONF='tests.urls',
         REST_FRAMEWORK={
-            'DEFAULT_RENDERER_CLASSES': ('winter.json_renderer.JSONRenderer',),
+            'DEFAULT_RENDERER_CLASSES': ('winter.core.json.JSONRenderer',),
             'UNAUTHENTICATED_USER': Guest,
         },
         TEMPLATES=[
