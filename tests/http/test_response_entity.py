@@ -1,7 +1,7 @@
 import dataclasses
 import pytest
 
-from winter.http import ResponseEntity
+from winter.web import ResponseEntity
 
 
 @dataclasses.dataclass

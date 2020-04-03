@@ -6,7 +6,7 @@ from drf_yasg.utils import merge_params
 
 from .generation import build_responses_schemas
 from ..drf.input_serializer import InputSerializer
-from ..http.request_body_annotation import RequestBodyAnnotation
+from ..web.request_body_annotation import RequestBodyAnnotation
 from ..routing import Route
 from ..routing import RouteAnnotation
 from ..schema.generation import build_method_parameters

@@ -4,7 +4,7 @@ from rest_framework import serializers
 from rest_framework.views import APIView
 
 import winter
-from winter.http import MediaType
+from winter.web import MediaType
 from winter.routing import get_route
 from winter.schema.inspectors import SwaggerAutoSchema
 

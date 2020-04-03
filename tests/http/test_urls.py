@@ -5,7 +5,7 @@ import uuid
 import pytest
 
 from winter.core import ComponentMethod
-from winter.http.urls import rewrite_uritemplate_with_regexps
+from winter.web.urls import rewrite_uritemplate_with_regexps
 
 
 class _OneTwoEnum(enum.Enum):

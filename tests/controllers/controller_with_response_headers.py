@@ -4,7 +4,7 @@ from uuid import UUID
 import pytz
 
 import winter
-from winter.http import ResponseHeader
+from winter.web import ResponseHeader
 
 
 @winter.controller

@@ -14,7 +14,7 @@ from ..core import ComponentMethodArgument
 from ..drf import get_output_serializer
 from ..exceptions.handlers import MethodExceptionsManager
 from ..exceptions.handlers import exception_handlers_registry
-from ..http.default_response_status import get_default_response_status
+from ..web.default_response_status import get_default_response_status
 from ..routing import Route
 from ..schema.type_inspection import TypeInfo
 

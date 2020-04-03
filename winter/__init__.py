@@ -12,12 +12,12 @@ from .exceptions import RedirectException
 from .exceptions.handlers import ExceptionHandler
 from .exceptions.handlers import exception_handlers_registry
 from .exceptions.throws import throws
-from .http import ResponseEntity
-from .http import request_body
-from .http import response_header
-from .http import response_status
-from .http.exception_handlers import RedirectExceptionHandler
-from .http.response_header_serializer import response_headers_serializer
+from .web import ResponseEntity
+from .web import request_body
+from .web import response_header
+from .web import response_status
+from .web.exception_handlers import RedirectExceptionHandler
+from .web.response_header_serializer import response_headers_serializer
 from .output_processor import register_output_processor_resolver
 from .pagination import PagePositionArgumentResolver
 from .routing import route
@@ -48,8 +48,8 @@ def _add_argument_resolvers():
     from .routing import QueryParameterArgumentResolver
     from .drf import DRFBodyArgumentResolver
     from .drf import HttpRequestArgumentResolver
-    from .http import RequestBodyArgumentResolver
-    from .http import ResponseHeaderArgumentResolver
+    from .web import RequestBodyArgumentResolver
+    from .web import ResponseHeaderArgumentResolver
 
     arguments_resolver.add_argument_resolver(DRFBodyArgumentResolver())
     arguments_resolver.add_argument_resolver(RequestBodyArgumentResolver())
@@ -61,8 +61,8 @@ def _add_argument_resolvers():
 
 
 def _add_response_header_serializers():
-    from .http.response_header_serializers import DateTimeResponseHeaderSerializer
-    from .http.response_header_serializers import LastModifiedResponseHeaderSerializer
+    from .web.response_header_serializers import DateTimeResponseHeaderSerializer
+    from .web.response_header_serializers import LastModifiedResponseHeaderSerializer
 
     response_headers_serializer.add_serializer(DateTimeResponseHeaderSerializer())
     response_headers_serializer.add_serializer(LastModifiedResponseHeaderSerializer())
@@ -84,7 +84,7 @@ def _register_output_processor_resolvers():
 
 
 def _add_exception_handlers():
-    from .http.exception_handlers import ConvertExceptionHandler
+    from .web.exception_handlers import ConvertExceptionHandler
     from .converters import ConvertException
 
     exception_handlers_registry.add_handler(ConvertException, ConvertExceptionHandler, auto_handle=True)
