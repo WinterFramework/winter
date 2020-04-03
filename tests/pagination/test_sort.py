@@ -1,8 +1,8 @@
 import pytest
 
-from winter.data.pagination.sort import Order
-from winter.data.pagination.sort import Sort
-from winter.data.pagination.sort import SortDirection
+from winter.data.pagination import Order
+from winter.data.pagination import Sort
+from winter.data.pagination import SortDirection
 
 
 def test_empty_sort_orders():

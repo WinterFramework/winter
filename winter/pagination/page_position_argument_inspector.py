@@ -4,7 +4,7 @@ from drf_yasg import openapi
 
 from .page_position_argument_resolver import PagePositionArgumentResolver
 from .sort.order_by import OrderByAnnotation
-from ..data.pagination.page_position import PagePosition
+from ..data.pagination import PagePosition
 from ..schema import MethodArgumentsInspector
 
 if typing.TYPE_CHECKING:

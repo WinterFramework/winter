@@ -3,7 +3,7 @@ from .sort.order_by import order_by
 
 
 def setup():
-    from ..data.pagination.page import Page
+    from ..data.pagination import Page
     from ..exceptions.handlers import exception_handlers_registry
     from ..schema import register_type_inspector
     from ..web.exception_handlers import BadRequestExceptionHandler

@@ -13,8 +13,8 @@ from .. import converters
 from ..argument_resolver import ArgumentResolver
 from ..core import ComponentMethod
 from ..core import ComponentMethodArgument
-from ..data.pagination.page_position import PagePosition
-from ..data.pagination.sort import Sort
+from ..data.pagination import PagePosition
+from ..data.pagination import Sort
 from ..exceptions import RedirectException
 from ..positive_integer.positive_integer import PositiveInteger
 

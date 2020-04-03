@@ -1,7 +1,7 @@
 import typing
 
 from .page_processor import PageProcessor
-from ...data.pagination.page import Page
+from ...data.pagination import Page
 from ...output_processor import IOutputProcessorResolver
 
 

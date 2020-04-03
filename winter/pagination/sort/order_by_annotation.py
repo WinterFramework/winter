@@ -2,7 +2,7 @@ import typing
 
 import dataclasses
 
-from ...data.pagination.sort import Sort
+from ...data.pagination import Sort
 
 
 @dataclasses.dataclass

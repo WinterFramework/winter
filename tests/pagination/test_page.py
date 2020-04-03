@@ -1,5 +1,5 @@
-from winter.data.pagination.page import Page
-from winter.data.pagination.page_position import PagePosition
+from winter.data.pagination import Page
+from winter.data.pagination import PagePosition
 
 
 def test_iter_page():

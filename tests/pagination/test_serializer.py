@@ -3,8 +3,8 @@ import pytest
 from mock import Mock
 from rest_framework import serializers
 
-from winter.data.pagination.page import Page
-from winter.data.pagination.page_position import PagePosition
+from winter.data.pagination import Page
+from winter.data.pagination import PagePosition
 from winter.pagination.serializer import PageSerializer
 
 

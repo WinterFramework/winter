@@ -7,8 +7,8 @@ from rest_framework.request import Request as DRFRequest
 import winter
 from winter import converters
 from winter.core import ComponentMethod
-from winter.data.pagination.page_position import PagePosition
-from winter.data.pagination.sort import Sort
+from winter.data.pagination import PagePosition
+from winter.data.pagination import Sort
 from winter.pagination.page_position_argument_resolver import PagePositionArgumentResolver
 
 

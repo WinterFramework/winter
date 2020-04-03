@@ -7,7 +7,7 @@ from rest_framework.serializers import SerializerMetaclass
 
 from .utils import get_next_page_url
 from .utils import get_previous_page_url
-from ..data.pagination.page import Page
+from ..data.pagination import Page
 
 
 class _PageSerializerMeta(SerializerMetaclass):

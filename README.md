@@ -49,8 +49,8 @@ from typing import Optional
 import winter
 from dataclasses import dataclass
 from rest_framework.request import Request
-from winter.data.pagination.page import Page
-from winter.data.pagination.page_position import PagePosition
+from winter.data.pagination import Page
+from winter.data.pagination import PagePosition
 
 
 @dataclass
