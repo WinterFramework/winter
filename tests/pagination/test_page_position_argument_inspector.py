@@ -3,8 +3,8 @@ from drf_yasg import openapi
 
 import winter
 from winter.data.pagination import PagePosition
-from winter.pagination.page_position_argument_inspector import PagePositionArgumentsInspector
-from winter.pagination.page_position_argument_resolver import PagePositionArgumentResolver
+from winter.pagination import PagePositionArgumentResolver
+from winter.pagination import PagePositionArgumentsInspector
 from winter.routing import get_route
 
 

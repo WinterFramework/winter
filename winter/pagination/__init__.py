@@ -1,4 +1,6 @@
 from .limits import limits
+from .page_position_argument_inspector import PagePositionArgumentsInspector
+from .page_position_argument_resolver import PagePositionArgumentResolver
 from .sort.order_by import order_by
 
 
