@@ -6,15 +6,15 @@ from rest_framework.request import Request
 from .limits import Limits
 from .limits import LimitsAnnotation
 from .limits import MaximumLimitValueExceeded
-from .page_position import PagePosition
-from .sort import OrderByAnnotation
-from .sort import Sort
 from .sort.check_sort import check_sort
+from .sort.order_by import OrderByAnnotation
 from .sort.parse_sort import parse_sort
 from .. import converters
 from ..argument_resolver import ArgumentResolver
 from ..core import ComponentMethod
 from ..core import ComponentMethodArgument
+from ..data.pagination import PagePosition
+from ..data.pagination import Sort
 from ..exceptions import RedirectException
 from ..positive_integer.positive_integer import PositiveInteger
 

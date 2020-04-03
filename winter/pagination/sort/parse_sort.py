@@ -1,7 +1,7 @@
 import typing
 
 from .parse_order import parse_order
-from .sort import Sort
+from ...data.pagination import Sort
 
 
 def parse_sort(str_sort: typing.Optional[str]) -> typing.Optional[Sort]:

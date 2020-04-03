@@ -6,8 +6,8 @@ from rest_framework.response import Response
 
 import winter
 from winter import ResponseEntity
-from winter.pagination import Page
-from winter.pagination import PagePosition
+from winter.data.pagination import Page
+from winter.data.pagination import PagePosition
 
 
 @dataclasses.dataclass

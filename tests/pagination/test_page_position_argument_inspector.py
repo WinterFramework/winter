@@ -2,7 +2,7 @@ import pytest
 from drf_yasg import openapi
 
 import winter
-from winter.pagination import PagePosition
+from winter.data.pagination import PagePosition
 from winter.pagination import PagePositionArgumentResolver
 from winter.pagination import PagePositionArgumentsInspector
 from winter.routing import get_route

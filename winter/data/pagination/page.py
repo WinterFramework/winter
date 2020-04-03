@@ -2,7 +2,7 @@ import typing
 
 import dataclasses
 
-from ..page_position import PagePosition
+from .page_position import PagePosition
 
 T = typing.TypeVar('T')
 

@@ -2,7 +2,7 @@ from typing import Any
 from typing import Dict
 
 import winter
-from winter.pagination import PagePosition
+from winter.data.pagination import PagePosition
 
 
 @winter.route('with-limits/')
