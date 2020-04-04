@@ -4,12 +4,13 @@ from typing import Optional
 from rest_framework.request import Request
 
 from ..routing import get_route
-from ... import converters
 from ... import type_utils
 from winter.web.argument_resolver import ArgumentNotSupported
 from winter.web.argument_resolver import ArgumentResolver
 from ...core import ArgumentDoesNotHaveDefault
 from ...core import ComponentMethodArgument
+from ...core.json import JSONDecodeException
+from ...core.json import json_decode
 from ...routing.query_parameters import QueryParameter
 
 
@@ -43,10 +44,10 @@ class QueryParameterArgumentResolver(ArgumentResolver):
             try:
                 return argument.get_default()
             except ArgumentDoesNotHaveDefault:
-                raise converters.ConvertException(f'Missing required query parameter "{parameter_name}"')
+                raise JSONDecodeException(f'Missing required query parameter "{parameter_name}"')
 
         value = self._get_value(query_parameters, parameter_name, is_iterable, explode)
-        return converters.convert(value, argument.type_)
+        return json_decode(value, argument.type_)
 
     def _get_query_parameter(self, argument: ComponentMethodArgument) -> Optional[QueryParameter]:
         if argument in self._query_parameters:

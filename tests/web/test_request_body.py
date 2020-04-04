@@ -84,9 +84,9 @@ def test_request_body_with_errors():
     }
 
     expected_data = {
-        'id': 'Cannot convert "invalid integer" to integer',
+        'id': 'Cannot decode "invalid integer" to integer',
         'status': 'Value not in allowed values("active", "super_active"): "invalid status"',
-        'items': 'Cannot convert "invalid integer" to integer',
+        'items': 'Cannot decode "invalid integer" to integer',
         'non_field_error': 'Missing fields: "name"',
     }
     data = json.dumps(data)

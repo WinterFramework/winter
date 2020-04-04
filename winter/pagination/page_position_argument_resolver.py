@@ -9,14 +9,14 @@ from .limits import MaximumLimitValueExceeded
 from .sort.check_sort import check_sort
 from .sort.order_by import OrderByAnnotation
 from .sort.parse_sort import parse_sort
-from .. import converters
-from winter.web.argument_resolver import ArgumentResolver
 from ..core import ComponentMethod
 from ..core import ComponentMethodArgument
+from ..core.json import json_decode
 from ..data.pagination import PagePosition
 from ..data.pagination import Sort
 from ..exceptions import RedirectException
 from ..positive_integer.positive_integer import PositiveInteger
+from ..web.argument_resolver import ArgumentResolver
 
 
 class PagePositionArgumentResolver(ArgumentResolver):
@@ -73,8 +73,8 @@ class PagePositionArgumentResolver(ArgumentResolver):
         raw_limit = http_request.query_params.get(self.limit_name) or None
         raw_offset = http_request.query_params.get(self.offset_name) or None
         raw_order_by = http_request.query_params.get(self.order_by_name, '')
-        limit = converters.convert(raw_limit, typing.Optional[PositiveInteger])
-        offset = converters.convert(raw_offset, typing.Optional[PositiveInteger])
+        limit = json_decode(raw_limit, typing.Optional[PositiveInteger])
+        offset = json_decode(raw_offset, typing.Optional[PositiveInteger])
         sort = self._parse_sort_properties(raw_order_by, argument)
         return PagePosition(limit=limit, offset=offset, sort=sort)
 

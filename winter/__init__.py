@@ -1,8 +1,3 @@
-# from .drf import BodyWithContext
-# from .drf import input_serializer
-# from .drf import no_authentication
-# from .drf import output_serializer
-# from .drf import output_template
 from .exceptions import RedirectException
 from .exceptions.handlers import ExceptionHandler
 from .exceptions.handlers import exception_handlers_registry
@@ -83,11 +78,11 @@ def _register_output_processor_resolvers():
 
 
 def _add_exception_handlers():
-    from .web.exception_handlers import ConvertExceptionHandler
+    from .web.exception_handlers import DecodeExceptionHandler
     from .web.exception_handlers import RedirectExceptionHandler
-    from .converters import ConvertException
+    from winter.core.json.decoder import JSONDecodeException
 
-    exception_handlers_registry.add_handler(ConvertException, ConvertExceptionHandler, auto_handle=True)
+    exception_handlers_registry.add_handler(JSONDecodeException, DecodeExceptionHandler, auto_handle=True)
     exception_handlers_registry.add_handler(RedirectException, RedirectExceptionHandler, auto_handle=True)
 
 
