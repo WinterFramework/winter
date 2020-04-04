@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/WinterFramework/winter.svg?branch=master)](https://travis-ci.org/WinterFramework/winter)
 [![codecov](https://codecov.io/gh/mofr/winter/branch/master/graph/badge.svg)](https://codecov.io/gh/mofr/winter)
-[![Maintainability](https://api.codeclimate.com/v1/badges/c6b0b8dfbe97cfa378a3/maintainability)](https://codeclimate.com/github/mofr/winter/maintainability)
+[![Maintainability](https://api.codeclimate.com/v1/badges/876abe42ca943d9c6014/maintainability)](https://codeclimate.com/github/WinterFramework/winter/maintainability)
 [![PyPI version](https://badge.fury.io/py/winter.svg)](https://badge.fury.io/py/winter)
 [![Gitter](https://badges.gitter.im/winter-python/community.svg)](https://gitter.im/winter-python/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
