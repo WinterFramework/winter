@@ -22,32 +22,28 @@ class MissingException(Exception):
     pass
 
 
-class DecodeException(Exception):
+class JSONDecodeException(Exception):
     NON_FIELD_ERROR = 'non_field_error'
     MISSING_FIELDS_PATTERN = 'Missing fields: "{missing_fields}"'
     NOT_IN_ALLOWED_VALUES_PATTERN = 'Value not in allowed values("{allowed_values}"): "{value}"'
-
-    _invalid_type_pattern = 'Invalid type.'
-    _invalid_type_with_name_pattern = 'Invalid type. Need: "{type_name}". Got: "{value}"'
-    _error_pattern_from_value_and_type_name = 'Cannot decode "{value}" to {type_name}'
 
     def __init__(self, errors: typing.Union[str, typing.Dict]):
         self.errors = errors
 
     @classmethod
-    def invalid_type(cls, value: typing.Any, type_name: typing.Optional[str] = None) -> 'DecodeException':
+    def invalid_type(cls, value: typing.Any, type_name: typing.Optional[str] = None) -> 'JSONDecodeException':
         if type_name:
-            error = cls._invalid_type_with_name_pattern.format(value=value, type_name=type_name)
+            error = 'Invalid type. Need: "{type_name}". Got: "{value}"'.format(value=value, type_name=type_name)
         else:
-            error = cls._invalid_type_pattern.format(value=value)
+            error = 'Invalid type.'
         errors = {
             cls.NON_FIELD_ERROR: error,
         }
         return cls(errors)
 
     @classmethod
-    def cannot_decode(cls, value: typing.Any, type_name: str) -> 'DecodeException':
-        errors = cls._error_pattern_from_value_and_type_name.format(value=value, type_name=type_name)
+    def cannot_decode(cls, value: typing.Any, type_name: str) -> 'JSONDecodeException':
+        errors = 'Cannot decode "{value}" to {type_name}'.format(value=value, type_name=type_name)
         return cls(errors)
 
 
@@ -69,7 +65,7 @@ def json_decode(value, hint_class: typing.Type[Item]) -> Item:
         result = _json_decode(value, hint_class, type_)
         if result is not dataclasses.MISSING:
             return result
-    raise DecodeException.invalid_type(value)
+    raise JSONDecodeException.invalid_type(value)
 
 
 def _json_decode(value, hint_class: typing.Type[Item], type_: typing.Type) -> typing.Optional[Item]:
@@ -92,7 +88,7 @@ def decode_optional(value, type_: typing.Type[Item]) -> Item:
 @json_decoder(object, validator=dataclasses.is_dataclass)
 def decode_dataclass(value: typing.Dict[str, typing.Any], type_: typing.Type[Item]) -> Item:
     if not isinstance(value, typing.Mapping):
-        raise DecodeException.invalid_type(value, 'object')
+        raise JSONDecodeException.invalid_type(value, 'object')
 
     errors = {}
     decoded_data = {}
@@ -106,7 +102,7 @@ def decode_dataclass(value: typing.Dict[str, typing.Any], type_: typing.Type[Ite
 
     if missing_fields:
         missing_fields = '", "'.join(missing_fields)
-        errors[DecodeException.NON_FIELD_ERROR] = DecodeException.MISSING_FIELDS_PATTERN.format(
+        errors[JSONDecodeException.NON_FIELD_ERROR] = JSONDecodeException.MISSING_FIELDS_PATTERN.format(
             missing_fields=missing_fields,
         )
     raise_if_errors(errors)
@@ -115,7 +111,7 @@ def decode_dataclass(value: typing.Dict[str, typing.Any], type_: typing.Type[Ite
 
 def raise_if_errors(errors: typing.Dict[str, str]):
     if errors:
-        raise DecodeException(errors)
+        raise JSONDecodeException(errors)
 
 
 def decode_dataclass_field(
@@ -126,7 +122,7 @@ def decode_dataclass_field(
 ):
     try:
         value = _decode_dataclass_field(value, field)
-    except DecodeException as e:
+    except JSONDecodeException as e:
         errors[field.name] = e.errors
     except MissingException:
         missing_fields.append(field.name)
@@ -163,7 +159,7 @@ def decode_bool(value, type_) -> bool:
     if value == 1:
         return True
 
-    raise DecodeException.cannot_decode(value=value, type_name='bool')
+    raise JSONDecodeException.cannot_decode(value=value, type_name='bool')
 
 
 @json_decoder(int)
@@ -171,7 +167,7 @@ def decode_int(value, type_) -> int:
     try:
         return type_(value)
     except (TypeError, ValueError):
-        raise DecodeException.cannot_decode(value=value, type_name='integer')
+        raise JSONDecodeException.cannot_decode(value=value, type_name='integer')
 
 
 @json_decoder(float)
@@ -179,13 +175,13 @@ def decode_float(value, type_) -> float:
     try:
         return type_(value)
     except (TypeError, ValueError):
-        raise DecodeException.cannot_decode(value=value, type_name='float')
+        raise JSONDecodeException.cannot_decode(value=value, type_name='float')
 
 
 @json_decoder(str)
 def decode_str(value, type_) -> str:
     if not isinstance(value, str):
-        raise DecodeException.cannot_decode(value=value, type_name='string')
+        raise JSONDecodeException.cannot_decode(value=value, type_name='string')
     return type_(value)
 
 
@@ -195,8 +191,8 @@ def decode_enum(value, type_) -> enum.Enum:
         return type_(value)
     except ValueError:
         allowed_values = '", "'.join(map(str, (item.value for item in type_)))
-        errors = DecodeException.NOT_IN_ALLOWED_VALUES_PATTERN.format(value=value, allowed_values=allowed_values)
-        raise DecodeException(errors)
+        errors = JSONDecodeException.NOT_IN_ALLOWED_VALUES_PATTERN.format(value=value, allowed_values=allowed_values)
+        raise JSONDecodeException(errors)
 
 
 # noinspection PyUnusedLocal
@@ -205,7 +201,7 @@ def decode_date(value, type_) -> datetime.date:
     try:
         return parser.parse(value).date()
     except (ValueError, TypeError):
-        raise DecodeException.cannot_decode(value=value, type_name='date')
+        raise JSONDecodeException.cannot_decode(value=value, type_name='date')
 
 
 # noinspection PyUnusedLocal
@@ -214,7 +210,7 @@ def decode_datetime(value, type_) -> datetime.datetime:
     try:
         return parser.parse(value)
     except (ValueError, TypeError):
-        raise DecodeException.cannot_decode(value=value, type_name='datetime')
+        raise JSONDecodeException.cannot_decode(value=value, type_name='datetime')
 
 
 @json_decoder(list)
@@ -223,7 +219,7 @@ def decode_list(value, type_) -> list:
     child_type = child_types[0] if child_types else typing.Any
 
     if not isinstance(value, typing.Iterable):
-        raise DecodeException.cannot_decode(value=value, type_name='list')
+        raise JSONDecodeException.cannot_decode(value=value, type_name='list')
 
     updated_value = [
         json_decode(item, child_type)
@@ -238,7 +234,7 @@ def decode_set(value, type_) -> set:
     child_type = child_types[0] if child_types else typing.Any
 
     if not isinstance(value, typing.Iterable):
-        raise DecodeException.cannot_decode(value=value, type_name='set')
+        raise JSONDecodeException.cannot_decode(value=value, type_name='set')
 
     try:
         updated_value = {
@@ -246,7 +242,7 @@ def decode_set(value, type_) -> set:
             for item in value
         }
     except TypeError:  # if unhashable type
-        raise DecodeException.cannot_decode(value=value, type_name='set')
+        raise JSONDecodeException.cannot_decode(value=value, type_name='set')
 
     return updated_value
 
@@ -257,7 +253,7 @@ def decode_tuple(value, type_) -> tuple:
     child_type = child_types[0] if child_types else typing.Any
 
     if not isinstance(value, typing.Iterable):
-        raise DecodeException.cannot_decode(value=value, type_name='list')
+        raise JSONDecodeException.cannot_decode(value=value, type_name='list')
 
     updated_value = tuple(
         json_decode(item, child_type)
@@ -269,7 +265,7 @@ def decode_tuple(value, type_) -> tuple:
 @json_decoder(dict)
 def decode_dict(value, type_) -> dict:
     if not isinstance(value, dict):
-        raise DecodeException.cannot_decode(value=value, type_name='object')
+        raise JSONDecodeException.cannot_decode(value=value, type_name='object')
     key_and_value_type = getattr(type_, '__args__', None)
 
     if key_and_value_type is None:
@@ -291,7 +287,7 @@ def decode_uuid(value, type_) -> uuid.UUID:
     value = str(value)
     if uuid_regexp.match(value):
         return type_(value)
-    raise DecodeException.cannot_decode(value=value, type_name='uuid')
+    raise JSONDecodeException.cannot_decode(value=value, type_name='uuid')
 
 
 @json_decoder(decimal.Decimal)
@@ -299,7 +295,7 @@ def decode_decimal(value, type_) -> decimal.Decimal:
     try:
         return type_(value)
     except (decimal.InvalidOperation, TypeError):
-        raise DecodeException.cannot_decode(value=value, type_name='decimal')
+        raise JSONDecodeException.cannot_decode(value=value, type_name='decimal')
 
 
 # noinspection PyUnusedLocal

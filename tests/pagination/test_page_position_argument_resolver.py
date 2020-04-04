@@ -112,8 +112,8 @@ def test_resolve_argument_ok_in_page_position_argument_resolver_with_default(
 
 @pytest.mark.parametrize(
     ('query_string', 'exception_type', 'message'), (
-        ('limit=none', decoder.DecodeException, 'Cannot decode "none" to PositiveInteger'),
-        ('offset=-20', decoder.DecodeException, 'Cannot decode "-20" to PositiveInteger'),
+        ('limit=none', decoder.JSONDecodeException, 'Cannot decode "none" to PositiveInteger'),
+        ('offset=-20', decoder.JSONDecodeException, 'Cannot decode "-20" to PositiveInteger'),
         ('order_by=id,', ParseError, 'Invalid field for order: ""'),
         ('order_by=-', ParseError, 'Invalid field for order: "-"'),
         (

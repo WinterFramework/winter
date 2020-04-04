@@ -9,7 +9,7 @@ from ...argument_resolver import ArgumentNotSupported
 from ...argument_resolver import ArgumentResolver
 from ...core import ArgumentDoesNotHaveDefault
 from ...core import ComponentMethodArgument
-from ...core.json import DecodeException
+from ...core.json import JSONDecodeException
 from ...core.json import json_decode
 from ...routing.query_parameters import QueryParameter
 
@@ -44,7 +44,7 @@ class QueryParameterArgumentResolver(ArgumentResolver):
             try:
                 return argument.get_default()
             except ArgumentDoesNotHaveDefault:
-                raise DecodeException(f'Missing required query parameter "{parameter_name}"')
+                raise JSONDecodeException(f'Missing required query parameter "{parameter_name}"')
 
         value = self._get_value(query_parameters, parameter_name, is_iterable, explode)
         return json_decode(value, argument.type_)

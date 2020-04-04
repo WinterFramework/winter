@@ -5,12 +5,12 @@ from .response_header_annotation import ResponseHeader
 from .response_header_annotation import response_header
 from .response_status_annotation import response_status
 from .. import ExceptionHandler
-from ..core.json.decoder import DecodeException
+from ..core.json.decoder import JSONDecodeException
 
 
 class DecodeExceptionHandler(ExceptionHandler):
     @response_status(HTTPStatus.BAD_REQUEST)
-    def handle(self, exception: DecodeException) -> typing.Dict:
+    def handle(self, exception: JSONDecodeException) -> typing.Dict:
         return exception.errors
 
 

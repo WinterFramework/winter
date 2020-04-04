@@ -57,7 +57,7 @@ def test_query_parameter_resolver_with_raises_parse_error(query_string, expected
     argument = method.get_argument('query_param')
     request = get_request(query_string)
 
-    with pytest.raises(decoder.DecodeException) as exception:
+    with pytest.raises(decoder.JSONDecodeException) as exception:
         resolver.resolve_argument(argument, request, {})
 
     assert str(exception.value) == expected_exception_message
@@ -140,7 +140,7 @@ def test_orphan_map_query_parameter_fails():
     argument = method.get_argument('x_param')
     request = get_request('?x=1')
 
-    with pytest.raises(decoder.DecodeException) as exception:
+    with pytest.raises(decoder.JSONDecodeException) as exception:
         resolver.resolve_argument(argument, request, {})
 
     assert str(exception.value) == 'Missing required query parameter "x"'

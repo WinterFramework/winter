@@ -8,7 +8,7 @@ import dataclasses
 import pytest
 from dateutil.tz import tzutc
 
-from winter.core.json import DecodeException
+from winter.core.json import JSONDecodeException
 from winter.core.json import json_decode
 
 empty = object()
@@ -154,7 +154,7 @@ def test_decode_optional(data, type_, expected_instance):
     ),
 )
 def test_decode_set_with_errors(data, type_, expected_errors):
-    with pytest.raises(DecodeException) as ex:
+    with pytest.raises(JSONDecodeException) as ex:
         json_decode(data, type_)
     assert ex.value.errors == expected_errors
 
@@ -183,7 +183,7 @@ def test_decode_list(data, type_, expected_instance):
     ),
 )
 def test_decode_list_with_errors(data, type_, expected_errors):
-    with pytest.raises(DecodeException) as ex:
+    with pytest.raises(JSONDecodeException) as ex:
         json_decode(data, type_)
     assert ex.value.errors == expected_errors
 
@@ -195,7 +195,7 @@ def test_decode_list_with_errors(data, type_, expected_errors):
     ),
 )
 def test_decode_string_with_errors(data, type_, expected_errors):
-    with pytest.raises(DecodeException) as ex:
+    with pytest.raises(JSONDecodeException) as ex:
         json_decode(data, type_)
     assert ex.value.errors == expected_errors
 
@@ -224,7 +224,7 @@ def test_decode_tuple(data, type_, expected_instance):
     ),
 )
 def test_decode_tuple_with_errors(data, type_, expected_errors):
-    with pytest.raises(DecodeException) as ex:
+    with pytest.raises(JSONDecodeException) as ex:
         json_decode(data, type_)
     assert ex.value.errors == expected_errors
 
@@ -237,7 +237,7 @@ def test_decode_tuple_with_errors(data, type_, expected_errors):
     ),
 )
 def test_decode_datetime_with_errors(data, type_, expected_errors):
-    with pytest.raises(DecodeException) as ex:
+    with pytest.raises(JSONDecodeException) as ex:
         json_decode(data, type_)
     assert ex.value.errors == expected_errors
 
@@ -250,7 +250,7 @@ def test_decode_datetime_with_errors(data, type_, expected_errors):
     ),
 )
 def test_decode_date_with_errors(data, type_, expected_errors):
-    with pytest.raises(DecodeException) as ex:
+    with pytest.raises(JSONDecodeException) as ex:
         json_decode(data, type_)
     assert ex.value.errors == expected_errors
 
@@ -259,7 +259,7 @@ def test_decode_without_decoder():
     data = '123'
     type_ = object
     expected_errors = {'non_field_error': 'Invalid type.'}
-    with pytest.raises(DecodeException) as ex:
+    with pytest.raises(JSONDecodeException) as ex:
         json_decode(data, type_)
     assert ex.value.errors == expected_errors
 
@@ -314,7 +314,7 @@ def test_decode_dataclass(data, type_, expected_instance):
     ),
 )
 def test_decode_dataclass_with_errors(data, type_, expected_errors):
-    with pytest.raises(DecodeException) as ex:
+    with pytest.raises(JSONDecodeException) as ex:
         json_decode(data, type_)
     assert ex.value.errors == expected_errors
 
@@ -337,7 +337,7 @@ def test_decode_uuid(data, type_, expected_instance):
     ),
 )
 def test_decode_uuid_with_errors(data, type_, expected_errors):
-    with pytest.raises(DecodeException) as ex:
+    with pytest.raises(JSONDecodeException) as ex:
         json_decode(data, type_)
     assert ex.value.errors == expected_errors
 
@@ -360,7 +360,7 @@ def test_decode_decimal(data, type_, expected_instance):
     ),
 )
 def test_decode_decimal_with_errors(data, type_, expected_errors):
-    with pytest.raises(DecodeException) as ex:
+    with pytest.raises(JSONDecodeException) as ex:
         json_decode(data, type_)
     assert ex.value.errors == expected_errors
 
@@ -372,7 +372,7 @@ def test_decode_decimal_with_errors(data, type_, expected_errors):
     ),
 )
 def test_decode_float_with_errors(data, type_, expected_errors):
-    with pytest.raises(DecodeException) as ex:
+    with pytest.raises(JSONDecodeException) as ex:
         json_decode(data, type_)
     assert ex.value.errors == expected_errors
 
@@ -399,7 +399,7 @@ def test_decode_dict(data, type_, expected_instance):
     ),
 )
 def test_decode_dict_with_errors(data, type_, expected_errors):
-    with pytest.raises(DecodeException) as ex:
+    with pytest.raises(JSONDecodeException) as ex:
         json_decode(data, type_)
     assert ex.value.errors == expected_errors
 
@@ -435,6 +435,6 @@ def test_decode_bool(data, type_, expected_instance):
     ),
 )
 def test_decode_bool_with_errors(data, type_, expected_errors):
-    with pytest.raises(DecodeException) as ex:
+    with pytest.raises(JSONDecodeException) as ex:
         json_decode(data, type_)
     assert ex.value.errors == expected_errors

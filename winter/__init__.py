@@ -85,9 +85,9 @@ def _register_output_processor_resolvers():
 
 def _add_exception_handlers():
     from .web.exception_handlers import DecodeExceptionHandler
-    from winter.core.json.decoder import DecodeException
+    from winter.core.json.decoder import JSONDecodeException
 
-    exception_handlers_registry.add_handler(DecodeException, DecodeExceptionHandler, auto_handle=True)
+    exception_handlers_registry.add_handler(JSONDecodeException, DecodeExceptionHandler, auto_handle=True)
     exception_handlers_registry.add_handler(RedirectException, RedirectExceptionHandler, auto_handle=True)
 
 

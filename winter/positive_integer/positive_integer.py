@@ -1,5 +1,5 @@
 from ..core.json import json_decoder
-from ..core.json import DecodeException
+from ..core.json import JSONDecodeException
 
 
 class PositiveInteger(int):
@@ -16,4 +16,4 @@ def decode_positive_integer(value, type_):
     try:
         return type_(value)
     except (TypeError, ValueError):
-        raise DecodeException.cannot_decode(value=value, type_name='PositiveInteger')
+        raise JSONDecodeException.cannot_decode(value=value, type_name='PositiveInteger')
