@@ -1,4 +1,5 @@
-from .. import converters
+from ..core.json import json_decoder
+from ..core.json import JSONDecodeException
 
 
 class PositiveInteger(int):
@@ -10,9 +11,9 @@ class PositiveInteger(int):
         super().__init__()
 
 
-@converters.converter(PositiveInteger)
-def convert_positive_integer(value, type_):
+@json_decoder(PositiveInteger)
+def decode_positive_integer(value, type_):
     try:
         return type_(value)
     except (TypeError, ValueError):
-        raise converters.ConvertException.cannot_convert(value=value, type_name='PositiveInteger')
+        raise JSONDecodeException.cannot_decode(value=value, type_name='PositiveInteger')
