@@ -3,8 +3,8 @@ from typing import MutableMapping
 from rest_framework.request import Request
 
 from .input_serializer import get_input_serializer
-from ..argument_resolver import ArgumentResolver
 from ..core import ComponentMethodArgument
+from ..web.argument_resolver import ArgumentResolver
 
 
 class DRFBodyArgumentResolver(ArgumentResolver):

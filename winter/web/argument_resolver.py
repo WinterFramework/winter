@@ -11,9 +11,9 @@ from typing import Type
 
 from rest_framework.request import Request
 
-from . import type_utils
-from .core import ComponentMethod
-from .core import ComponentMethodArgument
+from winter import type_utils
+from winter.core import ComponentMethod
+from winter.core import ComponentMethodArgument
 
 
 class ArgumentNotSupported(Exception):

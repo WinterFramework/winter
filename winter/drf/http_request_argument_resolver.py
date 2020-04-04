@@ -3,7 +3,7 @@ from typing import MutableMapping
 
 from rest_framework.request import Request as HttpRequest
 
-from ..argument_resolver import ArgumentResolver
+from winter.web.argument_resolver import ArgumentResolver
 from ..core import ComponentMethodArgument
 
 

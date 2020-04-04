@@ -13,3 +13,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - winter.json_encoder things (e.g. register_encoder) moved to winter.core.json
 - winter.json_renderer.JSONRenderer moved to winter.django.drf.renderers.JSONRenderer
 - winter.converters moved to winter.core.json.decoder
+- argument_resolver, controller, output_processor are now part of winter.web. Import paths are preserved.

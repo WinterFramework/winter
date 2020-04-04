@@ -7,7 +7,7 @@ import pytz
 from rest_framework.test import APIClient
 
 from tests.entities import AuthorizedUser
-from winter.argument_resolver import ArgumentNotSupported
+from winter.web.argument_resolver import ArgumentNotSupported
 from winter.web import ResponseHeader
 
 

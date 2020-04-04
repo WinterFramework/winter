@@ -5,7 +5,7 @@ from rest_framework.request import Request as DRFRequest
 from ..utils import get_next_page_url
 from ..utils import get_previous_page_url
 from ...data.pagination import Page
-from ...output_processor import IOutputProcessor
+from winter.web.output_processor import IOutputProcessor
 
 
 class PageProcessor(IOutputProcessor):

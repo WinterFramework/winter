@@ -4,8 +4,8 @@ import typing
 import dataclasses
 from rest_framework.request import Request as DRFRequest
 
-from .core import ComponentMethod
-from .core import annotate
+from winter.core import ComponentMethod
+from winter.core import annotate
 
 
 class IOutputProcessor(abc.ABC):

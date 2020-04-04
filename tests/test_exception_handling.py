@@ -3,7 +3,7 @@ from http import HTTPStatus
 import pytest
 from rest_framework.test import APIClient
 
-from winter.argument_resolver import ArgumentNotSupported
+from winter.web.argument_resolver import ArgumentNotSupported
 from .controllers.controller_with_exceptions import CustomException
 from .controllers.controller_with_exceptions import ExceptionWithoutHandler
 from .entities import AuthorizedUser

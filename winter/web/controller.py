@@ -1,6 +1,6 @@
 import typing
 
-from .core import Component
+from winter.core import Component
 
 _Controller = typing.TypeVar('_Controller')
 _ControllerType = typing.Type[_Controller]

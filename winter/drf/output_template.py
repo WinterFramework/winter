@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from rest_framework.request import Request
 
-from ..output_processor import IOutputProcessor
-from ..output_processor import register_output_processor
+from winter.web.output_processor import IOutputProcessor
+from winter.web.output_processor import register_output_processor
 
 
 class TemplateRenderer(IOutputProcessor):

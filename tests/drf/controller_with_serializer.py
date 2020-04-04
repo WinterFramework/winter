@@ -1,8 +1,8 @@
 import dataclasses
 from rest_framework import serializers
-from winter import BodyWithContext
 
-import winter
+import winter.drf
+from winter.drf import BodyWithContext
 
 
 @dataclasses.dataclass
@@ -26,12 +26,12 @@ class SerializerWithContext(serializers.Serializer):
 class ControllerWithSerializer:
 
     @winter.route_post('/')
-    @winter.input_serializer(SimpleSerializer, argument_name='input_data')
-    @winter.output_serializer(SimpleSerializer)
+    @winter.drf.input_serializer(SimpleSerializer, argument_name='input_data')
+    @winter.drf.output_serializer(SimpleSerializer)
     def post(self, input_data: dict) -> SimpleDTO:
         return SimpleDTO(input_data['number'] + 1)
 
     @winter.route_get('/with-context/')
-    @winter.output_serializer(SerializerWithContext)
+    @winter.drf.output_serializer(SerializerWithContext)
     def post_back_with_context(self) -> BodyWithContext:
         return BodyWithContext({}, {'additional_data': 123})

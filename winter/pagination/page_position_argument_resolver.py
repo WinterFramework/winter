@@ -9,7 +9,6 @@ from .limits import MaximumLimitValueExceeded
 from .sort.check_sort import check_sort
 from .sort.order_by import OrderByAnnotation
 from .sort.parse_sort import parse_sort
-from ..argument_resolver import ArgumentResolver
 from ..core import ComponentMethod
 from ..core import ComponentMethodArgument
 from ..core.json import json_decode
@@ -17,6 +16,7 @@ from ..data.pagination import PagePosition
 from ..data.pagination import Sort
 from ..exceptions import RedirectException
 from ..positive_integer.positive_integer import PositiveInteger
+from ..web.argument_resolver import ArgumentResolver
 
 
 class PagePositionArgumentResolver(ArgumentResolver):

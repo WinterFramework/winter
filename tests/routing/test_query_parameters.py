@@ -7,11 +7,11 @@ from uritemplate import URITemplate
 
 import winter
 from tests.entities import AuthorizedUser
-from winter.argument_resolver import ArgumentNotSupported
+from tests.utils import get_request
 from winter.core.annotations import AlreadyAnnotated
 from winter.core.json import decoder
 from winter.routing import QueryParameterArgumentResolver
-from tests.utils import get_request
+from winter.web.argument_resolver import ArgumentNotSupported
 
 
 @pytest.mark.parametrize(
