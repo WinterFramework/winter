@@ -7,8 +7,8 @@ from rest_framework.request import Request
 from tests.controllers.controller_with_path_parameters import ControllerWithPathParameters
 from tests.controllers.controller_with_path_parameters import OneTwoEnum
 from tests.controllers.controller_with_path_parameters import OneTwoEnumWithInt
-from winter.argument_resolver import ArgumentNotSupported
-from winter.controller import get_component
+from winter.web.argument_resolver import ArgumentNotSupported
+from winter.web.controller import get_component
 from winter.core import Component
 from winter.routing import PathParametersArgumentResolver
 

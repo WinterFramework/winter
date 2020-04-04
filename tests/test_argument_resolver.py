@@ -3,7 +3,7 @@ from mock import Mock
 
 from winter import ArgumentsResolver
 from winter import GenericArgumentResolver
-from winter.argument_resolver import ArgumentNotSupported
+from winter.web.argument_resolver import ArgumentNotSupported
 from winter.core import ComponentMethod
 from winter.core import ComponentMethodArgument
 

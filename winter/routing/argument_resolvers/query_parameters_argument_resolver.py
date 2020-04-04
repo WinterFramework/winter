@@ -6,8 +6,8 @@ from rest_framework.request import Request
 from ..routing import get_route
 from ... import converters
 from ... import type_utils
-from ...argument_resolver import ArgumentNotSupported
-from ...argument_resolver import ArgumentResolver
+from winter.web.argument_resolver import ArgumentNotSupported
+from winter.web.argument_resolver import ArgumentResolver
 from ...core import ArgumentDoesNotHaveDefault
 from ...core import ComponentMethodArgument
 from ...routing.query_parameters import QueryParameter

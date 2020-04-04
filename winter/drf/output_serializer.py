@@ -8,7 +8,7 @@ from rest_framework.serializers import Serializer
 from .output_processor import DRFOutputProcessor
 from ..core import ComponentMethod
 from ..core import annotate
-from ..output_processor import register_output_processor
+from winter.web.output_processor import register_output_processor
 
 
 @dataclass

@@ -12,13 +12,13 @@ from django.conf.urls import url
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 
-from ..argument_resolver import arguments_resolver
-from ..controller import build_controller
-from ..controller import get_component
+from winter.web.argument_resolver import arguments_resolver
+from winter.web.controller import build_controller
+from winter.web.controller import get_component
 from ..core import ComponentMethod
 from ..drf.auth import is_authentication_needed
 from ..exceptions.handlers import MethodExceptionsManager
-from ..output_processor import get_output_processor
+from winter.web.output_processor import get_output_processor
 from ..routing.routing import Route
 from ..routing.routing import get_route
 from ..web import ResponseEntity

@@ -8,7 +8,7 @@ from uritemplate import URITemplate
 import winter
 from tests.entities import AuthorizedUser
 from winter import converters
-from winter.argument_resolver import ArgumentNotSupported
+from winter.web.argument_resolver import ArgumentNotSupported
 from winter.core.annotations import AlreadyAnnotated
 from winter.routing import QueryParameterArgumentResolver
 from tests.utils import get_request

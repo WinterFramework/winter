@@ -2,8 +2,8 @@ from typing import MutableMapping
 
 from rest_framework.request import Request
 
+from .argument_resolver import ArgumentResolver
 from .request_body_annotation import RequestBodyAnnotation
-from .. import ArgumentResolver
 from .. import converters
 from ..core import ComponentMethodArgument
 

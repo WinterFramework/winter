@@ -2,9 +2,9 @@ from typing import MutableMapping
 
 from rest_framework.request import Request
 
+from .argument_resolver import ArgumentResolver
 from .response_header_annotation import ResponseHeader
 from .response_header_annotation import ResponseHeaderAnnotation
-from .. import ArgumentResolver
 from ..core import ComponentMethodArgument
 from ..type_utils import is_origin_type_subclasses
 

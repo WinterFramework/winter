@@ -3,10 +3,10 @@ from drf_yasg import openapi
 from rest_framework import serializers
 from rest_framework.views import APIView
 
-import winter
-from winter.web import MediaType
+import winter.drf
 from winter.routing import get_route
 from winter.schema.inspectors import SwaggerAutoSchema
+from winter.web import MediaType
 
 
 @dataclasses.dataclass
@@ -49,7 +49,7 @@ class Controller:
         """
         return request_body
 
-    @winter.input_serializer(UserSerializer, argument_name='request_body')
+    @winter.drf.input_serializer(UserSerializer, argument_name='request_body')
     @winter.route_post('with-serializer/')
     def post_with_serializer(self, request_body: UserDTO) -> UserDTO:
         return request_body

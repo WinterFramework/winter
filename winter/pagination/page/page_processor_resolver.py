@@ -2,7 +2,7 @@ import typing
 
 from .page_processor import PageProcessor
 from ...data.pagination import Page
-from ...output_processor import IOutputProcessorResolver
+from winter.web.output_processor import IOutputProcessorResolver
 
 
 class PageOutputProcessorResolver(IOutputProcessorResolver):

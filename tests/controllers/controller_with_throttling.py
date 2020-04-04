@@ -1,8 +1,8 @@
-import winter
+import winter.drf
 
 
 @winter.route_get('with-throttling/')
-@winter.no_authentication
+@winter.drf.no_authentication
 class ControllerWithThrottling:
 
     @winter.route_get()

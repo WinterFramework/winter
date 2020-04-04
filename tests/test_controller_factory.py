@@ -1,5 +1,5 @@
-from winter.controller import build_controller
-from winter.controller import set_controller_factory
+from winter.web.controller import build_controller
+from winter.web.controller import set_controller_factory
 
 
 class App:

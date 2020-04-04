@@ -10,7 +10,7 @@ from .sort.check_sort import check_sort
 from .sort.order_by import OrderByAnnotation
 from .sort.parse_sort import parse_sort
 from .. import converters
-from ..argument_resolver import ArgumentResolver
+from winter.web.argument_resolver import ArgumentResolver
 from ..core import ComponentMethod
 from ..core import ComponentMethodArgument
 from ..data.pagination import PagePosition

@@ -1,8 +1,8 @@
 import pytest
-
-import winter.core
 from rest_framework import serializers
 
+import winter.core
+import winter.drf
 from winter.schema.generation import CanNotInspectReturnType
 from winter.schema.generation import build_response_schema
 
@@ -13,7 +13,7 @@ class UserSerializer(serializers.Serializer):
 
 class Controller:
 
-    @winter.output_serializer(UserSerializer)
+    @winter.drf.output_serializer(UserSerializer)
     def with_output_serializer(self):
         pass
 
