@@ -18,7 +18,7 @@ Item = typing.TypeVar('Item')
 uuid_regexp = re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')
 
 
-class MissingException(Exception):
+class _MissingException(Exception):
     pass
 
 
@@ -120,7 +120,7 @@ def decode_dataclass_field(
         value = _decode_dataclass_field(value, field)
     except JSONDecodeException as e:
         errors[field.name] = e.errors
-    except MissingException:
+    except _MissingException:
         missing_fields.append(field.name)
     else:
         return value
@@ -137,7 +137,7 @@ def _decode_dataclass_field(value, field: dataclasses.Field):
     elif is_optional(field.type):
         return None
     else:
-        raise MissingException
+        raise _MissingException
 
 
 # noinspection PyUnusedLocal
