@@ -24,8 +24,6 @@ class MissingException(Exception):
 
 class JSONDecodeException(Exception):
     NON_FIELD_ERROR = 'non_field_error'
-    MISSING_FIELDS_PATTERN = 'Missing fields: "{missing_fields}"'
-    NOT_IN_ALLOWED_VALUES_PATTERN = 'Value not in allowed values("{allowed_values}"): "{value}"'
 
     def __init__(self, errors: typing.Union[str, typing.Dict]):
         self.errors = errors
@@ -102,9 +100,7 @@ def decode_dataclass(value: typing.Dict[str, typing.Any], type_: typing.Type[Ite
 
     if missing_fields:
         missing_fields = '", "'.join(missing_fields)
-        errors[JSONDecodeException.NON_FIELD_ERROR] = JSONDecodeException.MISSING_FIELDS_PATTERN.format(
-            missing_fields=missing_fields,
-        )
+        errors[JSONDecodeException.NON_FIELD_ERROR] = f'Missing fields: "{missing_fields}"'
     raise_if_errors(errors)
     return type_(**decoded_data)
 
@@ -191,7 +187,10 @@ def decode_enum(value, type_) -> enum.Enum:
         return type_(value)
     except ValueError:
         allowed_values = '", "'.join(map(str, (item.value for item in type_)))
-        errors = JSONDecodeException.NOT_IN_ALLOWED_VALUES_PATTERN.format(value=value, allowed_values=allowed_values)
+        errors = 'Value not in allowed values("{allowed_values}"): "{value}"'.format(
+            value=value,
+            allowed_values=allowed_values,
+        )
         raise JSONDecodeException(errors)
 
 
