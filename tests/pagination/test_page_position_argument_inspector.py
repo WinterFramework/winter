@@ -3,9 +3,9 @@ from drf_yasg import openapi
 
 import winter
 from winter.data.pagination import PagePosition
-from winter.web.pagination import PagePositionArgumentResolver
-from winter.schema import PagePositionArgumentsInspector
 from winter.routing import get_route
+from winter.schema import PagePositionArgumentsInspector
+from winter.web.pagination import PagePositionArgumentResolver
 
 
 @pytest.mark.parametrize(('argument_type', 'must_return_parameters'), (
