@@ -2,8 +2,8 @@ import re
 
 from rest_framework import exceptions
 
-from ...data.pagination import Order
-from ...data.pagination import SortDirection
+from winter.data.pagination import Order
+from winter.data.pagination import SortDirection
 
 _field_pattern = re.compile(r'(-?)(\w+)')
 

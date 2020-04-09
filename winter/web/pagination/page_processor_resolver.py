@@ -1,8 +1,8 @@
 import typing
 
-from .page_processor import PageProcessor
-from ...data.pagination import Page
+from winter.data.pagination import Page
 from winter.web.output_processor import IOutputProcessorResolver
+from .page_processor import PageProcessor
 
 
 class PageOutputProcessorResolver(IOutputProcessorResolver):

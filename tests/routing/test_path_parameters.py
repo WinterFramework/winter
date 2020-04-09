@@ -10,7 +10,7 @@ from tests.controllers.controller_with_path_parameters import OneTwoEnumWithInt
 from winter.web.argument_resolver import ArgumentNotSupported
 from winter.web.controller import get_component
 from winter.core import Component
-from winter.routing import PathParametersArgumentResolver
+from winter.web.path_parameters_argument_resolver import PathParametersArgumentResolver
 
 uuid_ = uuid.uuid4()
 

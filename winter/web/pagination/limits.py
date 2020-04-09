@@ -3,7 +3,7 @@ import warnings
 
 import dataclasses
 
-from ..core import annotate
+from winter.core import annotate
 
 
 class MaximumLimitValueExceeded(Exception):

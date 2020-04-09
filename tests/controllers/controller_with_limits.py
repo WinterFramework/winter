@@ -9,7 +9,7 @@ from winter.data.pagination import PagePosition
 class ControllerWithLimits:
 
     @winter.route_get('')
-    @winter.pagination.limits(default=20, maximum=100, redirect_to_default=True)
+    @winter.web.pagination.limits(default=20, maximum=100, redirect_to_default=True)
     def method(self, page_position: PagePosition) -> Dict[str, Any]:
         return {
             'limit': page_position.limit,

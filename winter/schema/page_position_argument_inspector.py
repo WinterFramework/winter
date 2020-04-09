@@ -2,13 +2,13 @@ import typing
 
 from drf_yasg import openapi
 
-from .page_position_argument_resolver import PagePositionArgumentResolver
-from .sort.order_by import OrderByAnnotation
-from ..data.pagination import PagePosition
-from ..schema import MethodArgumentsInspector
+from winter.data.pagination import PagePosition
+from winter.web.pagination.order_by import OrderByAnnotation
+from winter.web.pagination.page_position_argument_resolver import PagePositionArgumentResolver
+from .method_arguments_inspector import MethodArgumentsInspector
 
 if typing.TYPE_CHECKING:
-    from ..routing import Route
+    from winter.routing import Route
 
 
 class PagePositionArgumentsInspector(MethodArgumentsInspector):
