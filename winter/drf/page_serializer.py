@@ -5,9 +5,9 @@ from rest_framework import serializers
 from rest_framework.request import Request as DRFRequest
 from rest_framework.serializers import SerializerMetaclass
 
-from .utils import get_next_page_url
-from .utils import get_previous_page_url
-from ..data.pagination import Page
+from winter.data.pagination import Page
+from winter.web.pagination.utils import get_next_page_url
+from winter.web.pagination.utils import get_previous_page_url
 
 
 class _PageSerializerMeta(SerializerMetaclass):

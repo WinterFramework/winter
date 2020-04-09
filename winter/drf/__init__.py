@@ -7,3 +7,10 @@ from .input_serializer import input_serializer
 from .output_serializer import get_output_serializer
 from .output_serializer import output_serializer
 from .output_template import output_template
+
+
+def setup():
+    from winter.web import arguments_resolver
+
+    arguments_resolver.add_argument_resolver(DRFBodyArgumentResolver())
+    arguments_resolver.add_argument_resolver(HttpRequestArgumentResolver())

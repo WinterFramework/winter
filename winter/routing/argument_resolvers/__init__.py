@@ -1,2 +1,0 @@
-from .path_parameters_argument_resolver import PathParametersArgumentResolver
-from .query_parameters_argument_resolver import QueryParameterArgumentResolver

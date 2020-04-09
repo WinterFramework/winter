@@ -9,7 +9,7 @@ from winter.core import ComponentMethod
 from winter.core.json import decoder
 from winter.data.pagination import PagePosition
 from winter.data.pagination import Sort
-from winter.pagination import PagePositionArgumentResolver
+from winter.web.pagination import PagePositionArgumentResolver
 
 
 @pytest.mark.parametrize(
@@ -64,7 +64,7 @@ def test_resolve_argument_with_order_by_without_order_by_annotation():
     ),
 )
 def test_resolve_argument_ok_in_page_position_argument_resolver(query_string, expected_page_position):
-    @winter.pagination.order_by(['name', 'id', 'email', 'x'])
+    @winter.web.pagination.order_by(['name', 'id', 'email', 'x'])
     def method(page_position: PagePosition):
         return page_position
 
@@ -92,7 +92,7 @@ def test_resolve_argument_ok_in_page_position_argument_resolver_with_default(
     default_sort,
     expected_page_position,
 ):
-    @winter.pagination.order_by(['name', 'id', 'email'], default_sort=default_sort)
+    @winter.web.pagination.order_by(['name', 'id', 'email'], default_sort=default_sort)
     def method(page_position: PagePosition):
         return page_position
 
@@ -125,7 +125,7 @@ def test_resolve_argument_ok_in_page_position_argument_resolver_with_default(
 )
 def test_resolve_argument_fails_in_page_position_argument_resolver(query_string, exception_type, message):
 
-    @winter.pagination.order_by(['id'])
+    @winter.web.pagination.order_by(['id'])
     def method(arg1: int):
         return arg1
 

@@ -3,20 +3,20 @@ import typing
 from furl import furl
 from rest_framework.request import Request
 
-from .limits import Limits
-from .limits import LimitsAnnotation
-from .limits import MaximumLimitValueExceeded
-from .sort.check_sort import check_sort
-from .sort.order_by import OrderByAnnotation
-from .sort.parse_sort import parse_sort
-from ..core import ComponentMethod
-from ..core import ComponentMethodArgument
-from ..core.json import json_decode
-from ..data.pagination import PagePosition
-from ..data.pagination import Sort
-from ..exceptions import RedirectException
-from ..positive_integer.positive_integer import PositiveInteger
-from ..web.argument_resolver import ArgumentResolver
+from winter.core import ComponentMethod
+from winter.core import ComponentMethodArgument
+from winter.core.json import json_decode
+from winter.data.pagination import PagePosition
+from winter.data.pagination import Sort
+from winter.exceptions import RedirectException
+from winter.positive_integer.positive_integer import PositiveInteger
+from winter.web.argument_resolver import ArgumentResolver
+from winter.web.pagination.check_sort import check_sort
+from winter.web.pagination.limits import Limits
+from winter.web.pagination.limits import LimitsAnnotation
+from winter.web.pagination.limits import MaximumLimitValueExceeded
+from winter.web.pagination.order_by import OrderByAnnotation
+from winter.web.pagination.parse_sort import parse_sort
 
 
 class PagePositionArgumentResolver(ArgumentResolver):

@@ -2,8 +2,8 @@ import typing
 
 from drf_yasg import openapi
 
-from ...schema.type_inspection import TypeInfo
-from ...schema.type_inspection import inspect_type
+from .type_inspection import TypeInfo
+from .type_inspection import inspect_type
 
 
 def inspect_page(hint_class) -> TypeInfo:
