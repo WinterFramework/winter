@@ -22,10 +22,7 @@ def setup():
     from winter.exceptions.handlers import exception_handlers_registry
     from winter.exceptions import RedirectException
     from .exception_handlers import BadRequestExceptionHandler
-    from .exception_handlers import DecodeExceptionHandler
     from .exception_handlers import RedirectExceptionHandler
-    from .request_body_resolver import RequestBodyArgumentResolver
-    from .response_header_resolver import ResponseHeaderArgumentResolver
     from .path_parameters_argument_resolver import PathParametersArgumentResolver
     from .query_parameters_argument_resolver import QueryParameterArgumentResolver
     from .response_header_serializers import DateTimeResponseHeaderSerializer
