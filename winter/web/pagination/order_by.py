@@ -1,9 +1,9 @@
 import typing
 
+from winter.core.annotation_decorator import annotate_method
 from .check_sort import check_sort
 from .order_by_annotation import OrderByAnnotation
 from .parse_sort import parse_sort
-from ...core.annotation_decorator import annotate_method
 
 
 def order_by(allowed_fields: typing.Iterable[str], default_sort: typing.Tuple[str] = None):

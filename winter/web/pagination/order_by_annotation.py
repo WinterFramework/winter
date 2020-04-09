@@ -2,7 +2,7 @@ import typing
 
 import dataclasses
 
-from ...data.pagination import Sort
+from winter.data.pagination import Sort
 
 
 @dataclasses.dataclass

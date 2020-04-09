@@ -3,10 +3,10 @@ from typing import MutableMapping
 from django.urls import get_resolver
 from rest_framework.request import Request
 
-from ..routing import get_route
-from winter.web.argument_resolver import ArgumentNotSupported
-from winter.web.argument_resolver import ArgumentResolver
-from ...core import ComponentMethodArgument
+from winter.core import ComponentMethodArgument
+from winter.routing.routing import get_route
+from .argument_resolver import ArgumentNotSupported
+from .argument_resolver import ArgumentResolver
 
 
 class PathParametersArgumentResolver(ArgumentResolver):

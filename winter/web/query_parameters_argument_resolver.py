@@ -3,15 +3,15 @@ from typing import Optional
 
 from rest_framework.request import Request
 
-from ..routing import get_route
-from ... import type_utils
-from winter.web.argument_resolver import ArgumentNotSupported
-from winter.web.argument_resolver import ArgumentResolver
-from ...core import ArgumentDoesNotHaveDefault
-from ...core import ComponentMethodArgument
-from ...core.json import JSONDecodeException
-from ...core.json import json_decode
-from ...routing.query_parameters import QueryParameter
+from winter import type_utils
+from winter.core import ArgumentDoesNotHaveDefault
+from winter.core import ComponentMethodArgument
+from winter.core.json import JSONDecodeException
+from winter.core.json import json_decode
+from winter.routing.query_parameters import QueryParameter
+from winter.routing.routing import get_route
+from .argument_resolver import ArgumentNotSupported
+from .argument_resolver import ArgumentResolver
 
 
 class QueryParameterArgumentResolver(ArgumentResolver):

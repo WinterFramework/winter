@@ -3,9 +3,9 @@ from drf_yasg import openapi
 
 import winter
 from winter.data.pagination import PagePosition
-from winter.pagination import PagePositionArgumentResolver
-from winter.pagination import PagePositionArgumentsInspector
 from winter.routing import get_route
+from winter.schema import PagePositionArgumentsInspector
+from winter.web.pagination import PagePositionArgumentResolver
 
 
 @pytest.mark.parametrize(('argument_type', 'must_return_parameters'), (
@@ -43,7 +43,7 @@ def test_page_position_argument_inspector_with_allowed_order_by_fields(default_s
 
     class SimpleController:
         @winter.route_get('')
-        @winter.pagination.order_by(['id'], default_sort=default_sort)
+        @winter.web.pagination.order_by(['id'], default_sort=default_sort)
         def method(self, arg1: PagePosition):
             return arg1
 

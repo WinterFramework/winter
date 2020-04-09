@@ -4,7 +4,7 @@ from rest_framework.request import Request as DRFRequest
 from rest_framework.utils.urls import remove_query_param
 from rest_framework.utils.urls import replace_query_param
 
-from ..data.pagination import Page
+from winter.data.pagination import Page
 
 
 def get_previous_page_url(page: Page, request: DRFRequest) -> Optional[str]:
