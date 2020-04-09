@@ -14,6 +14,7 @@ from rest_framework.request import Request
 
 from ..core import ComponentMethod
 from ..drf.auth import is_authentication_needed
+from ..exceptions.exceptions import ThrottleException
 from ..exceptions.handlers import MethodExceptionsManager
 from ..routing.routing import Route
 from ..routing.routing import get_route
@@ -23,7 +24,7 @@ from ..web.controller import build_controller
 from ..web.controller import get_component
 from ..web.default_response_status import get_default_response_status
 from ..web.output_processor import get_output_processor
-from ..web.throttling import create_throttle_classes
+from ..web.throttling import create_throttle_class
 from ..web.urls import rewrite_uritemplate_with_regexps
 
 
@@ -52,7 +53,7 @@ def _create_django_view(controller_class, component, routes: List[Route]):
     class WinterView(rest_framework.views.APIView):
         authentication_classes = (SessionAuthentication,)
         permission_classes = (IsAuthenticated,) if is_authentication_needed(component) else ()
-        throttle_classes = create_throttle_classes(routes)
+        # throttle_classes = create_throttle_classes(routes)
 
     # It's useful for New Relic APM
     WinterView.__module__ = controller_class.__module__
@@ -81,7 +82,11 @@ def _call_controller_method(controller, route: Route, request: Request):
     method = route.method
     method_exceptions_manager = MethodExceptionsManager(method)
     response_headers = {}
+    throttle_class = create_throttle_class(route)
     try:
+        if throttle_class and not throttle_class.allow_request(request):
+            raise ThrottleException()
+
         arguments = arguments_resolver.resolve_arguments(method, request, response_headers)
         result = method(controller, **arguments)
     except method_exceptions_manager.exception_classes as exception:

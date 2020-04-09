@@ -28,31 +28,31 @@ def throttling(rate: typing.Optional[str], scope: typing.Optional[str] = None):
     return annotate_method(ThrottlingAnnotation(rate, scope), single=True)
 
 
-class BaseRateThrottle(BaseThrottle):
-    throttling_by_http_method: typing.Dict[str, Throttling] = {}
+class BaseRateThrottle:
     cache = default_cache
     cache_format = 'throttle_{scope}_{ident}'
 
-    def allow_request(self, request, view) -> bool:
-        throttling_ = self._get_throttling(request)
+    def __init__(self, throttling_: Throttling):
+        self.throttling_ = throttling_
 
-        if throttling_ is None:
+    def allow_request(self, request) -> bool:
+        if self.throttling_ is None:
             return True
 
         ident = self.get_ident(request)
-        key = self._get_cache_key(throttling_.scope, ident)
+        key = self._get_cache_key(self.throttling_.scope, ident)
 
         history = self.cache.get(key, [])
         now = time.time()
 
-        while history and history[-1] <= now - throttling_.duration:
+        while history and history[-1] <= now - self.throttling_.duration:
             history.pop()
 
-        if len(history) >= throttling_.num_requests:
+        if len(history) >= self.throttling_.num_requests:
             return False
 
         history.insert(0, now)
-        self.cache.set(key, history, throttling_.duration)
+        self.cache.set(key, history, self.throttling_.duration)
         return True
 
     def _get_cache_key(self, scope: str, ident: str) -> str:
@@ -63,10 +63,18 @@ class BaseRateThrottle(BaseThrottle):
 
         if user_pk is not None:
             return str(user_pk)
-        return super().get_ident(request)
+        return self.get_ident_from_meta(request)
 
-    def _get_throttling(self, request) -> typing.Optional[Throttling]:
-        return self.throttling_by_http_method.get(request.method.lower())
+    def get_ident_from_meta(self, request):
+        """
+        Identify the machine making the request by parsing HTTP_X_FORWARDED_FOR
+        if present. If not use all of HTTP_X_FORWARDED_FOR if it is available,
+        if not use REMOTE_ADDR.
+        """
+        xff = request.META.get('HTTP_X_FORWARDED_FOR')
+        remote_addr = request.META.get('REMOTE_ADDR')
+
+        return ''.join(xff.split()) if xff else remote_addr
 
 
 def _parse_rate(rate: str) -> typing.Tuple[int, int]:
@@ -80,22 +88,14 @@ def _parse_rate(rate: str) -> typing.Tuple[int, int]:
     return num_requests, duration
 
 
-def create_throttle_classes(routes: typing.List['Route']) -> typing.Tuple[typing.Type[BaseRateThrottle], ...]:
-    throttling_by_http_method_: typing.Dict[str, Throttling] = {}
+def create_throttle_class(route: 'Route') -> typing.Optional[BaseRateThrottle]:
+    throttling_annotation = route.method.annotations.get_one_or_none(ThrottlingAnnotation)
 
-    for route in routes:
-        throttling_annotation = route.method.annotations.get_one_or_none(ThrottlingAnnotation)
+    if getattr(throttling_annotation, 'rate', None) is None:
+        return None
 
-        if getattr(throttling_annotation, 'rate', None) is not None:
-            num_requests, duration = _parse_rate(throttling_annotation.rate)
-            throttling_scope = throttling_annotation.scope or route.method.full_name
-            throttling_ = Throttling(num_requests, duration, throttling_scope)
-            throttling_by_http_method_[route.http_method.lower()] = throttling_
+    num_requests, duration = _parse_rate(throttling_annotation.rate)
+    throttling_scope = throttling_annotation.scope or route.method.full_name
+    throttling_ = Throttling(num_requests, duration, throttling_scope)
 
-    if not throttling_by_http_method_:
-        return ()
-
-    class RateThrottle(BaseRateThrottle):
-        throttling_by_http_method = throttling_by_http_method_
-
-    return (RateThrottle,)
+    return BaseRateThrottle(throttling_)

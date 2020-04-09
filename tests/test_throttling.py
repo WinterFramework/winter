@@ -22,11 +22,19 @@ def test_throttling(need_auth):
             response = client.get('/with-throttling/')
             response_from_post = client.post('/with-throttling/')
             response_of_same = client.get('/with-throttling/same/')
+            response_custom_exception = client.get('/with-throttling/custom-handler/')
+
             if 5 < i < 8 or 13 <= i < 15:
-                assert response.status_code == response_of_same.status_code == HTTPStatus.TOO_MANY_REQUESTS, i
+                assert response.status_code == response_of_same.status_code == response_custom_exception.status_code \
+                       == HTTPStatus.TOO_MANY_REQUESTS, i
+                assert response.json() == response_of_same.json() == {'detail': 'Request was throttled.'}, i
+                assert response_custom_exception.json() == 'custom throttle exception', i
             else:
-                assert response.status_code == response_of_same.status_code == HTTPStatus.OK, i
+                assert response.status_code == response_of_same.status_code == response_custom_exception.status_code \
+                       == HTTPStatus.OK, i
+
             assert response_from_post.status_code == HTTPStatus.OK
+
         now += duration
 
 
