@@ -10,8 +10,6 @@ from .output_template import output_template
 
 
 def setup():
-    from . import DRFBodyArgumentResolver
-    from . import HttpRequestArgumentResolver
     from winter.web import arguments_resolver
 
     arguments_resolver.add_argument_resolver(DRFBodyArgumentResolver())

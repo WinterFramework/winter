@@ -14,8 +14,6 @@ def setup():
     from drf_yasg.inspectors.field import hinting_type_info
     from winter.data.pagination import Page
     from .page_inspector import inspect_page
-    from .path_parameters_inspector import PathParametersInspector
-    from .query_parameters_inspector import QueryParametersInspector
 
     hinting_type_info.insert(0, (Enum, inspect_enum_class))
     register_type_inspector(Page, func=inspect_page)
