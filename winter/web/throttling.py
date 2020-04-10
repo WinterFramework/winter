@@ -3,7 +3,7 @@ import typing
 
 import dataclasses
 from django.core.cache import cache as default_cache
-from rest_framework.throttling import BaseThrottle
+from rest_framework.request import Request
 
 from ..core import annotate_method
 
@@ -35,10 +35,7 @@ class BaseRateThrottle:
     def __init__(self, throttling_: Throttling):
         self.throttling_ = throttling_
 
-    def allow_request(self, request) -> bool:
-        if self.throttling_ is None:
-            return True
-
+    def allow_request(self, request: Request) -> bool:
         ident = self.get_ident(request)
         key = self._get_cache_key(self.throttling_.scope, ident)
 
@@ -58,14 +55,14 @@ class BaseRateThrottle:
     def _get_cache_key(self, scope: str, ident: str) -> str:
         return self.cache_format.format(scope=scope, ident=ident)
 
-    def get_ident(self, request) -> str:
+    def get_ident(self, request: Request) -> str:
         user_pk = request.user.pk if request.user.is_authenticated else None
 
         if user_pk is not None:
             return str(user_pk)
         return self.get_ident_from_meta(request)
 
-    def get_ident_from_meta(self, request):
+    def get_ident_from_meta(self, request: Request):
         """
         Identify the machine making the request by parsing HTTP_X_FORWARDED_FOR
         if present. If not use all of HTTP_X_FORWARDED_FOR if it is available,
