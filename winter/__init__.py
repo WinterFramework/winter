@@ -1,4 +1,5 @@
 from .exceptions import RedirectException
+from .exceptions import ThrottleException
 from .exceptions.handlers import ExceptionHandler
 from .exceptions.handlers import exception_handlers_registry
 from .exceptions.throws import throws

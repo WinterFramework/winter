@@ -6,6 +6,7 @@ from .response_header_annotation import response_header
 from .response_status_annotation import response_status
 from .. import ExceptionHandler
 from ..core.json.decoder import JSONDecodeException
+from ..exceptions import ThrottleException
 
 
 class DecodeExceptionHandler(ExceptionHandler):
@@ -25,3 +26,11 @@ class BadRequestExceptionHandler(ExceptionHandler):
     @response_status(HTTPStatus.BAD_REQUEST)
     def handle(self, exception: Exception) -> str:
         return str(exception.args[0])  # stupid Exception implementation (Viva Python!)
+
+
+class ThrottleExceptionHandler(ExceptionHandler):
+    @response_status(HTTPStatus.TOO_MANY_REQUESTS)
+    def handle(self, exception: ThrottleException) -> typing.Dict:
+        return {
+            'detail': 'Request was throttled.',
+        }
