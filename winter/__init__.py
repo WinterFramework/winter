@@ -18,7 +18,6 @@ from .web import response_status
 from .web.argument_resolver import ArgumentResolver
 from .web.argument_resolver import ArgumentsResolver
 from .web.argument_resolver import GenericArgumentResolver
-from .web.argument_resolver import arguments_resolver
 from .web import arguments_resolver
 from .web.output_processor import register_output_processor_resolver
 from .web.response_header_serializer import response_headers_serializer
