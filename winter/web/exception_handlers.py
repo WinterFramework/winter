@@ -1,12 +1,12 @@
 import typing
 from http import HTTPStatus
 
+from winter.core.json.decoder import JSONDecodeException
+from .exceptions import ExceptionHandler
+from .exceptions import ThrottleException
 from .response_header_annotation import ResponseHeader
 from .response_header_annotation import response_header
 from .response_status_annotation import response_status
-from .. import ExceptionHandler
-from ..core.json.decoder import JSONDecodeException
-from ..exceptions import ThrottleException
 
 
 class DecodeExceptionHandler(ExceptionHandler):

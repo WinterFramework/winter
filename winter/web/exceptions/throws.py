@@ -3,8 +3,8 @@ from typing import Type
 
 import dataclasses
 
-from ..core import ComponentMethod
-from ..core import annotate
+from winter.core import ComponentMethod
+from winter.core import annotate
 
 if typing.TYPE_CHECKING:
     from .handlers import ExceptionHandler  # noqa: F401

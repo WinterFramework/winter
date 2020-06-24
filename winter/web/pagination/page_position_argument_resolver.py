@@ -8,7 +8,7 @@ from winter.core import ComponentMethodArgument
 from winter.core.json import json_decode
 from winter.data.pagination import PagePosition
 from winter.data.pagination import Sort
-from winter.exceptions import RedirectException
+from winter.web.exceptions import RedirectException
 from winter.positive_integer.positive_integer import PositiveInteger
 from winter.web.argument_resolver import ArgumentResolver
 from winter.web.pagination.check_sort import check_sort
