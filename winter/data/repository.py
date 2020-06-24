@@ -5,6 +5,8 @@ from typing import Iterable
 from typing import Optional
 from typing import TypeVar
 
+from winter.core.utils.typing import get_generic_args
+
 try:
     from typing import GenericMeta  # python 3.6
 except ImportError:
@@ -19,7 +21,7 @@ K = TypeVar('K')
 class RepositoryGenericMeta(GenericMeta):
     def __init__(cls, name, bases, attr, **kwargs):
         if name not in ('Repository', 'CRUDRepository'):
-            args = attr['__orig_bases__'][0].__args__
+            args = get_generic_args(cls.__orig_bases__[0])
             if not args:
                 return
             if len(args) != 2:

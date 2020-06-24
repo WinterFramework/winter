@@ -1,4 +1,5 @@
 import inspect
+import sys
 from typing import Iterable
 from typing import Union
 
@@ -46,3 +47,12 @@ def get_type_name(type_):
         return type_name
 
     return type(type_).__name__
+
+
+def get_generic_args(type_):
+    if sys.version_info >= (3, 8):
+        from typing import get_args
+        return get_args(type_)
+    if sys.version_info >= (3, 7):
+        return type_.__args__
+    return type_.__args__[0]
