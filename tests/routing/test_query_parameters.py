@@ -1,4 +1,5 @@
-import typing
+from typing import List
+from typing import Optional
 
 import pytest
 from dateutil import parser
@@ -28,8 +29,8 @@ def test_query_parameter_resolver(argument_name, query_string, expected_value):
     @winter.route_get('{?without_default,optional,with_default,array*}')
     def method(
             without_default: int,
-            optional: typing.Optional[str],
-            array: typing.List[int],
+            optional: Optional[str],
+            array: List[int],
             with_default: str = 'default',
     ):
         return without_default, optional, array, with_default

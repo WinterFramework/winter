@@ -11,15 +11,15 @@ from typing import Type
 
 from rest_framework.request import Request
 
-from winter import type_utils
 from winter.core import ComponentMethod
 from winter.core import ComponentMethodArgument
+from winter.core.utils.typing import get_type_name
 
 
 class ArgumentNotSupported(Exception):
 
     def __init__(self, argument: ComponentMethodArgument):
-        type_name = type_utils.get_type_name(argument.type_)
+        type_name = get_type_name(argument.type_)
         super().__init__(f'Unable to resolve argument {argument.name}: {type_name}')
 
 

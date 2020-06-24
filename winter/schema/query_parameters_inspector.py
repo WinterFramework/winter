@@ -1,13 +1,14 @@
-import typing
 from typing import List
+from typing import TYPE_CHECKING
+from typing import Tuple
 
 from drf_yasg import openapi
 
+from winter.core import ComponentMethodArgument
 from .generation import get_argument_info
 from .method_arguments_inspector import MethodArgumentsInspector
-from winter.core import ComponentMethodArgument
 
-if typing.TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:  # pragma: no cover
     from winter.web.routing import Route
 
 
@@ -30,7 +31,7 @@ class QueryParametersInspector(MethodArgumentsInspector):
 
         return parameters
 
-    def _query_arguments(self, route: 'Route') -> typing.List[typing.Tuple[ComponentMethodArgument, str]]:
+    def _query_arguments(self, route: 'Route') -> List[Tuple[ComponentMethodArgument, str]]:
         query_arguments = []
         query_parameters = route.get_query_parameters()
 

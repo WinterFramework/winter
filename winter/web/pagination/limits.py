@@ -1,5 +1,5 @@
-import typing
 import warnings
+from typing import Optional
 
 import dataclasses
 
@@ -13,8 +13,8 @@ class MaximumLimitValueExceeded(Exception):
 
 @dataclasses.dataclass(frozen=True)
 class Limits:
-    default: typing.Optional[int]
-    maximum: typing.Optional[int]
+    default: Optional[int]
+    maximum: Optional[int]
     redirect_to_default: bool
 
     def __post_init__(self):
@@ -31,7 +31,7 @@ class LimitsAnnotation:
     limits: Limits
 
 
-def limits(*, default: typing.Optional[int], maximum: typing.Optional[int], redirect_to_default: bool = False):
+def limits(*, default: Optional[int], maximum: Optional[int], redirect_to_default: bool = False):
     limits_ = Limits(default=default, maximum=maximum, redirect_to_default=redirect_to_default)
     annotation = LimitsAnnotation(limits_)
     return annotate(annotation, single=True)

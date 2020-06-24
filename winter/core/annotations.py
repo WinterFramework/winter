@@ -1,6 +1,9 @@
-import typing
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import TypeVar
 
-AnnotationType = typing.TypeVar('AnnotationType')
+AnnotationType = TypeVar('AnnotationType')
 
 
 class AnnotationException(Exception):
@@ -39,12 +42,12 @@ class AlreadyAnnotated(AnnotationException):
 class Annotations:
 
     def __init__(self):
-        self._data: typing.Dict = {}
+        self._data: Dict = {}
 
-    def get(self, annotation_type: AnnotationType) -> typing.List[AnnotationType]:
+    def get(self, annotation_type: AnnotationType) -> List[AnnotationType]:
         return self._data.get(annotation_type, [])
 
-    def get_one_or_none(self, annotation_type: AnnotationType) -> typing.Optional[AnnotationType]:
+    def get_one_or_none(self, annotation_type: AnnotationType) -> Optional[AnnotationType]:
         annotations = self.get(annotation_type)
 
         count_annotations = len(annotations)

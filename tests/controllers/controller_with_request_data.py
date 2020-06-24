@@ -1,5 +1,6 @@
 import enum
-import typing
+from typing import List
+from typing import Optional
 
 import dataclasses
 
@@ -16,10 +17,10 @@ class Data:
     id: int
     name: str
     is_god: bool
-    optional_status: typing.Optional[Status]
+    optional_status: Optional[Status]
     status: Status
-    items: typing.List[int]
-    optional_items: typing.Optional[typing.List[int]]
+    items: List[int]
+    optional_items: Optional[List[int]]
     with_default: int = 5
 
 
@@ -29,10 +30,10 @@ class ControllerWithRequestData:
 
     @winter.request_body('data')
     @winter.route_post('{?query}')
-    def method(self, query: typing.Optional[str], data: Data) -> Data:
+    def method(self, query: Optional[str], data: Data) -> Data:
         return data
 
     @winter.request_body('data')
     @winter.route_post('many/')
-    def many_method(self, data: typing.List[Data]) -> typing.List[Data]:
+    def many_method(self, data: List[Data]) -> List[Data]:
         return data

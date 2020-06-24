@@ -1,4 +1,5 @@
-import typing
+from typing import List
+from typing import TYPE_CHECKING
 
 from drf_yasg import openapi
 
@@ -7,7 +8,7 @@ from winter.web.pagination.order_by import OrderByAnnotation
 from winter.web.pagination.page_position_argument_resolver import PagePositionArgumentResolver
 from .method_arguments_inspector import MethodArgumentsInspector
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from winter.web.routing import Route
 
 
@@ -29,7 +30,7 @@ class PagePositionArgumentsInspector(MethodArgumentsInspector):
             type=openapi.TYPE_INTEGER,
         )
 
-    def inspect_parameters(self, route: 'Route') -> typing.List[openapi.Parameter]:
+    def inspect_parameters(self, route: 'Route') -> List[openapi.Parameter]:
         parameters = []
         has_page_position_argument = any(argument.type_ == PagePosition for argument in route.method.arguments)
         if not has_page_position_argument:

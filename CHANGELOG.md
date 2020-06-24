@@ -17,3 +17,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - winter.routing moved to winter.web.routing
 - winter.exceptions moved to winter.web.exceptions
 - PositiveInteger moved to winter.code.utils
+- Move type_utils to winter.core.utils.typing

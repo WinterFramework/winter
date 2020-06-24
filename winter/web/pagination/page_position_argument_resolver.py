@@ -1,4 +1,5 @@
-import typing
+from typing import MutableMapping
+from typing import Optional
 
 from furl import furl
 from rest_framework.request import Request
@@ -41,7 +42,7 @@ class PagePositionArgumentResolver(ArgumentResolver):
         self,
         argument: ComponentMethodArgument,
         request: Request,
-        response_headers: typing.MutableMapping[str, str],
+        response_headers: MutableMapping[str, str],
     ) -> PagePosition:
         page_position = self._parse_page_position(argument, request)
         limits = self._get_limits(argument.method)
@@ -73,12 +74,12 @@ class PagePositionArgumentResolver(ArgumentResolver):
         raw_limit = http_request.query_params.get(self.limit_name) or None
         raw_offset = http_request.query_params.get(self.offset_name) or None
         raw_order_by = http_request.query_params.get(self.order_by_name, '')
-        limit = json_decode(raw_limit, typing.Optional[PositiveInteger])
-        offset = json_decode(raw_offset, typing.Optional[PositiveInteger])
+        limit = json_decode(raw_limit, Optional[PositiveInteger])
+        offset = json_decode(raw_offset, Optional[PositiveInteger])
         sort = self._parse_sort_properties(raw_order_by, argument)
         return PagePosition(limit=limit, offset=offset, sort=sort)
 
-    def _parse_sort_properties(self, raw_param_value: str, argument: ComponentMethodArgument) -> typing.Optional[Sort]:
+    def _parse_sort_properties(self, raw_param_value: str, argument: ComponentMethodArgument) -> Optional[Sort]:
         sort = parse_sort(raw_param_value)
         order_by_annotation = argument.method.annotations.get_one_or_none(OrderByAnnotation)
 

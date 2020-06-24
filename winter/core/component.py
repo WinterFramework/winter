@@ -1,19 +1,23 @@
 import inspect
-import typing
+from typing import Dict
+from typing import Mapping
+from typing import Optional
+from typing import TYPE_CHECKING
+from typing import Type
 
 from .annotations import Annotations
 
-if typing.TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:  # pragma: no cover
     from .component_method import ComponentMethod
 
 
 class Component:
     _components = {}
 
-    def __init__(self, component_cls: typing.Type):
+    def __init__(self, component_cls: Type):
         self.component_cls = component_cls
         self.annotations = Annotations()
-        self._methods: typing.Dict[str, 'ComponentMethod'] = {}
+        self._methods: Dict[str, 'ComponentMethod'] = {}
 
     def __repr__(self):
         return str(self)
@@ -25,7 +29,7 @@ class Component:
     def methods(self):
         return self._methods.values()
 
-    def get_method(self, name: str) -> typing.Optional['ComponentMethod']:
+    def get_method(self, name: str) -> Optional['ComponentMethod']:
         return self._methods.get(name)
 
     def add_method(self, method: 'ComponentMethod'):
@@ -34,7 +38,7 @@ class Component:
         self._methods[method_name] = method
 
     @classmethod
-    def register(cls, cls_: typing.Type) -> 'Component':
+    def register(cls, cls_: Type) -> 'Component':
         if not inspect.isclass(cls_):
             cls._raise_invalid_class(cls_)
         instance = cls._components.get(cls_)
@@ -43,7 +47,7 @@ class Component:
         return instance
 
     @classmethod
-    def get_all(cls) -> typing.Mapping:
+    def get_all(cls) -> Mapping:
         return cls._components
 
     @classmethod
@@ -60,11 +64,11 @@ class Component:
         raise ValueError(f'Need class. Got: {cls_}')
 
 
-def is_component(cls: typing.Type) -> bool:
+def is_component(cls: Type) -> bool:
     return cls in Component.get_all()
 
 
-def component(cls: typing.Type) -> typing.Type:
+def component(cls: Type) -> Type:
     if not inspect.isclass(cls):
         raise ValueError(f'Need class. Given: {cls}')
     Component.register(cls)

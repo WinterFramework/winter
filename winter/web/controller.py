@@ -1,11 +1,15 @@
-import typing
+from typing import Callable
+from typing import NewType
+from typing import Optional
+from typing import Type
+from typing import TypeVar
 
 from winter.core import Component
 
-_Controller = typing.TypeVar('_Controller')
-_ControllerType = typing.Type[_Controller]
-ControllerFactory = typing.NewType('ControllerFactory', typing.Callable[[typing.Type], object])
-_controller_factory: typing.Optional[ControllerFactory] = None
+_Controller = TypeVar('_Controller')
+_ControllerType = Type[_Controller]
+ControllerFactory = NewType('ControllerFactory', Callable[[Type], object])
+_controller_factory: Optional[ControllerFactory] = None
 
 
 def controller(controller_class: _ControllerType) -> _ControllerType:
