@@ -1,6 +1,6 @@
 import enum
 import itertools
-import typing
+from typing import Tuple
 
 import dataclasses
 
@@ -21,7 +21,7 @@ class Order:
 
 @dataclasses.dataclass(frozen=True, init=False, repr=False)
 class Sort:
-    orders: typing.Tuple[Order]
+    orders: Tuple[Order]
 
     def __init__(self, *orders: Order):
         object.__setattr__(self, 'orders', orders)

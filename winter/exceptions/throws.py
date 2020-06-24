@@ -1,22 +1,24 @@
-import typing
+from typing import Dict
+from typing import Optional
+from typing import TYPE_CHECKING
 from typing import Type
 
 import dataclasses
 
-from ..core import ComponentMethod
-from ..core import annotate
+from winter.core import ComponentMethod
+from winter.core import annotate
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from .handlers import ExceptionHandler  # noqa: F401
 
 
 @dataclasses.dataclass
 class ExceptionAnnotation:
-    exception_cls: typing.Type[Exception]
-    handler: typing.Optional['ExceptionHandler'] = None
+    exception_cls: Type[Exception]
+    handler: Optional['ExceptionHandler'] = None
 
 
-def throws(exception_cls: Type[Exception], handler_cls: typing.Optional[typing.Type['ExceptionHandler']] = None):
+def throws(exception_cls: Type[Exception], handler_cls: Optional[Type['ExceptionHandler']] = None):
     """Decorator to use on methods."""
     if handler_cls is not None:
         handler = handler_cls()
@@ -26,6 +28,6 @@ def throws(exception_cls: Type[Exception], handler_cls: typing.Optional[typing.T
     return annotate(ExceptionAnnotation(exception_cls, handler), unique=True)
 
 
-def get_throws(method: ComponentMethod) -> typing.Dict[typing.Type[Exception], 'ExceptionHandler']:
+def get_throws(method: ComponentMethod) -> Dict[Type[Exception], 'ExceptionHandler']:
     annotations = method.annotations.get(ExceptionAnnotation)
     return {annotation.exception_cls: annotation.handler for annotation in annotations}

@@ -1,4 +1,5 @@
-import typing
+from typing import List
+from typing import Optional
 
 from drf_yasg import openapi
 from drf_yasg.inspectors import SwaggerAutoSchema as SwaggerAutoSchemaBase
@@ -62,7 +63,7 @@ class SwaggerAutoSchema(SwaggerAutoSchemaBase):
             return self.get_produces()
         return [str(media_type) for media_type in route_annotation.produces]
 
-    def _get_request_body_parameters(self, route: Route) -> typing.List[openapi.Parameter]:
+    def _get_request_body_parameters(self, route: Route) -> List[openapi.Parameter]:
         method = route.method
         input_serializer = method.annotations.get_one_or_none(InputSerializer)
         if input_serializer is not None:
@@ -79,7 +80,7 @@ class SwaggerAutoSchema(SwaggerAutoSchemaBase):
             return [openapi.Parameter(name='data', in_=openapi.IN_BODY, required=True, schema=schema)]
         return []
 
-    def _get_route(self) -> typing.Optional[Route]:
+    def _get_route(self) -> Optional[Route]:
         view_cls = type(self.view)
         func = getattr(view_cls, self.method.lower(), None)
         return getattr(func, 'route', None)

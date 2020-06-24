@@ -8,12 +8,12 @@ from typing import Tuple
 from typing import Union
 
 import pytest
-from winter.type_utils import get_origin_type
-from winter.type_utils import get_type_name
-from winter.type_utils import is_iterable
-from winter.type_utils import is_optional
-from winter.type_utils import is_origin_type_subclasses
-from winter.type_utils import is_union
+from winter.core.utils.typing import get_origin_type
+from winter.core.utils.typing import get_type_name
+from winter.core.utils.typing import is_iterable_type
+from winter.core.utils.typing import is_optional
+from winter.core.utils.typing import is_origin_type_subclasses
+from winter.core.utils.typing import is_union
 
 
 @pytest.mark.parametrize(
@@ -26,8 +26,8 @@ from winter.type_utils import is_union
         (Union[List, str], False),
     ],
 )
-def test_is_iterable(typing_for_check, expected):
-    assert is_iterable(typing_for_check) == expected
+def test_is_iterable_type(typing_for_check, expected):
+    assert is_iterable_type(typing_for_check) == expected
 
 
 @pytest.mark.parametrize(

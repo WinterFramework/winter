@@ -1,27 +1,32 @@
-import dataclasses
 import datetime
 import decimal
 import enum
 import inspect
 import types
-import typing
 import uuid
 from collections import OrderedDict
 from collections.abc import Iterable
+from typing import Callable
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Tuple
+from typing import Type
 
+import dataclasses
 from drf_yasg import openapi
 
 from winter.core.utils import has_nested_type
-from winter.type_utils import get_origin_type
-from winter.type_utils import is_optional
+from winter.core.utils.typing import get_origin_type
+from winter.core.utils.typing import is_optional
 
-_inspectors_by_type: typing.Dict[
-    typing.Type,
-    typing.List[typing.Tuple[typing.Callable, typing.Optional[typing.Callable]]],
+_inspectors_by_type: Dict[
+    Type,
+    List[Tuple[Callable, Optional[Callable]]],
 ] = {}
 
 
-def register_type_inspector(*types_: typing.Type, checker: typing.Callable = None, func: typing.Callable = None):
+def register_type_inspector(*types_: Type, checker: Callable = None, func: Callable = None):
     if func is None:
         return lambda func: register_type_inspector(*types_, checker=checker, func=func)
 
@@ -43,11 +48,11 @@ class InspectorNotFound(Exception):
 @dataclasses.dataclass
 class TypeInfo:
     type_: str
-    format_: typing.Optional[str] = None
-    child: typing.Optional['TypeInfo'] = None
+    format_: Optional[str] = None
+    child: Optional['TypeInfo'] = None
     nullable: bool = False
-    properties: typing.Dict[str, 'TypeInfo'] = dataclasses.field(default_factory=OrderedDict)
-    enum: typing.Optional[list] = None
+    properties: Dict[str, 'TypeInfo'] = dataclasses.field(default_factory=OrderedDict)
+    enum: Optional[list] = None
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
@@ -151,7 +156,7 @@ def inspect_iterable(hint_class) -> TypeInfo:
 
 
 @register_type_inspector(enum.IntEnum, enum.Enum)
-def inspect_enum(enum_class: typing.Type[enum.Enum]) -> TypeInfo:
+def inspect_enum(enum_class: Type[enum.Enum]) -> TypeInfo:
     enum_values = [entry.value for entry in enum_class]
     # Try to infer type based on enum values
     enum_value_types = {type(v) for v in enum_values}
@@ -215,8 +220,8 @@ def inspect_type(hint_class) -> TypeInfo:
 
 def _inspect_type(
     hint_class,
-    inspectors: typing.List[typing.Tuple[typing.Callable, typing.Optional[typing.Callable]]],
-) -> typing.Optional[TypeInfo]:
+    inspectors: List[Tuple[Callable, Optional[Callable]]],
+) -> Optional[TypeInfo]:
     for inspector, checker in inspectors:
         if checker is None or checker(hint_class):
             return inspector(hint_class)

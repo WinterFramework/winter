@@ -1,12 +1,13 @@
-import typing
+from typing import FrozenSet
+from typing import TYPE_CHECKING
 
 from rest_framework import exceptions
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from winter.data.pagination import Sort
 
 
-def check_sort(sort: 'Sort', allowed_fields: typing.FrozenSet[str]):
+def check_sort(sort: 'Sort', allowed_fields: FrozenSet[str]):
     not_allowed_fields = [
         order.field
         for order in sort.orders

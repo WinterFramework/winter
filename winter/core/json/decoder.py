@@ -3,18 +3,27 @@ import decimal
 import enum
 import inspect
 import re
-import typing
 import uuid
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import Iterable
+from typing import List
+from typing import Mapping
+from typing import Optional
+from typing import Type
+from typing import TypeVar
+from typing import Union
 
 import dataclasses
 from dateutil import parser
 
-from winter.type_utils import get_origin_type
-from winter.type_utils import is_optional
+from winter.core.utils.typing import get_origin_type
+from winter.core.utils.typing import is_optional
 
 _decoders = {}
 
-Item = typing.TypeVar('Item')
+Item = TypeVar('Item')
 uuid_regexp = re.compile(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')
 
 
@@ -25,11 +34,11 @@ class _MissingException(Exception):
 class JSONDecodeException(Exception):
     NON_FIELD_ERROR = 'non_field_error'
 
-    def __init__(self, errors: typing.Union[str, typing.Dict]):
+    def __init__(self, errors: Union[str, Dict]):
         self.errors = errors
 
     @classmethod
-    def invalid_type(cls, value: typing.Any, type_name: typing.Optional[str] = None) -> 'JSONDecodeException':
+    def invalid_type(cls, value: Any, type_name: Optional[str] = None) -> 'JSONDecodeException':
         if type_name:
             error = 'Invalid type. Need: "{type_name}". Got: "{value}"'.format(value=value, type_name=type_name)
         else:
@@ -40,12 +49,12 @@ class JSONDecodeException(Exception):
         return cls(errors)
 
     @classmethod
-    def cannot_decode(cls, value: typing.Any, type_name: str) -> 'JSONDecodeException':
+    def cannot_decode(cls, value: Any, type_name: str) -> 'JSONDecodeException':
         errors = 'Cannot decode "{value}" to {type_name}'.format(value=value, type_name=type_name)
         return cls(errors)
 
 
-def json_decoder(type_: typing.Type, validator: typing.Callable = None):
+def json_decoder(type_: Type, validator: Callable = None):
     def wrapper(func):
         decoders = _decoders.setdefault(type_, [])
         decoders.append((func, validator))
@@ -54,7 +63,7 @@ def json_decoder(type_: typing.Type, validator: typing.Callable = None):
     return wrapper
 
 
-def json_decode(value, hint_class: typing.Type[Item]) -> Item:
+def json_decode(value, hint_class: Type[Item]) -> Item:
     origin_type = get_origin_type(hint_class)
 
     types_ = origin_type.mro() if inspect.isclass(origin_type) else type(origin_type).mro()
@@ -66,7 +75,7 @@ def json_decode(value, hint_class: typing.Type[Item]) -> Item:
     raise JSONDecodeException.invalid_type(value)
 
 
-def _json_decode(value, hint_class: typing.Type[Item], type_: typing.Type) -> typing.Optional[Item]:
+def _json_decode(value, hint_class: Type[Item], type_: Type) -> Optional[Item]:
     decoders = _decoders.get(type_, [])
 
     for decoder_, checker in decoders:
@@ -76,7 +85,7 @@ def _json_decode(value, hint_class: typing.Type[Item], type_: typing.Type) -> ty
 
 
 @json_decoder(object, validator=is_optional)
-def decode_optional(value, type_: typing.Type[Item]) -> Item:
+def decode_optional(value, type_: Type[Item]) -> Item:
     if value is None:
         return None
     type_ = type_.__args__[0]
@@ -84,8 +93,8 @@ def decode_optional(value, type_: typing.Type[Item]) -> Item:
 
 
 @json_decoder(object, validator=dataclasses.is_dataclass)
-def decode_dataclass(value: typing.Dict[str, typing.Any], type_: typing.Type[Item]) -> Item:
-    if not isinstance(value, typing.Mapping):
+def decode_dataclass(value: Dict[str, Any], type_: Type[Item]) -> Item:
+    if not isinstance(value, Mapping):
         raise JSONDecodeException.invalid_type(value, 'object')
 
     errors = {}
@@ -105,7 +114,7 @@ def decode_dataclass(value: typing.Dict[str, typing.Any], type_: typing.Type[Ite
     return type_(**decoded_data)
 
 
-def raise_if_errors(errors: typing.Dict[str, str]):
+def raise_if_errors(errors: Dict[str, str]):
     if errors:
         raise JSONDecodeException(errors)
 
@@ -113,8 +122,8 @@ def raise_if_errors(errors: typing.Dict[str, str]):
 def decode_dataclass_field(
     value,
     field: dataclasses.Field,
-    missing_fields: typing.List[str],
-    errors: typing.Dict[str, str],
+    missing_fields: List[str],
+    errors: Dict[str, str],
 ):
     try:
         value = _decode_dataclass_field(value, field)
@@ -215,9 +224,9 @@ def decode_datetime(value, type_) -> datetime.datetime:
 @json_decoder(list)
 def decode_list(value, type_) -> list:
     child_types = getattr(type_, '__args__', [])
-    child_type = child_types[0] if child_types else typing.Any
+    child_type = child_types[0] if child_types else Any
 
-    if not isinstance(value, typing.Iterable):
+    if not isinstance(value, Iterable):
         raise JSONDecodeException.cannot_decode(value=value, type_name='list')
 
     updated_value = [
@@ -230,9 +239,9 @@ def decode_list(value, type_) -> list:
 @json_decoder(set)
 def decode_set(value, type_) -> set:
     child_types = getattr(type_, '__args__', [])
-    child_type = child_types[0] if child_types else typing.Any
+    child_type = child_types[0] if child_types else Any
 
-    if not isinstance(value, typing.Iterable):
+    if not isinstance(value, Iterable):
         raise JSONDecodeException.cannot_decode(value=value, type_name='set')
 
     try:
@@ -249,9 +258,9 @@ def decode_set(value, type_) -> set:
 @json_decoder(tuple)
 def decode_tuple(value, type_) -> tuple:
     child_types = getattr(type_, '__args__', [])
-    child_type = child_types[0] if child_types else typing.Any
+    child_type = child_types[0] if child_types else Any
 
-    if not isinstance(value, typing.Iterable):
+    if not isinstance(value, Iterable):
         raise JSONDecodeException.cannot_decode(value=value, type_name='list')
 
     updated_value = tuple(
@@ -271,7 +280,7 @@ def decode_dict(value, type_) -> dict:
         return value
 
     # noinspection PyUnresolvedReferences
-    if key_and_value_type == typing.Dict.__args__:
+    if key_and_value_type == Dict.__args__:
         return value
 
     key_type, value_type = key_and_value_type
@@ -298,7 +307,7 @@ def decode_decimal(value, type_) -> decimal.Decimal:
 
 
 # noinspection PyUnusedLocal
-@json_decoder(typing.TypeVar)
-@json_decoder(type(typing.Any), validator=lambda type_: type_ is typing.Any)
-def decode_any(value, type_) -> typing.Any:
+@json_decoder(TypeVar)
+@json_decoder(type(Any), validator=lambda type_: type_ is Any)
+def decode_any(value, type_) -> Any:
     return value

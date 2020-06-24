@@ -1,17 +1,17 @@
-import typing
 from http import HTTPStatus
+from typing import Dict
 
+from winter import ExceptionHandler
+from winter.core.json.decoder import JSONDecodeException
+from winter.exceptions import ThrottleException
 from .response_header_annotation import ResponseHeader
 from .response_header_annotation import response_header
 from .response_status_annotation import response_status
-from .. import ExceptionHandler
-from ..core.json.decoder import JSONDecodeException
-from ..exceptions import ThrottleException
 
 
 class DecodeExceptionHandler(ExceptionHandler):
     @response_status(HTTPStatus.BAD_REQUEST)
-    def handle(self, exception: JSONDecodeException) -> typing.Dict:
+    def handle(self, exception: JSONDecodeException) -> Dict:
         return exception.errors
 
 
@@ -30,7 +30,7 @@ class BadRequestExceptionHandler(ExceptionHandler):
 
 class ThrottleExceptionHandler(ExceptionHandler):
     @response_status(HTTPStatus.TOO_MANY_REQUESTS)
-    def handle(self, exception: ThrottleException) -> typing.Dict:
+    def handle(self, exception: ThrottleException) -> Dict:
         return {
             'detail': 'Request was throttled.',
         }

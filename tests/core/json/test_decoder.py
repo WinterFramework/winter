@@ -1,8 +1,13 @@
 import datetime
 import decimal
 import enum
-import typing
 import uuid
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Set
+from typing import Tuple
 
 import dataclasses
 import pytest
@@ -45,7 +50,7 @@ class Status(enum.Enum):
 
 @dataclasses.dataclass(frozen=True)
 class Contact:
-    phones: typing.Set[int]
+    phones: Set[int]
 
 
 @dataclasses.dataclass(frozen=True)
@@ -54,8 +59,8 @@ class User:
     status: Status
     birthday: datetime.date
     contact: Contact
-    emails: typing.List[str] = dataclasses.field(default_factory=list)
-    created_at: typing.Optional[datetime.datetime] = None
+    emails: List[str] = dataclasses.field(default_factory=list)
+    created_at: Optional[datetime.datetime] = None
     name: str = 'test name'
 
 
@@ -121,8 +126,8 @@ def test_decode(data, expected_instance):
 
 @pytest.mark.parametrize(
     ('data', 'type_', 'expected_instance'), (
-        (['super'], typing.Set[Status], {Status.SUPER}),
-        ([1], typing.Set, {1}),
+        (['super'], Set[Status], {Status.SUPER}),
+        ([1], Set, {1}),
     ),
 )
 def test_decode_set(data, type_, expected_instance):
@@ -132,8 +137,8 @@ def test_decode_set(data, type_, expected_instance):
 
 @pytest.mark.parametrize(
     ('data', 'type_', 'expected_instance'), (
-        (None, typing.Optional[Status], None),
-        ('super', typing.Optional[Status], Status.SUPER),
+        (None, Optional[Status], None),
+        ('super', Optional[Status], Status.SUPER),
     ),
 )
 def test_decode_optional(data, type_, expected_instance):
@@ -145,12 +150,12 @@ def test_decode_optional(data, type_, expected_instance):
     ('data', 'type_', 'expected_errors'), (
         (
             ['invalid_status'],
-            typing.Set[Status],
+            Set[Status],
             'Value not in allowed values("super", "not_super"): "invalid_status"',
         ),
-        (1, typing.Set[Status], 'Cannot decode "1" to set'),
-        (None, typing.Set[Status], 'Cannot decode "None" to set'),
-        ([[]], typing.Set, 'Cannot decode "[[]]" to set'),
+        (1, Set[Status], 'Cannot decode "1" to set'),
+        (None, Set[Status], 'Cannot decode "None" to set'),
+        ([[]], Set, 'Cannot decode "[[]]" to set'),
     ),
 )
 def test_decode_set_with_errors(data, type_, expected_errors):
@@ -161,8 +166,8 @@ def test_decode_set_with_errors(data, type_, expected_errors):
 
 @pytest.mark.parametrize(
     ('data', 'type_', 'expected_instance'), (
-        (['super'], typing.List[Status], [Status.SUPER]),
-        ({1}, typing.List, [1]),
+        (['super'], List[Status], [Status.SUPER]),
+        ({1}, List, [1]),
         ({1}, list, [1]),
     ),
 )
@@ -175,11 +180,11 @@ def test_decode_list(data, type_, expected_instance):
     ('data', 'type_', 'expected_errors'), (
         (
             ['invalid_status'],
-            typing.List[Status],
+            List[Status],
             'Value not in allowed values("super", "not_super"): "invalid_status"',
         ),
-        (1, typing.List[Status], 'Cannot decode "1" to list'),
-        (None, typing.List[Status], 'Cannot decode "None" to list'),
+        (1, List[Status], 'Cannot decode "1" to list'),
+        (None, List[Status], 'Cannot decode "None" to list'),
     ),
 )
 def test_decode_list_with_errors(data, type_, expected_errors):
@@ -202,8 +207,8 @@ def test_decode_string_with_errors(data, type_, expected_errors):
 
 @pytest.mark.parametrize(
     ('data', 'type_', 'expected_instance'), (
-        (['super'], typing.Tuple[Status], (Status.SUPER,)),
-        ({1}, typing.Tuple, (1,)),
+        (['super'], Tuple[Status], (Status.SUPER,)),
+        ({1}, Tuple, (1,)),
         ({1}, tuple, (1,)),
     ),
 )
@@ -216,11 +221,11 @@ def test_decode_tuple(data, type_, expected_instance):
     ('data', 'type_', 'expected_errors'), (
         (
             ['invalid_status'],
-            typing.Tuple[Status],
+            Tuple[Status],
             'Value not in allowed values("super", "not_super"): "invalid_status"',
         ),
-        (1, typing.Tuple[Status], 'Cannot decode "1" to list'),
-        (None, typing.Tuple[Status], 'Cannot decode "None" to list'),
+        (1, Tuple[Status], 'Cannot decode "1" to list'),
+        (None, Tuple[Status], 'Cannot decode "None" to list'),
     ),
 )
 def test_decode_tuple_with_errors(data, type_, expected_errors):
@@ -380,8 +385,8 @@ def test_decode_float_with_errors(data, type_, expected_errors):
 @pytest.mark.parametrize(
     ('data', 'type_', 'expected_instance'), (
         ({'data': 1}, dict, {'data': 1}),
-        ({'data': 1}, typing.Dict, {'data': 1}),
-        ({'1': '1'}, typing.Dict[int, int], {1: 1}),
+        ({'data': 1}, Dict, {'data': 1}),
+        ({'1': '1'}, Dict[int, int], {1: 1}),
     ),
 )
 def test_decode_dict(data, type_, expected_instance):
@@ -392,10 +397,10 @@ def test_decode_dict(data, type_, expected_instance):
 @pytest.mark.parametrize(
     ('data', 'type_', 'expected_errors'), (
         (None, dict, 'Cannot decode "None" to object'),
-        (None, typing.Dict, 'Cannot decode "None" to object'),
+        (None, Dict, 'Cannot decode "None" to object'),
         ('invalid object', dict, 'Cannot decode "invalid object" to object'),
-        ({'data1': 1}, typing.Dict[int, int], 'Cannot decode "data1" to integer'),
-        ({1: 'data2'}, typing.Dict[float, float], 'Cannot decode "data2" to float'),
+        ({'data1': 1}, Dict[int, int], 'Cannot decode "data1" to integer'),
+        ({1: 'data2'}, Dict[float, float], 'Cannot decode "data2" to float'),
     ),
 )
 def test_decode_dict_with_errors(data, type_, expected_errors):
@@ -406,7 +411,7 @@ def test_decode_dict_with_errors(data, type_, expected_errors):
 
 def test_decode_any():
     instance = object()
-    assert json_decode(instance, typing.Any) is instance
+    assert json_decode(instance, Any) is instance
 
 
 @pytest.mark.parametrize(

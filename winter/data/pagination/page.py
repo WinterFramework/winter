@@ -1,17 +1,20 @@
-import typing
+from typing import Generic
+from typing import Iterable
+from typing import Iterator
+from typing import TypeVar
 
 import dataclasses
 
 from .page_position import PagePosition
 
-T = typing.TypeVar('T')
+T = TypeVar('T')
 
 
 @dataclasses.dataclass(frozen=True)
-class Page(typing.Generic[T]):
+class Page(Generic[T]):
     total_count: int
-    items: typing.Iterable[T]
+    items: Iterable[T]
     position: PagePosition
 
-    def __iter__(self) -> typing.Iterator[T]:
+    def __iter__(self) -> Iterator[T]:
         return iter(self.items)

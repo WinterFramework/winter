@@ -1,5 +1,6 @@
 import types
-import typing
+from typing import Mapping
+from typing import Type
 
 from .component import Component
 
@@ -10,10 +11,10 @@ class WinterApplication:
         self._components = {}
 
     @property
-    def components(self) -> typing.Mapping[typing.Type, Component]:
+    def components(self) -> Mapping[Type, Component]:
         return types.MappingProxyType(self._components)
 
-    def add_component(self, cls: typing.Type) -> typing.Type:
+    def add_component(self, cls: Type) -> Type:
         Component.register(cls)
         self._components[cls] = Component.get_by_cls(cls)
         return cls

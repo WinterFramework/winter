@@ -1,4 +1,4 @@
-import typing
+from typing import List
 
 from drf_yasg import openapi
 
@@ -19,5 +19,5 @@ def inspect_page(hint_class) -> TypeInfo:
             'previous': TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_URI, nullable=True),
             'next': TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_URI, nullable=True),
         }),
-        'objects': inspect_type(typing.List[child_class]),
+        'objects': inspect_type(List[child_class]),
     })
