@@ -4,9 +4,9 @@ import typing
 import uritemplate
 from uritemplate import URITemplate
 
-from ..core import ComponentMethod
-from .query_parameters.map_query_parameter_annotation import MapQueryParameterAnnotation
-from .query_parameters.query_parameter import QueryParameter
+from winter.core import ComponentMethod
+from winter.web.query_parameters import MapQueryParameterAnnotation
+from winter.web.query_parameters.query_parameter import QueryParameter
 
 _remove_query_params_regexp = re.compile(r'{\?[^}]*}')
 

@@ -4,7 +4,7 @@ import typing
 from drf_yasg import openapi
 
 if typing.TYPE_CHECKING:
-    from ..routing import Route
+    from winter.web.routing import Route
 
 
 class MethodArgumentsInspector(abc.ABC):
