@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [3.0.0] - 2020-04-10
+## [3.0.0] - 2020-06-30
 
 ### Changed
 - winter.pagination classes (Page, PagePosition, Order, Sort, SortDirection) moved to winter.data.pagination
@@ -14,3 +14,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - winter.json_renderer.JSONRenderer moved to winter.django.drf.renderers.JSONRenderer
 - winter.converters moved to winter.core.json.decoder
 - argument_resolver, controller, output_processor are now part of winter.web. Import paths are preserved.
+- winter.routing moved to winter.web.routing
+- winter.exceptions moved to winter.web.exceptions
+- PositiveInteger moved to winter.code.utils
