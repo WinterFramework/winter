@@ -3,8 +3,8 @@ from rest_framework import serializers
 
 import winter.core
 import winter.drf
-from winter.schema.generation import CanNotInspectReturnType
-from winter.schema.generation import build_response_schema
+from winter_openapi.generation import CanNotInspectReturnType
+from winter_openapi.generation import build_response_schema
 
 
 class UserSerializer(serializers.Serializer):

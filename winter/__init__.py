@@ -20,13 +20,11 @@ from .web.routing import route_put
 
 
 def setup():
-    from . import schema
     from . import web
     from . import drf
 
     web.setup()
     drf.setup()
-    schema.setup()
 
 
 setup()

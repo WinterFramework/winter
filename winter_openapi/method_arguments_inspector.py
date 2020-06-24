@@ -1,11 +1,9 @@
 import abc
 from typing import List
-from typing import TYPE_CHECKING
 
 from drf_yasg import openapi
 
-if TYPE_CHECKING:
-    from winter.web.routing import Route
+from winter.web.routing import Route
 
 
 class MethodArgumentsInspector(abc.ABC):

@@ -1,14 +1,11 @@
 from typing import List
-from typing import TYPE_CHECKING
 
 from drf_yasg import openapi
 
+from winter.core import ComponentMethodArgument
+from winter.web.routing import Route
 from .generation import get_argument_info
 from .method_arguments_inspector import MethodArgumentsInspector
-from winter.core import ComponentMethodArgument
-
-if TYPE_CHECKING:  # pragma: no cover
-    from winter.web.routing import Route
 
 
 class PathParametersInspector(MethodArgumentsInspector):

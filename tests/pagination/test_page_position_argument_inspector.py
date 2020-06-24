@@ -3,7 +3,7 @@ from drf_yasg import openapi
 
 import winter
 from winter.data.pagination import PagePosition
-from winter.schema import PagePositionArgumentsInspector
+from winter_openapi import PagePositionArgumentsInspector
 from winter.web.pagination import PagePositionArgumentResolver
 from winter.web.routing import get_route
 

@@ -1,7 +1,7 @@
 import dataclasses
 
 import winter.core
-from winter.schema.generation import get_schema_title
+from winter_openapi.generation import get_schema_title
 
 DTO = dataclasses.dataclass(type('DTO', (), {
     '__annotations__': {

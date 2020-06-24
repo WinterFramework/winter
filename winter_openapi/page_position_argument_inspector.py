@@ -1,15 +1,12 @@
 from typing import List
-from typing import TYPE_CHECKING
 
 from drf_yasg import openapi
 
 from winter.data.pagination import PagePosition
 from winter.web.pagination.order_by import OrderByAnnotation
 from winter.web.pagination.page_position_argument_resolver import PagePositionArgumentResolver
+from winter.web.routing import Route
 from .method_arguments_inspector import MethodArgumentsInspector
-
-if TYPE_CHECKING:
-    from winter.web.routing import Route
 
 
 class PagePositionArgumentsInspector(MethodArgumentsInspector):

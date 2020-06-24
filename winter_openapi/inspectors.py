@@ -6,13 +6,13 @@ from drf_yasg.inspectors import SwaggerAutoSchema as SwaggerAutoSchemaBase
 from drf_yasg.utils import merge_params
 
 from winter.drf.input_serializer import InputSerializer
-from winter.schema.generation import build_method_parameters
-from winter.schema.generation import get_schema_title
-from winter.schema.type_inspection import inspect_type
 from winter.web.request_body_annotation import RequestBodyAnnotation
 from winter.web.routing import Route
 from winter.web.routing import RouteAnnotation
+from .generation import build_method_parameters
 from .generation import build_responses_schemas
+from .generation import get_schema_title
+from .type_inspection import inspect_type
 
 
 class SwaggerAutoSchema(SwaggerAutoSchemaBase):

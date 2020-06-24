@@ -1,15 +1,12 @@
 from typing import List
-from typing import TYPE_CHECKING
 from typing import Tuple
 
 from drf_yasg import openapi
 
 from winter.core import ComponentMethodArgument
+from winter.web.routing import Route
 from .generation import get_argument_info
 from .method_arguments_inspector import MethodArgumentsInspector
-
-if TYPE_CHECKING:  # pragma: no cover
-    from winter.web.routing import Route
 
 
 class QueryParametersInspector(MethodArgumentsInspector):

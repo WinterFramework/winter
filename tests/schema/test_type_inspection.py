@@ -13,10 +13,10 @@ from drf_yasg import openapi
 
 from winter.core.utils import TypeWrapper
 from winter.data.pagination import Page
-from winter.schema import inspect_enum_class
-from winter.schema.type_inspection import InspectorNotFound
-from winter.schema.type_inspection import TypeInfo
-from winter.schema.type_inspection import inspect_type
+from winter_openapi import inspect_enum_class
+from winter_openapi import InspectorNotFound
+from winter_openapi import TypeInfo
+from winter_openapi import inspect_type
 
 
 class IntegerValueEnum(Enum):
