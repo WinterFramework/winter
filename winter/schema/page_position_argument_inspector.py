@@ -8,7 +8,7 @@ from winter.web.pagination.page_position_argument_resolver import PagePositionAr
 from .method_arguments_inspector import MethodArgumentsInspector
 
 if typing.TYPE_CHECKING:
-    from winter.routing import Route
+    from winter.web.routing import Route
 
 
 class PagePositionArgumentsInspector(MethodArgumentsInspector):

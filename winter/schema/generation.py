@@ -1,22 +1,23 @@
 import inspect
 import typing
-from django.http.response import HttpResponseBase
-from drf_yasg import openapi
 from typing import List
 
+from django.http.response import HttpResponseBase
+from drf_yasg import openapi
+
+from winter import type_utils
+from winter.core import ComponentMethod
+from winter.core import ComponentMethodArgument
+from winter.drf import get_output_serializer
+from winter.exceptions.handlers import MethodExceptionsManager
+from winter.exceptions.handlers import exception_handlers_registry
+from winter.schema.type_inspection import TypeInfo
+from winter.web.default_response_status import get_default_response_status
+from winter.web.routing import Route
 from .method_arguments_inspector import get_method_arguments_inspectors
 from .type_inspection import InspectorNotFound
 from .type_inspection import inspect_type
 from .utils import update_doc_with_invalid_hype_hint
-from .. import type_utils
-from ..core import ComponentMethod
-from ..core import ComponentMethodArgument
-from ..drf import get_output_serializer
-from ..exceptions.handlers import MethodExceptionsManager
-from ..exceptions.handlers import exception_handlers_registry
-from ..web.default_response_status import get_default_response_status
-from ..routing import Route
-from ..schema.type_inspection import TypeInfo
 
 _schema_titles: typing.Dict[str, typing.List] = {}
 

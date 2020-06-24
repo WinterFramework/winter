@@ -5,10 +5,10 @@ from drf_yasg import openapi
 
 from .generation import get_argument_info
 from .method_arguments_inspector import MethodArgumentsInspector
-from ..core import ComponentMethodArgument
+from winter.core import ComponentMethodArgument
 
 if typing.TYPE_CHECKING:  # pragma: no cover
-    from ..routing import Route
+    from winter.web.routing import Route
 
 
 class PathParametersInspector(MethodArgumentsInspector):

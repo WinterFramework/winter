@@ -2,7 +2,7 @@ import uuid
 
 from tests.controllers import ControllerWithPathParameters
 from tests.controllers import SimpleController
-from winter.routing import reverse
+from winter.web.routing import reverse
 
 
 def test_reverse_without_args():
