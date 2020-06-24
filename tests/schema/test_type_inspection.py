@@ -1,16 +1,17 @@
-import dataclasses
 import datetime
 import decimal
-import pytest
 import typing
 import uuid
-from drf_yasg import openapi
 from enum import Enum
 from enum import IntEnum
 from typing import List
 from typing import NewType
 
-from winter.core.types import TypeWrapper
+import dataclasses
+import pytest
+from drf_yasg import openapi
+
+from winter.core.utils import TypeWrapper
 from winter.data.pagination import Page
 from winter.schema import inspect_enum_class
 from winter.schema.type_inspection import InspectorNotFound
