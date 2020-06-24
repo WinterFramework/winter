@@ -17,3 +17,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - winter.routing moved to winter.web.routing
 - winter.exceptions moved to winter.web.exceptions
 - PositiveInteger moved to winter.code.utils
+- Extract winter.schema to winter_openapi (winter_openapi.setup should be called manually now)

@@ -1,7 +1,7 @@
 from drf_yasg import openapi
 
 import winter
-from winter.schema import QueryParametersInspector
+from winter_openapi import QueryParametersInspector
 from winter.web.routing import get_route
 
 

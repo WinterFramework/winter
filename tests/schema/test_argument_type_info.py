@@ -6,7 +6,7 @@ import pytest
 from drf_yasg import openapi
 
 from winter.core import ComponentMethod
-from winter.schema.generation import get_argument_info
+from winter_openapi.generation import get_argument_info
 
 
 class IntegerValueEnum(Enum):

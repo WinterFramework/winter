@@ -25,3 +25,5 @@ def pytest_configure():
         ),
     )
     django.setup()
+    import winter_openapi
+    winter_openapi.setup()

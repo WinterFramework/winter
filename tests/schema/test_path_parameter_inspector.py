@@ -2,7 +2,7 @@ from drf_yasg import openapi
 
 import winter
 from winter.web.routing import get_route
-from winter.schema import PathParametersInspector
+from winter_openapi import PathParametersInspector
 
 
 class ControllerForTestingInspectors:
