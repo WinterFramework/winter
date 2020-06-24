@@ -1,5 +1,6 @@
 from . import pagination
 from .argument_resolver import arguments_resolver
+from .auth import no_authentication
 from .controller import controller
 from .exception_handlers import DecodeExceptionHandler
 from .exceptions import ExceptionHandler

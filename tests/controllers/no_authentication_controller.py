@@ -1,9 +1,9 @@
-import winter.drf
+import winter.web
 
 
 @winter.controller
 @winter.route('winter-no-auth')
-@winter.drf.no_authentication
+@winter.web.no_authentication
 class NoAuthenticationController:
 
     @winter.route_get('/{?name}')

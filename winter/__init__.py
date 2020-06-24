@@ -1,3 +1,4 @@
+from . import web
 from .web import ResponseEntity
 from .web import arguments_resolver
 from .web import controller
@@ -19,12 +20,4 @@ from .web.routing import route_post
 from .web.routing import route_put
 
 
-def setup():
-    from . import web
-    from . import drf
-
-    web.setup()
-    drf.setup()
-
-
-setup()
+web.setup()
