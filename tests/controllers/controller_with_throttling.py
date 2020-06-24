@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-import winter.drf
+import winter.web
 from winter.web import ExceptionHandler
 from winter.web.exceptions import ThrottleException
 
@@ -12,7 +12,7 @@ class CustomThrottleExceptionHandler(ExceptionHandler):
 
 
 @winter.route_get('with-throttling/')
-@winter.drf.no_authentication
+@winter.web.no_authentication
 class ControllerWithThrottling:
 
     @winter.route_get()

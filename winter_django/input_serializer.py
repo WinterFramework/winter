@@ -5,8 +5,8 @@ from typing import Type
 from dataclasses import dataclass
 from rest_framework.serializers import Serializer
 
-from ..core import ComponentMethod
-from ..core import annotate
+from winter.core import ComponentMethod
+from winter.core import annotate
 
 
 @dataclass

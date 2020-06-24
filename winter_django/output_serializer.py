@@ -1,14 +1,14 @@
+from dataclasses import dataclass
 from typing import Dict
 from typing import Optional
 from typing import Type
 
-from dataclasses import dataclass
 from rest_framework.serializers import Serializer
 
-from .output_processor import DRFOutputProcessor
-from ..core import ComponentMethod
-from ..core import annotate
+from winter.core import ComponentMethod
+from winter.core import annotate
 from winter.web.output_processor import register_output_processor
+from .output_processor import DRFOutputProcessor
 
 
 @dataclass

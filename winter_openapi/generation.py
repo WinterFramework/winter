@@ -9,11 +9,11 @@ from drf_yasg import openapi
 from winter.core import ComponentMethod
 from winter.core import ComponentMethodArgument
 from winter.core.utils.typing import get_type_name
-from winter.drf import get_output_serializer
 from winter.web.default_response_status import get_default_response_status
 from winter.web.exceptions import MethodExceptionsManager
 from winter.web.exceptions import exception_handlers_registry
 from winter.web.routing import Route
+from winter_django import get_output_serializer
 from .method_arguments_inspector import get_method_arguments_inspectors
 from .type_inspection import InspectorNotFound
 from .type_inspection import TypeInfo

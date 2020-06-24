@@ -13,9 +13,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 
 from winter.core import ComponentMethod
-from winter.drf.auth import is_authentication_needed
 from winter.web import ResponseEntity
+from winter.web import response_headers_serializer
 from winter.web.argument_resolver import arguments_resolver
+from winter.web.auth import is_authentication_needed
 from winter.web.controller import build_controller
 from winter.web.controller import get_component
 from winter.web.default_response_status import get_default_response_status
@@ -106,8 +107,6 @@ def _call_controller_method(controller, route: Route, request: Request):
 
 
 def _fill_response_headers(response, response_headers):
-    from ..web import response_headers_serializer
-
     for header_name, header_value in response_headers.items():
         response[header_name] = response_headers_serializer.serialize(header_value, header_name)
 
