@@ -38,7 +38,7 @@ def sqla_crud(repository_cls):
 
     class RepositoryImpl(repository_cls):
         """
-        SQLAlchemy implementation for CRUDRepository (persipy)
+        SQLAlchemy implementation for CRUDRepository
         This repository implementation is not thread-safe.
         """
         class RepositoryException(Exception):
