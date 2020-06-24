@@ -8,11 +8,12 @@ import typing
 import uuid
 from collections import OrderedDict
 from collections.abc import Iterable
+
 from drf_yasg import openapi
 
-from ..core.types import has_nested_type
-from ..type_utils import get_origin_type
-from ..type_utils import is_optional
+from winter.core.types import has_nested_type
+from winter.type_utils import get_origin_type
+from winter.type_utils import is_optional
 
 _inspectors_by_type: typing.Dict[
     typing.Type,

@@ -12,20 +12,20 @@ from django.conf.urls import url
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 
-from ..core import ComponentMethod
-from ..drf.auth import is_authentication_needed
-from ..exceptions.exceptions import ThrottleException
-from ..exceptions.handlers import MethodExceptionsManager
+from winter.core import ComponentMethod
+from winter.drf.auth import is_authentication_needed
+from winter.exceptions.exceptions import ThrottleException
+from winter.exceptions.handlers import MethodExceptionsManager
+from winter.web import ResponseEntity
+from winter.web.argument_resolver import arguments_resolver
+from winter.web.controller import build_controller
+from winter.web.controller import get_component
+from winter.web.default_response_status import get_default_response_status
+from winter.web.output_processor import get_output_processor
 from winter.web.routing import Route
 from winter.web.routing import get_route
-from ..web import ResponseEntity
-from ..web.argument_resolver import arguments_resolver
-from ..web.controller import build_controller
-from ..web.controller import get_component
-from ..web.default_response_status import get_default_response_status
-from ..web.output_processor import get_output_processor
-from ..web.throttling import create_throttle_class
-from ..web.urls import rewrite_uritemplate_with_regexps
+from winter.web.throttling import create_throttle_class
+from winter.web.urls import rewrite_uritemplate_with_regexps
 
 
 class SessionAuthentication(rest_framework.authentication.SessionAuthentication):
