@@ -1,10 +1,16 @@
 from abc import abstractmethod
 from typing import Generic
 
-from typing import GenericMeta
 from typing import Iterable
 from typing import Optional
 from typing import TypeVar
+
+try:
+    from typing import GenericMeta  # python 3.6
+except ImportError:
+    # in 3.7, GenericMeta doesn't exist but we don't need it
+    class GenericMeta(type):
+        pass
 
 T = TypeVar('T')
 K = TypeVar('K')
