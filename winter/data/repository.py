@@ -28,7 +28,7 @@ class RepositoryGenericMeta(GenericMeta):
                 raise TypeError(f'Repository class takes exactly 2 generic parameters, {len(args)} were given: {args}')
             cls.__entity_cls__ = args[0]
             cls.__primary_key_type__ = args[1]
-        super(RepositoryGenericMeta, cls).__init__(name, bases, attr, **kwargs)
+        super().__init__(name, bases, attr, **kwargs)
 
 
 class Repository(Generic[T, K], metaclass=RepositoryGenericMeta):
