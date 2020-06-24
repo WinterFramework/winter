@@ -1,6 +1,6 @@
 import dataclasses
 
-import winter
+import winter.web
 
 
 class CustomException(Exception):
@@ -22,26 +22,26 @@ class CustomExceptionDTO:
     message: str
 
 
-class CustomExceptionHandler(winter.ExceptionHandler):
+class CustomExceptionHandler(winter.web.ExceptionHandler):
     @winter.response_status(400)
     def handle(self, exception: CustomException) -> CustomExceptionDTO:
         return CustomExceptionDTO(exception.message)
 
 
-class AnotherExceptionHandler(winter.ExceptionHandler):
+class AnotherExceptionHandler(winter.web.ExceptionHandler):
     @winter.response_status(401)
     def handle(self, exception: CustomException) -> int:
         return 21
 
 
-class WithUnknownArgumentExceptionHandler(winter.ExceptionHandler):
+class WithUnknownArgumentExceptionHandler(winter.web.ExceptionHandler):
     @winter.response_status(400)
     def handle(self, exception: CustomException, unknown_argument: int) -> str:
         return 'Bad Request'
 
 
-winter.exception_handlers_registry.add_handler(CustomException, CustomExceptionHandler)
-winter.exception_handlers_registry.add_handler(WithUnknownArgumentException, WithUnknownArgumentExceptionHandler)
+winter.web.exception_handlers_registry.add_handler(CustomException, CustomExceptionHandler)
+winter.web.exception_handlers_registry.add_handler(WithUnknownArgumentException, WithUnknownArgumentExceptionHandler)
 
 
 class ChildCustomException(CustomException):

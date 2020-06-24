@@ -14,13 +14,13 @@ from rest_framework.request import Request
 
 from winter.core import ComponentMethod
 from winter.drf.auth import is_authentication_needed
-from winter.exceptions.exceptions import ThrottleException
-from winter.exceptions.handlers import MethodExceptionsManager
 from winter.web import ResponseEntity
 from winter.web.argument_resolver import arguments_resolver
 from winter.web.controller import build_controller
 from winter.web.controller import get_component
 from winter.web.default_response_status import get_default_response_status
+from winter.web.exceptions import MethodExceptionsManager
+from winter.web.exceptions import ThrottleException
 from winter.web.output_processor import get_output_processor
 from winter.web.routing import Route
 from winter.web.routing import get_route
