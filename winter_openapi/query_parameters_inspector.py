@@ -1,5 +1,5 @@
-import typing
 from typing import List
+from typing import Tuple
 
 from drf_yasg import openapi
 
@@ -28,7 +28,7 @@ class QueryParametersInspector(MethodArgumentsInspector):
 
         return parameters
 
-    def _query_arguments(self, route: 'Route') -> typing.List[typing.Tuple[ComponentMethodArgument, str]]:
+    def _query_arguments(self, route: 'Route') -> List[Tuple[ComponentMethodArgument, str]]:
         query_arguments = []
         query_parameters = route.get_query_parameters()
 

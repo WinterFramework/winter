@@ -1,7 +1,12 @@
 import inspect
 import types
-import typing
 from types import FunctionType
+from typing import Collection
+from typing import Mapping
+from typing import Optional
+from typing import Type
+from typing import Union
+from typing import get_type_hints
 
 from .annotations import Annotations
 from .component import Component
@@ -12,15 +17,15 @@ from .utils import cached_property
 
 class ComponentMethod:
 
-    def __init__(self, func: typing.Union[FunctionType, 'ComponentMethod']):
+    def __init__(self, func: Union[FunctionType, 'ComponentMethod']):
         self.func = func
         self.name: str = None
         self._component: 'Component' = None
         self.annotations = Annotations()
 
-        self._component_cls: typing.Type = None
+        self._component_cls: Type = None
 
-        type_hints = typing.get_type_hints(func)
+        type_hints = get_type_hints(func)
         self.return_value_type = type_hints.pop('return', None)
         self._arguments = self._build_arguments(type_hints)
 
@@ -32,7 +37,7 @@ class ComponentMethod:
     def __call__(self, *args, **kwargs):
         return self.func(*args, **kwargs)
 
-    def __set_name__(self, owner: typing.Type, name: str):
+    def __set_name__(self, owner: Type, name: str):
         self._component_cls = owner
         self.name = name
 
@@ -63,10 +68,10 @@ class ComponentMethod:
         return f'{self.component.component_cls.__name__}.{self.name}'
 
     @property
-    def arguments(self) -> typing.Collection[ComponentMethodArgument]:
+    def arguments(self) -> Collection[ComponentMethodArgument]:
         return tuple(self._arguments.values())
 
-    def get_argument(self, name: str) -> typing.Optional[ComponentMethodArgument]:
+    def get_argument(self, name: str) -> Optional[ComponentMethodArgument]:
         return self._arguments.get(name)
 
     @cached_property
@@ -77,7 +82,7 @@ class ComponentMethod:
     def signature(self) -> inspect.Signature:
         return inspect.signature(self.func)
 
-    def _build_arguments(self, argument_type_hints: dict) -> typing.Mapping:
+    def _build_arguments(self, argument_type_hints: dict) -> Mapping:
         arguments = {
             arg_name: ComponentMethodArgument(self, arg_name, arg_type)
             for arg_name, arg_type in argument_type_hints.items()
@@ -85,7 +90,7 @@ class ComponentMethod:
         return arguments
 
 
-def component_method(func: typing.Union[types.FunctionType, ComponentMethod]) -> ComponentMethod:
+def component_method(func: Union[types.FunctionType, ComponentMethod]) -> ComponentMethod:
     if isinstance(func, ComponentMethod):
         return func
     return ComponentMethod(func)

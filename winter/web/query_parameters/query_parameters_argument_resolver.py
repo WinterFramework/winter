@@ -3,11 +3,11 @@ from typing import Optional
 
 from rest_framework.request import Request
 
-from winter import type_utils
 from winter.core import ArgumentDoesNotHaveDefault
 from winter.core import ComponentMethodArgument
 from winter.core.json import JSONDecodeException
 from winter.core.json import json_decode
+from winter.core.utils.typing import is_iterable_type
 from .query_parameter import QueryParameter
 from ..argument_resolver import ArgumentNotSupported
 from ..argument_resolver import ArgumentResolver
@@ -38,7 +38,7 @@ class QueryParameterArgumentResolver(ArgumentResolver):
 
         parameter_name = query_parameter.name
         explode = query_parameter.explode
-        is_iterable = type_utils.is_iterable(argument.type_)
+        is_iterable = is_iterable_type(argument.type_)
 
         if parameter_name not in query_parameters:
             try:

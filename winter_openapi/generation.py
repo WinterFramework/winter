@@ -1,13 +1,14 @@
 import inspect
-import typing
+from typing import Any
+from typing import Dict
 from typing import List
 
 from django.http.response import HttpResponseBase
 from drf_yasg import openapi
 
-from winter import type_utils
 from winter.core import ComponentMethod
 from winter.core import ComponentMethodArgument
+from winter.core.utils.typing import get_type_name
 from winter.drf import get_output_serializer
 from winter.web.default_response_status import get_default_response_status
 from winter.web.exceptions import MethodExceptionsManager
@@ -19,7 +20,7 @@ from .type_inspection import TypeInfo
 from .type_inspection import inspect_type
 from .utils import update_doc_with_invalid_hype_hint
 
-_schema_titles: typing.Dict[str, typing.List] = {}
+_schema_titles: Dict[str, List] = {}
 
 
 class CanNotInspectReturnType(Exception):
@@ -27,7 +28,7 @@ class CanNotInspectReturnType(Exception):
     def __init__(
         self,
         method: ComponentMethod,
-        return_type: typing.Any,
+        return_type: Any,
         message: str,
     ):
         self._return_type = return_type
@@ -44,7 +45,7 @@ class CanNotInspectReturnType(Exception):
 
 
 def get_schema_title(argument: ComponentMethodArgument) -> str:
-    title = type_utils.get_type_name(argument.type_)
+    title = get_type_name(argument.type_)
     dtos = _schema_titles.setdefault(title, [])
 
     if argument.type_ not in dtos:

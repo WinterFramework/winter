@@ -1,4 +1,3 @@
-import typing
 from typing import List
 
 from drf_yasg import openapi
@@ -26,7 +25,7 @@ class PathParametersInspector(MethodArgumentsInspector):
 
         return parameters
 
-    def _path_arguments(self, route: 'Route') -> typing.List[ComponentMethodArgument]:
+    def _path_arguments(self, route: 'Route') -> List[ComponentMethodArgument]:
         path_arguments = []
         for path_variable in route.get_path_variables():
             argument = route.method.get_argument(path_variable)

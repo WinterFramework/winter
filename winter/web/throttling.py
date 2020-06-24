@@ -1,20 +1,22 @@
 import time
-import typing
+from typing import Optional
+from typing import TYPE_CHECKING
+from typing import Tuple
 
 import dataclasses
 from django.core.cache import cache as default_cache
 from rest_framework.request import Request
 
-from ..core import annotate_method
+from winter.core import annotate_method
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from .routing import Route  # noqa: F401
 
 
 @dataclasses.dataclass
 class ThrottlingAnnotation:
-    rate: typing.Optional[str]
-    scope: typing.Optional[str]
+    rate: Optional[str]
+    scope: Optional[str]
 
 
 @dataclasses.dataclass
@@ -24,7 +26,7 @@ class Throttling:
     scope: str
 
 
-def throttling(rate: typing.Optional[str], scope: typing.Optional[str] = None):
+def throttling(rate: Optional[str], scope: Optional[str] = None):
     return annotate_method(ThrottlingAnnotation(rate, scope), single=True)
 
 
@@ -74,7 +76,7 @@ class BaseRateThrottle:
         return ''.join(xff.split()) if xff else remote_addr
 
 
-def _parse_rate(rate: str) -> typing.Tuple[int, int]:
+def _parse_rate(rate: str) -> Tuple[int, int]:
     """
     Given the request rate string, return a two tuple of:
     <allowed number of requests>, <period of time in seconds>
@@ -85,7 +87,7 @@ def _parse_rate(rate: str) -> typing.Tuple[int, int]:
     return num_requests, duration
 
 
-def create_throttle_class(route: 'Route') -> typing.Optional[BaseRateThrottle]:
+def create_throttle_class(route: 'Route') -> Optional[BaseRateThrottle]:
     throttling_annotation = route.method.annotations.get_one_or_none(ThrottlingAnnotation)
 
     if getattr(throttling_annotation, 'rate', None) is None:

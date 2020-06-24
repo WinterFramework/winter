@@ -1,5 +1,6 @@
 import re
-import typing
+from typing import List
+from typing import Set
 
 import uritemplate
 from uritemplate import URITemplate
@@ -27,10 +28,10 @@ class Route:
     def url_path(self):
         return _remove_query_params_regexp.sub('', self._url_path_with_query_parameters)
 
-    def get_path_variables(self) -> typing.Set[str]:
+    def get_path_variables(self) -> Set[str]:
         return uritemplate.variables(self.url_path)
 
-    def get_query_parameters(self) -> typing.List[QueryParameter]:
+    def get_query_parameters(self) -> List[QueryParameter]:
         query_parameters = []
         map_query_parameters_annotations = self.method.annotations.get(MapQueryParameterAnnotation)
         map_to_by_names = {

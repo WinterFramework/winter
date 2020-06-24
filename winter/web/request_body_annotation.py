@@ -1,10 +1,10 @@
-import typing
+from typing import List
 
 import dataclasses
 
-from ..core import annotate_method
+from winter.core import annotate_method
 
-ListType = type(typing.List)
+ListType = type(List)
 
 
 @dataclasses.dataclass

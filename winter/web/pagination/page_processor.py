@@ -1,4 +1,4 @@
-import typing
+from typing import Dict
 
 from rest_framework.request import Request as DRFRequest
 
@@ -10,7 +10,7 @@ from .utils import get_previous_page_url
 
 class PageProcessor(IOutputProcessor):
 
-    def process_output(self, output: Page, request: DRFRequest) -> typing.Dict:
+    def process_output(self, output: Page, request: DRFRequest) -> Dict:
         return {
             'meta': {
                 'total_count': output.total_count,

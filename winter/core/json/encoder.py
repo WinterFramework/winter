@@ -4,13 +4,16 @@ import enum
 import inspect
 import json
 import types
-import typing
 import uuid
+from typing import Callable
+from typing import Dict
+from typing import Tuple
+from typing import Type
 
 import dataclasses
 from django.utils.functional import Promise
 
-_encoder_map: typing.Dict[typing.Type, typing.Tuple[typing.Callable, bool]] = {}
+_encoder_map: Dict[Type, Tuple[Callable, bool]] = {}
 
 NoneType = type(None)
 
@@ -36,7 +39,7 @@ class JSONEncoder(json.JSONEncoder):
         return super().default(obj)
 
 
-def register_encoder(func: typing.Callable = None, *, need_recursion: bool = False):
+def register_encoder(func: Callable = None, *, need_recursion: bool = False):
     if func is None:
         return lambda func_: register_encoder(func_, need_recursion=need_recursion)
 

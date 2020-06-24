@@ -1,4 +1,4 @@
-import typing
+from typing import List
 
 from drf_yasg import openapi
 
@@ -27,7 +27,7 @@ class PagePositionArgumentsInspector(MethodArgumentsInspector):
             type=openapi.TYPE_INTEGER,
         )
 
-    def inspect_parameters(self, route: 'Route') -> typing.List[openapi.Parameter]:
+    def inspect_parameters(self, route: 'Route') -> List[openapi.Parameter]:
         parameters = []
         has_page_position_argument = any(argument.type_ == PagePosition for argument in route.method.arguments)
         if not has_page_position_argument:

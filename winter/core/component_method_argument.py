@@ -1,12 +1,14 @@
 import inspect
-import typing
+from typing import Any
+from typing import TYPE_CHECKING
+from typing import Type
 
 import dataclasses
 
 from .utils import cached_property
-from .. import type_utils
+from .utils.typing import is_optional
 
-if typing.TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:  # pragma: no cover
     from .component_method import ComponentMethod
 
 
@@ -23,16 +25,16 @@ class ArgumentDoesNotHaveDefault(Exception):
 class ComponentMethodArgument:
     method: 'ComponentMethod'
     name: str
-    type_: typing.Type
+    type_: Type
 
     @cached_property
     def parameter(self) -> inspect.Parameter:
         return self.method.signature.parameters[self.name]
 
-    def get_default(self, default=inspect.Parameter.empty) -> typing.Any:
+    def get_default(self, default=inspect.Parameter.empty) -> Any:
         if self.parameter.default is not inspect.Parameter.empty:
             return self.parameter.default
-        if type_utils.is_optional(self.type_):
+        if is_optional(self.type_):
             return None
         if default is not inspect.Parameter.empty:
             return default
@@ -44,4 +46,4 @@ class ComponentMethodArgument:
 
     @property
     def required(self) -> bool:
-        return self.parameter.default is inspect.Parameter.empty and not type_utils.is_optional(self.type_)
+        return self.parameter.default is inspect.Parameter.empty and not is_optional(self.type_)

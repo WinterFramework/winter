@@ -1,11 +1,11 @@
 import datetime
 import decimal
-import typing
 import uuid
 from enum import Enum
 from enum import IntEnum
 from typing import List
 from typing import NewType
+from typing import Optional
 
 import dataclasses
 import pytest
@@ -68,7 +68,7 @@ class DataclassWrapper(TypeWrapper):
     (dict, TypeInfo(openapi.TYPE_OBJECT)),
     (float, TypeInfo(openapi.TYPE_NUMBER)),
     (decimal.Decimal, TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_DECIMAL)),
-    (typing.Optional[int], TypeInfo(openapi.TYPE_INTEGER, nullable=True)),
+    (Optional[int], TypeInfo(openapi.TYPE_INTEGER, nullable=True)),
     (datetime.datetime, TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_DATETIME)),
     (datetime.date, TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_DATE)),
     (int, TypeInfo(openapi.TYPE_INTEGER)),
