@@ -2,8 +2,8 @@ from http import HTTPStatus
 from typing import Dict
 
 from winter.core.json.decoder import JSONDecodeException
-from winter.web import ExceptionHandler
-from winter.web.exceptions import ThrottleException
+from .exceptions import ExceptionHandler
+from .exceptions import ThrottleException
 from .response_header_annotation import ResponseHeader
 from .response_header_annotation import response_header
 from .response_status_annotation import response_status
