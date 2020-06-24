@@ -11,7 +11,7 @@ from collections.abc import Iterable
 
 from drf_yasg import openapi
 
-from winter.core.types import has_nested_type
+from winter.core.utils import has_nested_type
 from winter.type_utils import get_origin_type
 from winter.type_utils import is_optional
 
