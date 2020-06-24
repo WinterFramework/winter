@@ -1,7 +1,7 @@
 from drf_yasg import openapi
 
 import winter
-from winter.routing import get_route
+from winter.web.routing import get_route
 from winter.schema import PathParametersInspector
 
 

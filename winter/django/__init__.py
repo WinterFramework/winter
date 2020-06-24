@@ -16,8 +16,8 @@ from ..core import ComponentMethod
 from ..drf.auth import is_authentication_needed
 from ..exceptions.exceptions import ThrottleException
 from ..exceptions.handlers import MethodExceptionsManager
-from ..routing.routing import Route
-from ..routing.routing import get_route
+from winter.web.routing import Route
+from winter.web.routing import get_route
 from ..web import ResponseEntity
 from ..web.argument_resolver import arguments_resolver
 from ..web.controller import build_controller

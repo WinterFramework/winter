@@ -1,12 +1,13 @@
 import dataclasses
+
 from drf_yasg import openapi
 from rest_framework import serializers
 from rest_framework.views import APIView
 
 import winter.drf
-from winter.routing import get_route
 from winter.schema.inspectors import SwaggerAutoSchema
 from winter.web import MediaType
+from winter.web.routing import get_route
 
 
 @dataclasses.dataclass

@@ -8,7 +8,7 @@ from rest_framework.request import Request
 from ..core import annotate_method
 
 if typing.TYPE_CHECKING:
-    from ..routing import Route  # noqa: F401
+    from .routing import Route  # noqa: F401
 
 
 @dataclasses.dataclass

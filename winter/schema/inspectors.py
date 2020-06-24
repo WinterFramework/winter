@@ -6,12 +6,12 @@ from drf_yasg.utils import merge_params
 
 from .generation import build_responses_schemas
 from ..drf.input_serializer import InputSerializer
-from ..web.request_body_annotation import RequestBodyAnnotation
-from ..routing import Route
-from ..routing import RouteAnnotation
 from ..schema.generation import build_method_parameters
 from ..schema.generation import get_schema_title
 from ..schema.type_inspection import inspect_type
+from ..web.request_body_annotation import RequestBodyAnnotation
+from ..web.routing import Route
+from ..web.routing import RouteAnnotation
 
 
 class SwaggerAutoSchema(SwaggerAutoSchemaBase):

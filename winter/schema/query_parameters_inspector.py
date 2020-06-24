@@ -8,7 +8,7 @@ from .method_arguments_inspector import MethodArgumentsInspector
 from ..core import ComponentMethodArgument
 
 if typing.TYPE_CHECKING:  # pragma: no cover
-    from ..routing import Route
+    from ..web.routing import Route
 
 
 class QueryParametersInspector(MethodArgumentsInspector):

@@ -8,10 +8,10 @@ from winter.core import ArgumentDoesNotHaveDefault
 from winter.core import ComponentMethodArgument
 from winter.core.json import JSONDecodeException
 from winter.core.json import json_decode
-from winter.routing.query_parameters import QueryParameter
-from winter.routing.routing import get_route
-from .argument_resolver import ArgumentNotSupported
-from .argument_resolver import ArgumentResolver
+from .query_parameter import QueryParameter
+from ..argument_resolver import ArgumentNotSupported
+from ..argument_resolver import ArgumentResolver
+from ..routing import get_route
 
 
 class QueryParameterArgumentResolver(ArgumentResolver):

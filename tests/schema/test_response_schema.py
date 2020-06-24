@@ -5,10 +5,10 @@ import pytest
 from drf_yasg import openapi
 
 import winter
-from winter.web.controller import get_component
-from winter.routing.routing import get_route
 from winter.schema.generation import build_response_schema
 from winter.schema.generation import build_responses_schemas
+from winter.web.controller import get_component
+from winter.web.routing import get_route
 from ..controllers import ControllerWithExceptions
 
 
