@@ -55,4 +55,4 @@ def get_generic_args(type_):
         return get_args(type_)
     if sys.version_info >= (3, 7):
         return type_.__args__
-    return type_.__args__[0]
+    return type_.__args__
