@@ -1,5 +1,5 @@
-from ..core.json import json_decoder
-from ..core.json import JSONDecodeException
+from winter.core.json import JSONDecodeException
+from winter.core.json import json_decoder
 
 
 class PositiveInteger(int):
