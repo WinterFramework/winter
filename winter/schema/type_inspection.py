@@ -1,4 +1,3 @@
-import dataclasses
 import datetime
 import decimal
 import enum
@@ -8,9 +7,11 @@ import typing
 import uuid
 from collections import OrderedDict
 from collections.abc import Iterable
+
+import dataclasses
 from drf_yasg import openapi
 
-from ..core.types import has_nested_type
+from winter.core.utils import has_nested_type
 from ..type_utils import get_origin_type
 from ..type_utils import is_optional
 
