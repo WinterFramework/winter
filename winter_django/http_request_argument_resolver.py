@@ -4,7 +4,7 @@ from typing import MutableMapping
 from rest_framework.request import Request as HttpRequest
 
 from winter.web.argument_resolver import ArgumentResolver
-from ..core import ComponentMethodArgument
+from winter.core import ComponentMethodArgument
 
 
 class HttpRequestArgumentResolver(ArgumentResolver):

@@ -1,11 +1,12 @@
 import dataclasses
+
 import pytest
 from mock import Mock
 from rest_framework import serializers
 
 from winter.data.pagination import Page
 from winter.data.pagination import PagePosition
-from winter.drf.page_serializer import PageSerializer
+from winter_django import PageSerializer
 
 
 @dataclasses.dataclass

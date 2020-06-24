@@ -4,8 +4,8 @@ from typing import Type
 from rest_framework.request import Request
 from rest_framework.serializers import Serializer
 
-from .body_with_context import BodyWithContext
 from winter.web.output_processor import IOutputProcessor
+from .body_with_context import BodyWithContext
 
 
 class DRFOutputProcessor(IOutputProcessor):

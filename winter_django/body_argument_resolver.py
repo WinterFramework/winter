@@ -2,9 +2,9 @@ from typing import MutableMapping
 
 from rest_framework.request import Request
 
+from winter.core import ComponentMethodArgument
+from winter.web.argument_resolver import ArgumentResolver
 from .input_serializer import get_input_serializer
-from ..core import ComponentMethodArgument
-from ..web.argument_resolver import ArgumentResolver
 
 
 class DRFBodyArgumentResolver(ArgumentResolver):
