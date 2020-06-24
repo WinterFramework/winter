@@ -10,8 +10,8 @@ from winter.core.json import json_decode
 from winter.core.utils import PositiveInteger
 from winter.data.pagination import PagePosition
 from winter.data.pagination import Sort
-from winter.exceptions import RedirectException
 from winter.web.argument_resolver import ArgumentResolver
+from winter.web.exceptions import RedirectException
 from winter.web.pagination.check_sort import check_sort
 from winter.web.pagination.limits import Limits
 from winter.web.pagination.limits import LimitsAnnotation

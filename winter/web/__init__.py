@@ -2,6 +2,8 @@ from . import pagination
 from .argument_resolver import arguments_resolver
 from .controller import controller
 from .exception_handlers import DecodeExceptionHandler
+from .exceptions import ExceptionHandler
+from .exceptions import exception_handlers_registry
 from .media_type import InvalidMediaTypeException
 from .media_type import MediaType
 from .output_processor import register_output_processor_resolver
@@ -19,9 +21,8 @@ from .urls import register_url_regexp
 
 def setup():
     from winter.core.json.decoder import JSONDecodeException
-    from winter.exceptions.handlers import exception_handlers_registry
-    from winter.exceptions import RedirectException
-    from winter.exceptions import ThrottleException
+    from .exceptions import RedirectException
+    from .exceptions import ThrottleException
     from .exception_handlers import BadRequestExceptionHandler
     from .exception_handlers import RedirectExceptionHandler
     from .exception_handlers import ThrottleExceptionHandler

@@ -1,10 +1,10 @@
 from http import HTTPStatus
 
 import winter.drf
-from winter import ThrottleException
+from winter.web.exceptions import ThrottleException
 
 
-class CustomThrottleExceptionHandler(winter.ExceptionHandler):
+class CustomThrottleExceptionHandler(winter.web.ExceptionHandler):
     @winter.response_status(HTTPStatus.TOO_MANY_REQUESTS)
     def handle(self, exception: ThrottleException) -> str:
         return 'custom throttle exception'
