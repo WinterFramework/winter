@@ -1,4 +1,4 @@
-from ..core import annotate
+from winter.core import annotate
 
 
 class NotNeedAuthentication:
