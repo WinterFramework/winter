@@ -1,5 +1,5 @@
-from ..core.json import json_decoder
-from ..core.json import JSONDecodeException
+from ..json import JSONDecodeException
+from ..json import json_decoder
 
 
 class PositiveInteger(int):
