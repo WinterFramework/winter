@@ -27,9 +27,7 @@ class domain_event_handler:
         func_spec = inspect.getfullargspec(self._method)
 
         if len(func_spec.args) != 2:  # One argument and self
-            raise AssertionError(
-                f'Method must have only 1 arguments: {method.__qualname__}. Count arguments : {len(func_spec.args) - 1}'
-            )
+            raise AssertionError(f'Method must have only 1 arguments: {method.__qualname__}.')
         domain_event_class: Type[DomainEvent] = func_spec.annotations[func_spec.args[1]]
         if (
             not inspect.isclass(domain_event_class) and

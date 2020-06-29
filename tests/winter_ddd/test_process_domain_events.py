@@ -75,5 +75,5 @@ def test_process_domain_events(empty_handler):
     # Assert
     assert empty_handler.handled_domain_events == [domain_event1, domain_event2]
     assert empty_handler.handled_another_domain_events == [another_domain_event]
-    assert empty_handler.handled_many_domain_events == [[domain_event1, domain_event2],]
+    assert empty_handler.handled_many_domain_events == [[domain_event1, domain_event2]]
     assert empty_handler.handled_many_another_domain_events == [[another_domain_event]]
