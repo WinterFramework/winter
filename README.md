@@ -33,10 +33,10 @@ class HelloWorldController:
 
 To use it with Django:
 ```python
-import winter.django
+import winter_django
 
 urlpatterns = [
-    *winter.django.create_django_urls(HelloWorldController),
+    *winter_django.create_django_urls(HelloWorldController),
 ]
 ```
 
@@ -47,6 +47,7 @@ from typing import List
 from typing import Optional
 
 import winter
+import winter.web
 from dataclasses import dataclass
 from rest_framework.request import Request
 from winter.data.pagination import Page
@@ -74,7 +75,7 @@ class NotFoundException(Exception):
         self.index = todo_index
 
 
-class NotFoundExceptionHandler(winter.ExceptionHandler):
+class NotFoundExceptionHandler(winter.web.ExceptionHandler):
     @winter.response_status(HTTPStatus.NOT_FOUND)
     def handle(self, request: Request, exception: NotFoundException) -> str:
         return f'Index {exception.index} out of bounds'
