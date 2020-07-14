@@ -1,8 +1,9 @@
 import inspect
 import re
 
-from .domain_event_subscription import DomainEventSubscription
+from winter.core.utils.typing import is_union
 from .domain_event_dispatcher import DomainEventDispatcher
+from .domain_event_subscription import DomainEventSubscription
 
 domain_events_class_name_pattern = re.compile(r'typing.List\[.+\]')
 
@@ -23,10 +24,10 @@ class domain_event_handler:
         arg_type = func_spec.annotations[func_spec.args[1]]
         if (
             not inspect.isclass(arg_type) and
-            not domain_events_class_name_pattern.match(str(arg_type))
+            not domain_events_class_name_pattern.match(str(arg_type)) and
+            not is_union(arg_type)
         ):
             raise AssertionError('First argument must have annotation and this annotation must be class')
-        self._arg_type = arg_type
 
     def __get__(self, instance, owner):
         return self._method.__get__(instance, owner)

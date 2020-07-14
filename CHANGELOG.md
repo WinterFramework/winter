@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.0] - 2020-07-14
+
+### Changed
+- process_domain_events replaced with global_domain_event_dispatcher.dispatch
+- Add support for Union[Event1, Event2, ...] and List[Union[Event1, Event2, ...]] domain event handlers
+
 ## [3.0.0] - 2020-06-30
 
 ### Changed

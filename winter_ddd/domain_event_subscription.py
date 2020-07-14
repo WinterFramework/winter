@@ -25,7 +25,7 @@ class DomainEventSubscription:
         if collection:
             arg_type = get_generic_args(arg_type)[0]
         if is_union(arg_type):
-            domain_event_classes = get_generic_args(arg_type)
+            domain_event_classes = tuple(get_generic_args(arg_type))
         else:
             domain_event_classes = (arg_type, )
-        return DomainEventSubscription(domain_event_classes, collection)
+        return DomainEventSubscription(domain_event_classes, collection, handler_class, handler_method)

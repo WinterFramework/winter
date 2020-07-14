@@ -29,6 +29,7 @@ def empty_handler():
         handled_another_domain_events = []
         handled_many_domain_events = []
         handled_many_another_domain_events = []
+        handled_union_domain_events = []
         handled_union_list_domain_events = []
 
         @domain_event_handler
@@ -46,6 +47,10 @@ def empty_handler():
         @domain_event_handler
         def handle_many_another(self, domain_events: List[AnotherCustomEvent]):
             self.handled_many_another_domain_events.append(domain_events)
+
+        @domain_event_handler
+        def handle_union(self, domain_event: Union[CustomDomainEvent, AnotherCustomEvent]):
+            self.handled_union_domain_events.append(domain_event)
 
         @domain_event_handler
         def handle_union_list(self, domain_events: List[Union[CustomDomainEvent, AnotherCustomEvent]]):
@@ -77,4 +82,5 @@ def test_process_domain_events(empty_handler):
     assert empty_handler.handled_another_domain_events == [another_domain_event]
     assert empty_handler.handled_many_domain_events == [[domain_event1, domain_event2]]
     assert empty_handler.handled_many_another_domain_events == [[another_domain_event]]
+    assert empty_handler.handled_union_domain_events == [domain_event1, another_domain_event, domain_event2]
     assert empty_handler.handled_union_list_domain_events == [[domain_event1, another_domain_event, domain_event2]]
