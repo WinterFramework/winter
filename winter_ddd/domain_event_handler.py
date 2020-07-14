@@ -1,12 +1,13 @@
 import inspect
 import re
-import typing
+import warnings
 from collections import defaultdict
 from threading import Lock
 from typing import Callable
+from typing import Iterable
+from typing import List
 from typing import Type
 from typing import TypeVar
-import warnings
 
 from .domain_event import DomainEvent
 
@@ -28,13 +29,13 @@ class domain_event_handler:
 
         if len(func_spec.args) != 2:  # One argument and self
             raise AssertionError(f'Method must have only 1 arguments: {method.__qualname__}.')
-        domain_event_class: Type[DomainEvent] = func_spec.annotations[func_spec.args[1]]
+        arg_type = func_spec.annotations[func_spec.args[1]]
         if (
-            not inspect.isclass(domain_event_class) and
-            not domain_events_class_name_pattern.match(str(domain_event_class))
+            not inspect.isclass(arg_type) and
+            not domain_events_class_name_pattern.match(str(arg_type))
         ):
             raise AssertionError('First argument must have annotation and this annotation must be class')
-        self._domain_event_class = domain_event_class
+        self._domain_event_class = arg_type
 
     def __get__(self, instance, owner):
         return self._method.__get__(instance, owner)
@@ -44,16 +45,28 @@ class domain_event_handler:
             _domain_event_handlers[self._domain_event_class].append((owner, self._method))
 
 
-def handle_domain_events(domain_event_class: typing.Type[DomainEvent], domain_events: typing.List[DomainEvent]) -> None:
+def process_domain_events(domain_events: Iterable[DomainEvent]):
+    domain_events_map = {}
+
+    for domain_event in domain_events:
+        domain_event_class = type(domain_event)
+        typed_domain_events = domain_events_map.setdefault(domain_event_class, [])
+        typed_domain_events.append(domain_event)
+
+    for domain_event_class, typed_domain_events in domain_events_map.items():
+        _handle_domain_events(domain_event_class, typed_domain_events)
+
+
+def _handle_domain_events(domain_event_class: Type[DomainEvent], domain_events: List[DomainEvent]) -> None:
     if not domain_events:
         return None
 
-    if typing.List[domain_event_class] in _domain_event_handlers:
-        for handler_cls, handler in _domain_event_handlers[typing.List[domain_event_class]]:
+    if List[domain_event_class] in _domain_event_handlers:
+        for handler_cls, handler in _domain_event_handlers[List[domain_event_class]]:
             handler_instance = _instance_getter(handler_cls)
             handler(handler_instance, domain_events)
 
-    if domain_event_class not in _domain_event_handlers and typing.List[domain_event_class] in _domain_event_handlers:
+    if domain_event_class not in _domain_event_handlers and List[domain_event_class] in _domain_event_handlers:
         warnings.warn(f'Unknown domain event {domain_event_class}. Please register at least one domain event handler')
 
     for handler_cls, handler in _domain_event_handlers[domain_event_class]:
