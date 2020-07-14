@@ -1,6 +1,7 @@
 import inspect
 import re
 
+from .domain_event_subscription import DomainEventSubscription
 from .domain_event_dispatcher import DomainEventDispatcher
 
 domain_events_class_name_pattern = re.compile(r'typing.List\[.+\]')
@@ -25,10 +26,11 @@ class domain_event_handler:
             not domain_events_class_name_pattern.match(str(arg_type))
         ):
             raise AssertionError('First argument must have annotation and this annotation must be class')
-        self._domain_event_class = arg_type
+        self._arg_type = arg_type
 
     def __get__(self, instance, owner):
         return self._method.__get__(instance, owner)
 
     def __set_name__(self, owner, name):
-        global_domain_event_dispatcher.add_handler(self._domain_event_class, owner, self._method)
+        subscription = DomainEventSubscription.create(owner, self._method)
+        global_domain_event_dispatcher.add_subscription(subscription)
