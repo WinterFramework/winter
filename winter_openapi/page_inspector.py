@@ -1,6 +1,5 @@
 import dataclasses
 from typing import List
-from typing import Type
 
 from drf_yasg import openapi
 
