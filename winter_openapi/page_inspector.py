@@ -9,10 +9,10 @@ from .type_inspection import TypeInfo
 from .type_inspection import inspect_type
 
 
-def inspect_page(hint_class: Type[Page]) -> TypeInfo:
+def inspect_page(hint_class) -> TypeInfo:
     args = getattr(hint_class, '__args__', None)
     child_class = args[0] if args else str
-    extra_fields = set(dataclasses.fields(hint_class)) - set(dataclasses.fields(Page))
+    extra_fields = set(dataclasses.fields(hint_class.__origin__)) - set(dataclasses.fields(Page))
 
     return TypeInfo(openapi.TYPE_OBJECT, properties={
         'meta': TypeInfo(openapi.TYPE_OBJECT, properties={

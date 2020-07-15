@@ -141,17 +141,21 @@ import winter.web
 from dataclasses import dataclass
 from winter.data.pagination import Page
 from winter.data.pagination import PagePosition
+from typing import TypeVar
+from typing import Generic
 
+
+T = TypeVar('T')
 
 @dataclass(frozen=True)
-class CustomPage(Page[int]):
+class CustomPage(Page, Generic[T]):
     extra_field: str  # The field will go to meta JSON response field
 
 
 @winter.web.controller
 class ExampleController:
     @winter.route_get('/')
-    def create_todo(self, page_position: PagePosition) -> CustomPage:
+    def create_todo(self, page_position: PagePosition) -> CustomPage[int]:
         return CustomPage(
             # Standard Page fields
             total_count=3,

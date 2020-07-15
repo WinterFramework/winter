@@ -4,9 +4,11 @@ import uuid
 from dataclasses import dataclass
 from enum import Enum
 from enum import IntEnum
+from typing import Generic
 from typing import List
 from typing import NewType
 from typing import Optional
+from typing import TypeVar
 
 import pytest
 from drf_yasg import openapi
@@ -60,8 +62,11 @@ class DataclassWrapper(TypeWrapper):
     pass
 
 
+CustomPageItem = TypeVar('CustomPageItem')
+
+
 @dataclass(frozen=True)
-class CustomPage(Page[int]):
+class CustomPage(Page, Generic[CustomPageItem]):
     extra: str
 
 
@@ -102,7 +107,7 @@ class CustomPage(Page[int]):
             'nested_number': TypeInfo(openapi.TYPE_INTEGER),
         })),
     })),
-    (CustomPage, TypeInfo(openapi.TYPE_OBJECT, properties={
+    (CustomPage[int], TypeInfo(openapi.TYPE_OBJECT, properties={
         'meta': TypeInfo(openapi.TYPE_OBJECT, properties={
             'total_count': TypeInfo(openapi.TYPE_INTEGER),
             'limit': TypeInfo(openapi.TYPE_INTEGER, nullable=True),
