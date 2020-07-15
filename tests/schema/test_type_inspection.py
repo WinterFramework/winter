@@ -1,21 +1,21 @@
 import datetime
 import decimal
 import uuid
+from dataclasses import dataclass
 from enum import Enum
 from enum import IntEnum
 from typing import List
 from typing import NewType
 from typing import Optional
 
-import dataclasses
 import pytest
 from drf_yasg import openapi
 
 from winter.core.utils import TypeWrapper
 from winter.data.pagination import Page
-from winter_openapi import inspect_enum_class
 from winter_openapi import InspectorNotFound
 from winter_openapi import TypeInfo
+from winter_openapi import inspect_enum_class
 from winter_openapi import inspect_type
 
 
@@ -27,7 +27,7 @@ class IntegerValueEnum(Enum):
 TestType = NewType('TestType', int)
 
 
-@dataclasses.dataclass
+@dataclass
 class NestedDataclass:
     nested_number: int
 
@@ -36,7 +36,7 @@ class Id(int):
     pass
 
 
-@dataclasses.dataclass
+@dataclass
 class Dataclass:
     nested: NestedDataclass
 
@@ -58,6 +58,11 @@ class IntegerEnum(IntEnum):
 
 class DataclassWrapper(TypeWrapper):
     pass
+
+
+@dataclass(frozen=True)
+class CustomPage(Page[int]):
+    extra: str
 
 
 @pytest.mark.parametrize('type_hint, expected_type_info', [
@@ -96,6 +101,17 @@ class DataclassWrapper(TypeWrapper):
         'objects': TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_OBJECT, properties={
             'nested_number': TypeInfo(openapi.TYPE_INTEGER),
         })),
+    })),
+    (CustomPage, TypeInfo(openapi.TYPE_OBJECT, properties={
+        'meta': TypeInfo(openapi.TYPE_OBJECT, properties={
+            'total_count': TypeInfo(openapi.TYPE_INTEGER),
+            'limit': TypeInfo(openapi.TYPE_INTEGER, nullable=True),
+            'offset': TypeInfo(openapi.TYPE_INTEGER, nullable=True),
+            'previous': TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_URI, nullable=True),
+            'next': TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_URI, nullable=True),
+            'extra': TypeInfo(openapi.TYPE_STRING),
+        }),
+        'objects': TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_INTEGER)),
     })),
     (DataclassWrapper[NestedDataclass], TypeInfo(openapi.TYPE_OBJECT, properties={
         'nested_number': TypeInfo(openapi.TYPE_INTEGER),
