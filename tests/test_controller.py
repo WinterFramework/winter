@@ -73,6 +73,34 @@ def test_page_response():
     assert response.json() == expected_body
 
 
+def test_custom_page_response():
+    client = APIClient()
+    user = AuthorizedUser()
+    client.force_authenticate(user)
+    expected_body = {
+        'objects': [1, 2],
+        'meta': {
+            'limit': 2,
+            'offset': 2,
+            'next': 'http://testserver/winter-simple/custom-page-response/?limit=2&offset=4',
+            'previous': 'http://testserver/winter-simple/custom-page-response/?limit=2',
+            'total_count': 10,
+            'extra': 456,
+        },
+    }
+    request_data = {
+        'limit': 2,
+        'offset': 2,
+    }
+
+    # Act
+    response = client.get('/winter-simple/custom-page-response/', data=request_data)
+
+    # Assert
+    assert response.status_code == HTTPStatus.OK, response.content
+    assert response.json() == expected_body
+
+
 def test_no_authentication_controller():
     client = APIClient()
     response = client.get('/winter-no-auth/')

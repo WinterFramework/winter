@@ -84,7 +84,7 @@ class NotFoundExceptionHandler(winter.web.ExceptionHandler):
 todo_list: List[str] = []
 
 
-@winter.controller
+@winter.web.controller
 @winter.route('todo/')
 class TodoController:
     @winter.route_post('')
@@ -131,4 +131,37 @@ class TodoController:
 
     def _build_todo_dto(self, todo_index: int):
         return TodoDTO(todo_index=todo_index, todo=todo_list[todo_index])
+```
+
+
+## Extending Page class
+```python
+import winter
+import winter.web
+from dataclasses import dataclass
+from winter.data.pagination import Page
+from winter.data.pagination import PagePosition
+from typing import TypeVar
+from typing import Generic
+
+
+T = TypeVar('T')
+
+@dataclass(frozen=True)
+class CustomPage(Page, Generic[T]):
+    extra_field: str  # The field will go to meta JSON response field
+
+
+@winter.web.controller
+class ExampleController:
+    @winter.route_get('/')
+    def create_todo(self, page_position: PagePosition) -> CustomPage[int]:
+        return CustomPage(
+            # Standard Page fields
+            total_count=3,
+            items=[1, 2, 3],
+            position=page_position,
+            # Custom fields
+            extra_field=456,
+        )
 ```

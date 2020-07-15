@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-import dataclasses
+from dataclasses import dataclass
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -10,9 +10,14 @@ from winter.data.pagination import Page
 from winter.data.pagination import PagePosition
 
 
-@dataclasses.dataclass
+@dataclass
 class Dataclass:
     number: int
+
+
+@dataclass(frozen=True)
+class CustomPage(Page[int]):
+    extra: int
 
 
 @winter.controller
@@ -27,6 +32,10 @@ class SimpleController:
     def page_response(self, page_position: PagePosition) -> Page[Dataclass]:
         items = [Dataclass(1)]
         return Page(10, items, page_position)
+
+    @winter.route_get('custom-page-response/')
+    def custom_page_response(self, page_position: PagePosition) -> CustomPage:
+        return CustomPage(total_count=10, items=[1, 2], position=page_position, extra=456)
 
     @winter.route_get('get-response-entity/')
     @winter.response_status(HTTPStatus.ACCEPTED)
