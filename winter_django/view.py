@@ -43,7 +43,7 @@ def create_django_urls(controller_class: Type) -> List:
     for url_path, routes in _group_routes_by_url_path(component.methods):
         django_view = _create_django_view(controller_class, component, routes)
         winter_url_path = f'^{url_path}$'
-        methods = (route.method for route in routes)
+        methods = [route.method for route in routes]
         django_url_path = rewrite_uritemplate_with_regexps(winter_url_path, methods)
         for route in routes:
             django_urls.append(url(django_url_path, django_view, name=route.method.full_name))
