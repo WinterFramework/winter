@@ -4,6 +4,7 @@ from .auth import no_authentication
 from .controller import controller
 from .exception_handlers import DecodeExceptionHandler
 from .exceptions import ExceptionHandler
+from .problem_annotation import problem
 from .exceptions import exception_handlers_registry
 from .media_type import InvalidMediaTypeException
 from .media_type import MediaType
@@ -34,7 +35,9 @@ def setup():
     from .pagination.limits import MaximumLimitValueExceeded
     from .pagination.page_processor_resolver import PageOutputProcessorResolver
     from .pagination.page_position_argument_resolver import PagePositionArgumentResolver
+    from .problem_annotation import generate_handlers_for_auto_handled_problem
 
+    generate_handlers_for_auto_handled_problem()
     register_output_processor_resolver(PageOutputProcessorResolver())
     response_headers_serializer.add_serializer(DateTimeResponseHeaderSerializer())
     response_headers_serializer.add_serializer(LastModifiedResponseHeaderSerializer())
