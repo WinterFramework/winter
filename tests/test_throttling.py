@@ -27,7 +27,13 @@ def test_throttling(need_auth):
             if 5 < i < 8 or 13 <= i < 15:
                 assert response.status_code == response_of_same.status_code == response_custom_exception.status_code \
                        == HTTPStatus.TOO_MANY_REQUESTS, i
-                assert response.json() == response_of_same.json() == {'detail': 'Request was throttled.'}, i
+                expected_response = {
+                    'status': 429,
+                    'detail': 'Request was throttled',
+                    'title': 'Throttle',
+                    'type': 'urn:problem-type:throttle',
+                }
+                assert response.json() == response_of_same.json() == expected_response, i
                 assert response_custom_exception.json() == 'custom throttle exception', i
             else:
                 assert response.status_code == response_of_same.status_code == response_custom_exception.status_code \

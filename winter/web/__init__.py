@@ -25,9 +25,7 @@ def setup():
     from winter.core.json.decoder import JSONDecodeException
     from .exceptions import RedirectException
     from .exceptions import ThrottleException
-    from .exception_handlers import BadRequestExceptionHandler
     from .exception_handlers import RedirectExceptionHandler
-    from .exception_handlers import ThrottleExceptionHandler
     from .path_parameters_argument_resolver import PathParametersArgumentResolver
     from .query_parameters.query_parameters_argument_resolver import QueryParameterArgumentResolver
     from .response_header_serializers import DateTimeResponseHeaderSerializer
@@ -48,5 +46,3 @@ def setup():
     arguments_resolver.add_argument_resolver(PagePositionArgumentResolver())
     exception_handlers_registry.add_handler(JSONDecodeException, DecodeExceptionHandler, auto_handle=True)
     exception_handlers_registry.add_handler(RedirectException, RedirectExceptionHandler, auto_handle=True)
-    exception_handlers_registry.add_handler(MaximumLimitValueExceeded, BadRequestExceptionHandler, auto_handle=True)
-    exception_handlers_registry.add_handler(ThrottleException, ThrottleExceptionHandler, auto_handle=True)
