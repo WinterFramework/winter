@@ -7,14 +7,14 @@ from rest_framework.request import Request
 
 from winter import response_status
 from winter.core import Component
-from .exceptions import ExceptionHandler
-from .exceptions import ExceptionHandlerGenerator
-from .exceptions import ExceptionMapper
+from .exception_handler_generator import ExceptionHandlerGenerator
+from .exception_mapper import ExceptionMapper
+from .handlers import ExceptionHandler
 from .problem_annotation import ProblemAnnotation
-from ..core.utils import camel_to_human
+from ...core.utils import camel_to_human
 
 
-class DefaultExceptionHandlerGenerator(ExceptionHandlerGenerator):
+class ProblemExceptionHandlerGenerator(ExceptionHandlerGenerator):
     def generate(self, exception_class: Type[Exception], exception_mapper: ExceptionMapper) -> Type[ExceptionHandler]:
         component = Component.get_by_cls(exception_class)
         annotation = component.annotations.get_one(ProblemAnnotation)
@@ -36,7 +36,7 @@ class DefaultExceptionHandlerGenerator(ExceptionHandlerGenerator):
         problem_annotations = {field.name: field.type for field in dataclasses.fields(ProblemAnnotation)}
         if dataclasses.is_dataclass(exception_class):
             extended_annotations = {field.name: field.type for field in dataclasses.fields(exception_class)}
-            problem_annotations += extended_annotations
+            problem_annotations.update(extended_annotations)
 
         return dataclasses.dataclass(type(f'{class_name}Dataclass', (), {'__annotations__': problem_annotations}))
 

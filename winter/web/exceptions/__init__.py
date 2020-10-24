@@ -3,5 +3,7 @@ from .exception_mapper import ExceptionMapper
 from .handlers import ExceptionHandler
 from .handlers import MethodExceptionsManager
 from .handlers import exception_handlers_registry
+from .problem import generate_handlers_for_auto_handled_problem
+from .problem import problem
 from .redirect_exception import RedirectException
 from .throttle_exception import ThrottleException

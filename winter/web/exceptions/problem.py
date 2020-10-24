@@ -3,18 +3,9 @@ from typing import Dict
 from typing import Type
 from typing import Union
 
-from dataclasses import dataclass
-
-from .exceptions import exception_handlers_registry
-from ..core import annotate
-
-
-@dataclass(frozen=True)
-class ProblemAnnotation:
-    status: HTTPStatus
-    title: str
-    detail: str
-    type: str
+from winter.core import annotate
+from .handlers import exception_handlers_registry
+from .problem_annotation import ProblemAnnotation
 
 
 def problem(
@@ -44,11 +35,11 @@ _auto_handled_exception_registry: Dict[Type[Exception], ProblemAnnotation] = {}
 
 
 def generate_handlers_for_auto_handled_problem():
-    from winter.web.problem_handling import ProblemExceptionMapper
-    from winter.web.problem_handling import DefaultExceptionHandlerGenerator
+    from winter.web.exceptions.problem_handling import ProblemExceptionMapper
+    from winter.web.exceptions.problem_handling import ProblemExceptionHandlerGenerator
 
     mapper = ProblemExceptionMapper()
-    handler_generator = DefaultExceptionHandlerGenerator()
+    handler_generator = ProblemExceptionHandlerGenerator()
     for exception_class, problem_annotation in _auto_handled_exception_registry.items():
         handler_class = handler_generator.generate(exception_class, mapper)
         exception_handlers_registry.add_handler(exception_class, handler_class, auto_handle=True)
