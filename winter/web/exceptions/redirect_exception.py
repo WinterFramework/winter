@@ -1,10 +1,12 @@
 from http import HTTPStatus
 
+from dataclasses import dataclass
+
 from .problem import problem
 
 
-@problem(HTTPStatus.FOUND)
+# TODO @response_header.setter('Location', 'redirect_to')
+@problem(HTTPStatus.FOUND, auto_handle=True)
+@dataclass
 class RedirectException(Exception):
-    def __init__(self, redirect_to: str):
-        super().__init__()
-        self.redirect_to = redirect_to
+    redirect_to: str
