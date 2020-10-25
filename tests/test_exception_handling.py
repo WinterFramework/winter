@@ -9,12 +9,14 @@ from .controllers.controller_with_exceptions import ExceptionWithoutHandler
 from .entities import AuthorizedUser
 
 
-@pytest.mark.parametrize(['url_path', 'expected_status', 'expected_body'], (
-    ('declared_but_not_thrown', HTTPStatus.OK, 'Hello, sir!'),
-    ('declared_and_thrown', HTTPStatus.BAD_REQUEST, {'message': 'declared_and_thrown'}),
-    ('declared_and_thrown_child', HTTPStatus.BAD_REQUEST, {'message': 'declared_and_thrown_child'}),
-    ('exception_with_custom_handler', HTTPStatus.UNAUTHORIZED, 21),
-))
+@pytest.mark.parametrize(
+    ['url_path', 'expected_status', 'expected_body'], (
+        ('declared_but_not_thrown', HTTPStatus.OK, 'Hello, sir!'),
+        ('declared_and_thrown', HTTPStatus.BAD_REQUEST, {'message': 'declared_and_thrown'}),
+        ('declared_and_thrown_child', HTTPStatus.BAD_REQUEST, {'message': 'declared_and_thrown_child'}),
+        ('exception_with_custom_handler', HTTPStatus.UNAUTHORIZED, 21),
+    ),
+)
 def test_controller_with_exceptions(url_path, expected_status, expected_body):
     client = APIClient()
     user = AuthorizedUser()
@@ -33,10 +35,12 @@ def test_controller_with_exceptions(url_path, expected_status, expected_body):
         assert response.json() == expected_body
 
 
-@pytest.mark.parametrize(['url_path', 'expected_exception_cls'], (
-    ('not_declared_but_thrown', CustomException),
-    ('declared_but_no_handler', ExceptionWithoutHandler),
-))
+@pytest.mark.parametrize(
+    ['url_path', 'expected_exception_cls'], (
+        ('not_declared_but_thrown', CustomException),
+        ('declared_but_no_handler', ExceptionWithoutHandler),
+    ),
+)
 def test_controller_with_exceptions_throws(url_path, expected_exception_cls):
     client = APIClient()
     user = AuthorizedUser()
@@ -59,12 +63,16 @@ def test_exception_handler_with_unknown_argument():
         client.get(url)
 
 
-@pytest.mark.parametrize(['url_path', 'expected_status', 'expected_body'], (
+@pytest.mark.parametrize(
+    ['url_path', 'expected_status', 'expected_body'], (
         (
             'problem_exists_exception',
             HTTPStatus.FORBIDDEN,
             {
-                'message': 'Implicit string of detail',
+                'detail': 'Implicit string of detail',
+                'status': 403,
+                'title': 'Problem exists',
+                'type': 'urn:problem-type:problem-exists',
             },
         ),
         (

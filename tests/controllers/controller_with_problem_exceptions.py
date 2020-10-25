@@ -53,9 +53,6 @@ class ProblemExistsExceptionCustomHandler(winter.web.ExceptionHandler):
         return CustomExceptionDTO(message=str(exception))
 
 
-winter.web.exception_handlers_registry.add_handler(ProblemExistsException, ProblemExistsExceptionHandler)
-
-
 @winter.controller
 @winter.route('controller_with_problem_exceptions/')
 class ControllerWithProblemExceptions:

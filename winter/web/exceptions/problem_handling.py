@@ -5,17 +5,19 @@ from typing import Type
 import dataclasses
 from rest_framework.request import Request
 
-from winter import response_status
 from winter.core import Component
 from .exception_handler_generator import ExceptionHandlerGenerator
 from .exception_mapper import ExceptionMapper
 from .handlers import ExceptionHandler
+from .handlers import exception_handlers_registry
 from .problem_annotation import ProblemAnnotation
 from ...core.utils import camel_to_human
 
 
 class ProblemExceptionHandlerGenerator(ExceptionHandlerGenerator):
     def generate(self, exception_class: Type[Exception], exception_mapper: ExceptionMapper) -> Type[ExceptionHandler]:
+        from winter import response_status
+
         component = Component.get_by_cls(exception_class)
         annotation = component.annotations.get_one(ProblemAnnotation)
         assert isinstance(annotation, ProblemAnnotation)
@@ -43,17 +45,6 @@ class ProblemExceptionHandlerGenerator(ExceptionHandlerGenerator):
 
 class ProblemExceptionMapper(ExceptionMapper):
     def to_response_body(self, request: Request, exception: Exception) -> Dict:
-        def generate_default_title_value(exception_cls: Type[Exception]) -> str:
-            strip_tail = _try_cut_exception_name_postfix(exception_cls)
-            return camel_to_human(strip_tail, is_capitalize=True)
-
-        def generate_type_value(exception_cls: Type[Exception]) -> str:
-            strip_tail = _try_cut_exception_name_postfix(exception_cls)
-            return 'urn:problem-type:' + camel_to_human(strip_tail, separator='-')
-
-        def _try_cut_exception_name_postfix(exception_cls: Type[Exception]) -> str:
-            return re.sub('Exception$', '', exception_cls.__name__)
-
         exception_class = exception.__class__
         component = Component.get_by_cls(exception_class)
         annotation = component.annotations.get_one(ProblemAnnotation)
@@ -61,9 +52,9 @@ class ProblemExceptionMapper(ExceptionMapper):
 
         problem_dict = dict(
             status=annotation.status,
-            title=annotation.title or generate_default_title_value(exception_class),
+            title=annotation.title or self._generate_default_title_value(exception_class),
             detail=annotation.detail or str(exception),
-            type=annotation.type or generate_type_value(exception_class),
+            type=annotation.type or self._generate_type_value(exception_class),
         )
         if dataclasses.is_dataclass(exception.__class__):
             fields = dataclasses.fields(exception_class)
@@ -72,3 +63,34 @@ class ProblemExceptionMapper(ExceptionMapper):
                 problem_dict[field.name] = field_value
 
         return problem_dict
+
+    @classmethod
+    def _generate_default_title_value(cls, exception_cls: Type[Exception]) -> str:
+        strip_tail = cls._try_cut_exception_name_postfix(exception_cls)
+        return camel_to_human(strip_tail).capitalize()
+
+    @classmethod
+    def _generate_type_value(cls, exception_cls: Type[Exception]) -> str:
+        strip_tail = cls._try_cut_exception_name_postfix(exception_cls)
+        return 'urn:problem-type:' + camel_to_human(strip_tail, separator='-')
+
+    @classmethod
+    def _try_cut_exception_name_postfix(cls, exception_cls: Type[Exception]) -> str:
+        return re.sub('Exception$', '', exception_cls.__name__)
+
+
+def generate_handlers_for_auto_handled_problem():
+    mapper = ProblemExceptionMapper()
+    handler_generator = ProblemExceptionHandlerGenerator()
+    handled_problems: Dict[Type[Exception], ProblemAnnotation] = {
+        cls: component.annotations.get_one(ProblemAnnotation)
+        for cls, component in Component.get_all().items()
+        if component.annotations.get_one_or_none(ProblemAnnotation)
+    }
+    for exception_class, problem_annotation in handled_problems.items():
+        handler_class = handler_generator.generate(exception_class, mapper)
+        exception_handlers_registry.add_handler(
+            exception_class,
+            handler_class,
+            auto_handle=problem_annotation.auto_handle,
+        )

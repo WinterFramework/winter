@@ -9,3 +9,4 @@ class ProblemAnnotation:
     title: str
     detail: str
     type: str
+    auto_handle: bool

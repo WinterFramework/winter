@@ -36,7 +36,7 @@ class ExceptionHandlersRegistry:
         *,
         auto_handle: bool = False,
     ):
-        assert exception_cls not in self._handlers
+        assert exception_cls not in self._handlers, exception_cls
         self._handlers[exception_cls] = handler_cls()
 
         if auto_handle:
