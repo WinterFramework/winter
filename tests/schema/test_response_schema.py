@@ -68,11 +68,11 @@ def test_build_response_schema(return_type, expected_response):
                 '403': openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
-                        'custom_field': {'type': 'string'},
-                        'detail': {'type': 'string'},
-                        'title': {'type': 'string'},
-                        'type': {'type': 'string'},
-                        'status': {'type': 'integer'},
+                        'custom_field': openapi.Schema(type=openapi.TYPE_STRING),
+                        'detail': openapi.Schema(type=openapi.TYPE_STRING),
+                        'title': openapi.Schema(type=openapi.TYPE_STRING),
+                        'type': openapi.Schema(type=openapi.TYPE_STRING),
+                        'status': openapi.Schema(type=openapi.TYPE_INTEGER),
                     },
                 ),
             },
