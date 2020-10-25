@@ -5,11 +5,12 @@ import pytest
 from drf_yasg import openapi
 
 import winter
-from winter_openapi.generation import build_response_schema
-from winter_openapi.generation import build_responses_schemas
 from winter.web.controller import get_component
 from winter.web.routing import get_route
+from winter_openapi.generation import build_response_schema
+from winter_openapi.generation import build_responses_schemas
 from ..controllers import ControllerWithExceptions
+from ..controllers import ControllerWithProblemExceptions
 
 
 @pytest.mark.parametrize(
@@ -59,6 +60,21 @@ def test_build_response_schema(return_type, expected_response):
         (
             ControllerWithExceptions, 'declared_but_no_handler', {
                 '200': openapi.Schema(type=openapi.TYPE_STRING),
+            },
+        ),
+        (
+            ControllerWithProblemExceptions, 'problem_exists_dataclass_exception', {
+                '200': openapi.Schema(type=openapi.TYPE_STRING),
+                '403': openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'custom_field': {'type': 'string'},
+                        'detail': {'type': 'string'},
+                        'title': {'type': 'string'},
+                        'type': {'type': 'string'},
+                        'status': {'type': 'integer'},
+                    },
+                ),
             },
         ),
     ],

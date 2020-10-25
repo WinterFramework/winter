@@ -35,7 +35,11 @@ class ProblemExceptionHandlerGenerator(ExceptionHandlerGenerator):
     def _build_exception_dataclass(self, exception_class: Type[Exception]) -> Type:
         class_name = exception_class.__name__
 
-        problem_annotations = {field.name: field.type for field in dataclasses.fields(ProblemAnnotation)}
+        problem_annotations = {
+            field.name: field.type
+            for field in dataclasses.fields(ProblemAnnotation)
+            if field.name != 'auto_handle'
+        }
         if dataclasses.is_dataclass(exception_class):
             extended_annotations = {field.name: field.type for field in dataclasses.fields(exception_class)}
             problem_annotations.update(extended_annotations)

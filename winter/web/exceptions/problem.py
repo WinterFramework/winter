@@ -15,7 +15,7 @@ def problem(
     def wrapper(exception_class):
         assert issubclass(exception_class, Exception), f'Class "{exception_class}" must be a subclass of Exception'
         annotation = ProblemAnnotation(
-            status=HTTPStatus(status),
+            status=int(status),
             type=type,
             title=title,
             detail=detail,

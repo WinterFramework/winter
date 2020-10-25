@@ -1,11 +1,9 @@
-from http import HTTPStatus
-
 from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
 class ProblemAnnotation:
-    status: HTTPStatus
+    status: int
     title: str
     detail: str
     type: str
