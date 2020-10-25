@@ -29,11 +29,11 @@ def setup():
     from .response_header_serializers import LastModifiedResponseHeaderSerializer
     from .pagination.page_processor_resolver import PageOutputProcessorResolver
     from .pagination.page_position_argument_resolver import PagePositionArgumentResolver
-    from .exceptions import generate_handlers_for_auto_handled_problem
+    from .exceptions import generate_problem_handlers
     from .exception_handlers import RedirectExceptionHandler
     from .exception_handlers import DecodeExceptionHandler
 
-    generate_handlers_for_auto_handled_problem()
+    generate_problem_handlers()
     register_output_processor_resolver(PageOutputProcessorResolver())
     response_headers_serializer.add_serializer(DateTimeResponseHeaderSerializer())
     response_headers_serializer.add_serializer(LastModifiedResponseHeaderSerializer())

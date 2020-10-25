@@ -57,6 +57,10 @@ class ProblemExistsExceptionCustomHandler(winter.web.ExceptionHandler):
 @winter.route('controller_with_problem_exceptions/')
 class ControllerWithProblemExceptions:
 
+    @winter.route_get('problem_exists_not_handled_exception/')
+    def problem_exists_not_handled_exception(self) -> str:
+        raise ProblemExistsException()
+
     @winter.throws(ProblemExistsException)
     @winter.route_get('problem_exists_exception/')
     def problem_exists_exception(self) -> str:

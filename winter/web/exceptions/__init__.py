@@ -4,6 +4,6 @@ from .handlers import ExceptionHandler
 from .handlers import MethodExceptionsManager
 from .handlers import exception_handlers_registry
 from .problem import problem
-from .problem_handling import generate_handlers_for_auto_handled_problem
+from .problem_handling import generate_problem_handlers
 from .redirect_exception import RedirectException
 from .throttle_exception import ThrottleException

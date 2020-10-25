@@ -6,6 +6,7 @@ from rest_framework.test import APIClient
 from winter.web.argument_resolver import ArgumentNotSupported
 from .controllers.controller_with_exceptions import CustomException
 from .controllers.controller_with_exceptions import ExceptionWithoutHandler
+from .controllers.controller_with_problem_exceptions import ProblemExistsException
 from .entities import AuthorizedUser
 
 
@@ -28,11 +29,7 @@ def test_controller_with_exceptions(url_path, expected_status, expected_body):
 
     # Assert
     assert response.status_code == expected_status
-    if response.status_code == HTTPStatus.FOUND:
-        # TODO don't cover by input fixture
-        assert response['Location'] == expected_body
-    else:
-        assert response.json() == expected_body
+    assert response.json() == expected_body
 
 
 @pytest.mark.parametrize(
@@ -115,3 +112,19 @@ def test_controller_with_problem_exceptions(url_path, expected_status, expected_
     # Assert
     assert response.status_code == expected_status
     assert response.json() == expected_body
+
+
+@pytest.mark.parametrize(
+    ['url_path', 'expected_exception_cls'], (
+        ('problem_exists_not_handled_exception', ProblemExistsException),
+    ),
+)
+def test_controller_with_problem_exceptions_raise_error(url_path, expected_exception_cls):
+    client = APIClient()
+    user = AuthorizedUser()
+    client.force_authenticate(user)
+    url = f'/controller_with_problem_exceptions/{url_path}/'
+
+    # Act
+    with pytest.raises(expected_exception_cls):
+        client.get(url)

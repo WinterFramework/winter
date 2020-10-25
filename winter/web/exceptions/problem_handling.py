@@ -6,12 +6,12 @@ import dataclasses
 from rest_framework.request import Request
 
 from winter.core import Component
+from winter.core.utils import camel_to_human
 from .exception_handler_generator import ExceptionHandlerGenerator
 from .exception_mapper import ExceptionMapper
 from .handlers import ExceptionHandler
 from .handlers import exception_handlers_registry
 from .problem_annotation import ProblemAnnotation
-from ...core.utils import camel_to_human
 
 
 class ProblemExceptionHandlerGenerator(ExceptionHandlerGenerator):
@@ -79,7 +79,7 @@ class ProblemExceptionMapper(ExceptionMapper):
         return re.sub('Exception$', '', exception_cls.__name__)
 
 
-def generate_handlers_for_auto_handled_problem():
+def generate_problem_handlers():
     mapper = ProblemExceptionMapper()
     handler_generator = ProblemExceptionHandlerGenerator()
     handled_problems: Dict[Type[Exception], ProblemAnnotation] = {
