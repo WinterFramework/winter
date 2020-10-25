@@ -18,6 +18,3 @@ from .web.routing import route_get
 from .web.routing import route_patch
 from .web.routing import route_post
 from .web.routing import route_put
-
-
-web.setup()

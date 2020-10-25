@@ -14,6 +14,3 @@ from .view import create_django_urls
 def setup():
     arguments_resolver.add_argument_resolver(DRFBodyArgumentResolver())
     arguments_resolver.add_argument_resolver(HttpRequestArgumentResolver())
-
-
-setup()

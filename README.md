@@ -13,6 +13,7 @@ Web Framework for Python inspired by Spring Framework
 * Built around python type annotations
 * Automatic OpenAPI (swagger) documentation generation
 * Suitable for DDD
+* Handling exception without boilerplate in accordance with [RFC 7807](https://tools.ietf.org/html/rfc7807)
 
 # How to use
 ## Installation
@@ -49,7 +50,6 @@ from typing import Optional
 import winter
 import winter.web
 from dataclasses import dataclass
-from rest_framework.request import Request
 from winter.data.pagination import Page
 from winter.data.pagination import PagePosition
 
@@ -70,15 +70,10 @@ class TodoDTO:
     todo: str
 
 
+@winter.web.problem(status=HTTPStatus.NOT_FOUND, auto_handle=True)
 class NotFoundException(Exception):
     def __init__(self, todo_index: int):
         self.index = todo_index
-
-
-class NotFoundExceptionHandler(winter.web.ExceptionHandler):
-    @winter.response_status(HTTPStatus.NOT_FOUND)
-    def handle(self, request: Request, exception: NotFoundException) -> str:
-        return f'Index {exception.index} out of bounds'
 
 
 todo_list: List[str] = []
@@ -94,7 +89,6 @@ class TodoController:
         return self._build_todo_dto(len(todo_list) - 1)
 
     @winter.route_get('{todo_index}/')
-    @winter.throws(NotFoundException, handler_cls=NotFoundExceptionHandler)
     def get_todo(self, todo_index: int) -> TodoDTO:
         self._check_index(todo_index)
         return self._build_todo_dto(todo_index)
@@ -114,13 +108,11 @@ class TodoController:
 
     @winter.route_get('{todo_index}/')
     @winter.request_body(argument_name='todo_update_dto')
-    @winter.throws(NotFoundException, handler_cls=NotFoundExceptionHandler)
     def update_todo(self, todo_index: int, todo_update_dto: TodoUpdateDTO):
         self._check_index(todo_index)
         todo_list[todo_index] = todo_update_dto.todo
 
     @winter.route_get('{todo_index}/')
-    @winter.throws(NotFoundException, handler_cls=NotFoundExceptionHandler)
     def delete_todo(self, todo_index: int):
         self._check_index(todo_index)
         del todo_list[todo_index]
@@ -164,4 +156,64 @@ class ExampleController:
             # Custom fields
             extra_field=456,
         )
+```
+
+
+## Exception handling
+```python
+from dataclasses import dataclass
+from http import HTTPStatus
+from typing import List
+
+from rest_framework.request import Request
+
+import winter
+import winter.web
+
+
+# Minimalist approach. Pointed status and that this exception will be handling automatically. Expected output below:
+# {'status': 404, 'type': 'urn:problem-type:todo-not-found', 'title': 'Todo not found', 'detail': 'Incorrect index: 1'}
+@winter.web.problem(status=HTTPStatus.NOT_FOUND, auto_handle=True)
+class TodoNotFoundException(Exception):
+    def __init__(self, invalid_index: int):
+        self.invalid_index = invalid_index
+    
+    def __str__(self):
+        return f'Incorrect index: {self.invalid_index}'
+
+# Extending output using dataclass. Dataclass fields will be added to response body. Expected output below:
+# {'status': 404, 'type': 'urn:problem-type:todo-not-found', 'title': 'Todo not found', 'detail': '', 'invalid_index': 1}
+@winter.web.problem(status=HTTPStatus.NOT_FOUND, auto_handle=True)
+@dataclass
+class TodoNotFoundException(Exception):
+    invalid_index: int 
+
+# When we want to override global handler and customize response body. Expected output below:
+# {index: 1, 'message': 'Access denied'}
+@dataclass
+class ErrorDTO:
+    index: int
+    message: str
+
+
+class TodoNotFoundExceptionCustomHandler(winter.web.ExceptionHandler):
+    @winter.response_status(HTTPStatus.FORBIDDEN)
+    def handle(self, request: Request, exception: TodoNotFoundException) -> ErrorDTO:
+        return ErrorDTO(index=exception.invalid_index, message='Access denied')
+
+
+todo_list: List[str] = []
+
+
+@winter.web.controller
+class TodoProblemExistsController:
+    @winter.route_get('global/{todo_index}/')
+    def get_todo_with_global_handling(self, todo_index: int):
+        raise TodoNotFoundException(invalid_index=todo_index)
+    
+    @winter.route_get('custom/{todo_index}/')
+    @winter.throws(TodoNotFoundException, handler_cls=TodoNotFoundExceptionCustomHandler)
+    def get_todo_with_custom_handling(self, todo_index: int):
+        raise TodoNotFoundException(invalid_index=todo_index)
+        
 ```

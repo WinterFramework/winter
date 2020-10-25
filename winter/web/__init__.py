@@ -2,9 +2,9 @@ from . import pagination
 from .argument_resolver import arguments_resolver
 from .auth import no_authentication
 from .controller import controller
-from .exception_handlers import DecodeExceptionHandler
 from .exceptions import ExceptionHandler
 from .exceptions import exception_handlers_registry
+from .exceptions import problem
 from .media_type import InvalidMediaTypeException
 from .media_type import MediaType
 from .output_processor import register_output_processor_resolver
@@ -23,18 +23,17 @@ from .urls import register_url_regexp
 def setup():
     from winter.core.json.decoder import JSONDecodeException
     from .exceptions import RedirectException
-    from .exceptions import ThrottleException
-    from .exception_handlers import BadRequestExceptionHandler
-    from .exception_handlers import RedirectExceptionHandler
-    from .exception_handlers import ThrottleExceptionHandler
     from .path_parameters_argument_resolver import PathParametersArgumentResolver
     from .query_parameters.query_parameters_argument_resolver import QueryParameterArgumentResolver
     from .response_header_serializers import DateTimeResponseHeaderSerializer
     from .response_header_serializers import LastModifiedResponseHeaderSerializer
-    from .pagination.limits import MaximumLimitValueExceeded
     from .pagination.page_processor_resolver import PageOutputProcessorResolver
     from .pagination.page_position_argument_resolver import PagePositionArgumentResolver
+    from .exceptions import generate_problem_handlers
+    from .exception_handlers import RedirectExceptionHandler
+    from .exception_handlers import DecodeExceptionHandler
 
+    generate_problem_handlers()
     register_output_processor_resolver(PageOutputProcessorResolver())
     response_headers_serializer.add_serializer(DateTimeResponseHeaderSerializer())
     response_headers_serializer.add_serializer(LastModifiedResponseHeaderSerializer())
@@ -45,5 +44,3 @@ def setup():
     arguments_resolver.add_argument_resolver(PagePositionArgumentResolver())
     exception_handlers_registry.add_handler(JSONDecodeException, DecodeExceptionHandler, auto_handle=True)
     exception_handlers_registry.add_handler(RedirectException, RedirectExceptionHandler, auto_handle=True)
-    exception_handlers_registry.add_handler(MaximumLimitValueExceeded, BadRequestExceptionHandler, auto_handle=True)
-    exception_handlers_registry.add_handler(ThrottleException, ThrottleExceptionHandler, auto_handle=True)
