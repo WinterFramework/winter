@@ -177,7 +177,7 @@ import winter.web
 class TodoNotFoundException(Exception):
     def __init__(self, invalid_index: int):
         self.invalid_index = invalid_index
-    
+
     def __str__(self):
         return f'Incorrect index: {self.invalid_index}'
 
@@ -186,7 +186,7 @@ class TodoNotFoundException(Exception):
 @winter.web.problem(status=HTTPStatus.NOT_FOUND, auto_handle=True)
 @dataclass
 class TodoNotFoundException(Exception):
-    invalid_index: int 
+    invalid_index: int
 
 # When we want to override global handler and customize response body. Expected output below:
 # {index: 1, 'message': 'Access denied'}
@@ -197,7 +197,7 @@ class ErrorDTO:
 
 
 class TodoNotFoundExceptionCustomHandler(winter.web.ExceptionHandler):
-    @winter.response_status(HTTPStatus.FORBIDDEN)
+    @winter.response_status(HTTPStatus.NOT_FOUND)
     def handle(self, request: Request, exception: TodoNotFoundException) -> ErrorDTO:
         return ErrorDTO(index=exception.invalid_index, message='Access denied')
 
@@ -210,10 +210,10 @@ class TodoProblemExistsController:
     @winter.route_get('global/{todo_index}/')
     def get_todo_with_global_handling(self, todo_index: int):
         raise TodoNotFoundException(invalid_index=todo_index)
-    
+
     @winter.route_get('custom/{todo_index}/')
     @winter.throws(TodoNotFoundException, handler_cls=TodoNotFoundExceptionCustomHandler)
     def get_todo_with_custom_handling(self, todo_index: int):
         raise TodoNotFoundException(invalid_index=todo_index)
-        
+
 ```
