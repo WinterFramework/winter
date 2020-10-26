@@ -7,6 +7,7 @@ urlpatterns = [
     *winter_django.create_django_urls(controllers.NoAuthenticationController),
     *winter_django.create_django_urls(controllers.SimpleController),
     *winter_django.create_django_urls(controllers.ControllerWithExceptions),
+    *winter_django.create_django_urls(controllers.ControllerWithProblemExceptions),
     *winter_django.create_django_urls(controllers.ControllerWithMediaTypesRouting),
     *winter_django.create_django_urls(drf.ControllerWithOutputTemplate),
     *winter_django.create_django_urls(controllers.ControllerWithPathParameters),

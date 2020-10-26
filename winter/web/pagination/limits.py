@@ -1,11 +1,14 @@
 import warnings
+from http import HTTPStatus
 from typing import Optional
 
 import dataclasses
 
 from winter.core import annotate
+from ..exceptions import problem
 
 
+@problem(HTTPStatus.BAD_REQUEST, auto_handle=True)
 class MaximumLimitValueExceeded(Exception):
     def __init__(self, maximum_limit: int):
         super().__init__(f'Maximum limit value is exceeded: {maximum_limit}')

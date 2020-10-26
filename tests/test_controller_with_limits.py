@@ -35,4 +35,9 @@ def test_controller_with_limits_fails_if_maximum_limit_is_exceeded():
     response = client.get('/with-limits/?limit=120')
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
-    assert response.json() == 'Maximum limit value is exceeded: 100'
+    assert response.json() == {
+        'status': 400,
+        'detail': 'Maximum limit value is exceeded: 100',
+        'title': 'Maximum limit value exceeded',
+        'type': 'urn:problem-type:maximum-limit-value-exceeded',
+    }
