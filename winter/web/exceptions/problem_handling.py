@@ -61,10 +61,7 @@ class ProblemExceptionMapper(ExceptionMapper):
             type=annotation.type or self._generate_type_value(exception_class),
         )
         if dataclasses.is_dataclass(exception.__class__):
-            fields = dataclasses.fields(exception_class)
-            for field in fields:
-                field_value = getattr(exception, field.name)
-                problem_dict[field.name] = field_value
+            problem_dict.update(dataclasses.asdict(exception))
 
         return problem_dict
 
