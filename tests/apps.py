@@ -5,7 +5,8 @@ class TestAppConfig(AppConfig):
     name = 'test'
 
     def ready(self):
-        from .urls import urlpatterns
+        # define this import for force initialization all modules and to register Exceptions
+        from .urls import urlpatterns   # noqa: F401
         import winter
         import winter_django
         import winter_openapi
