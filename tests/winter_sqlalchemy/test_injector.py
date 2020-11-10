@@ -14,12 +14,13 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import mapper
 
 from winter.data import CRUDRepository
+from winter_ddd import AggregateRoot
 from winter_sqlalchemy.repository import sqla_crud
 
 
 class Fixture:
     def __init__(self):
-        class MyEntity:
+        class MyEntity(AggregateRoot):
             def __init__(self, id_: int, name: Optional[str]):
                 self.id = id_
                 self.name = name

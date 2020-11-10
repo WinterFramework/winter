@@ -5,7 +5,6 @@ import pytest
 
 from winter_ddd import AggregateRoot
 from winter_ddd import DomainEvent
-from winter_ddd import Entity
 from winter_ddd import domain_event_handler
 from winter_ddd import global_domain_event_dispatcher
 
@@ -59,7 +58,7 @@ def empty_handler():
     yield Handler()
 
 
-class Aggregate(Entity, AggregateRoot):
+class Aggregate(AggregateRoot):
     pass
 
 

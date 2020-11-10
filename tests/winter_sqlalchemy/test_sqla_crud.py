@@ -1,6 +1,7 @@
 from typing import Optional
 
 import pytest
+from dataclasses import dataclass
 from sqlalchemy import Column
 from sqlalchemy import Integer
 from sqlalchemy import MetaData
@@ -11,14 +12,26 @@ from sqlalchemy.orm import mapper
 
 from winter.data import CRUDRepository
 from winter.data.exceptions import NotFoundException
+from winter_ddd import AggregateRoot
+from winter_ddd import DomainEvent
+from winter_ddd import domain_event_handler
 from winter_sqlalchemy.repository import sqla_crud
 
 
-class MyEntity:
+@dataclass
+class MarkedAsDoneDomainEvent(DomainEvent):
+    entity: 'MyEntity'
+
+
+class MyEntity(AggregateRoot):
     def __init__(self, id_: int, name: Optional[str], lastname: Optional[str]):
         self.id = id_
         self.name = name
         self.lastname = lastname
+
+    def mark_as_done(self):
+        self.name = 'done'
+        self.domain_events.register(MarkedAsDoneDomainEvent(self))
 
 
 metadata = MetaData()
@@ -42,7 +55,19 @@ class Fixture:
                 pass
 
         metadata.create_all(bind=self._engine)
-        self.repository = MyRepository(engine=self._engine)
+        repository = MyRepository(engine=self._engine)
+        self.repository = repository
+
+        class DomainEventHandlers:
+            @domain_event_handler
+            def on_marked_as_done(self, event: MarkedAsDoneDomainEvent):
+                entity = event.entity
+                new_entity = MyEntity(
+                    id_=entity.id * 100,
+                    name='handled',
+                    lastname='',
+                )
+                repository.save(new_entity)
 
     def execute(self, sql):
         return self._engine.execute(sql)
@@ -186,37 +211,37 @@ def test_save_new():
 
 def test_save():
     fixture = Fixture()
-    fixture.execute("INSERT INTO my_entities (id, name) VALUES (1, 'old'), (2, 'old'), (3, 'old');")
+    fixture.execute("INSERT INTO my_entities (id, name) VALUES (1, 'started'), (2, 'started'), (3, 'started');")
     entity = fixture.repository.find_by_id(2)
-    entity.name = 'new'
+    entity.mark_as_done()
 
     # Act
     entity = fixture.repository.save(entity)
 
-    assert entity.name == 'new'
+    assert entity.name == 'done'
     entities = fixture.execute('SELECT id, name FROM my_entities;').fetchall()
     entities = [(id_, name) for id_, name in entities]
-    assert len(entities) == 3
-    assert set(entities) == {(1, 'old'), (2, 'new'), (3, 'old')}
+    assert len(entities) == 4
+    assert set(entities) == {(1, 'started'), (2, 'done'), (3, 'started'), (200, 'handled')}
 
 
 def test_save_many():
     fixture = Fixture()
-    fixture.execute("INSERT INTO my_entities (id, name) VALUES (1, 'old'), (2, 'old'), (3, 'old');")
+    fixture.execute("INSERT INTO my_entities (id, name) VALUES (1, 'started'), (2, 'started'), (3, 'started');")
     entities = fixture.repository.find_all_by_id([1, 3])
     for entity in entities:
-        entity.name = 'new'
+        entity.mark_as_done()
 
     # Act
     entities = fixture.repository.save_many(entities)
 
     entities = list(entities)
     assert len(entities) == 2
-    assert all(entity.name == 'new' for entity in entities)
+    assert all(entity.name == 'done' for entity in entities)
     entities = fixture.execute('SELECT id, name FROM my_entities;').fetchall()
     entities = [(id_, name) for id_, name in entities]
-    assert len(entities) == 3
-    assert set(entities) == {(1, 'new'), (2, 'old'), (3, 'new')}
+    assert len(entities) == 5
+    assert set(entities) == {(1, 'done'), (2, 'started'), (3, 'done'), (100, 'handled'), (300, 'handled')}
 
 
 # def test_find_one_by_name_and_lastname():

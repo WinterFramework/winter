@@ -1,4 +1,5 @@
 from typing import Iterable
+from typing import List
 from typing import Optional
 from typing import TypeVar
 
@@ -15,6 +16,9 @@ from sqlalchemy.orm.exc import UnmappedClassError
 
 from winter.data import CRUDRepository
 from winter.data.exceptions import NotFoundException
+from winter_ddd import AggregateRoot
+from winter_ddd import DomainEvent
+from winter_ddd import global_domain_event_dispatcher
 
 T = TypeVar('T')
 K = TypeVar('K')
@@ -25,6 +29,9 @@ def sqla_crud(repository_cls):
         raise TypeError('Repository must be inherited from CRUDRepository before annotating with sqla_crud')
 
     entity_cls = repository_cls.__entity_cls__
+
+    if not issubclass(entity_cls, AggregateRoot):
+        raise TypeError('Entity class must be inherited from winter_ddd.AggregateRoot')
 
     try:
         mapper = class_mapper(entity_cls)
@@ -120,16 +127,31 @@ def sqla_crud(repository_cls):
             return entity
 
         def save(self, entity: T) -> T:
+            self._save(entity)
+            self._process_domain_events([entity])
+            return entity
+
+        def save_many(self, entities: Iterable[T]) -> Iterable[T]:
+            entities = list(entities)
+            for entity in entities:
+                self._save(entity)
+            self._process_domain_events(entities)
+            return entities
+
+        def _save(self, entity: T):
             if entity not in self._sessions:
                 self._sessions[entity] = self._session_factory()
                 self._sessions[entity].add(entity)
             self._sessions[entity].flush()
             pk = inspect(entity).identity
             self._identity_map[pk] = entity
-            return entity
 
-        def save_many(self, entities: Iterable[T]) -> Iterable[T]:
-            return [self.save(entity) for entity in entities]
+        def _process_domain_events(self, aggregates: Iterable[AggregateRoot]):
+            domain_events: List[DomainEvent] = []
+            for aggregate in aggregates:
+                domain_events.extend(aggregate.domain_events)
+                aggregate.clear_domain_events()
+            global_domain_event_dispatcher.dispatch(domain_events)
 
         @inject
         def __init__(self, engine: Engine):
