@@ -1,5 +1,8 @@
 from typing import Callable
+from typing import Dict
 from typing import Iterable
+from typing import List
+from typing import Tuple
 from typing import Type
 from typing import TypeVar
 
@@ -9,11 +12,13 @@ from .domain_event_subscription import DomainEventSubscription
 T = TypeVar('T')
 HandlerFactory = Callable[[Type[T]], T]
 
+EventFilter = Tuple[Type[DomainEvent]]
+
 
 class DomainEventDispatcher:
     def __init__(self):
-        self._subscriptions = {}
-        self._event_type_to_event_filter_map = {}
+        self._subscriptions: Dict[EventFilter, List[DomainEventSubscription]] = {}
+        self._event_type_to_event_filters_map: Dict[Type[DomainEvent], List[EventFilter]] = {}
         self._handler_factory = lambda cls: cls()
 
     def set_handler_factory(self, handler_factory: HandlerFactory):
@@ -22,14 +27,16 @@ class DomainEventDispatcher:
     def add_subscription(self, subscription: DomainEventSubscription):
         self._subscriptions.setdefault(subscription.event_filter, []).append(subscription)
         for event_type in subscription.event_filter:
-            self._event_type_to_event_filter_map.setdefault(event_type, set()).add(subscription.event_filter)
+            event_filters = self._event_type_to_event_filters_map.setdefault(event_type, [])
+            if subscription.event_filter not in event_filters:
+                event_filters.append(subscription.event_filter)
 
     def dispatch(self, events: Iterable[DomainEvent]):
-        filtered_events = {}
+        filtered_events: Dict[EventFilter, List[DomainEvent]] = {}
 
         for event in events:
             event_type = type(event)
-            event_filters = self._event_type_to_event_filter_map.get(event_type, [])
+            event_filters = self._event_type_to_event_filters_map.get(event_type, [])
             for event_filter in event_filters:
                 filtered_events.setdefault(event_filter, []).append(event)
 
