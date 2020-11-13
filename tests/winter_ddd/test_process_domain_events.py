@@ -150,4 +150,3 @@ def test_order_process_domain_events():
             'handle_many_2',
             'handle_many_3',
         ]
-
