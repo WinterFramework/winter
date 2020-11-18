@@ -4,6 +4,7 @@ from typing import Dict
 import dataclasses
 
 import winter.web
+from winter.data.exceptions import NotFoundException
 
 
 @winter.web.problem(status=HTTPStatus.FORBIDDEN)
@@ -47,6 +48,10 @@ class CustomExceptionDTO:
     message: str
 
 
+class MyEntity:
+    pass
+
+
 class ProblemExistsExceptionCustomHandler(winter.web.ExceptionHandler):
     @winter.response_status(HTTPStatus.BAD_REQUEST)
     def handle(self, exception: ProblemExistsException) -> CustomExceptionDTO:
@@ -79,3 +84,7 @@ class ControllerWithProblemExceptions:
     @winter.route_get('custom_handler_problem_exists_exception/')
     def custom_handler_problem_exists_exception(self) -> str:
         raise ProblemExistsException()
+
+    @winter.route_get('not_found_exception/')
+    def not_found_exception(self) -> str:
+        raise NotFoundException(entity_id=1, entity_cls=MyEntity)

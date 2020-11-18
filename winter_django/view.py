@@ -109,6 +109,7 @@ def _call_controller_method(controller, route: Route, request: Request):
 def _fill_response_headers(response, response_headers):
     for header_name, header_value in response_headers.items():
         response[header_name] = response_headers_serializer.serialize(header_value, header_name)
+    response.content_type = response_headers.get('content-type')
 
 
 def convert_result_to_http_response(request: Request, result: Any, method: ComponentMethod):
