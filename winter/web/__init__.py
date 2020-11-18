@@ -30,6 +30,7 @@ def setup():
     from .response_header_serializers import LastModifiedResponseHeaderSerializer
     from .pagination.page_processor_resolver import PageOutputProcessorResolver
     from .pagination.page_position_argument_resolver import PagePositionArgumentResolver
+    from .exceptions.problem_handling import autodiscover_problem_annotations
     from .exceptions.problem_handling import ProblemExceptionHandlerGenerator
     from .exceptions.problem_handling import ProblemExceptionMapper
     from .exceptions.problem_handling_info import ProblemHandlingInfo
@@ -47,7 +48,7 @@ def setup():
 
     exception_mapper = ProblemExceptionMapper()
     exception_handler_generator = ProblemExceptionHandlerGenerator(exception_mapper)
-    exception_handler_generator.autodiscover()
+    autodiscover_problem_annotations(exception_handler_generator)
     auto_handle_exceptions = {
         JSONDecodeException: DecodeExceptionHandler,
         RedirectException: RedirectExceptionHandler,

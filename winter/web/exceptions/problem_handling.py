@@ -46,20 +46,6 @@ class ProblemExceptionHandlerGenerator(ExceptionHandlerGenerator):
         handler_class = type(handler_class_name, (ExceptionHandler,), {'handle': handle_method})
         return handler_class
 
-    def autodiscover(self):
-        handled_problems: Dict[Type[Exception], ProblemAnnotation] = {
-            cls: component.annotations.get_one(ProblemAnnotation)
-            for cls, component in Component.get_all().items()
-            if component.annotations.get_one_or_none(ProblemAnnotation)
-        }
-        for exception_class, problem_annotation in handled_problems.items():
-            handler_class = self.generate(exception_class, problem_annotation.handling_info)
-            exception_handlers_registry.add_handler(
-                exception_class,
-                handler_class,
-                auto_handle=problem_annotation.auto_handle,
-            )
-
     def _build_exception_dataclass(self, exception_class: Type[Exception]) -> Type:
         class_name = exception_class.__name__
 
@@ -104,3 +90,18 @@ class ProblemExceptionMapper(ExceptionMapper):
     @classmethod
     def _try_cut_exception_name_postfix(cls, exception_cls: Type[Exception]) -> str:
         return re.sub('Exception$', '', exception_cls.__name__)
+
+
+def autodiscover_problem_annotations(handler_generator: ProblemExceptionHandlerGenerator):
+    handled_problems: Dict[Type[Exception], ProblemAnnotation] = {
+        cls: component.annotations.get_one(ProblemAnnotation)
+        for cls, component in Component.get_all().items()
+        if component.annotations.get_one_or_none(ProblemAnnotation)
+    }
+    for exception_class, problem_annotation in handled_problems.items():
+        handler_class = handler_generator.generate(exception_class, problem_annotation.handling_info)
+        exception_handlers_registry.add_handler(
+            exception_class,
+            handler_class,
+            auto_handle=problem_annotation.auto_handle,
+        )
