@@ -1,10 +1,9 @@
 from dataclasses import dataclass
 
+from .problem_handling_info import ProblemHandlingInfo
+
 
 @dataclass(frozen=True)
 class ProblemAnnotation:
-    status: int
-    title: str
-    detail: str
-    type: str
-    auto_handle: bool
+    handling_info: ProblemHandlingInfo
+    auto_handle: bool = False

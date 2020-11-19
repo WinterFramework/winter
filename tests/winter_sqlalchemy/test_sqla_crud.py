@@ -190,7 +190,7 @@ def test_find_by_id():
 def test_get_by_id():
     fixture = Fixture()
 
-    with pytest.raises(NotFoundException, match="<class 'test_sqla_crud.MyEntity'> with ID=2 not found"):
+    with pytest.raises(NotFoundException, match="MyEntity with ID=2 not found"):
         # Act
         fixture.repository.get_by_id(2)
 

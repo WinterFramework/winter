@@ -61,10 +61,11 @@ def test_exception_handler_with_unknown_argument():
 
 
 @pytest.mark.parametrize(
-    ['url_path', 'expected_status', 'expected_body'], (
+    ['url_path', 'expected_status', 'expected_content_type', 'expected_body'], (
         (
             'problem_exists_exception',
             HTTPStatus.FORBIDDEN,
+            'application/json+problem',
             {
                 'detail': 'Implicit string of detail',
                 'status': 403,
@@ -75,6 +76,7 @@ def test_exception_handler_with_unknown_argument():
         (
             'problem_exists_dataclass_exception',
             HTTPStatus.FORBIDDEN,
+            'application/json+problem',
             {
                 'status': 403,
                 'type': 'urn:problem-type:problem-exists-dataclass',
@@ -86,6 +88,7 @@ def test_exception_handler_with_unknown_argument():
         (
             'problem_exists_auto_handle_exception',
             HTTPStatus.FORBIDDEN,
+            'application/json+problem',
             {
                 'status': 403,
                 'type': 'urn:problem-type:problem-exists-auto-handle',
@@ -96,11 +99,23 @@ def test_exception_handler_with_unknown_argument():
         (
             'custom_handler_problem_exists_exception',
             HTTPStatus.BAD_REQUEST,
+            'application/json',
             {'message': 'Implicit string of detail'},
+        ),
+        (
+            'not_found_exception',
+            HTTPStatus.NOT_FOUND,
+            'application/json+problem',
+            {
+                'status': 404,
+                'type': 'urn:problem-type:not-found',
+                'title': 'Not found',
+                'detail': 'MyEntity with ID=1 not found',
+            },
         ),
     ),
 )
-def test_controller_with_problem_exceptions(url_path, expected_status, expected_body):
+def test_controller_with_problem_exceptions(url_path, expected_status, expected_content_type, expected_body):
     client = APIClient()
     user = AuthorizedUser()
     client.force_authenticate(user)
@@ -111,6 +126,7 @@ def test_controller_with_problem_exceptions(url_path, expected_status, expected_
 
     # Assert
     assert response.status_code == expected_status
+    assert response.get('Content-Type') == expected_content_type
     assert response.json() == expected_body
 
 

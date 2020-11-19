@@ -22,6 +22,7 @@ from .urls import register_url_regexp
 
 def setup():
     from winter.core.json.decoder import JSONDecodeException
+    from winter.data.exceptions import NotFoundException
     from .exceptions import RedirectException
     from .path_parameters_argument_resolver import PathParametersArgumentResolver
     from .query_parameters.query_parameters_argument_resolver import QueryParameterArgumentResolver
@@ -29,11 +30,13 @@ def setup():
     from .response_header_serializers import LastModifiedResponseHeaderSerializer
     from .pagination.page_processor_resolver import PageOutputProcessorResolver
     from .pagination.page_position_argument_resolver import PagePositionArgumentResolver
-    from .exceptions import generate_problem_handlers
+    from .exceptions.problem_handling import autodiscover_problem_annotations
+    from .exceptions.problem_handling import ProblemExceptionHandlerGenerator
+    from .exceptions.problem_handling import ProblemExceptionMapper
+    from .exceptions.problem_handling_info import ProblemHandlingInfo
     from .exception_handlers import RedirectExceptionHandler
     from .exception_handlers import DecodeExceptionHandler
 
-    generate_problem_handlers()
     register_output_processor_resolver(PageOutputProcessorResolver())
     response_headers_serializer.add_serializer(DateTimeResponseHeaderSerializer())
     response_headers_serializer.add_serializer(LastModifiedResponseHeaderSerializer())
@@ -42,5 +45,14 @@ def setup():
     arguments_resolver.add_argument_resolver(RequestBodyArgumentResolver())
     arguments_resolver.add_argument_resolver(ResponseHeaderArgumentResolver())
     arguments_resolver.add_argument_resolver(PagePositionArgumentResolver())
-    exception_handlers_registry.add_handler(JSONDecodeException, DecodeExceptionHandler, auto_handle=True)
-    exception_handlers_registry.add_handler(RedirectException, RedirectExceptionHandler, auto_handle=True)
+
+    exception_mapper = ProblemExceptionMapper()
+    exception_handler_generator = ProblemExceptionHandlerGenerator(exception_mapper)
+    autodiscover_problem_annotations(exception_handler_generator)
+    auto_handle_exceptions = {
+        JSONDecodeException: DecodeExceptionHandler,
+        RedirectException: RedirectExceptionHandler,
+        NotFoundException: exception_handler_generator.generate(NotFoundException, ProblemHandlingInfo(status=404)),
+    }
+    for exception_class, handler in auto_handle_exceptions.items():
+        exception_handlers_registry.add_handler(exception_class, handler, auto_handle=True)
