@@ -8,7 +8,7 @@ from .web import response_status
 from .web.argument_resolver import ArgumentResolver
 from .web.argument_resolver import ArgumentsResolver
 from .web.argument_resolver import GenericArgumentResolver
-from .web.exceptions.throws import raises
+from .web.exceptions.raises import raises
 from .web.output_processor import register_output_processor_resolver
 from .web.query_parameters import map_query_parameter
 from .web.response_header_serializer import response_headers_serializer
