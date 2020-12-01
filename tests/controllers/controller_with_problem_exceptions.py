@@ -13,12 +13,12 @@ class ProblemExistsException(Exception):
         return 'Implicit string of detail'
 
 
-@winter.web.problem(status=HTTPStatus.FORBIDDEN, auto_handle=True)
+@winter.web.problem(status=HTTPStatus.FORBIDDEN)
 class ProblemExistsAutoHandleException(Exception):
     pass
 
 
-@winter.web.problem(status=HTTPStatus.FORBIDDEN, auto_handle=True)
+@winter.web.problem(status=HTTPStatus.FORBIDDEN)
 @dataclasses.dataclass
 class ProblemExistsDataclassException(Exception):
     custom_field: str = 'custom value'
@@ -61,10 +61,6 @@ class ProblemExistsExceptionCustomHandler(winter.web.ExceptionHandler):
 @winter.controller
 @winter.route('controller_with_problem_exceptions/')
 class ControllerWithProblemExceptions:
-
-    @winter.route_get('problem_exists_not_handled_exception/')
-    def problem_exists_not_handled_exception(self) -> str:
-        raise ProblemExistsException()
 
     @winter.throws(ProblemExistsException)
     @winter.route_get('problem_exists_exception/')

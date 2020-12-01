@@ -128,19 +128,3 @@ def test_controller_with_problem_exceptions(url_path, expected_status, expected_
     assert response.status_code == expected_status
     assert response.get('Content-Type') == expected_content_type
     assert response.json() == expected_body
-
-
-@pytest.mark.parametrize(
-    ['url_path', 'expected_exception_cls'], (
-        ('problem_exists_not_handled_exception', ProblemExistsException),
-    ),
-)
-def test_controller_with_problem_exceptions_raise_error(url_path, expected_exception_cls):
-    client = APIClient()
-    user = AuthorizedUser()
-    client.force_authenticate(user)
-    url = f'/controller_with_problem_exceptions/{url_path}/'
-
-    # Act
-    with pytest.raises(expected_exception_cls):
-        client.get(url)
