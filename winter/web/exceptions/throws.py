@@ -18,7 +18,7 @@ class ExceptionAnnotation:
     handler: Optional['ExceptionHandler'] = None
 
 
-def throws(exception_cls: Type[Exception], handler_cls: Optional[Type['ExceptionHandler']] = None):
+def raises(exception_cls: Type[Exception], handler_cls: Optional[Type['ExceptionHandler']] = None):
     """Decorator to use on methods."""
     if handler_cls is not None:
         handler = handler_cls()

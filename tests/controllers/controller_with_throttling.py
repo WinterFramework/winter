@@ -35,6 +35,6 @@ class ControllerWithThrottling:
 
     @winter.route_get('custom-handler/')
     @winter.web.throttling('5/s')
-    @winter.throws(ThrottleException, CustomThrottleExceptionHandler)
+    @winter.raises(ThrottleException, CustomThrottleExceptionHandler)
     def simple_method_with_custom_handler(self) -> int:
         return 1

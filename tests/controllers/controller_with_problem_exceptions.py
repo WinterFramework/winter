@@ -62,12 +62,12 @@ class ProblemExistsExceptionCustomHandler(winter.web.ExceptionHandler):
 @winter.route('controller_with_problem_exceptions/')
 class ControllerWithProblemExceptions:
 
-    @winter.throws(ProblemExistsException)
+    @winter.raises(ProblemExistsException)
     @winter.route_get('problem_exists_exception/')
     def problem_exists_exception(self) -> str:
         raise ProblemExistsException()
 
-    @winter.throws(ProblemExistsDataclassException)
+    @winter.raises(ProblemExistsDataclassException)
     @winter.route_get('problem_exists_dataclass_exception/')
     def problem_exists_dataclass_exception(self) -> str:
         raise ProblemExistsDataclassException()
@@ -76,7 +76,7 @@ class ControllerWithProblemExceptions:
     def problem_exists_auto_handle_exception(self) -> str:
         raise ProblemExistsAutoHandleException()
 
-    @winter.throws(ProblemExistsException, ProblemExistsExceptionCustomHandler)
+    @winter.raises(ProblemExistsException, ProblemExistsExceptionCustomHandler)
     @winter.route_get('custom_handler_problem_exists_exception/')
     def custom_handler_problem_exists_exception(self) -> str:
         raise ProblemExistsException()
