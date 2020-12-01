@@ -6,7 +6,6 @@ from rest_framework.test import APIClient
 from winter.web.argument_resolver import ArgumentNotSupported
 from .controllers.controller_with_exceptions import CustomException
 from .controllers.controller_with_exceptions import ExceptionWithoutHandler
-from .controllers.controller_with_problem_exceptions import ProblemExistsException
 from .entities import AuthorizedUser
 
 
@@ -86,14 +85,14 @@ def test_exception_handler_with_unknown_argument():
             },
         ),
         (
-            'problem_exists_auto_handle_exception',
+            'inherited_problem_exists_exception',
             HTTPStatus.FORBIDDEN,
             'application/json+problem',
             {
                 'status': 403,
-                'type': 'urn:problem-type:problem-exists-auto-handle',
-                'title': 'Problem exists auto handle',
-                'detail': '',
+                'type': 'urn:problem-type:inheritor-of-problem-exists',
+                'title': 'Inheritor of problem exists',
+                'detail': 'Implicit string of detail',
             },
         ),
         (

@@ -13,8 +13,7 @@ class ProblemExistsException(Exception):
         return 'Implicit string of detail'
 
 
-@winter.web.problem(status=HTTPStatus.FORBIDDEN)
-class ProblemExistsAutoHandleException(Exception):
+class InheritorOfProblemExistsException(ProblemExistsException):
     pass
 
 
@@ -72,9 +71,9 @@ class ControllerWithProblemExceptions:
     def problem_exists_dataclass_exception(self) -> str:
         raise ProblemExistsDataclassException()
 
-    @winter.route_get('problem_exists_auto_handle_exception/')
+    @winter.route_get('inherited_problem_exists_exception/')
     def problem_exists_auto_handle_exception(self) -> str:
-        raise ProblemExistsAutoHandleException()
+        raise InheritorOfProblemExistsException()
 
     @winter.raises(ProblemExistsException, ProblemExistsExceptionCustomHandler)
     @winter.route_get('custom_handler_problem_exists_exception/')
