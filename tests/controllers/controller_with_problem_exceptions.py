@@ -27,12 +27,12 @@ class ProblemExistsDataclassException(Exception):
 
 
 @winter.web.problem(
-    status=HTTPStatus.FORBIDDEN,
-    title='Problem exists',
-    type='urn:problem-type:problem-exists',
+    status=HTTPStatus.BAD_REQUEST,
+    title='All fields problem exists',
+    type='urn:problem-type:all-field-problem-exists',
     detail='A lot of interesting things happens with this problem',
 )
-class ProblemExistsStaticException(Exception):
+class AllFieldConstProblemExistsException(Exception):
     pass
 
 
@@ -70,6 +70,11 @@ class ControllerWithProblemExceptions:
     @winter.route_get('problem_exists_dataclass_exception/')
     def problem_exists_dataclass_exception(self) -> str:
         raise ProblemExistsDataclassException()
+
+    @winter.raises(AllFieldConstProblemExistsException)
+    @winter.route_get('all_field_const_problem_exists_exception/')
+    def all_field_const_problem_exists_exception(self) -> str:
+        raise AllFieldConstProblemExistsException()
 
     @winter.route_get('inherited_problem_exists_exception/')
     def problem_exists_auto_handle_exception(self) -> str:

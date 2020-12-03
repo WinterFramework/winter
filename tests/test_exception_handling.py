@@ -85,6 +85,17 @@ def test_exception_handler_with_unknown_argument():
             },
         ),
         (
+            'all_field_const_problem_exists_exception',
+            HTTPStatus.BAD_REQUEST,
+            'application/json+problem',
+            {
+                'status': 400,
+                'type': 'urn:problem-type:all-field-problem-exists',
+                'title': 'All fields problem exists',
+                'detail': 'A lot of interesting things happens with this problem',
+            },
+        ),
+        (
             'inherited_problem_exists_exception',
             HTTPStatus.FORBIDDEN,
             'application/json+problem',
