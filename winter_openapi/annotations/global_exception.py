@@ -10,10 +10,8 @@ class GlobalExceptionAnnotation:
     exception_cls: Type[Exception]
 
 
-def global_exception():
-    def wrapper(exception_class):
-        return register_global_exception(exception_class)
-    return wrapper
+def global_exception(exception_class):
+    return register_global_exception(exception_class)
 
 
 def register_global_exception(exception_class):
