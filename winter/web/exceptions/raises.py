@@ -18,7 +18,7 @@ class ExceptionAnnotation:
     handler: Optional['ExceptionHandler'] = None
 
 
-def throws(exception_cls: Type[Exception], handler_cls: Optional[Type['ExceptionHandler']] = None):
+def raises(exception_cls: Type[Exception], handler_cls: Optional[Type['ExceptionHandler']] = None):
     """Decorator to use on methods."""
     if handler_cls is not None:
         handler = handler_cls()
@@ -28,6 +28,6 @@ def throws(exception_cls: Type[Exception], handler_cls: Optional[Type['Exception
     return annotate(ExceptionAnnotation(exception_cls, handler), unique=True)
 
 
-def get_throws(method: ComponentMethod) -> Dict[Type[Exception], 'ExceptionHandler']:
+def get_raises(method: ComponentMethod) -> Dict[Type[Exception], 'ExceptionHandler']:
     annotations = method.annotations.get(ExceptionAnnotation)
     return {annotation.exception_cls: annotation.handler for annotation in annotations}

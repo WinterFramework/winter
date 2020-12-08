@@ -6,7 +6,6 @@ from rest_framework.test import APIClient
 from winter.web.argument_resolver import ArgumentNotSupported
 from .controllers.controller_with_exceptions import CustomException
 from .controllers.controller_with_exceptions import ExceptionWithoutHandler
-from .controllers.controller_with_problem_exceptions import ProblemExistsException
 from .entities import AuthorizedUser
 
 
@@ -86,14 +85,25 @@ def test_exception_handler_with_unknown_argument():
             },
         ),
         (
-            'problem_exists_auto_handle_exception',
+            'all_field_const_problem_exists_exception',
+            HTTPStatus.BAD_REQUEST,
+            'application/json+problem',
+            {
+                'status': 400,
+                'type': 'urn:problem-type:all-field-problem-exists',
+                'title': 'All fields problem exists',
+                'detail': 'A lot of interesting things happens with this problem',
+            },
+        ),
+        (
+            'inherited_problem_exists_exception',
             HTTPStatus.FORBIDDEN,
             'application/json+problem',
             {
                 'status': 403,
-                'type': 'urn:problem-type:problem-exists-auto-handle',
-                'title': 'Problem exists auto handle',
-                'detail': '',
+                'type': 'urn:problem-type:inheritor-of-problem-exists',
+                'title': 'Inheritor of problem exists',
+                'detail': 'Implicit string of detail',
             },
         ),
         (
@@ -128,19 +138,3 @@ def test_controller_with_problem_exceptions(url_path, expected_status, expected_
     assert response.status_code == expected_status
     assert response.get('Content-Type') == expected_content_type
     assert response.json() == expected_body
-
-
-@pytest.mark.parametrize(
-    ['url_path', 'expected_exception_cls'], (
-        ('problem_exists_not_handled_exception', ProblemExistsException),
-    ),
-)
-def test_controller_with_problem_exceptions_raise_error(url_path, expected_exception_cls):
-    client = APIClient()
-    user = AuthorizedUser()
-    client.force_authenticate(user)
-    url = f'/controller_with_problem_exceptions/{url_path}/'
-
-    # Act
-    with pytest.raises(expected_exception_cls):
-        client.get(url)

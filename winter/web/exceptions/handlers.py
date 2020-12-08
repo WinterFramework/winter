@@ -6,7 +6,7 @@ from typing import Type
 from typing import Union
 
 from winter.core import ComponentMethod
-from .throws import get_throws
+from .raises import get_raises
 
 NotHandled = object()
 
@@ -58,7 +58,7 @@ class MethodExceptionsManager:
     def __init__(self, method: ComponentMethod):
         super().__init__()
         self._method = method
-        self._handlers_by_exception = get_throws(self._method)
+        self._handlers_by_exception = get_raises(self._method)
 
     @property
     def declared_exception_classes(self) -> Tuple[Type[Exception], ...]:

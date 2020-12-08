@@ -103,5 +103,5 @@ def autodiscover_problem_annotations(handler_generator: ProblemExceptionHandlerG
         exception_handlers_registry.add_handler(
             exception_class,
             handler_class,
-            auto_handle=problem_annotation.auto_handle,
+            auto_handle=True,
         )

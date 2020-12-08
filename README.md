@@ -70,7 +70,7 @@ class TodoDTO:
     todo: str
 
 
-@winter.web.problem(status=HTTPStatus.NOT_FOUND, auto_handle=True)
+@winter.web.problem(status=HTTPStatus.NOT_FOUND)
 class NotFoundException(Exception):
     def __init__(self, todo_index: int):
         self.index = todo_index
@@ -173,7 +173,7 @@ import winter.web
 
 # Minimalist approach. Pointed status and that this exception will be handling automatically. Expected output below:
 # {'status': 404, 'type': 'urn:problem-type:todo-not-found', 'title': 'Todo not found', 'detail': 'Incorrect index: 1'}
-@winter.web.problem(status=HTTPStatus.NOT_FOUND, auto_handle=True)
+@winter.web.problem(status=HTTPStatus.NOT_FOUND)
 class TodoNotFoundException(Exception):
     def __init__(self, invalid_index: int):
         self.invalid_index = invalid_index
@@ -183,7 +183,7 @@ class TodoNotFoundException(Exception):
 
 # Extending output using dataclass. Dataclass fields will be added to response body. Expected output below:
 # {'status': 404, 'type': 'urn:problem-type:todo-not-found', 'title': 'Todo not found', 'detail': '', 'invalid_index': 1}
-@winter.web.problem(status=HTTPStatus.NOT_FOUND, auto_handle=True)
+@winter.web.problem(status=HTTPStatus.NOT_FOUND)
 @dataclass
 class TodoNotFoundException(Exception):
     invalid_index: int
@@ -212,7 +212,7 @@ class TodoProblemExistsController:
         raise TodoNotFoundException(invalid_index=todo_index)
 
     @winter.route_get('custom/{todo_index}/')
-    @winter.throws(TodoNotFoundException, handler_cls=TodoNotFoundExceptionCustomHandler)
+    @winter.raises(TodoNotFoundException, handler_cls=TodoNotFoundExceptionCustomHandler)
     def get_todo_with_custom_handling(self, todo_index: int):
         raise TodoNotFoundException(invalid_index=todo_index)
 

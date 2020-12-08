@@ -12,7 +12,6 @@ def problem(
     title: Optional[str] = None,
     detail: Optional[str] = None,
     type: Optional[str] = None,
-    auto_handle: bool = False,
 ):
     def wrapper(exception_class):
         assert issubclass(exception_class, Exception), f'Class "{exception_class}" must be a subclass of Exception'
@@ -23,7 +22,6 @@ def problem(
                 title=title,
                 detail=detail,
             ),
-            auto_handle=auto_handle,
         )
         annotation_decorator = annotate(annotation, unique=True)
         class_ = annotation_decorator(exception_class)

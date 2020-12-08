@@ -13,12 +13,11 @@ class ProblemExistsException(Exception):
         return 'Implicit string of detail'
 
 
-@winter.web.problem(status=HTTPStatus.FORBIDDEN, auto_handle=True)
-class ProblemExistsAutoHandleException(Exception):
+class InheritorOfProblemExistsException(ProblemExistsException):
     pass
 
 
-@winter.web.problem(status=HTTPStatus.FORBIDDEN, auto_handle=True)
+@winter.web.problem(status=HTTPStatus.FORBIDDEN)
 @dataclasses.dataclass
 class ProblemExistsDataclassException(Exception):
     custom_field: str = 'custom value'
@@ -28,12 +27,12 @@ class ProblemExistsDataclassException(Exception):
 
 
 @winter.web.problem(
-    status=HTTPStatus.FORBIDDEN,
-    title='Problem exists',
-    type='urn:problem-type:problem-exists',
+    status=HTTPStatus.BAD_REQUEST,
+    title='All fields problem exists',
+    type='urn:problem-type:all-field-problem-exists',
     detail='A lot of interesting things happens with this problem',
 )
-class ProblemExistsStaticException(Exception):
+class AllFieldConstProblemExistsException(Exception):
     pass
 
 
@@ -62,25 +61,26 @@ class ProblemExistsExceptionCustomHandler(winter.web.ExceptionHandler):
 @winter.route('controller_with_problem_exceptions/')
 class ControllerWithProblemExceptions:
 
-    @winter.route_get('problem_exists_not_handled_exception/')
-    def problem_exists_not_handled_exception(self) -> str:
-        raise ProblemExistsException()
-
-    @winter.throws(ProblemExistsException)
+    @winter.raises(ProblemExistsException)
     @winter.route_get('problem_exists_exception/')
     def problem_exists_exception(self) -> str:
         raise ProblemExistsException()
 
-    @winter.throws(ProblemExistsDataclassException)
+    @winter.raises(ProblemExistsDataclassException)
     @winter.route_get('problem_exists_dataclass_exception/')
     def problem_exists_dataclass_exception(self) -> str:
         raise ProblemExistsDataclassException()
 
-    @winter.route_get('problem_exists_auto_handle_exception/')
-    def problem_exists_auto_handle_exception(self) -> str:
-        raise ProblemExistsAutoHandleException()
+    @winter.raises(AllFieldConstProblemExistsException)
+    @winter.route_get('all_field_const_problem_exists_exception/')
+    def all_field_const_problem_exists_exception(self) -> str:
+        raise AllFieldConstProblemExistsException()
 
-    @winter.throws(ProblemExistsException, ProblemExistsExceptionCustomHandler)
+    @winter.route_get('inherited_problem_exists_exception/')
+    def problem_exists_auto_handle_exception(self) -> str:
+        raise InheritorOfProblemExistsException()
+
+    @winter.raises(ProblemExistsException, ProblemExistsExceptionCustomHandler)
     @winter.route_get('custom_handler_problem_exists_exception/')
     def custom_handler_problem_exists_exception(self) -> str:
         raise ProblemExistsException()
