@@ -1,9 +1,9 @@
 from enum import Enum
 
-from winter.web.pagination.limits import MaximumLimitValueExceeded
 from winter.data.pagination import Page
-
-from .annotations.global_exception import register_global_exception
+from winter.web.pagination.limits import MaximumLimitValueExceeded
+from .annotations import global_exception
+from .annotations import register_global_exception
 from .enum_inspector import inspect_enum_class
 from .inspectors import SwaggerAutoSchema
 from .method_arguments_inspector import MethodArgumentsInspector
