@@ -147,7 +147,7 @@ def inspect_date(hint_class) -> TypeInfo:
 
 
 # noinspection PyUnusedLocal
-@register_type_inspector(list, tuple, Iterable)
+@register_type_inspector(list, tuple, set, Iterable)
 def inspect_iterable(hint_class) -> TypeInfo:
     args = getattr(hint_class, '__args__', None)
     child_class = args[0] if args else str
