@@ -8,6 +8,7 @@ from typing import Generic
 from typing import List
 from typing import NewType
 from typing import Optional
+from typing import Set
 from typing import TypeVar
 
 import pytest
@@ -90,6 +91,7 @@ class CustomPage(Page, Generic[CustomPageItem]):
     (MixedValueEnum, TypeInfo(openapi.TYPE_STRING, enum=[123, 'green'])),
     (List[IntegerValueEnum], TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_INTEGER, enum=[1, 2]))),
     (List[StringValueEnum], TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_STRING, enum=['red', 'green']))),
+    (Set[int], TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_INTEGER))),
     (Dataclass(NestedDataclass(1)), TypeInfo(openapi.TYPE_OBJECT, properties={
         'nested': TypeInfo(openapi.TYPE_OBJECT, properties={
             'nested_number': TypeInfo(openapi.TYPE_INTEGER),
