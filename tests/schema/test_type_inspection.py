@@ -4,6 +4,7 @@ import uuid
 from dataclasses import dataclass
 from enum import Enum
 from enum import IntEnum
+from typing import Any
 from typing import Generic
 from typing import List
 from typing import NewType
@@ -91,6 +92,9 @@ class CustomPage(Page, Generic[CustomPageItem]):
     (MixedValueEnum, TypeInfo(openapi.TYPE_STRING, enum=[123, 'green'])),
     (List[IntegerValueEnum], TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_INTEGER, enum=[1, 2]))),
     (List[StringValueEnum], TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_STRING, enum=['red', 'green']))),
+    (Any, TypeInfo(openapi.TYPE_OBJECT)),
+    (List, TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_OBJECT))),
+    (List[Any], TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_OBJECT))),
     (Set[int], TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_INTEGER))),
     (Dataclass(NestedDataclass(1)), TypeInfo(openapi.TYPE_OBJECT, properties={
         'nested': TypeInfo(openapi.TYPE_OBJECT, properties={

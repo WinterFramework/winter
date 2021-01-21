@@ -1,3 +1,4 @@
+import dataclasses
 import datetime
 import decimal
 import enum
@@ -13,12 +14,13 @@ from typing import Optional
 from typing import Tuple
 from typing import Type
 
-import dataclasses
 from drf_yasg import openapi
 
 from winter.core.utils import has_nested_type
 from winter.core.utils.typing import get_origin_type
+from winter.core.utils.typing import is_any
 from winter.core.utils.typing import is_optional
+from winter.core.utils.typing import is_type_var
 
 _inspectors_by_type: Dict[
     Type,
@@ -117,6 +119,18 @@ def inspect_float(hint_class) -> TypeInfo:
 # noinspection PyUnusedLocal
 @register_type_inspector(dict)
 def inspect_dict(hint_class) -> TypeInfo:
+    return TypeInfo(openapi.TYPE_OBJECT)
+
+
+# noinspection PyUnusedLocal
+@register_type_inspector(object, checker=is_any)
+def inspect_any(hint_class) -> TypeInfo:
+    return TypeInfo(openapi.TYPE_OBJECT)
+
+
+# noinspection PyUnusedLocal
+@register_type_inspector(object, checker=is_type_var)
+def inspect_type_var(hint_class) -> TypeInfo:
     return TypeInfo(openapi.TYPE_OBJECT)
 
 

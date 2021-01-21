@@ -1,6 +1,7 @@
 import inspect
 import sys
 from typing import Iterable
+from typing import TypeVar
 from typing import Union
 
 NoneType = type(None)
@@ -9,6 +10,14 @@ UnionType = type(Union)
 
 def is_optional(typing: object) -> bool:
     return is_union(typing) and NoneType in (getattr(typing, '__args__', []) or [])
+
+
+def is_any(typing: object) -> bool:
+    return getattr(get_origin_type(typing), '_name', None) == 'Any'
+
+
+def is_type_var(typing: object) -> bool:
+    return type(typing) == TypeVar
 
 
 def is_iterable_type(typing: object) -> bool:
