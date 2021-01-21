@@ -13,7 +13,7 @@ def is_optional(typing: object) -> bool:
 
 
 def is_any(typing: object) -> bool:
-    return getattr(get_origin_type(typing), '_name', None) == 'Any'
+    return str(typing) == 'typing.Any'
 
 
 def is_type_var(typing: object) -> bool:
