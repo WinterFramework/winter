@@ -49,7 +49,7 @@ class InspectorNotFound(Exception):
 
 @dataclasses.dataclass
 class TypeInfo:
-    type_: str
+    type_: str = None,
     format_: Optional[str] = None
     child: Optional['TypeInfo'] = None
     nullable: bool = False
@@ -125,13 +125,13 @@ def inspect_dict(hint_class) -> TypeInfo:
 # noinspection PyUnusedLocal
 @register_type_inspector(object, checker=is_any)
 def inspect_any(hint_class) -> TypeInfo:
-    return TypeInfo(openapi.TYPE_OBJECT)
+    return TypeInfo()
 
 
 # noinspection PyUnusedLocal
 @register_type_inspector(object, checker=is_type_var)
 def inspect_type_var(hint_class) -> TypeInfo:
-    return TypeInfo(openapi.TYPE_OBJECT)
+    return TypeInfo()
 
 
 # noinspection PyUnusedLocal

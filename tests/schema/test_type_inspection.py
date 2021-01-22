@@ -92,9 +92,9 @@ class CustomPage(Page, Generic[CustomPageItem]):
     (MixedValueEnum, TypeInfo(openapi.TYPE_STRING, enum=[123, 'green'])),
     (List[IntegerValueEnum], TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_INTEGER, enum=[1, 2]))),
     (List[StringValueEnum], TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_STRING, enum=['red', 'green']))),
-    (Any, TypeInfo(openapi.TYPE_OBJECT)),
+    (Any, TypeInfo()),
     (List, TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_OBJECT))),
-    (List[Any], TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_OBJECT))),
+    (List[Any], TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo())),
     (Set[int], TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_INTEGER))),
     (Dataclass(NestedDataclass(1)), TypeInfo(openapi.TYPE_OBJECT, properties={
         'nested': TypeInfo(openapi.TYPE_OBJECT, properties={
