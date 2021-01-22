@@ -8,28 +8,28 @@ NoneType = type(None)
 UnionType = type(Union)
 
 
-def is_optional(typing: object) -> bool:
-    return is_union(typing) and NoneType in (getattr(typing, '__args__', []) or [])
+def is_optional(type_: object) -> bool:
+    return is_union(type_) and NoneType in (getattr(type_, '__args__', []) or [])
 
 
-def is_any(typing: object) -> bool:
-    return str(typing) == 'typing.Any'
+def is_any(type_: object) -> bool:
+    return str(type_) == 'typing.Any'
 
 
-def is_type_var(typing: object) -> bool:
-    return type(typing) == TypeVar
+def is_type_var(type_: object) -> bool:
+    return type(type_) == TypeVar
 
 
-def is_iterable_type(typing: object) -> bool:
+def is_iterable_type(type_: object) -> bool:
     """Note that str is not iterable here"""
-    if is_union(typing):
-        return all(is_iterable_type(arg) for arg in typing.__args__ if arg is not NoneType)
+    if is_union(type_):
+        return all(is_iterable_type(arg) for arg in type_.__args__ if arg is not NoneType)
 
-    return is_origin_type_subclasses(typing, Iterable) and not is_origin_type_subclasses(typing, str)
+    return is_origin_type_subclasses(type_, Iterable) and not is_origin_type_subclasses(type_, str)
 
 
-def is_union(typing: object) -> bool:
-    return get_origin_type(typing) == Union
+def is_union(type_: object) -> bool:
+    return get_origin_type(type_) == Union
 
 
 def get_origin_type(hint_class):
