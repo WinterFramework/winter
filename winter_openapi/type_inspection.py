@@ -168,7 +168,9 @@ def inspect_date(hint_class) -> TypeInfo:
 @register_type_inspector(list, tuple, set, Iterable)
 def inspect_iterable(hint_class) -> TypeInfo:
     args = getattr(hint_class, '__args__', None)
-    child_class = args[0] if args else str
+    if args is None:
+        return TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(TYPE_ANY_VALUE))
+    child_class = args[0]
     child_type_info = inspect_type(child_class)
     return TypeInfo(openapi.TYPE_ARRAY, child=child_type_info)
 
