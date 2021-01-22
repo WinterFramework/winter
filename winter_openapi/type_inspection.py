@@ -28,6 +28,9 @@ _inspectors_by_type: Dict[
 ] = {}
 
 
+TYPE_ANY_VALUE = 'AnyValue'
+
+
 def register_type_inspector(*types_: Type, checker: Callable = None, func: Callable = None):
     if func is None:
         return lambda func: register_type_inspector(*types_, checker=checker, func=func)
@@ -49,7 +52,7 @@ class InspectorNotFound(Exception):
 
 @dataclasses.dataclass
 class TypeInfo:
-    type_: str = None,
+    type_: str
     format_: Optional[str] = None
     child: Optional['TypeInfo'] = None
     nullable: bool = False
@@ -63,7 +66,8 @@ class TypeInfo:
 
     def as_dict(self):
         data = {
-            'type': self.type_,
+            # AnyValue map to Object in OpenApi 2.0
+            'type': openapi.TYPE_OBJECT if self.type_ == TYPE_ANY_VALUE else self.type_,
         }
         if self.format_ is not None:
             data['format'] = self.format_
@@ -125,13 +129,13 @@ def inspect_dict(hint_class) -> TypeInfo:
 # noinspection PyUnusedLocal
 @register_type_inspector(object, checker=is_any)
 def inspect_any(hint_class) -> TypeInfo:
-    return TypeInfo()
+    return TypeInfo(TYPE_ANY_VALUE)
 
 
 # noinspection PyUnusedLocal
 @register_type_inspector(object, checker=is_type_var)
 def inspect_type_var(hint_class) -> TypeInfo:
-    return TypeInfo()
+    return TypeInfo(TYPE_ANY_VALUE)
 
 
 # noinspection PyUnusedLocal
