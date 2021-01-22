@@ -1,3 +1,4 @@
+import dataclasses
 import datetime
 import decimal
 import enum
@@ -13,17 +14,21 @@ from typing import Optional
 from typing import Tuple
 from typing import Type
 
-import dataclasses
 from drf_yasg import openapi
 
 from winter.core.utils import has_nested_type
 from winter.core.utils.typing import get_origin_type
+from winter.core.utils.typing import is_any
 from winter.core.utils.typing import is_optional
+from winter.core.utils.typing import is_type_var
 
 _inspectors_by_type: Dict[
     Type,
     List[Tuple[Callable, Optional[Callable]]],
 ] = {}
+
+
+TYPE_ANY_VALUE = 'AnyValue'
 
 
 def register_type_inspector(*types_: Type, checker: Callable = None, func: Callable = None):
@@ -61,7 +66,8 @@ class TypeInfo:
 
     def as_dict(self):
         data = {
-            'type': self.type_,
+            # AnyValue map to Object in OpenApi 2.0
+            'type': openapi.TYPE_OBJECT if self.type_ == TYPE_ANY_VALUE else self.type_,
         }
         if self.format_ is not None:
             data['format'] = self.format_
@@ -121,6 +127,18 @@ def inspect_dict(hint_class) -> TypeInfo:
 
 
 # noinspection PyUnusedLocal
+@register_type_inspector(object, checker=is_any)
+def inspect_any(hint_class) -> TypeInfo:
+    return TypeInfo(TYPE_ANY_VALUE)
+
+
+# noinspection PyUnusedLocal
+@register_type_inspector(object, checker=is_type_var)
+def inspect_type_var(hint_class) -> TypeInfo:
+    return TypeInfo(TYPE_ANY_VALUE)
+
+
+# noinspection PyUnusedLocal
 @register_type_inspector(decimal.Decimal)
 def inspect_decimal(hint_class) -> TypeInfo:
     from rest_framework.settings import api_settings
@@ -150,7 +168,9 @@ def inspect_date(hint_class) -> TypeInfo:
 @register_type_inspector(list, tuple, set, Iterable)
 def inspect_iterable(hint_class) -> TypeInfo:
     args = getattr(hint_class, '__args__', None)
-    child_class = args[0] if args else str
+    if args is None:
+        return TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(TYPE_ANY_VALUE))
+    child_class = args[0]
     child_type_info = inspect_type(child_class)
     return TypeInfo(openapi.TYPE_ARRAY, child=child_type_info)
 
