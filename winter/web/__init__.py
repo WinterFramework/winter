@@ -1,10 +1,16 @@
 from . import pagination
 from .argument_resolver import arguments_resolver
 from .auth import no_authentication
+from .configurer import Configurer
 from .controller import controller
+from .controller import get_component
+from .controller import get_instance
+from .controller import set_factory
 from .exceptions import ExceptionHandler
 from .exceptions import exception_handlers_registry
 from .exceptions import problem
+from .interceptor import Interceptor
+from .interceptor import InterceptorRegistry
 from .media_type import InvalidMediaTypeException
 from .media_type import MediaType
 from .output_processor import register_output_processor_resolver
@@ -23,19 +29,20 @@ from .urls import register_url_regexp
 def setup():
     from winter.core.json.decoder import JSONDecodeException
     from winter.data.exceptions import NotFoundException
+    from .configurer import run_configurers
     from .exceptions import RedirectException
-    from .path_parameters_argument_resolver import PathParametersArgumentResolver
-    from .query_parameters.query_parameters_argument_resolver import QueryParameterArgumentResolver
-    from .response_header_serializers import DateTimeResponseHeaderSerializer
-    from .response_header_serializers import LastModifiedResponseHeaderSerializer
-    from .pagination.page_processor_resolver import PageOutputProcessorResolver
-    from .pagination.page_position_argument_resolver import PagePositionArgumentResolver
     from .exceptions.problem_handling import autodiscover_problem_annotations
     from .exceptions.problem_handling import ProblemExceptionHandlerGenerator
     from .exceptions.problem_handling import ProblemExceptionMapper
     from .exceptions.problem_handling_info import ProblemHandlingInfo
     from .exception_handlers import RedirectExceptionHandler
     from .exception_handlers import DecodeExceptionHandler
+    from .pagination.page_processor_resolver import PageOutputProcessorResolver
+    from .pagination.page_position_argument_resolver import PagePositionArgumentResolver
+    from .path_parameters_argument_resolver import PathParametersArgumentResolver
+    from .query_parameters.query_parameters_argument_resolver import QueryParameterArgumentResolver
+    from .response_header_serializers import DateTimeResponseHeaderSerializer
+    from .response_header_serializers import LastModifiedResponseHeaderSerializer
 
     register_output_processor_resolver(PageOutputProcessorResolver())
     response_headers_serializer.add_serializer(DateTimeResponseHeaderSerializer())
@@ -56,3 +63,5 @@ def setup():
     }
     for exception_class, handler in auto_handle_exceptions.items():
         exception_handlers_registry.add_handler(exception_class, handler, auto_handle=True)
+
+    run_configurers()

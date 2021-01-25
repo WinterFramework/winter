@@ -1,5 +1,8 @@
 from django.apps import AppConfig
 
+# noinspection PyUnresolvedReferences
+from .interceptors import *  # noqa: F401, F403
+
 
 class TestAppConfig(AppConfig):
     name = 'test'

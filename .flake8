@@ -1,5 +1,4 @@
 [flake8]
 max-line-length = 120
-format=abspath
 per-file-ignores =
     __init__.py:F401
