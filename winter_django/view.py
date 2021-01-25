@@ -14,11 +14,11 @@ from rest_framework.request import Request
 
 from winter.core import ComponentMethod
 from winter.web import ResponseEntity
+from winter.web import get_component
+from winter.web import get_instance
 from winter.web import response_headers_serializer
 from winter.web.argument_resolver import arguments_resolver
 from winter.web.auth import is_authentication_needed
-from winter.web.controller import build_controller
-from winter.web.controller import get_component
 from winter.web.default_response_status import get_default_response_status
 from winter.web.exceptions import MethodExceptionsManager
 from winter.web.exceptions import ThrottleException
@@ -72,20 +72,28 @@ def _create_dispatch_function(controller_class, route: Route):
 
     @wraps(route.method.func)
     def dispatch(winter_view, request: Request, **path_variables):
-        controller = build_controller(component.component_cls)
+        controller = get_instance(component.component_cls)
         return _call_controller_method(controller, route, request)
 
     return dispatch
 
 
 def _call_controller_method(controller, route: Route, request: Request):
+    from winter.web.interceptor import interceptor_registry
+
     method = route.method
     method_exceptions_manager = MethodExceptionsManager(method)
     response_headers = {}
+
     throttle_class = create_throttle_class(route)
     try:
         if throttle_class and not throttle_class.allow_request(request):
             raise ThrottleException()
+
+        for interceptor in interceptor_registry:
+            pre_handle = ComponentMethod.get_or_create(interceptor.__class__.pre_handle)
+            arguments = arguments_resolver.resolve_arguments(pre_handle, request, response_headers)
+            pre_handle(interceptor, **arguments)
 
         arguments = arguments_resolver.resolve_arguments(method, request, response_headers)
         result = method(controller, **arguments)
@@ -95,10 +103,12 @@ def _call_controller_method(controller, route: Route, request: Request):
             raise
 
         method = ComponentMethod.get_or_create(handler.__class__.handle)
-        arguments = arguments_resolver.resolve_arguments(method, request, response_headers, {
-            'exception': exception,
-            'response_headers': response_headers,
-        })
+        arguments = arguments_resolver.resolve_arguments(
+            method, request, response_headers, {
+                'exception': exception,
+                'response_headers': response_headers,
+            },
+        )
         result = method(handler, **arguments)
 
     response = convert_result_to_http_response(request, result, method)
