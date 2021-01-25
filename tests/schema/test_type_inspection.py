@@ -4,10 +4,12 @@ import uuid
 from dataclasses import dataclass
 from enum import Enum
 from enum import IntEnum
+from typing import Any
 from typing import Generic
 from typing import List
 from typing import NewType
 from typing import Optional
+from typing import Set
 from typing import TypeVar
 
 import pytest
@@ -19,6 +21,7 @@ from winter_openapi import InspectorNotFound
 from winter_openapi import TypeInfo
 from winter_openapi import inspect_enum_class
 from winter_openapi import inspect_type
+from winter_openapi.type_inspection import TYPE_ANY_VALUE
 
 
 class IntegerValueEnum(Enum):
@@ -90,6 +93,10 @@ class CustomPage(Page, Generic[CustomPageItem]):
     (MixedValueEnum, TypeInfo(openapi.TYPE_STRING, enum=[123, 'green'])),
     (List[IntegerValueEnum], TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_INTEGER, enum=[1, 2]))),
     (List[StringValueEnum], TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_STRING, enum=['red', 'green']))),
+    (Any, TypeInfo(TYPE_ANY_VALUE)),
+    (List, TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(TYPE_ANY_VALUE))),
+    (List[Any], TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(TYPE_ANY_VALUE))),
+    (Set[int], TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_INTEGER))),
     (Dataclass(NestedDataclass(1)), TypeInfo(openapi.TYPE_OBJECT, properties={
         'nested': TypeInfo(openapi.TYPE_OBJECT, properties={
             'nested_number': TypeInfo(openapi.TYPE_INTEGER),
