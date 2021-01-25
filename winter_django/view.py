@@ -22,6 +22,7 @@ from winter.web.auth import is_authentication_needed
 from winter.web.default_response_status import get_default_response_status
 from winter.web.exceptions import MethodExceptionsManager
 from winter.web.exceptions import ThrottleException
+from winter.web.interceptor import interceptor_registry
 from winter.web.output_processor import get_output_processor
 from winter.web.routing import Route
 from winter.web.routing import get_route
@@ -79,8 +80,6 @@ def _create_dispatch_function(controller_class, route: Route):
 
 
 def _call_controller_method(controller, route: Route, request: Request):
-    from winter.web.interceptor import interceptor_registry
-
     method = route.method
     method_exceptions_manager = MethodExceptionsManager(method)
     response_headers = {}

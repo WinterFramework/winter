@@ -166,7 +166,6 @@ from http import HTTPStatus
 from typing import List
 
 from rest_framework.request import Request
-
 import winter
 import winter.web
 
@@ -215,5 +214,42 @@ class TodoProblemExistsController:
     @winter.raises(TodoNotFoundException, handler_cls=TodoNotFoundExceptionCustomHandler)
     def get_todo_with_custom_handling(self, todo_index: int):
         raise TodoNotFoundException(invalid_index=todo_index)
+
+```
+
+
+## Interceptors
+You can define interceptors to pre-handle a web request before it gets to a controller.
+The pre_handle method arguments will be injected the same way as it's done in controllers.
+It's not supported to return any response from interceptors.
+However, the exceptions thrown from within an interceptor will be handled automatically.
+```python
+from rest_framework.request import Request
+import winter
+from winter.web import Interceptor
+from winter.web import ResponseHeader
+
+
+class HelloWorldInterceptor(Interceptor):
+    @winter.response_header('x-hello-world', 'hello_world_header')
+    def pre_handle(self, request: Request, hello_world_header: ResponseHeader[str]):
+        if 'hello_world' in request.query_params:
+            hello_world_header.set('Hello, World!')
+
+```
+
+
+The only way now to register an interceptor is to define a configurer
+(don't forget to import during app initialization) and implement the add_interceptors method.
+```python
+from winter.web import Configurer
+from winter.web import InterceptorRegistry
+
+from .interceptors import HelloWorldInterceptor
+
+
+class HelloWorldConfigurer(Configurer):
+    def add_interceptors(self, registry: InterceptorRegistry):
+        registry.add_interceptor(HelloWorldInterceptor())
 
 ```
