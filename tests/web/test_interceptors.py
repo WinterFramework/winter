@@ -1,7 +1,7 @@
 import pytest
 from rest_framework.test import APIClient
 
-from .entities import AuthorizedUser
+from ..entities import AuthorizedUser
 
 
 @pytest.mark.parametrize(
