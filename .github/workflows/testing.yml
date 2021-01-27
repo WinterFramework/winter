@@ -2,9 +2,6 @@ name: Testing
 
 on: pull_request
 
-env:
-  CODECOV_TOKEN: ${{ secrets.JENKINS_TOKEN }}
-
 jobs:
   build:
     runs-on: ubuntu-latest
