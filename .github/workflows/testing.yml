@@ -22,6 +22,7 @@ jobs:
       run: |
         pip install -r ./requirements/base.txt
         pip install -r ./requirements/test.txt
+        pip install -r ./requirements/ci.txt
     - name: Test with pytest
       run: |
         pytest -rfs --cov --cov-config=.coveragerc --cov-report="" --disable-warnings
