@@ -2,6 +2,9 @@ name: Testing
 
 on: pull_request
 
+env:
+  CODECOV_TOKEN: ${{ secrets.JENKINS_TOKEN }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,4 +24,7 @@ jobs:
         pip install -r ./requirements/test.txt
     - name: Test with pytest
       run: |
-        pytest
+        pytest -rfs --cov --cov-config=.coveragerc --cov-report="" --disable-warnings
+        coverage combine || true
+        coverage report
+        codecov
