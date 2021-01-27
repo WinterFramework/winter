@@ -21,4 +21,4 @@ jobs:
       - name: Install dependencies
         run: pip install twine
       - name: Publish to private PyPI
-        run: python -m twine upload dist/* -u ${{ secrets.pypi_token }} -p ""
+        run: python -m twine upload dist/* -u __token__ -p ${{ secrets.pypi_token }}
