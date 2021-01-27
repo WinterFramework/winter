@@ -1,5 +1,5 @@
 [run]
-source = winter
+source = .
 branch = True
 disable_warnings = module-not-measured
 
@@ -39,5 +39,4 @@ precision = 2
 show_missing = True
 
 [paths]
-source =
-    winter/
+source = .
