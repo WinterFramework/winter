@@ -91,7 +91,11 @@ def _call_controller_method(controller, route: Route, request: Request):
 
         for interceptor in interceptor_registry:
             pre_handle = ComponentMethod.get_or_create(interceptor.__class__.pre_handle)
-            arguments = arguments_resolver.resolve_arguments(pre_handle, request, response_headers)
+            arguments = arguments_resolver.resolve_arguments(
+                pre_handle, request, response_headers, {
+                    'method': method,
+                },
+            )
             pre_handle(interceptor, **arguments)
 
         arguments = arguments_resolver.resolve_arguments(method, request, response_headers)
