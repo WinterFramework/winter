@@ -16,9 +16,16 @@ class _PageSerializerMeta(SerializerMetaclass):
         assert issubclass(child_serializer, serializers.Field), (
             'child_serializer should be inherited from serializers.Field'
         )
+
+        if hasattr(child_serializer, 'Meta') and hasattr(child_serializer.Meta, 'ref_name'):
+            name = child_serializer.Meta.ref_name
+        else:
+            name = f'SpecificSerializerFor{child_serializer.__name__}'
         payloads = {
             'objects': serializers.ListField(child=child_serializer(), source='items'),
+            'Meta': type('Meta', (object,), {'ref_name': name})
         }
+
         return type(f'SpecificSerializerFor{child_serializer}', (self,), payloads)
 
 
