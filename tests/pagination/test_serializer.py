@@ -18,6 +18,13 @@ class _TestSerializer(serializers.Serializer):
     number = serializers.IntegerField()
 
 
+class _TestSerializerWithMeta(serializers.Serializer):
+    number = serializers.IntegerField()
+
+    class Meta:
+        ref_name = 'SomeRefNameForTestSerializer'
+
+
 @pytest.mark.parametrize(('limit', 'offset', 'expected_previous', 'expected_next'), (
     (1, 1, 'test-url.com?limit=1', 'test-url.com?limit=1&offset=2'),
     (None, None, None, None),
@@ -49,3 +56,13 @@ def test_page_serializer(limit, offset, expected_previous, expected_next):
 
     # Assert
     assert data == expected_data
+
+
+def test_page_serializer_meta():
+    # Act
+    TestPageSerializer = PageSerializer[_TestSerializer]
+    TestPageSerializerWithMeta = PageSerializer[_TestSerializerWithMeta]
+
+    # Assert
+    assert TestPageSerializer.Meta.ref_name == 'SpecificSerializerFor_TestSerializer'
+    assert TestPageSerializerWithMeta.Meta.ref_name == 'SomeRefNameForTestSerializer'
