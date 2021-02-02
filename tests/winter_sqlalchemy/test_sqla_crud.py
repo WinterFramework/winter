@@ -15,7 +15,7 @@ from winter.data.exceptions import NotFoundException
 from winter_ddd import AggregateRoot
 from winter_ddd import DomainEvent
 from winter_ddd import domain_event_handler
-from winter_sqlalchemy.repository import sqla_crud
+from winter_sqlalchemy import sqla_crud
 
 
 @dataclass
@@ -190,7 +190,7 @@ def test_find_by_id():
 def test_get_by_id():
     fixture = Fixture()
 
-    with pytest.raises(NotFoundException, match="MyEntity with ID=2 not found"):
+    with pytest.raises(NotFoundException, match='MyEntity with ID=2 not found'):
         # Act
         fixture.repository.get_by_id(2)
 
