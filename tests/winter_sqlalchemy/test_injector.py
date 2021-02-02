@@ -15,7 +15,7 @@ from sqlalchemy.orm import mapper
 
 from winter.data import CRUDRepository
 from winter_ddd import AggregateRoot
-from winter_sqlalchemy.repository import sqla_crud
+from winter_sqlalchemy import sqla_crud
 
 
 class Fixture:
