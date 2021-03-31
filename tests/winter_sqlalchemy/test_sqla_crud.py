@@ -1,15 +1,22 @@
+from abc import ABCMeta
+from abc import abstractmethod
 from typing import Optional
 
 import pytest
+import sqlalchemy as sa
 from dataclasses import dataclass
+from injector import Injector
+from injector import inject
 from sqlalchemy import Column
 from sqlalchemy import Integer
 from sqlalchemy import MetaData
 from sqlalchemy import String
 from sqlalchemy import Table
 from sqlalchemy import create_engine
+from sqlalchemy.engine import Engine
 from sqlalchemy.orm import mapper
 
+from winter.core import set_injector
 from winter.data import CRUDRepository
 from winter.data.exceptions import NotFoundException
 from winter_ddd import AggregateRoot
@@ -25,6 +32,7 @@ class MarkedAsDoneDomainEvent(DomainEvent):
 
 class MyEntity(AggregateRoot):
     def __init__(self, id_: int, name: Optional[str], lastname: Optional[str]):
+        super().__init__()
         self.id = id_
         self.name = name
         self.lastname = lastname
@@ -49,13 +57,37 @@ class Fixture:
     def __init__(self):
         self._engine = create_engine('sqlite://')
 
-        @sqla_crud
         class MyRepository(CRUDRepository[MyEntity, int]):
-            def find_one_by_name_and_lastname(self, name: str, lastname: str) -> MyEntity:
+            @abstractmethod
+            def find_one_by_name_and_lastname(self, name: str, lastname: str) -> Optional[MyEntity]:
                 pass
 
+        class MyRepositoryImpl(MyRepository, metaclass=ABCMeta):
+            @inject
+            def __init__(self, engine: Engine):
+                self._engine = engine
+
+            def find_one_by_name_and_lastname(self, name: str, lastname: str) -> Optional[MyEntity]:
+                query = sa.select([
+                    my_entity_table.c.id,
+                ]).where(
+                    sa.and_(
+                        my_entity_table.c.name == name,
+                        my_entity_table.c.lastname == lastname,
+                    ),
+                )
+                with self._engine.connect() as connection:
+                    rows = connection.execute(query)
+                rows = list(rows)
+                assert len(rows) <= 1
+                if not rows:
+                    return None
+                entity_id = rows[0][0]
+                return self.get_by_id(entity_id)
+
         metadata.create_all(bind=self._engine)
-        repository = MyRepository(engine=self._engine)
+        set_injector(Injector())
+        repository = sqla_crud(MyRepository)(engine=self._engine)
         self.repository = repository
 
         class DomainEventHandlers:
@@ -244,11 +276,28 @@ def test_save_many():
     assert set(entities) == {(1, 'done'), (2, 'started'), (3, 'done'), (100, 'handled'), (300, 'handled')}
 
 
-# def test_find_one_by_name_and_lastname():
-#     fixture = Fixture()
-#     fixture.execute("INSERT INTO my_entities (id, name, lastname) VALUES (1, 'name', NULL), (2, 'name', 'lastname');")
-#
-#     # Act
-#     entity = fixture.repository.find_one_by_name_and_lastname('name', 'lastname')
-#
-#     assert entity.id == 2
+@pytest.mark.parametrize(
+    'name, lastname, entity_id', [
+        ('name', 'something', None),
+        ('name', 'lastname', 2),
+    ],
+)
+def test_find_one_by_name_and_lastname(name, lastname, entity_id):
+    fixture = Fixture()
+    fixture.execute("INSERT INTO my_entities (id, name, lastname) VALUES (1, 'name', NULL), (2, 'name', 'lastname');")
+
+    # Act
+    entity = fixture.repository.find_one_by_name_and_lastname(name, lastname)
+
+    if entity_id is None:
+        assert entity is None
+    else:
+        assert entity.id == entity_id
+
+
+def test_raises_if_injector_is_not_configured():
+    class MyRepository(CRUDRepository[MyEntity, int]):
+        pass
+
+    with pytest.raises(RuntimeError, match='Injector is not configured'):
+        sqla_crud(MyRepository)

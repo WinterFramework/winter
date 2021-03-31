@@ -4,8 +4,6 @@ from .auth import no_authentication
 from .configurer import Configurer
 from .controller import controller
 from .controller import get_component
-from .controller import get_instance
-from .controller import set_factory
 from .exceptions import ExceptionHandler
 from .exceptions import exception_handlers_registry
 from .exceptions import problem

@@ -14,6 +14,7 @@ from sqlalchemy.orm import class_mapper
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import UnmappedClassError
 
+from winter.core import get_injector
 from winter.data import CRUDRepository
 from winter.data.exceptions import NotFoundException
 from winter_ddd import AggregateRoot
@@ -25,6 +26,11 @@ K = TypeVar('K')
 
 
 def sqla_crud(repository_cls):
+    injector = get_injector()
+
+    if not injector:
+        raise RuntimeError('Injector is not configured')
+
     if not issubclass(repository_cls, CRUDRepository):
         raise TypeError('Repository must be inherited from CRUDRepository before annotating with sqla_crud')
 
@@ -43,7 +49,7 @@ def sqla_crud(repository_cls):
 
     entity_table = mapper.tables[0]
 
-    class RepositoryImpl(repository_cls):
+    class DefaultCRUDRepositoryImpl:
         """
         SQLAlchemy implementation for CRUDRepository
         This repository implementation is not thread-safe.
@@ -52,51 +58,51 @@ def sqla_crud(repository_cls):
             pass
 
         def count(self) -> int:
-            return self._engine.execute(select([func.count()]).select_from(entity_table)).scalar()
+            return self.__engine.execute(select([func.count()]).select_from(entity_table)).scalar()
 
         def delete(self, entity: T):
             try:
-                session = self._sessions[entity]
+                session = self.__sessions[entity]
             except KeyError:
                 raise self.RepositoryException('Entity must be fetched with repository before being deleted')
             pk = inspect(entity).identity
-            del self._identity_map[pk]
+            del self.__identity_map[pk]
             session.delete(entity)
             session.commit()
             session.close()
-            del self._sessions[entity]
+            del self.__sessions[entity]
 
         def delete_many(self, entities: Iterable[T]):
             for entity in entities:
                 self.delete(entity)
 
         def delete_all(self):
-            self._engine.execute(entity_table.delete())
-            self._identity_map = {}
-            for session in self._sessions.values():
+            self.__engine.execute(entity_table.delete())
+            self.__identity_map = {}
+            for session in self.__sessions.values():
                 session.close()
-            self._sessions = {}
+            self.__sessions = {}
 
         def delete_by_id(self, id_: K):
             if not isinstance(id_, tuple):
                 id_ = (id_,)
-            if id_ in self._identity_map:
-                entity = self._identity_map[id_]
+            if id_ in self.__identity_map:
+                entity = self.__identity_map[id_]
                 self.delete(entity)
             else:
                 expressions = (column == value for column, value in zip(entity_table.primary_key.columns, id_))
-                self._engine.execute(entity_table.delete().where(and_(*expressions)))
+                self.__engine.execute(entity_table.delete().where(and_(*expressions)))
 
         def exists_by_id(self, id_: K) -> bool:
             if not isinstance(id_, tuple):
                 id_ = (id_,)
-            if id_ in self._identity_map:
+            if id_ in self.__identity_map:
                 return True
             expressions = (column == value for column, value in zip(entity_table.primary_key.columns, id_))
-            return self._engine.execute(select([exists().where(and_(*expressions))])).scalar()
+            return self.__engine.execute(select([exists().where(and_(*expressions))])).scalar()
 
         def find_all(self) -> Iterable[T]:
-            ids = self._engine.execute(select(entity_table.primary_key.columns))
+            ids = self.__engine.execute(select(entity_table.primary_key.columns))
             ids = next(zip(*ids))
             return self.find_all_by_id(ids)
 
@@ -108,16 +114,16 @@ def sqla_crud(repository_cls):
         def find_by_id(self, id_: K) -> Optional[T]:
             if not isinstance(id_, tuple):
                 id_ = (id_,)
-            if id_ in self._identity_map:
-                return self._identity_map[id_]
+            if id_ in self.__identity_map:
+                return self.__identity_map[id_]
 
-            session = self._session_factory()
+            session = self.__session_factory()
             instance = session.query(entity_cls).get(id_)
             if instance is None:
                 return None
 
-            self._identity_map[id_] = instance
-            self._sessions[instance] = session
+            self.__identity_map[id_] = instance
+            self.__sessions[instance] = session
             return instance
 
         def get_by_id(self, id_: K) -> T:
@@ -139,12 +145,12 @@ def sqla_crud(repository_cls):
             return entities
 
         def _save(self, entity: T):
-            if entity not in self._sessions:
-                self._sessions[entity] = self._session_factory()
-                self._sessions[entity].add(entity)
-            self._sessions[entity].flush()
+            if entity not in self.__sessions:
+                self.__sessions[entity] = self.__session_factory()
+                self.__sessions[entity].add(entity)
+            self.__sessions[entity].flush()
             pk = inspect(entity).identity
-            self._identity_map[pk] = entity
+            self.__identity_map[pk] = entity
 
         def _process_domain_events(self, aggregates: Iterable[AggregateRoot]):
             domain_events: List[DomainEvent] = []
@@ -155,17 +161,15 @@ def sqla_crud(repository_cls):
 
         @inject
         def __init__(self, engine: Engine):
-            self._engine = engine
-            self._session_factory = sessionmaker(bind=self._engine)
-            self._identity_map = {}
-            self._sessions = {}
+            self.__engine = engine
+            self.__session_factory = sessionmaker(bind=self.__engine)
+            self.__identity_map = {}
+            self.__sessions = {}
 
-    # def func1(self, name, lastname):
-    #     return self._session_factory().query(entity_cls).filter(
-    #         getattr(entity_cls, 'name') == name,
-    #         getattr(entity_cls, 'lastname') == lastname,
-    #     ).one_or_none()
-    #
-    # RepositoryImpl.find_one_by_name_and_lastname = func1
+    class RepositoryImpl(DefaultCRUDRepositoryImpl):  # , repository_impl):
+        @inject
+        def __init__(self):
+            injector.call_with_injection(DefaultCRUDRepositoryImpl.__init__, self)
+            # injector.call_with_injection(repository_impl.__init__, self)
 
     return RepositoryImpl
