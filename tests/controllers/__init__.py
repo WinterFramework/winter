@@ -1,7 +1,6 @@
 from .controller_with_exceptions import ControllerWithExceptions
 from .controller_with_request_data import ControllerWithRequestData
 from .controller_with_limits import ControllerWithLimits
-from .controller_with_media_types_routing import ControllerWithMediaTypesRouting
 from .controller_with_path_parameters import ControllerWithPathParameters
 from .controller_with_problem_exceptions import ControllerWithProblemExceptions
 from .controller_with_query_parameters import ControllerWithQueryParameters

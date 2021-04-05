@@ -18,7 +18,7 @@ class OneTwoEnumWithInt(enum.Enum):
         try:
             value = int(value)
         except ValueError:
-            super()._missing_(cls, value)
+            super()._missing_(cls, value)  # pragma: no cover
         else:
             return cls(value)
 
@@ -37,4 +37,4 @@ class ControllerWithPathParameters:
         param5: OneTwoEnumWithInt,
         param6: str,
     ) -> str:
-        return 'Hello, sir!'
+        pass

@@ -38,8 +38,8 @@ class AllFieldConstProblemExistsException(Exception):
 
 class ProblemExistsExceptionHandler(winter.web.ExceptionHandler):
     @winter.response_status(HTTPStatus.FORBIDDEN)
-    def handle(self, exception: ProblemExistsException, **kwargs) -> Dict:
-        return {'message': str(exception)}
+    def handle(self, exception: ProblemExistsException, **kwargs) -> Dict:  # pragma: no cover
+        pass
 
 
 @dataclasses.dataclass

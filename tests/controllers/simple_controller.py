@@ -68,5 +68,5 @@ class SimpleController:
         pass
 
     @winter.response_status(HTTPStatus.OK)
-    def no_route(self):
+    def no_route(self):  # pragma: no cover
         pass

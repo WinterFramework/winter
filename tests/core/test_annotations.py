@@ -45,7 +45,7 @@ def test_on_method_by_decorator(decorator):
     class SimpleComponent:
 
         @decorator('test')
-        def method(self):
+        def method(self):  # pragma: no cover
             pass
 
     assert SimpleComponent.method.annotations.get(SimpleAnnotation) == [SimpleAnnotation('test')]
@@ -82,11 +82,13 @@ def test_get_one():
     assert annotation == SimpleAnnotation('first')
 
 
-@pytest.mark.parametrize(('decorator_factory', 'error_message_template'), (
-    (annotate, 'Need function or class. Got: {instance}'),
-    (annotate_class, 'Need class. Got: {instance}'),
-    (annotate_method, 'Need function. Got: {instance}'),
-))
+@pytest.mark.parametrize(
+    ('decorator_factory', 'error_message_template'), (
+        (annotate, 'Need function or class. Got: {instance}'),
+        (annotate_class, 'Need class. Got: {instance}'),
+        (annotate_method, 'Need function. Got: {instance}'),
+    ),
+)
 def test_annotate_with_instance(decorator_factory, error_message_template):
     instance = object()
 
@@ -103,7 +105,7 @@ def test_empty_annotation():
     class Controller:
 
         @annotate(None)
-        def simple_method(self):
+        def simple_method(self):  # pragma: no cover
             return None
 
     component = Component.get_by_cls(Controller)
@@ -119,7 +121,7 @@ def test_try_twice_annotation_with_single():
     with pytest.raises(AlreadyAnnotated) as exception:
         @annotate(SimpleAnnotation('test'), single=True)
         @annotate(SimpleAnnotation('test'), single=True)
-        def simple_method():
+        def simple_method():  # pragma: no cover
             return None
 
     assert exception.value.annotation == SimpleAnnotation('test')
@@ -130,7 +132,7 @@ def test_try_twice_annotation_with_unique():
     with pytest.raises(AlreadyAnnotated) as exception:
         @annotate(SimpleAnnotation('test'), unique=True)
         @annotate(SimpleAnnotation('test'), unique=True)
-        def simple_method():
+        def simple_method():  # pragma: no cover
             return None
 
     assert exception.value.annotation == SimpleAnnotation('test')

@@ -5,8 +5,8 @@ from winter.core import ComponentMethod
 
 
 def test_parameter():
-    def test(number: int) -> int:
-        return number
+    def test(number: int) -> int:  # pragma: no cover
+        pass
 
     method = ComponentMethod(test)
     argument = method.get_argument('number')
@@ -17,8 +17,8 @@ def test_parameter():
 
 
 def test_default():
-    def test(number: int) -> int:
-        return number
+    def test(number: int) -> int:  # pragma: no cover
+        pass
 
     method = ComponentMethod(test)
     argument = method.get_argument('number')

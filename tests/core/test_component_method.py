@@ -35,7 +35,7 @@ def test_all_attributes():
 
 
 def test_component_method():
-    def test():
+    def test():  # pragma: no cover
         return None
 
     method = ComponentMethod(test)
