@@ -1,4 +1,3 @@
-from abc import ABCMeta
 from abc import abstractmethod
 from typing import Optional
 
@@ -58,7 +57,7 @@ class MyRepository(CRUDRepository[MyEntity, int]):
         pass
 
 
-class MyRepositoryImpl(MyRepository, metaclass=ABCMeta):
+class MyRepositoryImpl(MyRepository):
     @inject
     def __init__(self, engine: Engine):
         self._engine = engine
