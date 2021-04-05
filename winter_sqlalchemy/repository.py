@@ -83,7 +83,7 @@ def sqla_crud(repository_cls):
         def delete_by_id(self, id_: K):
             if not isinstance(id_, tuple):
                 id_ = (id_,)
-            if id_ in self.__identity_map:
+            if id_ in self.__identity_map:  # pragma: no cover
                 entity = self.__identity_map[id_]
                 self.delete(entity)
             else:
