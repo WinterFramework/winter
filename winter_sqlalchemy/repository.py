@@ -28,9 +28,6 @@ K = TypeVar('K')
 def sqla_crud(repository_cls):
     injector = get_injector()
 
-    if not injector:
-        raise RuntimeError('Injector is not configured')
-
     if not issubclass(repository_cls, CRUDRepository):
         raise TypeError('Repository must be inherited from CRUDRepository before annotating with sqla_crud')
 
