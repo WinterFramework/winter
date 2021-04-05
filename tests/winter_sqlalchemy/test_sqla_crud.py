@@ -5,18 +5,17 @@ from typing import Optional
 import pytest
 import sqlalchemy as sa
 from dataclasses import dataclass
-from injector import Injector
+from injector import ClassProvider
 from injector import inject
 from sqlalchemy import Column
 from sqlalchemy import Integer
 from sqlalchemy import MetaData
 from sqlalchemy import String
 from sqlalchemy import Table
-from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import mapper
 
-from winter.core import set_injector
+from winter.core import get_injector
 from winter.data import CRUDRepository
 from winter.data.exceptions import NotFoundException
 from winter_ddd import AggregateRoot
@@ -53,60 +52,74 @@ my_entity_table = Table(
 mapper(MyEntity, my_entity_table)
 
 
+class MyRepository(CRUDRepository[MyEntity, int]):
+    @abstractmethod
+    def find_one_by_name_and_lastname(self, name: str, lastname: str) -> Optional[MyEntity]:
+        pass
+
+
+class MyRepositoryImpl(MyRepository, metaclass=ABCMeta):
+    @inject
+    def __init__(self, engine: Engine):
+        self._engine = engine
+
+    def find_one_by_name_and_lastname(self, name: str, lastname: str) -> Optional[MyEntity]:
+        query = sa.select([
+            my_entity_table.c.id,
+        ]).where(
+            sa.and_(my_entity_table.c.name == name, my_entity_table.c.lastname == lastname),
+        )
+        with self._engine.connect() as connection:
+            rows = connection.execute(query)
+        rows = list(rows)
+        assert len(rows) <= 1
+        if not rows:
+            return None
+        entity_id = rows[0][0]
+        return self.get_by_id(entity_id)
+
+
+class DomainEventHandlers:
+    @inject
+    def __init__(self, repository: MyRepository):
+        self._repository = repository
+
+    @domain_event_handler
+    def on_marked_as_done(self, event: MarkedAsDoneDomainEvent):
+        entity = event.entity
+        new_entity = MyEntity(
+            id_=entity.id * 100,
+            name='handled',
+            lastname='',
+        )
+        self._repository.save(new_entity)
+
+
+@pytest.fixture()
+def fixture():
+    return get_injector().get(Fixture)
+
+
+@pytest.fixture()
+def engine():
+    return get_injector().get(Engine)
+
+
 class Fixture:
-    def __init__(self):
-        self._engine = create_engine('sqlite://')
-
-        class MyRepository(CRUDRepository[MyEntity, int]):
-            @abstractmethod
-            def find_one_by_name_and_lastname(self, name: str, lastname: str) -> Optional[MyEntity]:
-                pass
-
-        class MyRepositoryImpl(MyRepository, metaclass=ABCMeta):
-            @inject
-            def __init__(self, engine: Engine):
-                self._engine = engine
-
-            def find_one_by_name_and_lastname(self, name: str, lastname: str) -> Optional[MyEntity]:
-                query = sa.select([
-                    my_entity_table.c.id,
-                ]).where(
-                    sa.and_(
-                        my_entity_table.c.name == name,
-                        my_entity_table.c.lastname == lastname,
-                    ),
-                )
-                with self._engine.connect() as connection:
-                    rows = connection.execute(query)
-                rows = list(rows)
-                assert len(rows) <= 1
-                if not rows:
-                    return None
-                entity_id = rows[0][0]
-                return self.get_by_id(entity_id)
-
+    @inject
+    def __init__(self, engine: Engine):
+        injector = get_injector()
+        injector.binder.bind(MyRepository, to=ClassProvider(sqla_crud(MyRepository)))
+        self._engine = engine
+        self.repository = injector.get(MyRepository)
+        metadata.drop_all(bind=self._engine)
         metadata.create_all(bind=self._engine)
-        set_injector(Injector())
-        repository = sqla_crud(MyRepository)(engine=self._engine)
-        self.repository = repository
-
-        class DomainEventHandlers:
-            @domain_event_handler
-            def on_marked_as_done(self, event: MarkedAsDoneDomainEvent):
-                entity = event.entity
-                new_entity = MyEntity(
-                    id_=entity.id * 100,
-                    name='handled',
-                    lastname='',
-                )
-                repository.save(new_entity)
 
     def execute(self, sql):
         return self._engine.execute(sql)
 
 
-def test_count():
-    fixture = Fixture()
+def test_count(fixture):
     fixture.execute('INSERT INTO my_entities (id) VALUES (1), (2), (3);')
 
     # Act
@@ -115,8 +128,7 @@ def test_count():
     assert count == 3
 
 
-def test_delete():
-    fixture = Fixture()
+def test_delete(fixture):
     fixture.execute('INSERT INTO my_entities (id) VALUES (1), (2);')
     entity = fixture.repository.find_by_id(1)
 
@@ -128,8 +140,7 @@ def test_delete():
     assert fixture.repository.find_by_id(1) is None
 
 
-def test_delete_many():
-    fixture = Fixture()
+def test_delete_many(fixture):
     fixture.execute('INSERT INTO my_entities (id) VALUES (1), (2), (3);')
     entity_1 = fixture.repository.find_by_id(1)
     entity_3 = fixture.repository.find_by_id(3)
@@ -143,8 +154,7 @@ def test_delete_many():
     assert fixture.repository.find_by_id(3) is None
 
 
-def test_delete_all():
-    fixture = Fixture()
+def test_delete_all(fixture):
     fixture.execute('INSERT INTO my_entities (id) VALUES (1), (2), (3);')
 
     # Act
@@ -154,8 +164,7 @@ def test_delete_all():
     assert count == 0
 
 
-def test_delete_by_id():
-    fixture = Fixture()
+def test_delete_by_id(fixture):
     fixture.execute('INSERT INTO my_entities (id) VALUES (1), (2);')
 
     # Act
@@ -165,8 +174,7 @@ def test_delete_by_id():
     assert list(result) == [(2,)]
 
 
-def test_exists_by_id():
-    fixture = Fixture()
+def test_exists_by_id(fixture):
     fixture.execute('INSERT INTO my_entities (id) VALUES (1), (2);')
 
     # Act
@@ -175,8 +183,7 @@ def test_exists_by_id():
     assert exists is True
 
 
-def test_not_exists_by_id():
-    fixture = Fixture()
+def test_not_exists_by_id(fixture):
     fixture.execute('INSERT INTO my_entities (id) VALUES (1), (2);')
 
     # Act
@@ -185,8 +192,7 @@ def test_not_exists_by_id():
     assert exists is False
 
 
-def test_find_all():
-    fixture = Fixture()
+def test_find_all(fixture):
     fixture.execute('INSERT INTO my_entities (id) VALUES (1), (2), (3);')
 
     # Act
@@ -197,8 +203,7 @@ def test_find_all():
     assert set(ids) == {1, 2, 3}
 
 
-def test_find_all_by_id():
-    fixture = Fixture()
+def test_find_all_by_id(fixture):
     fixture.execute('INSERT INTO my_entities (id) VALUES (1), (2), (3);')
 
     # Act
@@ -209,8 +214,7 @@ def test_find_all_by_id():
     assert set(ids) == {1, 3}
 
 
-def test_find_by_id():
-    fixture = Fixture()
+def test_find_by_id(fixture):
     fixture.execute('INSERT INTO my_entities (id) VALUES (1), (2), (3);')
 
     # Act
@@ -219,16 +223,13 @@ def test_find_by_id():
     assert entity.id == 2
 
 
-def test_get_by_id():
-    fixture = Fixture()
-
+def test_get_by_id(fixture):
     with pytest.raises(NotFoundException, match='MyEntity with ID=2 not found'):
         # Act
         fixture.repository.get_by_id(2)
 
 
-def test_save_new():
-    fixture = Fixture()
+def test_save_new(fixture):
     entity = MyEntity(id_=1, name='name', lastname='lastname')
 
     # Act
@@ -241,8 +242,7 @@ def test_save_new():
     assert entities[0].lastname == 'lastname'
 
 
-def test_save():
-    fixture = Fixture()
+def test_save(fixture):
     fixture.execute("INSERT INTO my_entities (id, name) VALUES (1, 'started'), (2, 'started'), (3, 'started');")
     entity = fixture.repository.find_by_id(2)
     entity.mark_as_done()
@@ -257,8 +257,7 @@ def test_save():
     assert set(entities) == {(1, 'started'), (2, 'done'), (3, 'started'), (200, 'handled')}
 
 
-def test_save_many():
-    fixture = Fixture()
+def test_save_many(fixture):
     fixture.execute("INSERT INTO my_entities (id, name) VALUES (1, 'started'), (2, 'started'), (3, 'started');")
     entities = fixture.repository.find_all_by_id([1, 3])
     for entity in entities:
@@ -282,8 +281,7 @@ def test_save_many():
         ('name', 'lastname', 2),
     ],
 )
-def test_find_one_by_name_and_lastname(name, lastname, entity_id):
-    fixture = Fixture()
+def test_find_one_by_name_and_lastname(fixture, name, lastname, entity_id):
     fixture.execute("INSERT INTO my_entities (id, name, lastname) VALUES (1, 'name', NULL), (2, 'name', 'lastname');")
 
     # Act
@@ -293,11 +291,3 @@ def test_find_one_by_name_and_lastname(name, lastname, entity_id):
         assert entity is None
     else:
         assert entity.id == entity_id
-
-
-def test_raises_if_injector_is_not_configured():
-    class MyRepository(CRUDRepository[MyEntity, int]):
-        pass
-
-    with pytest.raises(RuntimeError, match='Injector is not configured'):
-        sqla_crud(MyRepository)

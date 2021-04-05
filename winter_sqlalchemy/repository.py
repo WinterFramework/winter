@@ -103,7 +103,7 @@ def sqla_crud(repository_cls):
 
         def find_all(self) -> Iterable[T]:
             ids = self.__engine.execute(select(entity_table.primary_key.columns))
-            ids = next(zip(*ids))
+            ids = next(zip(*ids), [])
             return self.find_all_by_id(ids)
 
         def find_all_by_id(self, ids: Iterable[K]) -> Iterable[T]:
@@ -166,10 +166,13 @@ def sqla_crud(repository_cls):
             self.__identity_map = {}
             self.__sessions = {}
 
-    class RepositoryImpl(DefaultCRUDRepositoryImpl):  # , repository_impl):
+    repository_subclasses = repository_cls.__subclasses__()
+
+    class RepositoryImpl(DefaultCRUDRepositoryImpl, *repository_subclasses):
         @inject
         def __init__(self):
             injector.call_with_injection(DefaultCRUDRepositoryImpl.__init__, self)
-            # injector.call_with_injection(repository_impl.__init__, self)
+            for subclass in repository_subclasses:
+                injector.call_with_injection(subclass.__init__, self)
 
     return RepositoryImpl

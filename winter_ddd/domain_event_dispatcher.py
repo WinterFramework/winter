@@ -6,6 +6,7 @@ from typing import Tuple
 from typing import Type
 from typing import TypeVar
 
+from winter.core import get_injector
 from .domain_event import DomainEvent
 from .domain_event_subscription import DomainEventSubscription
 
@@ -19,10 +20,7 @@ class DomainEventDispatcher:
     def __init__(self):
         self._subscriptions: Dict[EventFilter, List[DomainEventSubscription]] = {}
         self._event_type_to_event_filters_map: Dict[Type[DomainEvent], List[EventFilter]] = {}
-        self._handler_factory = lambda cls: cls()
-
-    def set_handler_factory(self, handler_factory: HandlerFactory):
-        self._handler_factory = handler_factory
+        self._injector = get_injector()
 
     def add_subscription(self, subscription: DomainEventSubscription):
         self._subscriptions.setdefault(subscription.event_filter, []).append(subscription)
@@ -42,7 +40,7 @@ class DomainEventDispatcher:
 
         for event_filter, events in filtered_events.items():
             for subscription in self._subscriptions.get(event_filter, []):
-                handler_instance = self._handler_factory(subscription.handler_class)
+                handler_instance = self._injector.get(subscription.handler_class)
                 if subscription.collection:
                     subscription.handler_method(handler_instance, events)
                 else:

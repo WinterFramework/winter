@@ -1,7 +1,14 @@
 from pathlib import Path
 
 import django
+from injector import CallableProvider
+from injector import Injector
+from injector import Module
+from injector import singleton
+from sqlalchemy import create_engine
+from sqlalchemy.engine import Engine
 
+from winter.core import set_injector
 from .entities import Guest
 
 
@@ -28,4 +35,15 @@ def pytest_configure():
             'tests',
         ),
     )
+    injector = Injector([Configuration])
+    set_injector(injector)
     django.setup()
+
+
+class Configuration(Module):
+    def configure(self, binder):
+        binder.bind(Engine, to=CallableProvider(make_engine), scope=singleton)
+
+
+def make_engine():
+    return create_engine('sqlite://')

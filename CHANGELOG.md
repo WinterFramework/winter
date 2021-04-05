@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CRUDRepository now supports custom implementation extensions
 ### Changed
 - set_factory changed to set_injector
+- DomainEventDispatcher.set_handler_factory is deleted
 
 ## [8.2.0] - 2021-01-27
 
