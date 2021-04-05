@@ -99,11 +99,6 @@ def fixture():
     return get_injector().get(Fixture)
 
 
-@pytest.fixture()
-def engine():
-    return get_injector().get(Engine)
-
-
 class Fixture:
     @inject
     def __init__(self, engine: Engine):
@@ -232,7 +227,7 @@ def test_save_new(fixture):
     entity = MyEntity(id_=1, name='name', lastname='lastname')
 
     # Act
-    entity = fixture.repository.save(entity)
+    fixture.repository.save(entity)
 
     entities = list(fixture.repository.find_all())
     assert len(entities) == 1
