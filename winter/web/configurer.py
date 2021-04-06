@@ -1,7 +1,7 @@
 from abc import ABC
 from abc import abstractmethod
 
-from .controller import get_instance
+from winter.core import get_injector
 from .interceptor import InterceptorRegistry
 from .interceptor import interceptor_registry
 
@@ -13,6 +13,7 @@ class Configurer(ABC):
 
 
 def run_configurers():
+    injector = get_injector()
     for configurer_class in Configurer.__subclasses__():
-        configurer = get_instance(configurer_class)
+        configurer = injector.get(configurer_class)
         configurer.add_interceptors(interceptor_registry)

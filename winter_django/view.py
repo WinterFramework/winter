@@ -13,9 +13,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 
 from winter.core import ComponentMethod
+from winter.core import get_injector
 from winter.web import ResponseEntity
 from winter.web import get_component
-from winter.web import get_instance
 from winter.web import response_headers_serializer
 from winter.web.argument_resolver import arguments_resolver
 from winter.web.auth import is_authentication_needed
@@ -70,10 +70,11 @@ def _create_django_view(controller_class, component, routes: List[Route]):
 
 def _create_dispatch_function(controller_class, route: Route):
     component = get_component(controller_class)
+    injector = get_injector()
 
     @wraps(route.method.func)
     def dispatch(winter_view, request: Request, **path_variables):
-        controller = get_instance(component.component_cls)
+        controller = injector.get(component.component_cls)
         return _call_controller_method(controller, route, request)
 
     return dispatch

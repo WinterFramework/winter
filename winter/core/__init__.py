@@ -9,4 +9,6 @@ from .component_method import ComponentMethod
 from .component_method import component_method
 from .component_method_argument import ArgumentDoesNotHaveDefault
 from .component_method_argument import ComponentMethodArgument
+from .injection import get_injector
+from .injection import set_injector
 from .utils import cached_property
