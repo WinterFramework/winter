@@ -1,12 +1,13 @@
-import abc
+from abc import ABC
+from abc import abstractmethod
 
 from .controller import get_instance
 from .interceptor import InterceptorRegistry
 from .interceptor import interceptor_registry
 
 
-class Configurer(abc.ABC):
-    @abc.abstractmethod
+class Configurer(ABC):
+    @abstractmethod
     def add_interceptors(self, registry: InterceptorRegistry):
         pass
 

@@ -1,8 +1,9 @@
-import abc
+from abc import ABC
+from abc import abstractmethod
 
 
-class Interceptor(abc.ABC):
-    @abc.abstractmethod
+class Interceptor(ABC):
+    @abstractmethod
     def pre_handle(self, **kwargs):
         pass
 
