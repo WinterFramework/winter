@@ -62,4 +62,6 @@ def get_generic_args(type_):
     if sys.version_info >= (3, 8):
         from typing import get_args
         return get_args(type_)
-    return type_.__args__
+    if sys.version_info >= (3, 7):
+        return type_.__args__
+    return type_.__args__[0]
