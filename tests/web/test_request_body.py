@@ -99,7 +99,7 @@ def test_request_body_with_errors():
 
 
 def test_with_argument_not_valid_annotation():
-    def method(argument: int):
+    def method(argument: int):  # pragma: no cover
         return argument
 
     annotation_decorator = request_body('argument')
@@ -110,7 +110,7 @@ def test_with_argument_not_valid_annotation():
 
 
 def test_without_argument():
-    def method(argument: int):
+    def method(argument: int):  # pragma: no cover
         return argument
 
     annotation_decorator = request_body('invalid_argument')

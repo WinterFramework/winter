@@ -21,7 +21,8 @@ class DomainEventDispatcher:
         self._event_type_to_event_filters_map: Dict[Type[DomainEvent], List[EventFilter]] = {}
         self._handler_factory = lambda cls: cls()
 
-    def set_handler_factory(self, handler_factory: HandlerFactory):
+    def set_handler_factory(self, handler_factory: HandlerFactory):  # pragma: no cover
+        # TODO: remove, use get_injector instead
         self._handler_factory = handler_factory
 
     def add_subscription(self, subscription: DomainEventSubscription):

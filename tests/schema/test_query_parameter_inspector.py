@@ -6,14 +6,13 @@ from winter.web.routing import get_route
 
 
 class ControllerForQueryParameter:
-
     @winter.route_get('{?valid_query_param,mapped_query_param}')
     @winter.map_query_parameter('mapped_query_param', to='invalid_query_param')
     def simple_method(
-            self,
-            valid_query_param: int,
-            invalid_query_param: object,
-    ):
+        self,
+        valid_query_param: int,
+        invalid_query_param: object,
+    ):  # pragma: no cover
         pass
 
 

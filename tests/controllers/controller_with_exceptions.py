@@ -36,8 +36,8 @@ class AnotherExceptionHandler(winter.web.ExceptionHandler):
 
 class WithUnknownArgumentExceptionHandler(winter.web.ExceptionHandler):
     @winter.response_status(400)
-    def handle(self, exception: CustomException, unknown_argument: int) -> str:
-        return 'Bad Request'
+    def handle(self, exception: CustomException, unknown_argument: int) -> str:  # pragma: no cover
+        pass
 
 
 winter.web.exception_handlers_registry.add_handler(CustomException, CustomExceptionHandler)

@@ -28,5 +28,5 @@ def setup(allow_missing_raises_annotation: bool = False):
     register_type_inspector(Page, func=inspect_page)
     register_controller_method_inspector(PathParametersInspector())
     register_controller_method_inspector(QueryParametersInspector())
-    if not allow_missing_raises_annotation:
+    if not allow_missing_raises_annotation:  # pragma: no cover
         validate_missing_raises_annotations()

@@ -35,7 +35,7 @@ def sqla_crud(repository_cls):
 
     try:
         mapper = class_mapper(entity_cls)
-    except UnmappedClassError:
+    except UnmappedClassError:  # pragma: no cover
         raise TypeError('Invalid SQLAlchemy entity class given')
 
     if len(mapper.tables) > 1:
@@ -57,7 +57,7 @@ def sqla_crud(repository_cls):
         def delete(self, entity: T):
             try:
                 session = self._sessions[entity]
-            except KeyError:
+            except KeyError:  # pragma: no cover
                 raise self.RepositoryException('Entity must be fetched with repository before being deleted')
             pk = inspect(entity).identity
             del self._identity_map[pk]
@@ -70,14 +70,14 @@ def sqla_crud(repository_cls):
             for entity in entities:
                 self.delete(entity)
 
-        def delete_all(self):
+        def delete_all(self):  # pragma: no cover
             self._engine.execute(entity_table.delete())
             self._identity_map = {}
             for session in self._sessions.values():
                 session.close()
             self._sessions = {}
 
-        def delete_by_id(self, id_: K):
+        def delete_by_id(self, id_: K):  # pragma: no cover
             if not isinstance(id_, tuple):
                 id_ = (id_,)
             if id_ in self._identity_map:
@@ -87,7 +87,7 @@ def sqla_crud(repository_cls):
                 expressions = (column == value for column, value in zip(entity_table.primary_key.columns, id_))
                 self._engine.execute(entity_table.delete().where(and_(*expressions)))
 
-        def exists_by_id(self, id_: K) -> bool:
+        def exists_by_id(self, id_: K) -> bool:  # pragma: no cover
             if not isinstance(id_, tuple):
                 id_ = (id_,)
             if id_ in self._identity_map:
@@ -105,7 +105,7 @@ def sqla_crud(repository_cls):
             result = [entity for entity in result if entity]
             return result
 
-        def find_by_id(self, id_: K) -> Optional[T]:
+        def find_by_id(self, id_: K) -> Optional[T]:  # pragma: no cover
             if not isinstance(id_, tuple):
                 id_ = (id_,)
             if id_ in self._identity_map:
@@ -120,7 +120,7 @@ def sqla_crud(repository_cls):
             self._sessions[instance] = session
             return instance
 
-        def get_by_id(self, id_: K) -> T:
+        def get_by_id(self, id_: K) -> T:  # pragma: no cover
             entity = self.find_by_id(id_)
             if entity is None:
                 raise NotFoundException(id_, entity_cls)

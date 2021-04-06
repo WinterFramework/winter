@@ -19,17 +19,16 @@ class UserDTO:
 class UserSerializer(serializers.Serializer):
     name = serializers.CharField(required=True)
 
-    def to_internal_value(self, data):
+    def to_internal_value(self, data):  # pragma: no cover
         data = super().to_internal_value(data)
         return UserDTO(**data)
 
 
 class View(APIView):
-
-    def post(self):
+    def post(self):  # pragma: no cover
         pass
 
-    def get(self):
+    def get(self):  # pragma: no cover
         pass
 
 
@@ -41,7 +40,7 @@ class Controller:
         produces=[MediaType.APPLICATION_JSON_UTF8],
         consumes=[MediaType.APPLICATION_JSON_UTF8],
     )
-    def post(self, path_param: int, query_param: int, request_body: UserDTO) -> UserDTO:
+    def post(self, path_param: int, query_param: int, request_body: UserDTO) -> UserDTO:  # pragma: no cover
         """
         This is post method
         :param path_param:
@@ -53,11 +52,11 @@ class Controller:
 
     @winter_django.input_serializer(UserSerializer, argument_name='request_body')
     @winter.route_post('with-serializer/')
-    def post_with_serializer(self, request_body: UserDTO) -> UserDTO:
+    def post_with_serializer(self, request_body: UserDTO) -> UserDTO:  # pragma: no cover
         return request_body
 
     @winter.route_get('without-body/')
-    def get(self):
+    def get(self):  # pragma: no cover
         pass
 
 

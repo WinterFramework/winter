@@ -48,7 +48,7 @@ class IntegerEnum(IntEnum):
     }),
 ])
 def test_get_argument_type_info(type_hint, expected_type_info):
-    def func(arg_1: type_hint):
+    def func(arg_1: type_hint):  # pragma: no cover
         return arg_1
 
     argument = ComponentMethod(func).get_argument('arg_1')

@@ -15,8 +15,8 @@ from winter.web.routing import get_route
 def test_page_position_argument_inspector(argument_type, must_return_parameters):
     class SimpleController:
         @winter.route_get('')
-        def method(self, arg1: argument_type):
-            return arg1
+        def method(self, arg1: argument_type):  # pragma: no cover
+            pass
 
     route = get_route(SimpleController.method)
 
@@ -44,8 +44,8 @@ def test_page_position_argument_inspector_with_allowed_order_by_fields(default_s
     class SimpleController:
         @winter.route_get('')
         @winter.web.pagination.order_by(['id'], default_sort=default_sort)
-        def method(self, arg1: PagePosition):
-            return arg1
+        def method(self, arg1: PagePosition):  # pragma: no cover
+            pass
 
     route = get_route(SimpleController.method)
 

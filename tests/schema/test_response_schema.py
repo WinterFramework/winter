@@ -22,9 +22,8 @@ from ..controllers import ControllerWithProblemExceptions
 def test_build_response_schema(return_type, expected_response):
     @winter.route('')
     class SimpleController:
-
         @winter.route_get('/simple/')
-        def simple_method(self) -> return_type:
+        def simple_method(self) -> return_type:  # pragma: no cover
             return None
 
     # Act

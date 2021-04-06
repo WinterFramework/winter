@@ -5,7 +5,7 @@ from winter.core import ComponentMethod
 
 
 def test_parameter():
-    def test(number: int) -> int:
+    def test(number: int) -> int:  # pragma: no cover
         return number
 
     method = ComponentMethod(test)
@@ -17,7 +17,7 @@ def test_parameter():
 
 
 def test_default():
-    def test(number: int) -> int:
+    def test(number: int) -> int:  # pragma: no cover
         return number
 
     method = ComponentMethod(test)
