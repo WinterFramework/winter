@@ -49,22 +49,19 @@ def test_methods():
 
 def test_method_state():
     class SimpleComponent:
-
         @simple_annotation('/url/')
-        def simple_method(self):
-            return 123
+        def simple_method(self):  # pragma: no cover
+            pass
 
     assert SimpleComponent.simple_method.annotations.get(SimpleAnnotation) == [SimpleAnnotation('/url/')]
 
 
 def test_method_state_many():
-
     class SimpleComponent:
-
         @simple_annotation('first')
         @simple_annotation('second')
-        def simple_method(self):
-            return None
+        def simple_method(self):  # pragma: no cover
+            pass
 
     expected_annotations = [SimpleAnnotation('second'), SimpleAnnotation('first')]
     assert SimpleComponent.simple_method.annotations.get(SimpleAnnotation) == expected_annotations

@@ -6,14 +6,13 @@ from winter_openapi import PathParametersInspector
 
 
 class ControllerForTestingInspectors:
-
     @winter.route_post('{valid_param}/{invalid_param}/{not_in_method}/{?query_parameter}')
     def simple_method(
-            self,
-            valid_param: int,
-            invalid_param: object,
-            query_parameter: int,
-    ):
+        self,
+        valid_param: int,
+        invalid_param: object,
+        query_parameter: int,
+    ):  # pragma: no cover
         """
         :param valid_param: Valid doc
         :param invalid_param: Invalid doc

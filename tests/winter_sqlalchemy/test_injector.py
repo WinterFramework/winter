@@ -21,9 +21,7 @@ from winter_sqlalchemy import sqla_crud
 class Fixture:
     def __init__(self):
         class MyEntity(AggregateRoot):
-            def __init__(self, id_: int, name: Optional[str]):
-                self.id = id_
-                self.name = name
+            pass
 
         engine = self._engine = create_engine('sqlite://')
         metadata = MetaData()

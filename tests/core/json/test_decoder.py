@@ -1,3 +1,4 @@
+import dataclasses
 import datetime
 import decimal
 import enum
@@ -9,7 +10,6 @@ from typing import Optional
 from typing import Set
 from typing import Tuple
 
-import dataclasses
 import pytest
 from dateutil.tz import tzutc
 
@@ -20,27 +20,15 @@ empty = object()
 
 
 class Id(int):
-
-    def __eq__(self, other):
-        if not isinstance(other, __class__):
-            return False
-        return super().__eq__(other)
+    pass
 
 
 class Uid(uuid.UUID):
-
-    def __eq__(self, other):
-        if not isinstance(other, __class__):
-            return False
-        return super().__eq__(other)
+    pass
 
 
 class Number(decimal.Decimal):
-
-    def __eq__(self, other, **kwargs):
-        if not isinstance(other, __class__):
-            return False
-        return super().__eq__(other, **kwargs)
+    pass
 
 
 class Status(enum.Enum):

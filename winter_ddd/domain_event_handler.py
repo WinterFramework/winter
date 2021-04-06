@@ -29,7 +29,7 @@ class domain_event_handler:
         ):
             raise AssertionError('First argument must have annotation and this annotation must be class')
 
-    def __get__(self, instance, owner):
+    def __get__(self, instance, owner):  # pragma: no cover
         return self._method.__get__(instance, owner)
 
     def __set_name__(self, owner, name):

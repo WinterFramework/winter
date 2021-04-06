@@ -9,10 +9,10 @@ from ..routing.route import Route
 
 
 def route(
-        url_path: str,
-        http_method: Optional[str] = None,
-        produces: Optional[Tuple[MediaType]] = None,
-        consumes: Optional[Tuple[MediaType]] = None,
+    url_path: str,
+    http_method: Optional[str] = None,
+    produces: Optional[Tuple[MediaType]] = None,
+    consumes: Optional[Tuple[MediaType]] = None,
 ):
     route_annotation = RouteAnnotation(url_path, http_method, produces, consumes)
     return annotate(route_annotation, single=True)

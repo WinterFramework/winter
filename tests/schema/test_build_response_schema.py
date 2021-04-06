@@ -12,13 +12,12 @@ class UserSerializer(serializers.Serializer):
 
 
 class Controller:
-
     @winter_django.output_serializer(UserSerializer)
-    def with_output_serializer(self):
+    def with_output_serializer(self):  # pragma: no cover
         pass
 
     @winter.core.component_method
-    def with_invalid_return_type(self) -> object:
+    def with_invalid_return_type(self) -> object:  # pragma: no cover
         pass
 
 

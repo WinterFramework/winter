@@ -50,5 +50,5 @@ class ControllerWithResponseHeaders:
         return 'OK'
 
     @winter.route_get('header-without-annotation/')
-    def header_without_annotation(self, header: ResponseHeader[str]) -> str:
-        return 'OK'
+    def header_without_annotation(self, header: ResponseHeader[str]) -> str:  # pragma: no cover
+        pass

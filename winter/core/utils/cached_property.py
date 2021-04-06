@@ -7,7 +7,6 @@ if sys.version_info > (3, 8):
 else:
     # noinspection PyPep8Naming
     class cached_property:
-
         def __init__(self, func, name=None):
             self.func = func
             self.__doc__ = getattr(func, '__doc__')
