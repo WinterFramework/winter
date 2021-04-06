@@ -4,7 +4,7 @@ codecov:
 coverage:
   precision: 2
   round: down
-  range: 80...100
+  range: 99...100
 
   status:
     project:
@@ -28,3 +28,7 @@ coverage:
         enabled: no
 
 comment: false
+
+ignore:
+  - "setup.py"
+  - "samples/**/*.py"
