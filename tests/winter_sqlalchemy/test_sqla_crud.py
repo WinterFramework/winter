@@ -52,9 +52,7 @@ class Fixture:
 
         @sqla_crud
         class MyRepository(CRUDRepository[MyEntity, int]):
-            @abstractmethod
-            def find_one_by_name_and_lastname(self, name: str, lastname: str) -> MyEntity:
-                pass
+            pass
 
         metadata.create_all(bind=self._engine)
         repository = MyRepository(engine=self._engine)
