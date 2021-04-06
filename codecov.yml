@@ -31,4 +31,4 @@ comment: false
 
 ignore:
   - "setup.py"
-  - "samples/**/*.py"
+  - "samples/*.py"
