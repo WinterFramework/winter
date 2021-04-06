@@ -17,7 +17,7 @@ from typing import Type
 from drf_yasg import openapi
 
 from winter.core.utils import has_nested_type
-from winter.core.utils.typing import get_origin_type
+from winter.core.utils.typing import get_origin_type, get_generic_args
 from winter.core.utils.typing import is_any
 from winter.core.utils.typing import is_optional
 from winter.core.utils.typing import is_type_var
@@ -134,7 +134,7 @@ def inspect_any(hint_class) -> TypeInfo:
 
 # noinspection PyUnusedLocal
 @register_type_inspector(object, checker=is_type_var)
-def inspect_type_var(hint_class) -> TypeInfo:
+def inspect_type_var(hint_class) -> TypeInfo:  # pragma: no cover
     return TypeInfo(TYPE_ANY_VALUE)
 
 
@@ -167,8 +167,8 @@ def inspect_date(hint_class) -> TypeInfo:
 # noinspection PyUnusedLocal
 @register_type_inspector(list, tuple, set, Iterable)
 def inspect_iterable(hint_class) -> TypeInfo:
-    args = getattr(hint_class, '__args__', None)
-    if args is None:
+    args = get_generic_args(hint_class)
+    if not args:
         return TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(TYPE_ANY_VALUE))
     child_class = args[0]
     child_type_info = inspect_type(child_class)

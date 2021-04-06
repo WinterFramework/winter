@@ -43,7 +43,6 @@ def test_on_class_by_decorator(decorator):
 @pytest.mark.parametrize('decorator', (simple_annotation, simple_annotation_method))
 def test_on_method_by_decorator(decorator):
     class SimpleComponent:
-
         @decorator('test')
         def method(self):  # pragma: no cover
             pass
@@ -103,10 +102,9 @@ def test_annotate_with_instance(decorator_factory, error_message_template):
 def test_empty_annotation():
     @annotate(None)
     class Controller:
-
         @annotate(None)
         def simple_method(self):  # pragma: no cover
-            return None
+            pass
 
     component = Component.get_by_cls(Controller)
 
@@ -122,7 +120,7 @@ def test_try_twice_annotation_with_single():
         @annotate(SimpleAnnotation('test'), single=True)
         @annotate(SimpleAnnotation('test'), single=True)
         def simple_method():  # pragma: no cover
-            return None
+            pass
 
     assert exception.value.annotation == SimpleAnnotation('test')
     assert str(exception.value) == f'Cannot annotate twice: {SimpleAnnotation}'
@@ -133,7 +131,7 @@ def test_try_twice_annotation_with_unique():
         @annotate(SimpleAnnotation('test'), unique=True)
         @annotate(SimpleAnnotation('test'), unique=True)
         def simple_method():  # pragma: no cover
-            return None
+            pass
 
     assert exception.value.annotation == SimpleAnnotation('test')
     assert str(exception.value) == f'Cannot annotate twice: {SimpleAnnotation}'

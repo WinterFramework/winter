@@ -1,5 +1,4 @@
 import enum
-import inspect
 import types
 import uuid
 from typing import Iterable
@@ -39,9 +38,6 @@ def rewrite_uritemplate_with_regexps(url_path: str, methods: Iterable[ComponentM
 
 def get_regexp(type_=None) -> str:
     origin_type = get_origin_type(type_)
-
-    if not inspect.isclass(origin_type):
-        origin_type = type(origin_type)
 
     for cls in origin_type.mro():
         func = _regexp.get(cls)

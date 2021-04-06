@@ -43,7 +43,7 @@ def test_generic_argument_resolver_resolve_argument():
 
 
 def test_resolve_arguments_returns_empty_dict_for_empty_arguments():
-    def func():
+    def func():  # pragma: no cover
         pass
 
     expected_resolved_arguments = {}
@@ -58,7 +58,7 @@ def test_resolve_arguments_returns_empty_dict_for_empty_arguments():
 
 
 def test_resolve_arguments_resolves_argument_with_the_first_resolver():
-    def func(a: int):
+    def func(a: int):  # pragma: no cover
         pass
 
     expected_resolved_value = 1
@@ -80,7 +80,7 @@ def test_resolve_arguments_resolves_argument_with_the_first_resolver():
 
 
 def test_resolve_arguments_resolves_argument_with_the_second_resolver():
-    def func(a: int):
+    def func(a: int):  # pragma: no cover
         pass
 
     expected_resolved_value = 1
@@ -105,7 +105,7 @@ def test_resolve_arguments_resolves_argument_with_the_second_resolver():
 
 
 def test_resolve_arguments_fails():
-    def func(a: int):
+    def func(a: int):  # pragma: no cover
         pass
 
     arg_name = 'a'

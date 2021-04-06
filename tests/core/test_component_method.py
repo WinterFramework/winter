@@ -36,7 +36,7 @@ def test_all_attributes():
 
 def test_component_method():
     def test():  # pragma: no cover
-        return None
+        pass
 
     method = ComponentMethod(test)
     assert method is component_method(method)

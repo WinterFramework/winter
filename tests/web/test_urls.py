@@ -25,7 +25,7 @@ class _OneTwoEnum(enum.Enum):
     ),
 ))
 def test_rewrite_uritemplate_with_regexps(url_path, param_type, expected_url_path, example_url):
-    def method(param: param_type):
+    def method(param: param_type):  # pragma: no cover
         return param
 
     method = ComponentMethod(method)
@@ -39,10 +39,10 @@ def test_rewrite_uritemplate_with_regexps(url_path, param_type, expected_url_pat
 
 
 def test_rewrite_uritemplate_with_regexps_with_different_types_in_methods():
-    def method1(param: int):
+    def method1(param: int):  # pragma: no cover
         return param
 
-    def method2(param: str):
+    def method2(param: str):  # pragma: no cover
         return param
 
     method1 = ComponentMethod(method1)

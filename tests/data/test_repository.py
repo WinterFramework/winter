@@ -3,8 +3,7 @@ from winter.data import CRUDRepository
 
 def test_crud_repository_generic_parameters():
     class MyEntity:
-        def __init__(self, id_: int):
-            self.id = id_
+        pass
 
     class MyRepository(CRUDRepository[MyEntity, int]):
         pass

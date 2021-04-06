@@ -17,7 +17,7 @@ SecondDTO = dataclasses.dataclass(type('DTO', (), {
 
 def test_get_schema_title():
     @winter.core.component_method
-    def method(dto: DTO, second_dto: SecondDTO):
+    def method(dto: DTO, second_dto: SecondDTO):  # pragma: no cover
         return dto, second_dto
 
     dto_argument = method.get_argument('dto')

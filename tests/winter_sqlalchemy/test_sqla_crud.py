@@ -1,9 +1,9 @@
 from abc import abstractmethod
+from dataclasses import dataclass
 from typing import Optional
 
 import pytest
 import sqlalchemy as sa
-from dataclasses import dataclass
 from injector import ClassProvider
 from injector import inject
 from sqlalchemy import Column

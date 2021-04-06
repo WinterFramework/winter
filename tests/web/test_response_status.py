@@ -13,9 +13,8 @@ def test_response_status(response_status, as_int):
         response_status = response_status.value
 
     class Controller:
-
         @winter.response_status(response_status)
-        def handler(self):
+        def handler(self):  # pragma: no cover
             pass
 
     status = get_default_response_status('post', Controller.handler)

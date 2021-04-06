@@ -28,11 +28,11 @@ from winter.web.query_parameters.query_parameters_argument_resolver import Query
 def test_query_parameter_resolver(argument_name, query_string, expected_value):
     @winter.route_get('{?without_default,optional,with_default,array*}')
     def method(
-            without_default: int,
-            optional: Optional[str],
-            array: List[int],
-            with_default: str = 'default',
-    ):
+        without_default: int,
+        optional: Optional[str],
+        array: List[int],
+        with_default: str = 'default',
+    ):  # pragma: no cover
         return without_default, optional, array, with_default
 
     resolver = QueryParameterArgumentResolver()
@@ -50,7 +50,7 @@ def test_query_parameter_resolver(argument_name, query_string, expected_value):
 )
 def test_query_parameter_resolver_with_raises_parse_error(query_string, expected_exception_message):
     @winter.route_get('{?query_param}')
-    def method(query_param: int):
+    def method(query_param: int):  # pragma: no cover
         return query_param
 
     resolver = QueryParameterArgumentResolver()
@@ -72,7 +72,7 @@ def test_query_parameter_resolver_with_raises_parse_error(query_string, expected
 )
 def test_is_supported(argument_name, expected_is_supported):
     @winter.route_get('{?' + argument_name + '}')
-    def method(query_param: int):
+    def method(query_param: int):  # pragma: no cover
         return query_param
 
     resolver = QueryParameterArgumentResolver()
@@ -85,9 +85,8 @@ def test_is_supported(argument_name, expected_is_supported):
 
 
 def test_query_parameter_resolver_with_raises_argument_not_supported():
-
     @winter.route_get()
-    def method(invalid_query_param: int):
+    def method(invalid_query_param: int):  # pragma: no cover
         return invalid_query_param
 
     resolver = QueryParameterArgumentResolver()
@@ -105,7 +104,7 @@ def test_duplicate_routing_map_to():
     with pytest.raises(AlreadyAnnotated) as exception:
         @winter.map_query_parameter('y', to='query_param')
         @winter.map_query_parameter('x', to='query_param')
-        def method(query_param: int):
+        def method(query_param: int):  # pragma: no cover
             return query_param
     message = (
         "Cannot annotate twice: <class 'winter.web.query_parameters."
@@ -119,7 +118,7 @@ def test_duplicate_map_query_parameter_map_to():
         @winter.map_query_parameter('x', to='query_param1')
         @winter.map_query_parameter('x', to='query_param2')
         @winter.route_get('{?query_param}')
-        def method(query_param: int):
+        def method(query_param: int):  # pragma: no cover
             return query_param
 
     message = (
@@ -133,7 +132,7 @@ def test_orphan_map_query_parameter_fails():
     @winter.route_get('{?x,y}')
     @winter.map_query_parameter('x', to='x_param')
     @winter.map_query_parameter('y', to='y_param')
-    def method(x_param: int, y_param: int = 1):
+    def method(x_param: int, y_param: int = 1):  # pragma: no cover
         return 0
 
     resolver = QueryParameterArgumentResolver()

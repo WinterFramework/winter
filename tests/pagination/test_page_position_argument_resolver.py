@@ -19,7 +19,7 @@ from winter.web.pagination import PagePositionArgumentResolver
     ),
 )
 def test_is_supported_in_page_position_argument_resolver(argument_type, expected_is_supported):
-    def func(arg1: argument_type):
+    def func(arg1: argument_type):  # pragma: no cover
         return arg1
 
     method = ComponentMethod(func)
@@ -35,7 +35,7 @@ def test_is_supported_in_page_position_argument_resolver(argument_type, expected
 
 def test_resolve_argument_with_order_by_without_order_by_annotation():
     @winter.core.component_method
-    def method(arg1: PagePosition):
+    def method(arg1: PagePosition):  # pragma: no cover
         return arg1
 
     argument = method.get_argument('arg1')
@@ -65,7 +65,7 @@ def test_resolve_argument_with_order_by_without_order_by_annotation():
 )
 def test_resolve_argument_ok_in_page_position_argument_resolver(query_string, expected_page_position):
     @winter.web.pagination.order_by(['name', 'id', 'email', 'x'])
-    def method(page_position: PagePosition):
+    def method(page_position: PagePosition):  # pragma: no cover
         return page_position
 
     argument = method.get_argument('page_position')
@@ -93,7 +93,7 @@ def test_resolve_argument_ok_in_page_position_argument_resolver_with_default(
     expected_page_position,
 ):
     @winter.web.pagination.order_by(['name', 'id', 'email'], default_sort=default_sort)
-    def method(page_position: PagePosition):
+    def method(page_position: PagePosition):  # pragma: no cover
         return page_position
 
     argument = method.get_argument('page_position')
@@ -124,9 +124,8 @@ def test_resolve_argument_ok_in_page_position_argument_resolver_with_default(
     ),
 )
 def test_resolve_argument_fails_in_page_position_argument_resolver(query_string, exception_type, message):
-
     @winter.web.pagination.order_by(['id'])
-    def method(arg1: int):
+    def method(arg1: int):  # pragma: no cover
         return arg1
 
     argument = method.get_argument('arg1')
