@@ -22,6 +22,8 @@ class RepositoryGenericMeta(GenericMeta):
     def __init__(cls, name, bases, attr, **kwargs):
         if name not in ('Repository', 'CRUDRepository'):
             args = get_generic_args(cls.__orig_bases__[0])
+            if not args:  # pragma: no cover
+                return
             if len(args) != 2:
                 raise TypeError(f'Repository class takes exactly 2 generic parameters, {len(args)} were given: {args}')
             cls.__entity_cls__ = args[0]
