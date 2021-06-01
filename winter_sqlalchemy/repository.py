@@ -26,8 +26,6 @@ K = TypeVar('K')
 
 
 def sqla_crud(repository_cls):
-    injector = get_injector()
-
     if not issubclass(repository_cls, CRUDRepository):
         raise TypeError('Repository must be inherited from CRUDRepository before annotating with sqla_crud')
 
@@ -168,6 +166,7 @@ def sqla_crud(repository_cls):
     class RepositoryImpl(DefaultCRUDRepositoryImpl, *repository_subclasses):
         @inject
         def __init__(self):
+            injector = get_injector()
             injector.call_with_injection(DefaultCRUDRepositoryImpl.__init__, self)
             for subclass in repository_subclasses:
                 injector.call_with_injection(subclass.__init__, self)
