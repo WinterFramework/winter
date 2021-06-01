@@ -20,7 +20,6 @@ class DomainEventDispatcher:
     def __init__(self):
         self._subscriptions: Dict[EventFilter, List[DomainEventSubscription]] = {}
         self._event_type_to_event_filters_map: Dict[Type[DomainEvent], List[EventFilter]] = {}
-        self._injector = get_injector()
 
     def add_subscription(self, subscription: DomainEventSubscription):
         self._subscriptions.setdefault(subscription.event_filter, []).append(subscription)
@@ -40,9 +39,12 @@ class DomainEventDispatcher:
 
         for event_filter, events in filtered_events.items():
             for subscription in self._subscriptions.get(event_filter, []):
-                handler_instance = self._injector.get(subscription.handler_class)
+                handler_instance = get_injector().get(subscription.handler_class)
                 if subscription.collection:
                     subscription.handler_method(handler_instance, events)
                 else:
                     for event in events:
                         subscription.handler_method(handler_instance, event)
+
+
+global_domain_event_dispatcher = DomainEventDispatcher()
