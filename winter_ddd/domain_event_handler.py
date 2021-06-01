@@ -2,13 +2,10 @@ import inspect
 import re
 
 from winter.core.utils.typing import is_union
-from .domain_event_dispatcher import DomainEventDispatcher
+from .domain_event_dispatcher import global_domain_event_dispatcher
 from .domain_event_subscription import DomainEventSubscription
 
 domain_events_class_name_pattern = re.compile(r'typing.List\[.+\]')
-
-
-global_domain_event_dispatcher = DomainEventDispatcher()
 
 
 # noinspection PyPep8Naming
