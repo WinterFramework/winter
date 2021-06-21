@@ -32,6 +32,10 @@ def pytest_configure():
             },
         ],
         INSTALLED_APPS=(
+            # Hack for making module discovery working
+            'django.contrib.admin',
+            'django.contrib.contenttypes',
+            # End hack
             'tests',
         ),
     )
