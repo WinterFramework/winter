@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [9.3.0] - 2021-06-21
+
+### New features
+- winter.core.ModuleDiscovery is added
+- winter_django.create_django_urls_for_package(package_name) is added
+
 ## [9.2.0] - 2021-06-01
 
 ### Bugfixes
