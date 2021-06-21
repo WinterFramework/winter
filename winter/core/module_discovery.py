@@ -12,16 +12,15 @@ class ModuleDiscovery:
         classes = []
         classes_set = set()
         for module_name, module in dict(sys.modules).items():
-            try:
-                for class_name, class_ in inspect.getmembers(module, inspect.isclass):
-                    if class_ in classes_set:
-                        continue
-                    if package and not (isinstance(class_.__module__, str) and class_.__module__.startswith(package)):
-                        continue
-                    classes.append((class_name, class_))
-                    classes_set.add(class_)
-            except ImportError:
-                pass
+            if module_name.endswith('six.moves'):  # pragma: no cover
+                continue
+            for class_name, class_ in inspect.getmembers(module, inspect.isclass):
+                if class_ in classes_set:
+                    continue
+                if package and not (isinstance(class_.__module__, str) and class_.__module__.startswith(package)):
+                    continue
+                classes.append((class_name, class_))
+                classes_set.add(class_)
         return classes
 
     def import_recursively(self, package_name: str):
