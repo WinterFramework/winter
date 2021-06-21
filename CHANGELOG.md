@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### New features
 - winter.core.ModuleDiscovery is added
-- winter_django.create_django_urls_for_package(package_name) is added
+- winter_django.autodiscovery.create_django_urls_for_package(package_name) is added
 
 ## [9.2.0] - 2021-06-01
 

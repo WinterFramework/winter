@@ -24,20 +24,6 @@ class ModuleDiscovery:
                 pass
         return classes
 
-    def get_all_subclasses(self, supertype: Type) -> List[Tuple[str, Type]]:
-        classes = []
-        for class_name, class_ in self.get_all_classes():
-            try:
-                # Workaround to not fail in the issubclass check
-                from _weakref import ReferenceType
-
-                ReferenceType(class_)
-            except TypeError:
-                continue
-            if class_ is not supertype and issubclass(class_, supertype):
-                classes.append((class_name, class_))
-        return classes
-
     def import_recursively(self, package_name: str):
         package = importlib.import_module(package_name)
         for module in pkgutil.iter_modules(package.__path__):
