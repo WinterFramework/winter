@@ -11,4 +11,5 @@ from .component_method_argument import ArgumentDoesNotHaveDefault
 from .component_method_argument import ComponentMethodArgument
 from .injection import get_injector
 from .injection import set_injector
+from .module_discovery import ModuleDiscovery
 from .utils import cached_property

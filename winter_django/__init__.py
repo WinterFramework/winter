@@ -1,6 +1,7 @@
 from winter.web import arguments_resolver
 from .body_argument_resolver import DRFBodyArgumentResolver
 from .body_with_context import BodyWithContext
+from .controller_discovery import create_django_urls_for_package
 from .http_request_argument_resolver import HttpRequestArgumentResolver
 from .input_serializer import InputSerializer
 from .input_serializer import input_serializer
