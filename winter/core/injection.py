@@ -28,6 +28,9 @@ class Injector:
         return getattr(self._get_injector(), item)
 
 
+_injector: Optional[Injector] = None
+
+
 def set_injector(injector_: Injector) -> None:
     global _injector
     _injector = injector_
@@ -36,6 +39,3 @@ def set_injector(injector_: Injector) -> None:
 def get_injector() -> Injector:
     global _injector
     return _injector
-
-
-_injector: Optional[Injector] = None
