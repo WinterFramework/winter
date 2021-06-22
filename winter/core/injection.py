@@ -37,5 +37,4 @@ def set_injector(injector_: Injector) -> None:
 
 
 def get_injector() -> Injector:
-    global _injector
     return _injector
