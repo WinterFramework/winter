@@ -32,6 +32,7 @@ furl = "2.0.0"
 python-dateutil = "2.8.0"
 injector = "0.15.0"
 SQLAlchemy = ">=1.4.0"
+typing-extensions = "^3.10.0"
 
 [tool.poetry.dev-dependencies]
 tox-travis = ">=0.10"
