@@ -15,11 +15,13 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+    - name: Install and configure Poetry
+      uses: snok/install-poetry@v1
+      with:
+        version: latest
+        virtualenvs-create: false
     - name: Install dependencies
-      run: |
-        pip install -r ./requirements/base.txt
-        pip install -r ./requirements/test.txt
-        pip install -r ./requirements/ci.txt
+      run: poetry install
     - name: Test with pytest
       run: |
         pytest -rfs --cov --cov-config=.coveragerc --cov-report="" --disable-warnings
