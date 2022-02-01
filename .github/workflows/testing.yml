@@ -19,12 +19,11 @@ jobs:
       uses: snok/install-poetry@v1
       with:
         version: latest
-        virtualenvs-create: false
     - name: Install dependencies
       run: poetry install
     - name: Test with pytest
       run: |
-        pytest -rfs --cov --cov-config=.coveragerc --cov-report="" --disable-warnings
-        coverage combine || true
-        coverage report
-        codecov
+        poetry run pytest -rfs --cov --cov-config=.coveragerc --cov-report="" --disable-warnings
+        poetry run coverage combine || true
+        poetry run coverage report
+        poetry run codecov
