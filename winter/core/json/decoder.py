@@ -1,3 +1,4 @@
+import dataclasses
 import datetime
 import decimal
 import enum
@@ -15,9 +16,9 @@ from typing import Type
 from typing import TypeVar
 from typing import Union
 
-import dataclasses
 from dateutil import parser
 
+from winter.core.utils.typing import get_generic_args
 from winter.core.utils.typing import get_origin_type
 from winter.core.utils.typing import is_optional
 
@@ -274,13 +275,9 @@ def decode_tuple(value, type_) -> tuple:
 def decode_dict(value, type_) -> dict:
     if not isinstance(value, dict):
         raise JSONDecodeException.cannot_decode(value=value, type_name='object')
-    key_and_value_type = getattr(type_, '__args__', None)
+    key_and_value_type = get_generic_args(type_)
 
-    if key_and_value_type is None:
-        return value
-
-    # noinspection PyUnresolvedReferences
-    if key_and_value_type == Dict.__args__:
+    if not key_and_value_type:
         return value
 
     key_type, value_type = key_and_value_type
