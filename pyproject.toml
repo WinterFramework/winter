@@ -15,7 +15,6 @@ classifiers = [
     'Programming Language :: Python :: 3.7',
     'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
-    'Programming Language :: Python :: 3.10',
     'Framework :: Django',
     'Framework :: Django :: 1.11',
     'Framework :: Django :: 2.0',
@@ -52,7 +51,7 @@ flake8-formatter-abspath = "1.0.1"
 pre-commit-hooks = "2.2.3"
 freezegun = "0.3.15"
 mock = "2.0.0"
-pytest = "6.2.5"
+pytest = "<5.0.0>=3.6"
 pytest-pythonpath = ">=0.7.1"
 pytest-cov = ">=2.5.1"
 pytest-django = ">=3.2.0"
