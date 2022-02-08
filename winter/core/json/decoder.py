@@ -280,7 +280,7 @@ def decode_dict(value, type_) -> dict:
         return value
 
     # noinspection PyUnresolvedReferences
-    if key_and_value_type == Dict.__args__:
+    if key_and_value_type == (TypeVar, TypeVar):
         return value
 
     key_type, value_type = key_and_value_type
