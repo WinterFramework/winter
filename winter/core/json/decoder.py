@@ -277,7 +277,7 @@ def decode_dict(value, type_) -> dict:
         raise JSONDecodeException.cannot_decode(value=value, type_name='object')
     key_and_value_type = get_generic_args(type_)
 
-    if key_and_value_type is ():
+    if not key_and_value_type:
         return value
 
     key_type, value_type = key_and_value_type
