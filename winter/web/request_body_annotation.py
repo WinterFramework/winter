@@ -3,7 +3,7 @@ from typing import List
 import dataclasses
 
 from winter.core import annotate_method
-from winter.core.utils.typing import NoneType
+from winter.core.utils.typing import get_origin_type
 
 ListType = type(List)
 
@@ -14,9 +14,8 @@ class RequestBodyAnnotation:
 
 
 def check_request_body_type(argument_type):
-    is_list = issubclass(getattr(argument_type, '__origin__', NoneType), list)
-    is_typing_list = isinstance(argument_type, ListType)  # for py36 compatibility
-    if not dataclasses.is_dataclass(argument_type) and not is_list and not is_typing_list:
+    is_list = issubclass(get_origin_type(argument_type), list)
+    if not dataclasses.is_dataclass(argument_type) and not is_list:
         raise AssertionError('Invalid request body type')
 
 
