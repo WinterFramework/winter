@@ -4,6 +4,7 @@ import decimal
 import enum
 import inspect
 import types
+import typing
 import uuid
 from collections import OrderedDict
 from collections.abc import Iterable
@@ -220,6 +221,14 @@ def inspect_type_wrapper(hint_class) -> TypeInfo:
     checker=lambda instance: getattr(instance, '__supertype__', None) is not None,
 )
 def inspect_new_type(hint_class) -> TypeInfo:
+    return inspect_type(hint_class.__supertype__)
+
+
+@register_type_inspector(
+    typing.NewType,
+    checker=lambda instance: getattr(instance, '__supertype__', None) is not None,
+)
+def inspect_new_type_class(hint_class) -> TypeInfo:
     return inspect_type(hint_class.__supertype__)
 
 
