@@ -165,6 +165,7 @@ def test_decode_set_with_errors(data, type_, expected_errors):
     ('data', 'type_', 'expected_instance'), (
         (['super'], List[Status], [Status.SUPER]),
         (['1'], List[IntStatus], [IntStatus.SUPER]),
+        ([1], List[IntStatus], [IntStatus.SUPER]),
         ({1}, List, [1]),
         ({1}, list, [1]),
     ),
