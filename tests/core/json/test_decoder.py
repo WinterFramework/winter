@@ -35,6 +35,10 @@ class Status(enum.Enum):
     SUPER = 'super'
     NOT_SUPER = 'not_super'
 
+class IntStatus(enum.IntEnum):
+    SUPER = 1
+    NOT_SUPER = 2
+
 
 @dataclasses.dataclass(frozen=True)
 class Contact:
@@ -45,6 +49,7 @@ class Contact:
 class User:
     id: Id
     status: Status
+    int_status: IntStatus
     birthday: datetime.date
     contact: Contact
     emails: List[str] = dataclasses.field(default_factory=list)
@@ -63,6 +68,7 @@ class Profile:
             {
                 'id': '1',
                 'status': 'super',
+                'int_status': '1',
                 'birthday': '2017-12-21',
                 'name': 'name',
                 'created_at': '2001-02-03T04:05:06Z',
@@ -74,6 +80,7 @@ class Profile:
             User(
                 Id(1),
                 Status.SUPER,
+                IntStatus.SUPER,
                 datetime.date(year=2017, day=21, month=12),
                 Contact({123, 456}),
                 ['test@test.ru'],
@@ -85,6 +92,7 @@ class Profile:
             {
                 'id': 1,
                 'status': 'super',
+                'int_status': '1',
                 'birthday': '2017-12-21',
                 'contact': {
                     'phones': ['123', '456'],
@@ -93,6 +101,7 @@ class Profile:
             User(
                 Id(1),
                 Status.SUPER,
+                IntStatus.SUPER,
                 datetime.date(year=2017, day=21, month=12),
                 Contact({123, 456}),
                 [],
