@@ -183,6 +183,8 @@ def test_decode_list(data, type_, expected_instance):
         ),
         (1, List[Status], 'Cannot decode "1" to list'),
         (None, List[Status], 'Cannot decode "None" to list'),
+        (None, List[IntStatus], 'Cannot decode "None" to list'),
+        (['a'], List[IntStatus], 'Value not in allowed values("1", "2"): "a"'),
     ),
 )
 def test_decode_list_with_errors(data, type_, expected_errors):
