@@ -164,6 +164,7 @@ def test_decode_set_with_errors(data, type_, expected_errors):
 @pytest.mark.parametrize(
     ('data', 'type_', 'expected_instance'), (
         (['super'], List[Status], [Status.SUPER]),
+        (['1'], List[IntStatus], [IntStatus.SUPER]),
         ({1}, List, [1]),
         ({1}, list, [1]),
     ),
@@ -306,7 +307,7 @@ def test_decode_dataclass(data, type_, expected_instance):
             },
             User,
             {
-                'non_field_error': 'Missing fields: "id", "status", "birthday"',
+                'non_field_error': 'Missing fields: "id", "status", "int_status", "birthday"',
                 'contact': {
                     'phones': 'Cannot decode "123" to set',
                 },
