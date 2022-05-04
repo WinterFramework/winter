@@ -35,6 +35,10 @@ class Status(enum.Enum):
     SUPER = 'super'
     NOT_SUPER = 'not_super'
 
+class IntStatus(enum.IntEnum):
+    SUPER = 1
+    NOT_SUPER = 2
+
 
 @dataclasses.dataclass(frozen=True)
 class Contact:
@@ -45,6 +49,7 @@ class Contact:
 class User:
     id: Id
     status: Status
+    int_status: IntStatus
     birthday: datetime.date
     contact: Contact
     emails: List[str] = dataclasses.field(default_factory=list)
@@ -63,6 +68,7 @@ class Profile:
             {
                 'id': '1',
                 'status': 'super',
+                'int_status': '1',
                 'birthday': '2017-12-21',
                 'name': 'name',
                 'created_at': '2001-02-03T04:05:06Z',
@@ -74,6 +80,7 @@ class Profile:
             User(
                 Id(1),
                 Status.SUPER,
+                IntStatus.SUPER,
                 datetime.date(year=2017, day=21, month=12),
                 Contact({123, 456}),
                 ['test@test.ru'],
@@ -85,6 +92,7 @@ class Profile:
             {
                 'id': 1,
                 'status': 'super',
+                'int_status': '1',
                 'birthday': '2017-12-21',
                 'contact': {
                     'phones': ['123', '456'],
@@ -93,6 +101,7 @@ class Profile:
             User(
                 Id(1),
                 Status.SUPER,
+                IntStatus.SUPER,
                 datetime.date(year=2017, day=21, month=12),
                 Contact({123, 456}),
                 [],
@@ -155,6 +164,8 @@ def test_decode_set_with_errors(data, type_, expected_errors):
 @pytest.mark.parametrize(
     ('data', 'type_', 'expected_instance'), (
         (['super'], List[Status], [Status.SUPER]),
+        (['1'], List[IntStatus], [IntStatus.SUPER]),
+        ([1], List[IntStatus], [IntStatus.SUPER]),
         ({1}, List, [1]),
         ({1}, list, [1]),
     ),
@@ -173,6 +184,8 @@ def test_decode_list(data, type_, expected_instance):
         ),
         (1, List[Status], 'Cannot decode "1" to list'),
         (None, List[Status], 'Cannot decode "None" to list'),
+        (None, List[IntStatus], 'Cannot decode "None" to list'),
+        (['a'], List[IntStatus], 'Value not in allowed values("1", "2"): "a"'),
     ),
 )
 def test_decode_list_with_errors(data, type_, expected_errors):
@@ -297,7 +310,7 @@ def test_decode_dataclass(data, type_, expected_instance):
             },
             User,
             {
-                'non_field_error': 'Missing fields: "id", "status", "birthday"',
+                'non_field_error': 'Missing fields: "id", "status", "int_status", "birthday"',
                 'contact': {
                     'phones': 'Cannot decode "123" to set',
                 },

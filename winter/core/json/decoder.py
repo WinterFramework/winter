@@ -204,6 +204,19 @@ def decode_enum(value, type_) -> enum.Enum:
         raise JSONDecodeException(errors)
 
 
+@json_decoder(enum.IntEnum)
+def decode_int_enum(value, type_) -> enum.IntEnum:
+    try:
+        return type_(int(value))
+    except ValueError:
+        allowed_values = '", "'.join(map(str, (item.value for item in type_)))
+        errors = 'Value not in allowed values("{allowed_values}"): "{value}"'.format(
+            value=value,
+            allowed_values=allowed_values,
+        )
+        raise JSONDecodeException(errors)
+
+
 # noinspection PyUnusedLocal
 @json_decoder(datetime.date)
 def decode_date(value, type_) -> datetime.date:
