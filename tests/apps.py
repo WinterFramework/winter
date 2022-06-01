@@ -5,7 +5,7 @@ from .web.interceptors import *  # noqa: F401, F403
 
 
 class TestAppConfig(AppConfig):
-    name = 'test'
+    name = 'tests'
 
     def ready(self):
         # define this import for force initialization all modules and to register Exceptions
