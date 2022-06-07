@@ -33,6 +33,6 @@ def test_with_invalid_return_type():
         build_response_schema(Controller.with_invalid_return_type)
 
     assert repr(e.value) == (
-        'CanNotInspectReturnType(tests.schema.test_build_response_schema.Controller.with_invalid_return_type: '
+        'CanNotInspectReturnType(tests.winter_openapi.test_build_response_schema.Controller.with_invalid_return_type: '
         "-> <class 'object'>: Unknown type: <class 'object'>)"
     )

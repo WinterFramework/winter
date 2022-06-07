@@ -9,8 +9,8 @@ from winter.web.controller import get_component
 from winter.web.routing import get_route
 from winter_openapi.generation import build_response_schema
 from winter_openapi.generation import build_responses_schemas
-from ..controllers import ControllerWithExceptions
-from ..controllers import ControllerWithProblemExceptions
+from tests.controllers import ControllerWithExceptions
+from tests.controllers import ControllerWithProblemExceptions
 
 
 @pytest.mark.parametrize(
