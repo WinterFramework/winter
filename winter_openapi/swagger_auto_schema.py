@@ -76,7 +76,7 @@ class SwaggerAutoSchema(SwaggerAutoSchemaBase):
             argument = method.get_argument(request_body_annotation.argument_name)
             type_info = inspect_type(argument.type_)
             title = get_schema_title(argument)
-            schema = openapi.Schema(title=title, **type_info.as_dict())
+            schema = type_info.get_openapi_schema(output=False, title=title)
             return [openapi.Parameter(name='data', in_=openapi.IN_BODY, required=True, schema=schema)]
         return []
 

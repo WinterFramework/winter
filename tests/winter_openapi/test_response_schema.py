@@ -39,9 +39,11 @@ def test_build_response_schema(return_type, expected_response):
             ControllerWithExceptions, 'declared_and_thrown', {
                 '200': openapi.Schema(type=openapi.TYPE_STRING),
                 '400': openapi.Schema(
-                    type=openapi.TYPE_OBJECT, properties={
+                    type=openapi.TYPE_OBJECT,
+                    properties={
                         'message': openapi.Schema(type=openapi.TYPE_STRING),
                     },
+                    required=['message'],
                 ),
             },
         ),
@@ -67,12 +69,19 @@ def test_build_response_schema(return_type, expected_response):
                 '403': openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
-                        'custom_field': openapi.Schema(type=openapi.TYPE_STRING),
-                        'detail': openapi.Schema(type=openapi.TYPE_STRING),
-                        'title': openapi.Schema(type=openapi.TYPE_STRING),
-                        'type': openapi.Schema(type=openapi.TYPE_STRING),
                         'status': openapi.Schema(type=openapi.TYPE_INTEGER),
+                        'title': openapi.Schema(type=openapi.TYPE_STRING),
+                        'detail': openapi.Schema(type=openapi.TYPE_STRING),
+                        'type': openapi.Schema(type=openapi.TYPE_STRING),
+                        'custom_field': openapi.Schema(type=openapi.TYPE_STRING),
                     },
+                    required=[
+                        'status',
+                        'title',
+                        'detail',
+                        'type',
+                        'custom_field',
+                    ],
                 ),
             },
         ),
