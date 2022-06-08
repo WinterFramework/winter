@@ -5,7 +5,7 @@ from winter.web.pagination.limits import MaximumLimitValueExceeded
 from .annotations import global_exception
 from .annotations import register_global_exception
 from .enum_inspector import inspect_enum_class
-from .inspectors import SwaggerAutoSchema
+from .swagger_auto_schema import SwaggerAutoSchema
 from .method_arguments_inspector import MethodArgumentsInspector
 from .method_arguments_inspector import get_method_arguments_inspectors
 from .method_arguments_inspector import register_controller_method_inspector

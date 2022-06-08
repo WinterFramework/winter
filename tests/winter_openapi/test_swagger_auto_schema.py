@@ -1,4 +1,5 @@
 import dataclasses
+from typing import Optional
 
 from drf_yasg import openapi
 from rest_framework import serializers
@@ -14,6 +15,8 @@ from winter.web.routing import get_route
 @dataclasses.dataclass
 class UserDTO:
     name: str
+    surname: str = ''
+    age: Optional[int] = None
 
 
 class UserSerializer(serializers.Serializer):
@@ -79,7 +82,15 @@ def test_get_operation():
                     'name': {
                         'type': openapi.TYPE_STRING,
                     },
+                    'surname': {
+                        'type': openapi.TYPE_STRING,
+                    },
+                    'age': {
+                        'type': openapi.TYPE_INTEGER,
+                        'x-nullable': True,
+                    },
                 },
+                required=['name'],
             ),
         ),
         openapi.Parameter(
@@ -104,9 +115,17 @@ def test_get_operation():
                 type=openapi.TYPE_OBJECT,
                 properties={
                     'name': {
-                        'type': 'string',
+                        'type': openapi.TYPE_STRING,
+                    },
+                    'surname': {
+                        'type': openapi.TYPE_STRING,
+                    },
+                    'age': {
+                        'type': openapi.TYPE_INTEGER,
+                        'x-nullable': True,
                     },
                 },
+                required=['name', 'surname', 'age'],
             ),
         ),
     })
@@ -128,7 +147,11 @@ def test_get_operation_with_serializer():
     View.post.route = route
     reference_resolver = openapi.ReferenceResolver('definitions', 'parameters', force_init=True)
     auto_schema = SwaggerAutoSchema(view, 'path', route.http_method, reference_resolver, 'request', {})
+
+    # Act
     operation = auto_schema.get_operation(['test_app', 'post'])
+
+    # Assert
     schema_ref = openapi.SchemaRef(
         resolver=reference_resolver,
         schema_name='User',
@@ -148,9 +171,17 @@ def test_get_operation_with_serializer():
                 type=openapi.TYPE_OBJECT,
                 properties={
                     'name': {
-                        'type': 'string',
+                        'type': openapi.TYPE_STRING,
+                    },
+                    'surname': {
+                        'type': openapi.TYPE_STRING,
+                    },
+                    'age': {
+                        'type': openapi.TYPE_INTEGER,
+                        'x-nullable': True,
                     },
                 },
+                required=['name', 'surname', 'age'],
             ),
         ),
     })

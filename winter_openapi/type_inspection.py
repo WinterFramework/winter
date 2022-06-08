@@ -58,6 +58,7 @@ class TypeInfo:
     child: Optional['TypeInfo'] = None
     nullable: bool = False
     properties: Dict[str, 'TypeInfo'] = dataclasses.field(default_factory=OrderedDict)
+    properties_defaults: Dict[str, object] = dataclasses.field(default_factory=dict)
     enum: Optional[list] = None
 
     def __eq__(self, other):
@@ -87,8 +88,16 @@ class TypeInfo:
 
         return data
 
-    def get_openapi_schema(self):
-        return openapi.Schema(**self.as_dict())
+    def get_openapi_schema(self, output: bool, title: str = None) -> openapi.Schema:
+        if output:
+            required_properties = list(self.properties)
+        else:
+            required_properties = [
+                property_name
+                for property_name in self.properties
+                if property_name not in self.properties_defaults
+            ]
+        return openapi.Schema(title=title, required=required_properties or None, **self.as_dict())
 
 
 # noinspection PyUnusedLocal
@@ -206,7 +215,12 @@ def inspect_dataclass(hint_class) -> TypeInfo:
         field.name: inspect_type(field.type)
         for field in fields
     }
-    return TypeInfo(type_=openapi.TYPE_OBJECT, properties=properties)
+    defaults = {
+        field.name: field.default
+        for field in fields
+        if field.default != dataclasses.MISSING
+    }
+    return TypeInfo(type_=openapi.TYPE_OBJECT, properties=properties, properties_defaults=defaults)
 
 
 @register_type_inspector(object, checker=has_nested_type)

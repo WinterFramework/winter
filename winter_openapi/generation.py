@@ -95,7 +95,7 @@ def build_response_schema(method: ComponentMethod):
         type_info = inspect_type(return_value_type)
     except InspectorNotFound as e:
         raise CanNotInspectReturnType(method, return_value_type, str(e))
-    return type_info.get_openapi_schema()
+    return type_info.get_openapi_schema(output=True)
 
 
 def build_method_parameters(route: Route) -> List['openapi.Parameter']:
