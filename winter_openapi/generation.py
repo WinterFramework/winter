@@ -16,9 +16,7 @@ from winter.web.routing import Route
 from winter_django import get_output_serializer
 from .method_arguments_inspector import get_method_arguments_inspectors
 from .type_inspection import InspectorNotFound
-from .type_inspection import TypeInfo
 from .type_inspection import inspect_type
-from .utils import update_doc_with_invalid_hype_hint
 
 _schema_titles: Dict[str, List] = {}
 
@@ -103,22 +101,3 @@ def build_method_parameters(route: Route) -> List['openapi.Parameter']:
     for method_inspector in get_method_arguments_inspectors():
         parameters += method_inspector.inspect_parameters(route)
     return parameters
-
-
-def get_argument_info(argument: ComponentMethodArgument) -> dict:
-    try:
-        type_info = inspect_type(argument.type_)
-        invalid_hype_hint = False
-    except InspectorNotFound:
-        type_info = TypeInfo(openapi.TYPE_STRING)
-        invalid_hype_hint = True
-    type_info_data = type_info.as_dict()
-
-    description = argument.description
-
-    if invalid_hype_hint:
-        description = update_doc_with_invalid_hype_hint(description)
-    default = argument.get_default(None)
-    type_info_data['description'] = description
-    type_info_data['default'] = default
-    return type_info_data
