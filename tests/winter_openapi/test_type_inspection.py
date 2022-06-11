@@ -181,7 +181,7 @@ def test_inspect_enum_class(enum_cls, expected_value):
     ),
     (
         TypeInfo(openapi.TYPE_OBJECT, properties={'nested_number': TypeInfo(openapi.TYPE_INTEGER)}),
-        {'properties': {'nested_number': {'type': 'integer'}}, 'type': 'object'},
+        {'properties': {'nested_number': {'type': 'integer'}}, 'type': 'object', 'required': ['nested_number']},
     ),
     (
         TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_INTEGER)),

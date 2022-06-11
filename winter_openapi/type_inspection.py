@@ -66,7 +66,7 @@ class TypeInfo:
             return False
         return self.as_dict() == other.as_dict()
 
-    def as_dict(self):
+    def as_dict(self, output: bool = True):
         data = {
             # AnyValue map to Object in OpenApi 2.0
             'type': openapi.TYPE_OBJECT if self.type_ == TYPE_ANY_VALUE else self.type_,
@@ -75,7 +75,7 @@ class TypeInfo:
             data['format'] = self.format_
 
         if self.child is not None:
-            data['items'] = self.child.as_dict()
+            data['items'] = self.child.as_dict(output)
 
         if self.nullable:
             data['x-nullable'] = True
@@ -84,11 +84,8 @@ class TypeInfo:
             data['enum'] = self.enum
 
         if self.properties:
-            data['properties'] = {key: value.as_dict() for key, value in self.properties.items()}
+            data['properties'] = {key: value.as_dict(output) for key, value in self.properties.items()}
 
-        return data
-
-    def get_openapi_schema(self, output: bool, title: str = None) -> openapi.Schema:
         if output:
             required_properties = list(self.properties)
         else:
@@ -97,7 +94,14 @@ class TypeInfo:
                 for property_name in self.properties
                 if property_name not in self.properties_defaults
             ]
-        return openapi.Schema(title=title, required=required_properties or None, **self.as_dict())
+
+        if required_properties:
+            data['required'] = required_properties
+
+        return data
+
+    def get_openapi_schema(self, output: bool, title: str = None) -> openapi.Schema:
+        return openapi.Schema(title=title, **self.as_dict(output))
 
 
 # noinspection PyUnusedLocal
