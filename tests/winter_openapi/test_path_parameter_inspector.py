@@ -1,3 +1,8 @@
+from enum import Enum
+from enum import IntEnum
+from typing import List
+
+import pytest
 from drf_yasg import openapi
 
 import winter
@@ -5,35 +10,72 @@ from winter.web.routing import get_route
 from winter_openapi import PathParametersInspector
 
 
-class ControllerForTestingInspectors:
-    @winter.route_post('{valid_param}/{invalid_param}/{not_in_method}/{?query_parameter}')
-    def simple_method(
-        self,
-        valid_param: int,
-        invalid_param: object,
-        query_parameter: int,
-    ):  # pragma: no cover
-        """
-        :param valid_param: Valid doc
-        :param invalid_param: Invalid doc
-        """
-        pass
+class IntegerValueEnum(Enum):
+    RED = 1
+    GREEN = 2
 
 
-def test_path_parameter_inspector():
+class StringValueEnum(Enum):
+    RED = 'red'
+    GREEN = 'green'
+
+
+class MixedValueEnum(Enum):
+    RED = 123
+    GREEN = 'green'
+
+
+class IntegerEnum(IntEnum):
+    RED = 1
+    GREEN = 2
+
+
+@pytest.mark.parametrize('type_hint, expected_parameter_properties', [
+    (object, {'type': openapi.TYPE_STRING, 'description': 'winter_openapi has failed to inspect the parameter'}),
+    (int, {'type': openapi.TYPE_INTEGER, 'description': 'docstr'}),
+    (str, {'type': openapi.TYPE_STRING, 'description': 'docstr'}),
+    (IntegerEnum, {'type': openapi.TYPE_INTEGER, 'enum': [1, 2], 'description': 'docstr'}),
+    (IntegerValueEnum, {'type': openapi.TYPE_INTEGER, 'enum': [1, 2], 'description': 'docstr'}),
+    (StringValueEnum, {'type': openapi.TYPE_STRING, 'enum': ['red', 'green'], 'description': 'docstr'}),
+    (MixedValueEnum, {'type': openapi.TYPE_STRING, 'enum': [123, 'green'], 'description': 'docstr'}),
+    (List[IntegerValueEnum], {
+        'type': openapi.TYPE_ARRAY,
+        'items': {'type': openapi.TYPE_INTEGER, 'enum': [1, 2]},
+        'description': 'docstr',
+    }),
+    (List[StringValueEnum], {
+        'type': openapi.TYPE_ARRAY,
+        'items': {'type': openapi.TYPE_STRING, 'enum': ['red', 'green']},
+        'description': 'docstr',
+    }),
+])
+def test_path_parameter_inspector(type_hint, expected_parameter_properties):
+    class _TestController:
+        @winter.route_post('{param}/{not_in_method}/{?query_parameter}')
+        def simple_method(
+            self,
+            param: type_hint,
+            query_parameter: int,
+        ):  # pragma: no cover
+            """
+            :param param: docstr
+            :param query_parameter: Invalid doc
+            """
+            pass
+
     inspector = PathParametersInspector()
-    route = get_route(ControllerForTestingInspectors.simple_method)
+    route = get_route(_TestController.simple_method)
+    expected_parameter = openapi.Parameter(
+        name='param',
+        in_=openapi.IN_PATH,
+        required=True,
+        default=None,
+        **expected_parameter_properties,
+    )
+
     # Act
     parameters = inspector.inspect_parameters(route)
 
     # Assert
-    assert len(parameters) == 2
-    parameter_by_name = {parameter.name: parameter for parameter in parameters}
-    valid_parameter = parameter_by_name['valid_param']
-    assert valid_parameter.type == openapi.TYPE_INTEGER
-    assert valid_parameter.description == 'Valid doc'
+    assert parameters == [expected_parameter]
 
-    invalid_parameter = parameter_by_name['invalid_param']
-    assert invalid_parameter.type == openapi.TYPE_STRING
-    assert invalid_parameter.description == 'Invalid doc (Note: parameter type can be wrong)'
-    assert 'not_in_method' not in parameter_by_name

@@ -13,8 +13,15 @@ from winter.web.routing import get_route
 
 
 @dataclasses.dataclass
+class NestedDTO:
+    a: int
+    b: str
+
+
+@dataclasses.dataclass
 class UserDTO:
     name: str
+    nested_dto: NestedDTO
     surname: str = ''
     age: Optional[int] = None
 
@@ -82,6 +89,14 @@ def test_get_operation():
                     'name': {
                         'type': openapi.TYPE_STRING,
                     },
+                    'nested_dto': {
+                        'type': openapi.TYPE_OBJECT,
+                        'properties': {
+                            'a': {'type': openapi.TYPE_INTEGER},
+                            'b': {'type': openapi.TYPE_STRING},
+                        },
+                        'required': ['a', 'b'],
+                    },
                     'surname': {
                         'type': openapi.TYPE_STRING,
                     },
@@ -90,7 +105,7 @@ def test_get_operation():
                         'x-nullable': True,
                     },
                 },
-                required=['name'],
+                required=['name', 'nested_dto'],
             ),
         ),
         openapi.Parameter(
@@ -117,6 +132,14 @@ def test_get_operation():
                     'name': {
                         'type': openapi.TYPE_STRING,
                     },
+                    'nested_dto': {
+                        'type': openapi.TYPE_OBJECT,
+                        'properties': {
+                            'a': {'type': openapi.TYPE_INTEGER},
+                            'b': {'type': openapi.TYPE_STRING},
+                        },
+                        'required': ['a', 'b'],
+                    },
                     'surname': {
                         'type': openapi.TYPE_STRING,
                     },
@@ -125,7 +148,7 @@ def test_get_operation():
                         'x-nullable': True,
                     },
                 },
-                required=['name', 'surname', 'age'],
+                required=['name', 'nested_dto', 'surname', 'age'],
             ),
         ),
     })
@@ -173,6 +196,14 @@ def test_get_operation_with_serializer():
                     'name': {
                         'type': openapi.TYPE_STRING,
                     },
+                    'nested_dto': {
+                        'type': openapi.TYPE_OBJECT,
+                        'properties': {
+                            'a': {'type': openapi.TYPE_INTEGER},
+                            'b': {'type': openapi.TYPE_STRING},
+                        },
+                        'required': ['a', 'b'],
+                    },
                     'surname': {
                         'type': openapi.TYPE_STRING,
                     },
@@ -181,7 +212,7 @@ def test_get_operation_with_serializer():
                         'x-nullable': True,
                     },
                 },
-                required=['name', 'surname', 'age'],
+                required=['name', 'nested_dto', 'surname', 'age'],
             ),
         ),
     })

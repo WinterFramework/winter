@@ -5,8 +5,10 @@ from drf_yasg import openapi
 
 from winter.core import ComponentMethodArgument
 from winter.web.routing import Route
-from .generation import get_argument_info
 from .method_arguments_inspector import MethodArgumentsInspector
+from .type_inspection import InspectorNotFound
+from .type_inspection import TypeInfo
+from .type_inspection import inspect_type
 
 
 class QueryParametersInspector(MethodArgumentsInspector):
@@ -15,18 +17,27 @@ class QueryParametersInspector(MethodArgumentsInspector):
         parameters = []
 
         for argument, query_parameter_name in self._query_arguments(route):
-
-            parameter_data = get_argument_info(argument)
-
-            parameter = openapi.Parameter(
-                name=query_parameter_name,
-                required=argument.required,
-                in_=openapi.IN_QUERY,
-                **parameter_data,
-            )
-            parameters.append(parameter)
+            openapi_parameter = self._convert_argument_to_openapi_parameter(argument, query_parameter_name)
+            parameters.append(openapi_parameter)
 
         return parameters
+
+    def _convert_argument_to_openapi_parameter(self, argument: ComponentMethodArgument, name: str) -> openapi.Parameter:
+        try:
+            type_info = inspect_type(argument.type_)
+            description = argument.description
+        except InspectorNotFound:
+            type_info = TypeInfo(openapi.TYPE_STRING)
+            description = 'winter_openapi has failed to inspect the parameter'
+
+        return openapi.Parameter(
+            name=name,
+            description=description,
+            required=argument.required,
+            in_=openapi.IN_QUERY,
+            default=argument.get_default(None),
+            **type_info.as_dict(output=False),
+        )
 
     def _query_arguments(self, route: 'Route') -> List[Tuple[ComponentMethodArgument, str]]:
         query_arguments = []
