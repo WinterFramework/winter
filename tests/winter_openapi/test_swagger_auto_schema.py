@@ -3,10 +3,10 @@ from typing import Optional
 
 from drf_yasg import openapi
 from rest_framework import serializers
-from rest_framework.views import APIView
 
 import winter
 import winter_django
+from winter_django.view import create_drf_view
 from winter_openapi import SwaggerAutoSchema
 from winter.web import MediaType
 from winter.web.routing import get_route
@@ -32,14 +32,6 @@ class UserSerializer(serializers.Serializer):
     def to_internal_value(self, data):  # pragma: no cover
         data = super().to_internal_value(data)
         return UserDTO(**data)
-
-
-class View(APIView):
-    def post(self):  # pragma: no cover
-        pass
-
-    def get(self):  # pragma: no cover
-        pass
 
 
 class Controller:
@@ -71,9 +63,8 @@ class Controller:
 
 
 def test_get_operation():
-    view = View()
     route = get_route(Controller.post)
-    View.post.route = route
+    view = create_drf_view(Controller, [route])
     auto_schema = SwaggerAutoSchema(view, 'path', route.http_method, 'components', 'request', {})
 
     operation = auto_schema.get_operation(['test_app', 'post'])
@@ -165,9 +156,8 @@ def test_get_operation():
 
 
 def test_get_operation_with_serializer():
-    view = View()
     route = get_route(Controller.post_with_serializer)
-    View.post.route = route
+    view = create_drf_view(Controller, [route])
     reference_resolver = openapi.ReferenceResolver('definitions', 'parameters', force_init=True)
     auto_schema = SwaggerAutoSchema(view, 'path', route.http_method, reference_resolver, 'request', {})
 
@@ -225,13 +215,11 @@ def test_get_operation_with_serializer():
         tags=['test_app'],
         parameters=parameters,
     )
-    del View.post.route
 
 
 def test_get_operation_without_body():
-    view = View()
     route = get_route(Controller.get)
-    View.get.route = route
+    view = create_drf_view(Controller, [route])
     reference_resolver = openapi.ReferenceResolver('definitions', 'parameters', force_init=True)
     auto_schema = SwaggerAutoSchema(view, 'path', route.http_method, reference_resolver, 'request', {})
     operation = auto_schema.get_operation(['test_app', 'post'])
@@ -248,11 +236,10 @@ def test_get_operation_without_body():
         tags=['test_app'],
         parameters=parameters,
     )
-    del View.get.route
 
 
 def test_get_operation_without_route():
-    view = View()
+    view = create_drf_view(Controller, [])
     reference_resolver = openapi.ReferenceResolver('definitions', 'parameters', force_init=True)
     auto_schema = SwaggerAutoSchema(view, 'path', 'get', reference_resolver, 'request', {})
     operation = auto_schema.get_operation(['test_app', 'post'])
