@@ -158,25 +158,13 @@ def test_get_operation():
 def test_get_operation_with_serializer():
     route = get_route(Controller.post_with_serializer)
     view = create_drf_view(Controller, [route])
-    reference_resolver = openapi.ReferenceResolver('definitions', 'parameters', force_init=True)
-    auto_schema = SwaggerAutoSchema(view, 'path', route.http_method, reference_resolver, 'request', {})
+    components = openapi.ReferenceResolver('definitions', force_init=True)
+    auto_schema = SwaggerAutoSchema(view, 'path', route.http_method, components, 'request', {})
 
     # Act
     operation = auto_schema.get_operation(['test_app', 'post'])
 
     # Assert
-    schema_ref = openapi.SchemaRef(
-        resolver=reference_resolver,
-        schema_name='User',
-    )
-    parameters = [
-        openapi.Parameter(
-            name='data',
-            in_=openapi.IN_BODY,
-            required=True,
-            schema=schema_ref,
-        ),
-    ]
     responses = openapi.Responses({
         '200': openapi.Response(
             description='',
@@ -213,7 +201,22 @@ def test_get_operation_with_serializer():
         consumes=['application/json'],
         produces=['application/json'],
         tags=['test_app'],
-        parameters=parameters,
+        parameters=[
+            openapi.Parameter(
+                name='data',
+                in_=openapi.IN_BODY,
+                required=True,
+                schema=openapi.SchemaRef(components, 'User'),
+            ),
+        ],
+    )
+
+    assert components.get('User', 'definitions') == openapi.Schema(
+        type='object',
+        properties={
+            'name': openapi.Schema('Name', type='string', minLength=1),
+        },
+        required=['name'],
     )
 
 
