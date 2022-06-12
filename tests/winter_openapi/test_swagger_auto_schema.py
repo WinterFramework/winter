@@ -62,10 +62,50 @@ class Controller:
         pass
 
 
+user_dto_request_schema = openapi.Schema(
+    'UserDTO',
+    type=openapi.TYPE_OBJECT,
+    properties={
+        'name': openapi.Schema(type=openapi.TYPE_STRING),
+        'nested_dto': {
+            'type': openapi.TYPE_OBJECT,
+            'properties': {
+                'a': {'type': openapi.TYPE_INTEGER},
+                'b': {'type': openapi.TYPE_STRING},
+            },
+            'required': ['a', 'b'],
+        },
+        'surname': openapi.Schema(type=openapi.TYPE_STRING),
+        'age': openapi.Schema(type=openapi.TYPE_INTEGER, **{'x-nullable': True}),
+    },
+    required=['name', 'nested_dto'],
+)
+
+
+user_dto_response_schema = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    properties={
+        'name': openapi.Schema(type=openapi.TYPE_STRING),
+        'nested_dto': {
+            'type': openapi.TYPE_OBJECT,
+            'properties': {
+                'a': {'type': openapi.TYPE_INTEGER},
+                'b': {'type': openapi.TYPE_STRING},
+            },
+            'required': ['a', 'b'],
+        },
+        'surname': openapi.Schema(type=openapi.TYPE_STRING),
+        'age': openapi.Schema(type=openapi.TYPE_INTEGER, **{'x-nullable': True}),
+    },
+    required=['name', 'nested_dto', 'surname', 'age'],
+)
+
+
 def test_get_operation():
     route = get_route(Controller.post)
     view = create_drf_view(Controller, [route])
-    auto_schema = SwaggerAutoSchema(view, 'path', route.http_method, 'components', 'request', {})
+    components = openapi.ReferenceResolver('definitions', force_init=True)
+    auto_schema = SwaggerAutoSchema(view, 'path', route.http_method, components, 'request', {})
 
     operation = auto_schema.get_operation(['test_app', 'post'])
     parameters = [
@@ -73,31 +113,7 @@ def test_get_operation():
             name='data',
             in_=openapi.IN_BODY,
             required=True,
-            schema=openapi.Schema(
-                title='UserDTO',
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    'name': {
-                        'type': openapi.TYPE_STRING,
-                    },
-                    'nested_dto': {
-                        'type': openapi.TYPE_OBJECT,
-                        'properties': {
-                            'a': {'type': openapi.TYPE_INTEGER},
-                            'b': {'type': openapi.TYPE_STRING},
-                        },
-                        'required': ['a', 'b'],
-                    },
-                    'surname': {
-                        'type': openapi.TYPE_STRING,
-                    },
-                    'age': {
-                        'type': openapi.TYPE_INTEGER,
-                        'x-nullable': True,
-                    },
-                },
-                required=['name', 'nested_dto'],
-            ),
+            schema=user_dto_request_schema,
         ),
         openapi.Parameter(
             name='path_param',
@@ -114,39 +130,15 @@ def test_get_operation():
             type=openapi.TYPE_INTEGER,
         ),
     ]
-    responses = openapi.Responses({
-        '200': openapi.Response(
-            description='',
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    'name': {
-                        'type': openapi.TYPE_STRING,
-                    },
-                    'nested_dto': {
-                        'type': openapi.TYPE_OBJECT,
-                        'properties': {
-                            'a': {'type': openapi.TYPE_INTEGER},
-                            'b': {'type': openapi.TYPE_STRING},
-                        },
-                        'required': ['a', 'b'],
-                    },
-                    'surname': {
-                        'type': openapi.TYPE_STRING,
-                    },
-                    'age': {
-                        'type': openapi.TYPE_INTEGER,
-                        'x-nullable': True,
-                    },
-                },
-                required=['name', 'nested_dto', 'surname', 'age'],
-            ),
-        ),
-    })
 
     assert operation == openapi.Operation(
         operation_id='Controller.post',
-        responses=responses,
+        responses=openapi.Responses({
+            '200': openapi.Response(
+                description='',
+                schema=user_dto_response_schema,
+            ),
+        }),
         consumes=['application/json; charset=utf-8'],
         produces=['application/json; charset=utf-8'],
         description='This is post method',
@@ -165,39 +157,11 @@ def test_get_operation_with_serializer():
     operation = auto_schema.get_operation(['test_app', 'post'])
 
     # Assert
-    responses = openapi.Responses({
-        '200': openapi.Response(
-            description='',
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    'name': {
-                        'type': openapi.TYPE_STRING,
-                    },
-                    'nested_dto': {
-                        'type': openapi.TYPE_OBJECT,
-                        'properties': {
-                            'a': {'type': openapi.TYPE_INTEGER},
-                            'b': {'type': openapi.TYPE_STRING},
-                        },
-                        'required': ['a', 'b'],
-                    },
-                    'surname': {
-                        'type': openapi.TYPE_STRING,
-                    },
-                    'age': {
-                        'type': openapi.TYPE_INTEGER,
-                        'x-nullable': True,
-                    },
-                },
-                required=['name', 'nested_dto', 'surname', 'age'],
-            ),
-        ),
-    })
-
     assert operation == openapi.Operation(
         operation_id='Controller.post_with_serializer',
-        responses=responses,
+        responses=openapi.Responses({
+            200: openapi.Response(description='', schema=user_dto_response_schema),
+        }),
         consumes=['application/json'],
         produces=['application/json'],
         tags=['test_app'],
@@ -223,21 +187,22 @@ def test_get_operation_with_serializer():
 def test_get_operation_without_body():
     route = get_route(Controller.get)
     view = create_drf_view(Controller, [route])
-    reference_resolver = openapi.ReferenceResolver('definitions', 'parameters', force_init=True)
-    auto_schema = SwaggerAutoSchema(view, 'path', route.http_method, reference_resolver, 'request', {})
-    operation = auto_schema.get_operation(['test_app', 'post'])
-    parameters = []
-    responses = openapi.Responses({
-        '200': openapi.Response(description=''),
-    })
+    components = openapi.ReferenceResolver('definitions', force_init=True)
+    auto_schema = SwaggerAutoSchema(view, 'path', route.http_method, components, 'request', {})
 
+    # Act
+    operation = auto_schema.get_operation(['test_app', 'post'])
+
+    # Assert
     assert operation == openapi.Operation(
         operation_id='Controller.get',
-        responses=responses,
+        responses=openapi.Responses({
+            '200': openapi.Response(description=''),
+        }),
         consumes=['application/json'],
         produces=['application/json'],
         tags=['test_app'],
-        parameters=parameters,
+        parameters=[],
     )
 
 
