@@ -42,7 +42,7 @@ def create_django_urls(controller_class: Type) -> List:
     django_urls = []
 
     for url_path, routes in _group_routes_by_url_path(component.methods):
-        django_view = _create_django_view(controller_class, component, routes)
+        django_view = create_drf_view(controller_class, routes).as_view()
         winter_url_path = f'^{url_path}$'
         methods = [route.method for route in routes]
         django_url_path = rewrite_uritemplate_with_regexps(winter_url_path, methods)
@@ -51,7 +51,9 @@ def create_django_urls(controller_class: Type) -> List:
     return django_urls
 
 
-def _create_django_view(controller_class, component, routes: List[Route]):
+def create_drf_view(controller_class: Type, routes: List[Route]) -> rest_framework.views.APIView:
+    component = get_component(controller_class)
+
     class WinterView(rest_framework.views.APIView):
         authentication_classes = (SessionAuthentication,)
         permission_classes = (IsAuthenticated,) if is_authentication_needed(component) else ()
@@ -65,10 +67,10 @@ def _create_django_view(controller_class, component, routes: List[Route]):
         dispatch.route = route
         dispatch_method_name = route.http_method.lower()
         setattr(WinterView, dispatch_method_name, dispatch)
-    return WinterView().as_view()
+    return WinterView()
 
 
-def _create_dispatch_function(controller_class, route: Route):
+def _create_dispatch_function(controller_class: Type, route: Route):
     component = get_component(controller_class)
 
     @wraps(route.method.func)

@@ -1,14 +1,11 @@
 import inspect
 from typing import Any
-from typing import Dict
 from typing import List
 
 from django.http.response import HttpResponseBase
 from drf_yasg import openapi
 
 from winter.core import ComponentMethod
-from winter.core import ComponentMethodArgument
-from winter.core.utils.typing import get_type_name
 from winter.web.default_response_status import get_default_response_status
 from winter.web.exceptions import MethodExceptionsManager
 from winter.web.exceptions import exception_handlers_registry
@@ -17,8 +14,6 @@ from winter_django import get_output_serializer
 from .method_arguments_inspector import get_method_arguments_inspectors
 from .type_inspection import InspectorNotFound
 from .type_inspection import inspect_type
-
-_schema_titles: Dict[str, List] = {}
 
 
 class CanNotInspectReturnType(Exception):
@@ -40,20 +35,6 @@ class CanNotInspectReturnType(Exception):
         component_cls = self._method.component.component_cls
         method_path = f'{component_cls.__module__}.{self._method.full_name}'
         return f'{method_path}: -> {self._return_type}: {self._message}'
-
-
-def get_schema_title(argument: ComponentMethodArgument) -> str:
-    title = get_type_name(argument.type_)
-    dtos = _schema_titles.setdefault(title, [])
-
-    if argument.type_ not in dtos:
-        dtos.append(argument.type_)
-    index = dtos.index(argument.type_)
-
-    if not index:
-        return title
-
-    return title + f'{index}'
 
 
 def build_responses_schemas(route: Route):

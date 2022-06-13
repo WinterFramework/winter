@@ -13,8 +13,8 @@ def inspect_page(hint_class) -> TypeInfo:
     child_class = args[0] if args else str
     extra_fields = set(dataclasses.fields(hint_class.__origin__)) - set(dataclasses.fields(Page))
 
-    return TypeInfo(openapi.TYPE_OBJECT, properties={
-        'meta': TypeInfo(openapi.TYPE_OBJECT, properties={
+    return TypeInfo(openapi.TYPE_OBJECT, title='Page', properties={
+        'meta': TypeInfo(openapi.TYPE_OBJECT, title='PageMeta', properties={
             'total_count': TypeInfo(openapi.TYPE_INTEGER),
             'limit': TypeInfo(openapi.TYPE_INTEGER, nullable=True),
             'offset': TypeInfo(openapi.TYPE_INTEGER, nullable=True),

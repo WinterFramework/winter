@@ -11,7 +11,6 @@ from winter.web.routing import RouteAnnotation
 from winter_django import InputSerializer
 from .generation import build_method_parameters
 from .generation import build_responses_schemas
-from .generation import get_schema_title
 from .type_inspection import inspect_type
 
 
@@ -21,23 +20,20 @@ class SwaggerAutoSchema(SwaggerAutoSchemaBase):
         route = self._get_route()
         if route is None:
             return super().get_operation(operation_keys)
-        method = route.method
         consumes = self._get_consumes(route)
         produces = self._get_produces(route)
 
-        body = self._get_request_body_parameters(route)
-        manual_parameters = build_method_parameters(route)
-        parameters = merge_params(body, manual_parameters)
+        request_body = self._get_request_body_parameters(route)
+        method_parameters = build_method_parameters(route)
+        parameters = merge_params(request_body, method_parameters)
 
-        operation_id = method.full_name
-        description = method.docstring.short_description
         deprecated = self.is_deprecated()
         responses = self._get_responses(route)
         tags = self.get_tags(operation_keys)
 
         return openapi.Operation(
-            operation_id=operation_id,
-            description=description,
+            operation_id=route.method.full_name,
+            description=route.method.docstring.short_description,
             responses=responses,
             parameters=parameters,
             consumes=consumes,
@@ -75,8 +71,7 @@ class SwaggerAutoSchema(SwaggerAutoSchemaBase):
         if request_body_annotation is not None:
             argument = method.get_argument(request_body_annotation.argument_name)
             type_info = inspect_type(argument.type_)
-            title = get_schema_title(argument)
-            schema = type_info.get_openapi_schema(output=False, title=title)
+            schema = type_info.get_openapi_schema(output=False)
             return [openapi.Parameter(name='data', in_=openapi.IN_BODY, required=True, schema=schema)]
         return []
 

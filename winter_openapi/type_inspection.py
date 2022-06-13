@@ -60,6 +60,7 @@ class TypeInfo:
     properties: Dict[str, 'TypeInfo'] = dataclasses.field(default_factory=OrderedDict)
     properties_defaults: Dict[str, object] = dataclasses.field(default_factory=dict)
     enum: Optional[list] = None
+    title: str = ''
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
@@ -71,6 +72,10 @@ class TypeInfo:
             # AnyValue map to Object in OpenApi 2.0
             'type': openapi.TYPE_OBJECT if self.type_ == TYPE_ANY_VALUE else self.type_,
         }
+
+        if self.title:
+            data['title'] = self.title
+
         if self.format_ is not None:
             data['format'] = self.format_
 
@@ -100,8 +105,8 @@ class TypeInfo:
 
         return data
 
-    def get_openapi_schema(self, output: bool, title: str = None) -> openapi.Schema:
-        return openapi.Schema(title=title, **self.as_dict(output))
+    def get_openapi_schema(self, output: bool) -> openapi.Schema:
+        return openapi.Schema(**self.as_dict(output))
 
 
 # noinspection PyUnusedLocal
@@ -224,7 +229,9 @@ def inspect_dataclass(hint_class) -> TypeInfo:
         for field in fields
         if field.default != dataclasses.MISSING
     }
-    return TypeInfo(type_=openapi.TYPE_OBJECT, properties=properties, properties_defaults=defaults)
+    cls = hint_class if isinstance(hint_class, type) else type(hint_class)
+    title = cls.__name__
+    return TypeInfo(type_=openapi.TYPE_OBJECT, properties=properties, properties_defaults=defaults, title=title)
 
 
 @register_type_inspector(object, checker=has_nested_type)
