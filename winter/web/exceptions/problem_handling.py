@@ -59,7 +59,7 @@ class ProblemExceptionHandlerGenerator(ExceptionHandlerGenerator):
             extensions = {field.name: field.type for field in dataclasses.fields(exception_class)}
             fields.update(extensions)
 
-        return dataclass(type(f'{class_name}Dataclass', (), {'__annotations__': fields}))
+        return dataclass(type(class_name, (), {'__annotations__': fields}))
 
 
 class ProblemExceptionMapper(ExceptionMapper):

@@ -4,12 +4,16 @@ from typing import Optional
 from drf_yasg import openapi
 from rest_framework import serializers
 
+import pytest
 import winter
 import winter_django
 from winter_django.view import create_drf_view
 from winter_openapi import SwaggerAutoSchema
 from winter.web import MediaType
 from winter.web.routing import get_route
+
+from tests.controllers import ControllerWithExceptions
+from tests.controllers import ControllerWithProblemExceptions
 
 
 @dataclasses.dataclass
@@ -69,6 +73,7 @@ user_dto_request_schema = openapi.Schema(
         'name': openapi.Schema(type=openapi.TYPE_STRING),
         'nested_dto': {
             'type': openapi.TYPE_OBJECT,
+            'title': 'NestedDTO',
             'properties': {
                 'a': {'type': openapi.TYPE_INTEGER},
                 'b': {'type': openapi.TYPE_STRING},
@@ -83,11 +88,13 @@ user_dto_request_schema = openapi.Schema(
 
 
 user_dto_response_schema = openapi.Schema(
+    'UserDTO',
     type=openapi.TYPE_OBJECT,
     properties={
         'name': openapi.Schema(type=openapi.TYPE_STRING),
         'nested_dto': {
             'type': openapi.TYPE_OBJECT,
+            'title': 'NestedDTO',
             'properties': {
                 'a': {'type': openapi.TYPE_INTEGER},
                 'b': {'type': openapi.TYPE_STRING},
@@ -208,20 +215,92 @@ def test_get_operation_without_body():
 
 def test_get_operation_without_route():
     view = create_drf_view(Controller, [])
-    reference_resolver = openapi.ReferenceResolver('definitions', 'parameters', force_init=True)
-    auto_schema = SwaggerAutoSchema(view, 'path', 'get', reference_resolver, 'request', {})
+    components = openapi.ReferenceResolver('definitions', 'parameters', force_init=True)
+    auto_schema = SwaggerAutoSchema(view, 'path', 'get', components, 'request', {})
     operation = auto_schema.get_operation(['test_app', 'post'])
-    parameters = []
-    responses = openapi.Responses({
-        '200': openapi.Response(description=''),
-    })
 
     assert operation == openapi.Operation(
         description='',
         operation_id='test_app_post',
-        responses=responses,
+        responses=openapi.Responses({
+            '200': openapi.Response(description=''),
+        }),
         consumes=['application/json'],
         produces=['application/json'],
         tags=['test_app'],
-        parameters=parameters,
+        parameters=[],
     )
+
+
+@pytest.mark.parametrize(
+    'controller_class, method_name, expected_responses', [
+        (
+            ControllerWithExceptions, 'declared_and_thrown', {
+                '200': openapi.Response('', openapi.Schema(type=openapi.TYPE_STRING)),
+                '400': openapi.Response('', openapi.Schema(
+                    'CustomExceptionDTO',
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'message': openapi.Schema(type=openapi.TYPE_STRING),
+                    },
+                    required=['message'],
+                )),
+            },
+        ),
+        (
+            ControllerWithExceptions, 'with_custom_handler', {
+                '200': openapi.Response('', openapi.Schema(type=openapi.TYPE_STRING)),
+                '401': openapi.Response('', openapi.Schema(type=openapi.TYPE_INTEGER)),
+            },
+        ),
+        (
+            ControllerWithExceptions, 'not_declared_but_thrown', {
+                '200': openapi.Response('', openapi.Schema(type=openapi.TYPE_STRING)),
+            },
+        ),
+        (
+            ControllerWithExceptions, 'declared_but_no_handler', {
+                '200': openapi.Response('', openapi.Schema(type=openapi.TYPE_STRING)),
+            },
+        ),
+        (
+            ControllerWithProblemExceptions, 'problem_exists_dataclass_exception', {
+                '200': openapi.Response('', openapi.Schema(type=openapi.TYPE_STRING)),
+                '403': openapi.Response('', openapi.Schema(
+                    title='ProblemExistsDataclassException',
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'status': openapi.Schema(type=openapi.TYPE_INTEGER),
+                        'title': openapi.Schema(type=openapi.TYPE_STRING),
+                        'detail': openapi.Schema(type=openapi.TYPE_STRING),
+                        'type': openapi.Schema(type=openapi.TYPE_STRING),
+                        'custom_field': openapi.Schema(type=openapi.TYPE_STRING),
+                    },
+                    required=[
+                        'status',
+                        'title',
+                        'detail',
+                        'type',
+                        'custom_field',
+                    ],
+                )),
+            },
+        ),
+    ],
+)
+def test_exception_responses(controller_class, method_name: str, expected_responses):
+    from winter.web.controller import get_component
+
+    component = get_component(controller_class)
+    method = component.get_method(method_name)
+    route = get_route(method)
+
+    view = create_drf_view(controller_class, [route])
+    components = openapi.ReferenceResolver('definitions', 'parameters', force_init=True)
+    auto_schema = SwaggerAutoSchema(view, 'path', route.http_method, components, 'request', {})
+
+    # Act
+    operation = auto_schema.get_operation(['test_app', route.http_method])
+
+    # Assert
+    assert operation.responses == openapi.Responses(expected_responses)

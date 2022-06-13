@@ -97,8 +97,8 @@ class CustomPage(Page, Generic[CustomPageItem]):
     (List, TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(TYPE_ANY_VALUE))),
     (List[Any], TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(TYPE_ANY_VALUE))),
     (Set[int], TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_INTEGER))),
-    (Dataclass(NestedDataclass(1)), TypeInfo(openapi.TYPE_OBJECT, properties={
-        'nested': TypeInfo(openapi.TYPE_OBJECT, properties={
+    (Dataclass(NestedDataclass(1)), TypeInfo(openapi.TYPE_OBJECT, title='Dataclass', properties={
+        'nested': TypeInfo(openapi.TYPE_OBJECT, title='NestedDataclass', properties={
             'nested_number': TypeInfo(openapi.TYPE_INTEGER),
         }),
     })),
@@ -110,7 +110,7 @@ class CustomPage(Page, Generic[CustomPageItem]):
             'previous': TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_URI, nullable=True),
             'next': TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_URI, nullable=True),
         }),
-        'objects': TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_OBJECT, properties={
+        'objects': TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_OBJECT, title='NestedDataclass', properties={
             'nested_number': TypeInfo(openapi.TYPE_INTEGER),
         })),
     })),
@@ -125,7 +125,7 @@ class CustomPage(Page, Generic[CustomPageItem]):
         }),
         'objects': TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_INTEGER)),
     })),
-    (DataclassWrapper[NestedDataclass], TypeInfo(openapi.TYPE_OBJECT, properties={
+    (DataclassWrapper[NestedDataclass], TypeInfo(openapi.TYPE_OBJECT, title='NestedDataclass', properties={
         'nested_number': TypeInfo(openapi.TYPE_INTEGER),
     })),
 ])
