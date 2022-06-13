@@ -102,8 +102,8 @@ class CustomPage(Page, Generic[CustomPageItem]):
             'nested_number': TypeInfo(openapi.TYPE_INTEGER),
         }),
     })),
-    (Page[NestedDataclass], TypeInfo(openapi.TYPE_OBJECT, properties={
-        'meta': TypeInfo(openapi.TYPE_OBJECT, properties={
+    (Page[NestedDataclass], TypeInfo(openapi.TYPE_OBJECT, title='Page', properties={
+        'meta': TypeInfo(openapi.TYPE_OBJECT, title='PageMeta', properties={
             'total_count': TypeInfo(openapi.TYPE_INTEGER),
             'limit': TypeInfo(openapi.TYPE_INTEGER, nullable=True),
             'offset': TypeInfo(openapi.TYPE_INTEGER, nullable=True),
@@ -114,8 +114,8 @@ class CustomPage(Page, Generic[CustomPageItem]):
             'nested_number': TypeInfo(openapi.TYPE_INTEGER),
         })),
     })),
-    (CustomPage[int], TypeInfo(openapi.TYPE_OBJECT, properties={
-        'meta': TypeInfo(openapi.TYPE_OBJECT, properties={
+    (CustomPage[int], TypeInfo(openapi.TYPE_OBJECT, title='Page', properties={
+        'meta': TypeInfo(openapi.TYPE_OBJECT, title='PageMeta', properties={
             'total_count': TypeInfo(openapi.TYPE_INTEGER),
             'limit': TypeInfo(openapi.TYPE_INTEGER, nullable=True),
             'offset': TypeInfo(openapi.TYPE_INTEGER, nullable=True),
