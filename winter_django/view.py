@@ -3,11 +3,11 @@ from functools import wraps
 from typing import Any
 from typing import List
 from typing import Type
+from typing import TYPE_CHECKING
 
 import django.http
 import rest_framework.authentication
 import rest_framework.response
-import rest_framework.views
 from django.conf.urls import url
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -28,6 +28,10 @@ from winter.web.routing import Route
 from winter.web.routing import get_route
 from winter.web.throttling import create_throttle_class
 from winter.web.urls import rewrite_uritemplate_with_regexps
+
+
+if TYPE_CHECKING:
+    import rest_framework.views
 
 
 class SessionAuthentication(rest_framework.authentication.SessionAuthentication):
@@ -51,7 +55,9 @@ def create_django_urls(controller_class: Type) -> List:
     return django_urls
 
 
-def create_drf_view(controller_class: Type, routes: List[Route]) -> rest_framework.views.APIView:
+def create_drf_view(controller_class: Type, routes: List[Route]) -> 'rest_framework.views.APIView':
+    import rest_framework.views
+
     component = get_component(controller_class)
 
     class WinterView(rest_framework.views.APIView):
