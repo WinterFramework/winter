@@ -1,5 +1,9 @@
+import datetime
+from http import HTTPStatus
 from typing import List
 from typing import Optional
+from uuid import UUID
+from uuid import uuid4
 
 import pytest
 from dateutil import parser
@@ -62,6 +66,22 @@ def test_query_parameter_resolver_with_raises_parse_error(query_string, expected
         resolver.resolve_argument(argument, request, {})
 
     assert str(exception.value) == expected_exception_message
+
+
+def test_query_parameter_resolver_with_raises_parse_uuid_error():
+    @winter.route_get('{?query_param}')
+    def method(query_param: UUID):  # pragma: no cover
+        pass
+
+    resolver = QueryParameterArgumentResolver()
+
+    argument = method.get_argument('query_param')
+    request = get_request('query_param=invalid_uuid')
+
+    with pytest.raises(decoder.JSONDecodeException) as exception:
+        resolver.resolve_argument(argument, request, {})
+
+    assert str(exception.value) == 'Cannot decode "invalid_uuid" to uuid'
 
 
 @pytest.mark.parametrize(
@@ -147,13 +167,13 @@ def test_orphan_map_query_parameter_fails():
 
 
 @pytest.mark.parametrize(
-    ('date', 'date_time', 'boolean', 'optional_boolean', 'array', 'string'), (
-        ('2019-05-02', '2019-05-02 22:28:31', 'false', None, [10, 20], 'xyz'),
-        ('2019-05-01', '2019-05-01 22:28:31', 'true', 'true', [10, 20], 'xyz'),
-        ('2019-05-01', '2019-05-01 22:28:31', 'true', 'false', [10, 20], 'xyz'),
+    ('date', 'date_time', 'boolean', 'optional_boolean', 'array', 'string', 'uid'), (
+        ('2019-05-02', '2019-05-02 22:28:31', 'false', None, [10, 20], 'xyz', uuid4()),
+        ('2019-05-01', '2019-05-01 22:28:31', 'true', 'true', [10, 20], 'xyz', uuid4()),
+        ('2019-05-01', '2019-05-01 22:28:31', 'true', 'false', [10, 20], 'xyz', uuid4()),
     ),
 )
-def test_query_parameter(date, date_time, boolean, optional_boolean, array, string):
+def test_query_parameter(date, date_time, boolean, optional_boolean, array, string, uid):
     client = APIClient()
     user = AuthorizedUser()
     client.force_authenticate(user)
@@ -165,10 +185,11 @@ def test_query_parameter(date, date_time, boolean, optional_boolean, array, stri
         'array': array,
         'expanded_array': list(map(str, array)),
         'string': string,
+        'uid': str(uid),
     }
     base_uri = URITemplate(
         '/with-query-parameter/'
-        '{?date,date_time,boolean,optional_boolean,array,expanded_array*,string}',
+        '{?date,date_time,boolean,optional_boolean,array,expanded_array*,string,uid}',
     )
     query_params = {
         'date': date,
@@ -177,6 +198,7 @@ def test_query_parameter(date, date_time, boolean, optional_boolean, array, stri
         'array': ','.join(map(str, array)),
         'expanded_array': array,
         'string': string,
+        'uid': uid,
     }
 
     if optional_boolean is not None:
@@ -187,3 +209,28 @@ def test_query_parameter(date, date_time, boolean, optional_boolean, array, stri
     # Act
     http_response = client.get(base_uri)
     assert http_response.data == expected_data
+
+
+def test_invalid_uuid_query_parameter_triggers_400():
+    client = APIClient()
+    user = AuthorizedUser()
+    client.force_authenticate(user)
+    base_uri = URITemplate(
+        '/with-query-parameter/'
+        '{?date,date_time,boolean,optional_boolean,array,expanded_array*,string,uid}',
+    )
+    query_params = {
+        'date': datetime.datetime.now().date(),
+        'date_time': datetime.datetime.now(),
+        'boolean': 'true',
+        'array': '5',
+        'expanded_array': ['5'],
+        'string': '',
+        'uid': str(uuid4()) + 'a',
+    }
+
+    base_uri = base_uri.expand(**query_params)
+
+    # Act
+    http_response = client.get(base_uri)
+    assert http_response.status_code == HTTPStatus.BAD_REQUEST

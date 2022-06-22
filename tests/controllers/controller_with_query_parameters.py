@@ -4,6 +4,7 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
+from uuid import UUID
 
 import winter
 
@@ -13,7 +14,7 @@ import winter
 class ControllerWithQueryParameters:
 
     @winter.map_query_parameter('string', to='mapped_string')
-    @winter.route_get('/{?date,boolean,optional_boolean,date_time,array,expanded_array*,string}')
+    @winter.route_get('/{?date,boolean,optional_boolean,date_time,array,expanded_array*,string,uid}')
     def root(
         self,
         date: datetime.date,
@@ -22,6 +23,7 @@ class ControllerWithQueryParameters:
         array: List[int],
         expanded_array: List[str],
         mapped_string: str,
+        uid: UUID,
         optional_boolean: Optional[bool] = None,
     ) -> Dict[str, Any]:
         return {
@@ -32,4 +34,5 @@ class ControllerWithQueryParameters:
             'array': array,
             'expanded_array': expanded_array,
             'string': mapped_string,
+            'uid': str(uid),
         }
