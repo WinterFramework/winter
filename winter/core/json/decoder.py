@@ -25,7 +25,7 @@ from winter.core.utils.typing import is_optional
 _decoders = {}
 
 Item = TypeVar('Item')
-uuid_regexp = re.compile(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$')
+uuid_regexp = re.compile(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\Z')
 
 
 class _MissingException(Exception):
