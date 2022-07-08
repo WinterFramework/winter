@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [9.6.2] - 2022-07-08
+
+winter_openapi: add more information about nested type to Page type title,
+for example Page[NestedType] -> PageOfNestedType
+
 ## [9.6.1] - 2022-07-04
 
 Return 400 Bad Request instead of 500 if UUID request parameter has a newline character in the end

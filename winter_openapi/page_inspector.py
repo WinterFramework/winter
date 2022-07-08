@@ -12,18 +12,24 @@ def inspect_page(hint_class) -> TypeInfo:
     args = getattr(hint_class, '__args__', None)
     child_class = args[0] if args else str
     extra_fields = set(dataclasses.fields(hint_class.__origin__)) - set(dataclasses.fields(Page))
+    child_type_info = inspect_type(child_class)
 
-    return TypeInfo(openapi.TYPE_OBJECT, title='Page', properties={
-        'meta': TypeInfo(openapi.TYPE_OBJECT, title='PageMeta', properties={
-            'total_count': TypeInfo(openapi.TYPE_INTEGER),
-            'limit': TypeInfo(openapi.TYPE_INTEGER, nullable=True),
-            'offset': TypeInfo(openapi.TYPE_INTEGER, nullable=True),
-            'previous': TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_URI, nullable=True),
-            'next': TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_URI, nullable=True),
-            **{
-                extra_field.name: inspect_type(extra_field.type)
-                for extra_field in extra_fields
-            },
-        }),
-        'objects': inspect_type(List[child_class]),
-    })
+    return TypeInfo(
+        openapi.TYPE_OBJECT,
+        title=f'PageOf{child_type_info.title or child_type_info.type_.capitalize()}',
+        properties={
+            'meta': TypeInfo(
+                openapi.TYPE_OBJECT,
+                title='PageMeta',
+                properties={
+                    'total_count': TypeInfo(openapi.TYPE_INTEGER),
+                    'limit': TypeInfo(openapi.TYPE_INTEGER, nullable=True),
+                    'offset': TypeInfo(openapi.TYPE_INTEGER, nullable=True),
+                    'previous': TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_URI, nullable=True),
+                    'next': TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_URI, nullable=True),
+                    **{extra_field.name: inspect_type(extra_field.type) for extra_field in extra_fields},
+                },
+            ),
+            'objects': inspect_type(List[child_class]),
+        },
+    )
