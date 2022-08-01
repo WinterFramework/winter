@@ -16,6 +16,7 @@ from typing import Tuple
 from typing import Type
 
 from drf_yasg import openapi
+from strenum import StrEnum
 
 from winter.core.utils import has_nested_type
 from winter.core.utils.typing import get_origin_type, get_generic_args
@@ -194,7 +195,7 @@ def inspect_iterable(hint_class) -> TypeInfo:
     return TypeInfo(openapi.TYPE_ARRAY, child=child_type_info)
 
 
-@register_type_inspector(enum.IntEnum, enum.Enum)
+@register_type_inspector(enum.IntEnum, StrEnum, enum.Enum)
 def inspect_enum(enum_class: Type[enum.Enum]) -> TypeInfo:
     enum_values = [entry.value for entry in enum_class]
     # Try to infer type based on enum values
