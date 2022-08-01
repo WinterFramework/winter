@@ -4,6 +4,7 @@ import uuid
 from dataclasses import dataclass
 from enum import Enum
 from enum import IntEnum
+from enum import auto
 from typing import Any
 from typing import Generic
 from typing import List
@@ -14,6 +15,7 @@ from typing import TypeVar
 
 import pytest
 from drf_yasg import openapi
+from strenum import StrEnum
 
 from winter.core.utils import TypeWrapper
 from winter.data.pagination import Page
@@ -49,6 +51,11 @@ class Dataclass:
 class StringValueEnum(Enum):
     RED = 'red'
     GREEN = 'green'
+
+
+class StringEnum(StrEnum):
+    RED = auto()
+    GREEN = auto()
 
 
 class MixedValueEnum(Enum):
@@ -90,6 +97,7 @@ class CustomPage(Page, Generic[CustomPageItem]):
     (IntegerEnum, TypeInfo(openapi.TYPE_INTEGER, enum=[1, 2])),
     (IntegerValueEnum, TypeInfo(openapi.TYPE_INTEGER, enum=[1, 2])),
     (StringValueEnum, TypeInfo(openapi.TYPE_STRING, enum=['red', 'green'])),
+    (StringEnum, TypeInfo(openapi.TYPE_STRING, enum=['RED', 'GREEN'])),
     (MixedValueEnum, TypeInfo(openapi.TYPE_STRING, enum=[123, 'green'])),
     (List[IntegerValueEnum], TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_INTEGER, enum=[1, 2]))),
     (List[StringValueEnum], TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_STRING, enum=['red', 'green']))),
