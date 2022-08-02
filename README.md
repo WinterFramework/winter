@@ -11,9 +11,11 @@ Web Framework for Python inspired by Spring Framework
 # Main features
 * Declarative API
 * Built around python type annotations
+* Dataclasses can be used as request and response body
+* Automatic request validation based on types
 * Automatic OpenAPI (swagger) documentation generation
-* Suitable for DDD
-* Handling exception without boilerplate in accordance with [RFC 7807](https://tools.ietf.org/html/rfc7807)
+* Dependency injection
+* Exception handling without boilerplate in accordance with [RFC 7807](https://tools.ietf.org/html/rfc7807)
 
 # How to use
 ## Installation
