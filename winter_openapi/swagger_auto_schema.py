@@ -9,7 +9,7 @@ from winter.web.request_body_annotation import RequestBodyAnnotation
 from winter.web.routing import Route
 from winter.web.routing import RouteAnnotation
 from winter_django import InputSerializer
-from .generation import build_method_parameters
+from .generation import get_route_parameters
 from .generation import build_responses_schemas
 from .type_inspection import inspect_type
 
@@ -24,7 +24,7 @@ class SwaggerAutoSchema(SwaggerAutoSchemaBase):
         produces = self._get_produces(route)
 
         request_body = self._get_request_body_parameters(route)
-        method_parameters = build_method_parameters(route)
+        method_parameters = get_route_parameters(route)
         parameters = merge_params(request_body, method_parameters)
 
         deprecated = self.is_deprecated()

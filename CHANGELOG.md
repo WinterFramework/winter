@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Deprecate @winter.web.controller
 - Delete get_component function in favor of direct Component.get_by_cls
+- Rename register_controller_method_inspector to register_route_parameters_inspector
+- Rename MethodArgumentsInspector to RouteParametersInspector
 
 ## [9.6.4] - 2022-08-01
 ### Added 
