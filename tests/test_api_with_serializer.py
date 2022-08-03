@@ -5,7 +5,7 @@ from rest_framework.test import APIClient
 from tests.entities import AuthorizedUser
 
 
-def test_controller_with_serializer():
+def test_api_with_serializer():
     client = APIClient()
     user = AuthorizedUser()
     client.force_authenticate(user)
@@ -19,7 +19,7 @@ def test_controller_with_serializer():
     assert response.json() == expected_data
 
 
-def test_controller_with_serializer_context():
+def test_api_with_serializer_context():
     client = APIClient()
     user = AuthorizedUser()
     client.force_authenticate(user)

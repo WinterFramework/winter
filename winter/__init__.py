@@ -1,7 +1,6 @@
 from . import web
 from .web import ResponseEntity
 from .web import arguments_resolver
-from .web import controller
 from .web import request_body
 from .web import response_header
 from .web import response_status

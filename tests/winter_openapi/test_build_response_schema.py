@@ -11,7 +11,7 @@ class UserSerializer(serializers.Serializer):
     name = serializers.CharField(required=True)
 
 
-class Controller:
+class TestAPI:
     @winter_django.output_serializer(UserSerializer)
     def with_output_serializer(self):  # pragma: no cover
         pass
@@ -22,7 +22,7 @@ class Controller:
 
 
 def test_with_output_serializer():
-    schema = build_response_schema(Controller.with_output_serializer)
+    schema = build_response_schema(TestAPI.with_output_serializer)
 
     assert isinstance(schema, UserSerializer)
 
@@ -30,9 +30,9 @@ def test_with_output_serializer():
 def test_with_invalid_return_type():
 
     with pytest.raises(CanNotInspectReturnType) as e:
-        build_response_schema(Controller.with_invalid_return_type)
+        build_response_schema(TestAPI.with_invalid_return_type)
 
     assert repr(e.value) == (
-        'CanNotInspectReturnType(test_build_response_schema.Controller.with_invalid_return_type: '
+        'CanNotInspectReturnType(test_build_response_schema.TestAPI.with_invalid_return_type: '
         "-> <class 'object'>: Unknown type: <class 'object'>)"
     )

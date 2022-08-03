@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [10.0.0]
+
+- Delete @winter.web.controller
+- Delete get_component function in favor of direct Component.get_by_cls
+- Rename register_controller_method_inspector to register_route_parameters_inspector
+- Rename MethodArgumentsInspector to RouteParametersInspector
+
 ## [9.6.4] - 2022-08-01
 ### Added 
 - winter_openapi: add support of StrEnum: now StrEnum will be recognized as Enum, not as simple string

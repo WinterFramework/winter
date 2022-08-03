@@ -18,9 +18,8 @@ class OneTwoEnumWithInt(enum.Enum):
         return cls(int(value))
 
 
-@winter.controller
-@winter.route('controller_with_path_parameters/{param1}/')
-class ControllerWithPathParameters:
+@winter.route('with-path-parameters/{param1}/')
+class APIWithPathParameters:
     @winter.route_get('{param2}/{param3}/{param4}/{param5}/{?param6}')
     def test(
         self,

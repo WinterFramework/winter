@@ -50,7 +50,7 @@ class IntegerEnum(IntEnum):
     }),
 ])
 def test_query_parameter_inspector(type_hint, expected_parameter_properties):
-    class _TestController:
+    class _TestAPI:
         @winter.route_get('/{path_param}/{?query_param}')
         @winter.map_query_parameter('mapped_query_param', to='invalid_query_param')
         def simple_method(
@@ -63,7 +63,7 @@ def test_query_parameter_inspector(type_hint, expected_parameter_properties):
             pass
 
     inspector = QueryParametersInspector()
-    route = get_route(_TestController.simple_method)
+    route = get_route(_TestAPI.simple_method)
     expected_parameter = openapi.Parameter(
         name='query_param',
         in_=openapi.IN_QUERY,

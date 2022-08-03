@@ -24,9 +24,8 @@ class SerializerWithContext(serializers.Serializer):
         return self.context['additional_data']
 
 
-@winter.controller
 @winter.route('with-serializer')
-class ControllerWithSerializer:
+class APIWithSerializer:
 
     @winter.route_post('/')
     @input_serializer(SimpleSerializer, argument_name='input_data')

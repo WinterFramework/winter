@@ -5,12 +5,12 @@ from rest_framework.test import APIClient
 from tests.entities import AuthorizedUser
 
 
-def test_controller_with_output_template():
+def test_api_with_media_types_routing_returns_200():
     client = APIClient()
     user = AuthorizedUser()
     client.force_authenticate(user)
 
-    response = client.get('/with-output-template/?name=John')
+    response = client.get('/with-media-types-routing/xml/', headers={'Accept': 'application/xml'})
 
     assert response.status_code == HTTPStatus.OK
-    assert response.content == b'Hello, John!'
+    assert response.json() == 'Hello, sir!'

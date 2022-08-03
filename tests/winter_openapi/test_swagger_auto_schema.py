@@ -7,13 +7,14 @@ from rest_framework import serializers
 import pytest
 import winter
 import winter_django
+from winter.core import Component
 from winter_django.view import create_drf_view
 from winter_openapi import SwaggerAutoSchema
 from winter.web import MediaType
 from winter.web.routing import get_route
 
-from tests.controllers import ControllerWithExceptions
-from tests.controllers import ControllerWithProblemExceptions
+from tests.api import APIWithExceptions
+from tests.api import APIWithProblemExceptions
 
 
 @dataclasses.dataclass
@@ -38,7 +39,7 @@ class UserSerializer(serializers.Serializer):
         return UserDTO(**data)
 
 
-class Controller:
+class TestAPI:
 
     @winter.request_body(argument_name='request_body')
     @winter.route_post(
@@ -109,8 +110,8 @@ user_dto_response_schema = openapi.Schema(
 
 
 def test_get_operation():
-    route = get_route(Controller.post)
-    view = create_drf_view(Controller, [route])
+    route = get_route(TestAPI.post)
+    view = create_drf_view(TestAPI, [route])
     components = openapi.ReferenceResolver('definitions', force_init=True)
     auto_schema = SwaggerAutoSchema(view, 'path', route.http_method, components, 'request', {})
 
@@ -139,7 +140,7 @@ def test_get_operation():
     ]
 
     assert operation == openapi.Operation(
-        operation_id='Controller.post',
+        operation_id='TestAPI.post',
         responses=openapi.Responses({
             '200': openapi.Response(
                 description='',
@@ -155,8 +156,8 @@ def test_get_operation():
 
 
 def test_get_operation_with_serializer():
-    route = get_route(Controller.post_with_serializer)
-    view = create_drf_view(Controller, [route])
+    route = get_route(TestAPI.post_with_serializer)
+    view = create_drf_view(TestAPI, [route])
     components = openapi.ReferenceResolver('definitions', force_init=True)
     auto_schema = SwaggerAutoSchema(view, 'path', route.http_method, components, 'request', {})
 
@@ -165,7 +166,7 @@ def test_get_operation_with_serializer():
 
     # Assert
     assert operation == openapi.Operation(
-        operation_id='Controller.post_with_serializer',
+        operation_id='TestAPI.post_with_serializer',
         responses=openapi.Responses({
             200: openapi.Response(description='', schema=user_dto_response_schema),
         }),
@@ -192,8 +193,8 @@ def test_get_operation_with_serializer():
 
 
 def test_get_operation_without_body():
-    route = get_route(Controller.get)
-    view = create_drf_view(Controller, [route])
+    route = get_route(TestAPI.get)
+    view = create_drf_view(TestAPI, [route])
     components = openapi.ReferenceResolver('definitions', force_init=True)
     auto_schema = SwaggerAutoSchema(view, 'path', route.http_method, components, 'request', {})
 
@@ -202,7 +203,7 @@ def test_get_operation_without_body():
 
     # Assert
     assert operation == openapi.Operation(
-        operation_id='Controller.get',
+        operation_id='TestAPI.get',
         responses=openapi.Responses({
             '200': openapi.Response(description=''),
         }),
@@ -214,7 +215,7 @@ def test_get_operation_without_body():
 
 
 def test_get_operation_without_route():
-    view = create_drf_view(Controller, [])
+    view = create_drf_view(TestAPI, [])
     components = openapi.ReferenceResolver('definitions', 'parameters', force_init=True)
     auto_schema = SwaggerAutoSchema(view, 'path', 'get', components, 'request', {})
     operation = auto_schema.get_operation(['test_app', 'post'])
@@ -233,9 +234,9 @@ def test_get_operation_without_route():
 
 
 @pytest.mark.parametrize(
-    'controller_class, method_name, expected_responses', [
+    'api_class, method_name, expected_responses', [
         (
-            ControllerWithExceptions, 'declared_and_thrown', {
+            APIWithExceptions, 'declared_and_thrown', {
                 '200': openapi.Response('', openapi.Schema(type=openapi.TYPE_STRING)),
                 '400': openapi.Response('', openapi.Schema(
                     'CustomExceptionDTO',
@@ -248,23 +249,23 @@ def test_get_operation_without_route():
             },
         ),
         (
-            ControllerWithExceptions, 'with_custom_handler', {
+            APIWithExceptions, 'with_custom_handler', {
                 '200': openapi.Response('', openapi.Schema(type=openapi.TYPE_STRING)),
                 '401': openapi.Response('', openapi.Schema(type=openapi.TYPE_INTEGER)),
             },
         ),
         (
-            ControllerWithExceptions, 'not_declared_but_thrown', {
+            APIWithExceptions, 'not_declared_but_thrown', {
                 '200': openapi.Response('', openapi.Schema(type=openapi.TYPE_STRING)),
             },
         ),
         (
-            ControllerWithExceptions, 'declared_but_no_handler', {
+            APIWithExceptions, 'declared_but_no_handler', {
                 '200': openapi.Response('', openapi.Schema(type=openapi.TYPE_STRING)),
             },
         ),
         (
-            ControllerWithProblemExceptions, 'problem_exists_dataclass_exception', {
+            APIWithProblemExceptions, 'problem_exists_dataclass_exception', {
                 '200': openapi.Response('', openapi.Schema(type=openapi.TYPE_STRING)),
                 '403': openapi.Response('', openapi.Schema(
                     title='ProblemExistsDataclassException',
@@ -288,14 +289,12 @@ def test_get_operation_without_route():
         ),
     ],
 )
-def test_exception_responses(controller_class, method_name: str, expected_responses):
-    from winter.web.controller import get_component
-
-    component = get_component(controller_class)
+def test_exception_responses(api_class, method_name: str, expected_responses):
+    component = Component.get_by_cls(api_class)
     method = component.get_method(method_name)
     route = get_route(method)
 
-    view = create_drf_view(controller_class, [route])
+    view = create_drf_view(api_class, [route])
     components = openapi.ReferenceResolver('definitions', 'parameters', force_init=True)
     auto_schema = SwaggerAutoSchema(view, 'path', route.http_method, components, 'request', {})
 

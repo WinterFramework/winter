@@ -11,7 +11,7 @@ from winter.web.exceptions import MethodExceptionsManager
 from winter.web.exceptions import exception_handlers_registry
 from winter.web.routing import Route
 from winter_django import get_output_serializer
-from .method_arguments_inspector import get_method_arguments_inspectors
+from .route_parameters_inspector import get_route_parameters_inspectors
 from .type_inspection import InspectorNotFound
 from .type_inspection import inspect_type
 
@@ -77,8 +77,8 @@ def build_response_schema(method: ComponentMethod):
     return type_info.get_openapi_schema(output=True)
 
 
-def build_method_parameters(route: Route) -> List['openapi.Parameter']:
+def get_route_parameters(route: Route) -> List['openapi.Parameter']:
     parameters = []
-    for method_inspector in get_method_arguments_inspectors():
-        parameters += method_inspector.inspect_parameters(route)
+    for inspector in get_route_parameters_inspectors():
+        parameters += inspector.inspect_parameters(route)
     return parameters

@@ -12,7 +12,7 @@ from .entities import User
     ({'name': 'Stranger'}, 'Hello, Stranger!'),
     ({}, 'Hello, stranger!'),
 ))
-def test_simple_controller(data, expected_body):
+def test_simple_api(data, expected_body):
     client = APIClient()
     user = AuthorizedUser()
     client.force_authenticate(user)
@@ -101,7 +101,7 @@ def test_custom_page_response():
     assert response.json() == expected_body
 
 
-def test_no_authentication_controller():
+def test_no_authentication_api():
     client = APIClient()
     response = client.get('/winter-no-auth/')
     assert response.status_code == HTTPStatus.OK

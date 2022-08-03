@@ -17,5 +17,5 @@ def test_interceptor_headers(hello_world_query, hello_world_header):
     client.force_authenticate(user)
     url = f'/winter-simple/get/{hello_world_query}'
     response = client.get(url)
-    assert response.get('x-method') == 'SimpleController.get'
+    assert response.get('x-method') == 'SimpleAPI.get'
     assert response.get('x-hello-world') == hello_world_header

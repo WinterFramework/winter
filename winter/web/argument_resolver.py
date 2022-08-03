@@ -24,7 +24,7 @@ class ArgumentNotSupported(Exception):
 
 
 class ArgumentResolver(abc.ABC):
-    """ArgumentResolver interface is used to map http request contents to controller method arguments."""
+    """ArgumentResolver interface is used to map http request contents to API method arguments."""
 
     @abstractmethod
     def is_supported(self, argument: ComponentMethodArgument) -> bool:  # pragma: no cover

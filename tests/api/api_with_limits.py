@@ -6,7 +6,7 @@ from winter.data.pagination import PagePosition
 
 
 @winter.route('with-limits/')
-class ControllerWithLimits:
+class APIWithLimits:
 
     @winter.route_get('')
     @winter.web.pagination.limits(default=20, maximum=100, redirect_to_default=True)

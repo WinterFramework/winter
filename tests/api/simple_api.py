@@ -20,9 +20,8 @@ class CustomPage(Page[int]):
     extra: int
 
 
-@winter.controller
 @winter.route('winter-simple/')
-class SimpleController:
+class SimpleAPI:
 
     @winter.route_get('{?name}')
     def hello(self, name: str = 'stranger') -> str:

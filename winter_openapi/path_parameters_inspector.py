@@ -4,13 +4,13 @@ from drf_yasg import openapi
 
 from winter.core import ComponentMethodArgument
 from winter.web.routing import Route
-from .method_arguments_inspector import MethodArgumentsInspector
+from .route_parameters_inspector import RouteParametersInspector
 from .type_inspection import InspectorNotFound
 from .type_inspection import TypeInfo
 from .type_inspection import inspect_type
 
 
-class PathParametersInspector(MethodArgumentsInspector):
+class PathParametersInspector(RouteParametersInspector):
 
     def inspect_parameters(self, route: 'Route') -> List[openapi.Parameter]:
         parameters = []

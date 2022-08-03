@@ -1,2 +1,2 @@
-from .controller_with_output_template import ControllerWithOutputTemplate
-from .controller_with_serializer import ControllerWithSerializer
+from .api_with_output_template import APIWithOutputTemplate
+from .api_with_serializer import APIWithSerializer

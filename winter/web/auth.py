@@ -5,8 +5,8 @@ class NotNeedAuthentication:
     pass
 
 
-def no_authentication(controller_class):
-    return annotate(NotNeedAuthentication(), single=True)(controller_class)
+def no_authentication(api_class):
+    return annotate(NotNeedAuthentication(), single=True)(api_class)
 
 
 def is_authentication_needed(component) -> bool:

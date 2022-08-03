@@ -6,10 +6,10 @@ from winter.data.pagination import PagePosition
 from winter.web.pagination.order_by import OrderByAnnotation
 from winter.web.pagination.page_position_argument_resolver import PagePositionArgumentResolver
 from winter.web.routing import Route
-from .method_arguments_inspector import MethodArgumentsInspector
+from .route_parameters_inspector import RouteParametersInspector
 
 
-class PagePositionArgumentsInspector(MethodArgumentsInspector):
+class PagePositionArgumentsInspector(RouteParametersInspector):
     def __init__(self, page_position_argument_resolver: PagePositionArgumentResolver):
         self._page_position_argument_resolver = page_position_argument_resolver
         self.limit_parameter = openapi.Parameter(

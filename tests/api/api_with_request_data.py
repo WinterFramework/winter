@@ -24,16 +24,14 @@ class Data:
     with_default: int = 5
 
 
-@winter.controller
-@winter.route('with-request-data/')
-class ControllerWithRequestData:
+class APIWithRequestData:
 
     @winter.request_body('data')
-    @winter.route_post('{?query}')
+    @winter.route_post('with-request-data/{?query}')
     def method(self, query: Optional[str], data: Data) -> Data:
         return data
 
     @winter.request_body('data')
-    @winter.route_post('many/')
+    @winter.route_post('with-request-data/many/')
     def many_method(self, data: List[Data]) -> List[Data]:
         return data

@@ -12,7 +12,7 @@ from winter.core import annotate
 
 
 class IOutputProcessor(abc.ABC):
-    """Process controller method returned value so that it can be put to HttpResponse body.
+    """Process API method returned value so that it can be put to HttpResponse body.
     Common usage is to serializer some DTO to dict."""
 
     @abc.abstractmethod
@@ -28,7 +28,7 @@ class OutputProcessorAnnotation:
 class IOutputProcessorResolver(abc.ABC):
     """
     Resolves IOutputProcessor for a given body type.
-    Due to python dynamic typing it's called after every controller method call.
+    Due to python dynamic typing it's called after every API request.
     """
 
     @abc.abstractmethod
