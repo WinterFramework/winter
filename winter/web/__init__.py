@@ -2,7 +2,6 @@ from . import pagination
 from .argument_resolver import arguments_resolver
 from .auth import no_authentication
 from .configurer import Configurer
-from .controller import controller
 from .exceptions import ExceptionHandler
 from .exceptions import exception_handlers_registry
 from .exceptions import problem
