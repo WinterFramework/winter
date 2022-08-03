@@ -41,12 +41,12 @@ class SessionAuthentication(rest_framework.authentication.SessionAuthentication)
         return 'Unauthorized'
 
 
-def create_django_urls(controller_class: Type) -> List:
-    component = Component.get_by_cls(controller_class)
+def create_django_urls(api_class_with_routes: Type) -> List:
+    component = Component.get_by_cls(api_class_with_routes)
     django_urls = []
 
     for url_path, routes in _group_routes_by_url_path(component.methods):
-        django_view = create_drf_view(controller_class, routes).as_view()
+        django_view = create_drf_view(api_class_with_routes, routes).as_view()
         winter_url_path = f'^{url_path}$'
         methods = [route.method for route in routes]
         django_url_path = rewrite_uritemplate_with_regexps(winter_url_path, methods)
@@ -55,39 +55,39 @@ def create_django_urls(controller_class: Type) -> List:
     return django_urls
 
 
-def create_drf_view(controller_class: Type, routes: List[Route]) -> 'rest_framework.views.APIView':
+def create_drf_view(api_class: Type, routes: List[Route]) -> 'rest_framework.views.APIView':
     import rest_framework.views
 
-    component = Component.get_by_cls(controller_class)
+    component = Component.get_by_cls(api_class)
 
     class WinterView(rest_framework.views.APIView):
         authentication_classes = (SessionAuthentication,)
         permission_classes = (IsAuthenticated,) if is_authentication_needed(component) else ()
 
     # It's useful for New Relic APM
-    WinterView.__module__ = controller_class.__module__
-    WinterView.__qualname__ = controller_class.__qualname__
+    WinterView.__module__ = api_class.__module__
+    WinterView.__qualname__ = api_class.__qualname__
 
     for route in routes:
-        dispatch = _create_dispatch_function(controller_class, route)
+        dispatch = _create_dispatch_function(api_class, route)
         dispatch.route = route
         dispatch_method_name = route.http_method.lower()
         setattr(WinterView, dispatch_method_name, dispatch)
     return WinterView()
 
 
-def _create_dispatch_function(controller_class: Type, route: Route):
-    component = Component.get_by_cls(controller_class)
+def _create_dispatch_function(api_class: Type, route: Route):
+    component = Component.get_by_cls(api_class)
 
     @wraps(route.method.func)
     def dispatch(winter_view, request: Request, **path_variables):
-        controller = get_injector().get(component.component_cls)
-        return _call_controller_method(controller, route, request)
+        api_class_instance = get_injector().get(component.component_cls)
+        return _call_api(api_class_instance, route, request)
 
     return dispatch
 
 
-def _call_controller_method(controller, route: Route, request: Request):
+def _call_api(api_class_instance, route: Route, request: Request):
     method = route.method
     method_exceptions_manager = MethodExceptionsManager(method)
     response_headers = {}
@@ -107,7 +107,7 @@ def _call_controller_method(controller, route: Route, request: Request):
             pre_handle(interceptor, **arguments)
 
         arguments = arguments_resolver.resolve_arguments(method, request, response_headers)
-        result = method(controller, **arguments)
+        result = method(api_class_instance, **arguments)
     except method_exceptions_manager.exception_classes as exception:
         handler = method_exceptions_manager.get_handler(exception)
         if handler is None:
