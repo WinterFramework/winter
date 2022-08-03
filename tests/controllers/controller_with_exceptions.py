@@ -48,7 +48,6 @@ class ChildCustomException(CustomException):
     pass
 
 
-@winter.controller
 @winter.route('controller_with_exceptions/')
 class ControllerWithExceptions:
 

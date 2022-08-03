@@ -9,7 +9,6 @@ from uuid import UUID
 import winter
 
 
-@winter.controller
 @winter.route('with-query-parameter')
 class ControllerWithQueryParameters:
 

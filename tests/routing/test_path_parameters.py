@@ -9,7 +9,6 @@ from tests.controllers.controller_with_path_parameters import OneTwoEnum
 from tests.controllers.controller_with_path_parameters import OneTwoEnumWithInt
 from winter.core import Component
 from winter.web.argument_resolver import ArgumentNotSupported
-from winter.web.controller import get_component
 from winter.web.path_parameters_argument_resolver import PathParametersArgumentResolver
 
 uuid_ = uuid.uuid4()
@@ -46,7 +45,7 @@ def test_resolve_path_parameter(path, arg_name, expected_value):
     ],
 )
 def test_is_supported_path_parameter(controller_class, method_name, arg_name, expected_value):
-    component = get_component(controller_class)
+    component = Component.get_by_cls(controller_class)
     argument = component.get_method(method_name).get_argument(arg_name)
     resolver = PathParametersArgumentResolver()
 
@@ -60,7 +59,7 @@ def test_is_supported_path_parameter(controller_class, method_name, arg_name, ex
 
 
 def test_with_raises_argument_not_supported():
-    component = get_component(ControllerWithPathParameters)
+    component = Component.get_by_cls(ControllerWithPathParameters)
     argument = component.get_method('test').get_argument('param6')
     resolver = PathParametersArgumentResolver()
     request = Mock(spec=Request)

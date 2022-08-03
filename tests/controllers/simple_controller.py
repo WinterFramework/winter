@@ -20,7 +20,6 @@ class CustomPage(Page[int]):
     extra: int
 
 
-@winter.controller
 @winter.route('winter-simple/')
 class SimpleController:
 

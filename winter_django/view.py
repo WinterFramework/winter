@@ -12,10 +12,10 @@ from django.conf.urls import url
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 
+from winter.core import Component
 from winter.core import ComponentMethod
 from winter.core import get_injector
 from winter.web import ResponseEntity
-from winter.web import get_component
 from winter.web import response_headers_serializer
 from winter.web.argument_resolver import arguments_resolver
 from winter.web.auth import is_authentication_needed
@@ -42,7 +42,7 @@ class SessionAuthentication(rest_framework.authentication.SessionAuthentication)
 
 
 def create_django_urls(controller_class: Type) -> List:
-    component = get_component(controller_class)
+    component = Component.get_by_cls(controller_class)
     django_urls = []
 
     for url_path, routes in _group_routes_by_url_path(component.methods):
@@ -58,7 +58,7 @@ def create_django_urls(controller_class: Type) -> List:
 def create_drf_view(controller_class: Type, routes: List[Route]) -> 'rest_framework.views.APIView':
     import rest_framework.views
 
-    component = get_component(controller_class)
+    component = Component.get_by_cls(controller_class)
 
     class WinterView(rest_framework.views.APIView):
         authentication_classes = (SessionAuthentication,)
@@ -77,7 +77,7 @@ def create_drf_view(controller_class: Type, routes: List[Route]) -> 'rest_framew
 
 
 def _create_dispatch_function(controller_class: Type, route: Route):
-    component = get_component(controller_class)
+    component = Component.get_by_cls(controller_class)
 
     @wraps(route.method.func)
     def dispatch(winter_view, request: Request, **path_variables):

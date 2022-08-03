@@ -23,7 +23,6 @@ class Greeting:
     name: str
 
 
-@winter.controller
 @winter.route('winter_sample/')
 class SampleWinterController:
 

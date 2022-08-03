@@ -7,6 +7,7 @@ from rest_framework import serializers
 import pytest
 import winter
 import winter_django
+from winter.core import Component
 from winter_django.view import create_drf_view
 from winter_openapi import SwaggerAutoSchema
 from winter.web import MediaType
@@ -289,9 +290,7 @@ def test_get_operation_without_route():
     ],
 )
 def test_exception_responses(controller_class, method_name: str, expected_responses):
-    from winter.web.controller import get_component
-
-    component = get_component(controller_class)
+    component = Component.get_by_cls(controller_class)
     method = component.get_method(method_name)
     route = get_route(method)
 

@@ -1,12 +1,7 @@
 from typing import Type
-
-from winter.core import Component
+import warnings
 
 
 def controller(controller_class: Type) -> Type:
-    Component.register(controller_class)
+    warnings.warn('Do not use the decorator. It is not required and has no functionality.', DeprecationWarning)
     return controller_class
-
-
-def get_component(class_: Type) -> Component:
-    return Component.get_by_cls(class_)

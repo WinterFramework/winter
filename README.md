@@ -27,8 +27,7 @@ pip install winter
 ```python
 import winter
 
-@winter.controller
-class HelloWorldController:
+class HelloWorld:
     @winter.route_get('/hello/')
     def hello(self):
         return f'Hello, world!'
@@ -81,9 +80,8 @@ class NotFoundException(Exception):
 todo_list: List[str] = []
 
 
-@winter.web.controller
 @winter.route('todo/')
-class TodoController:
+class TodoAPI:
     @winter.route_post('')
     @winter.request_body(argument_name='new_todo_dto')
     def create_todo(self, new_todo_dto: NewTodoDTO) -> TodoDTO:
@@ -146,8 +144,7 @@ class CustomPage(Page, Generic[T]):
     extra_field: str  # The field will go to meta JSON response field
 
 
-@winter.web.controller
-class ExampleController:
+class Example:
     @winter.route_get('/')
     def create_todo(self, page_position: PagePosition) -> CustomPage[int]:
         return CustomPage(
@@ -206,8 +203,7 @@ class TodoNotFoundExceptionCustomHandler(winter.web.ExceptionHandler):
 todo_list: List[str] = []
 
 
-@winter.web.controller
-class TodoProblemExistsController:
+class TodoProblemExistsExampleAPI:
     @winter.route_get('global/{todo_index}/')
     def get_todo_with_global_handling(self, todo_index: int):
         raise TodoNotFoundException(invalid_index=todo_index)

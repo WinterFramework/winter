@@ -7,7 +7,6 @@ import winter
 from winter.web import ResponseHeader
 
 
-@winter.controller
 @winter.route('with-response-headers/')
 class ControllerWithResponseHeaders:
 

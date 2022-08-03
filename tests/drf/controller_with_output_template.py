@@ -5,7 +5,6 @@ import winter
 import winter_django
 
 
-@winter.controller
 @winter.route('with-output-template/')
 class ControllerWithOutputTemplate:
 
