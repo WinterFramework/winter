@@ -18,6 +18,9 @@ Web Framework for Python inspired by Spring Framework
 * Exception handling without boilerplate in accordance with [RFC 7807](https://tools.ietf.org/html/rfc7807)
 
 # How to use
+
+Check out [Getting Started](https://github.com/WinterFramework/winter-getting-started) project for more information
+
 ## Installation
 ```
 pip install winter
