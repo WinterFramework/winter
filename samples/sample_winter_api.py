@@ -24,7 +24,7 @@ class Greeting:
 
 
 @winter.route('winter_sample/')
-class SampleWinterController:
+class SampleWinterAPI:
 
     def __init__(self, test_repository: TestRepository):
         self._test_repository = test_repository
