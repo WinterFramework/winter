@@ -29,8 +29,8 @@ import winter
 
 class HelloWorld:
     @winter.route_get('/hello/')
-    def hello(self):
-        return f'Hello, world!'
+    def hello(self) -> str:
+        return 'Hello, world!'
 ```
 
 To use it with Django:
@@ -38,7 +38,7 @@ To use it with Django:
 import winter_django
 
 urlpatterns = [
-    *winter_django.create_django_urls(HelloWorldController),
+    *winter_django.create_django_urls(HelloWorld),
 ]
 ```
 
@@ -217,8 +217,8 @@ class TodoProblemExistsExampleAPI:
 
 
 ## Interceptors
-You can define interceptors to pre-handle a web request before it gets to a controller.
-The pre_handle method arguments will be injected the same way as it's done in controllers.
+You can define interceptors to pre-handle a web request before it gets to an endpoint code.
+The pre_handle method arguments will be injected the same way as it's done in methods with winter.route annotation.
 It's not supported to return any response from interceptors.
 However, the exceptions thrown from within an interceptor will be handled automatically.
 ```python
@@ -232,7 +232,7 @@ from winter.web import ResponseHeader
 class HelloWorldInterceptor(Interceptor):
     @winter.response_header('x-hello-world', 'hello_world_header')
     def pre_handle(self, method: ComponentMethod, request: Request, hello_world_header: ResponseHeader[str]):
-        print(f'Controller method: {method.name}')
+        print(f'Method: {method.name}')
         if 'hello_world' in request.query_params:
             hello_world_header.set('Hello, World!')
 
