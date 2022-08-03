@@ -6,7 +6,7 @@ import winter_django
 
 
 @winter.route('with-output-template/')
-class ControllerWithOutputTemplate:
+class APIWithOutputTemplate:
 
     @winter.route_get('{?name}')
     @winter_django.output_template('hello.txt')

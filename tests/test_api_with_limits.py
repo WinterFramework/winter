@@ -5,7 +5,7 @@ from rest_framework.test import APIClient
 from tests.entities import AuthorizedUser
 
 
-def test_controller_with_limits_redirects_to_default_limit():
+def test_api_with_limits_redirects_to_default_limit():
     client = APIClient()
     user = AuthorizedUser()
     client.force_authenticate(user)
@@ -16,7 +16,7 @@ def test_controller_with_limits_redirects_to_default_limit():
     assert response['Location'] == '/with-limits/?limit=20'
 
 
-def test_controller_with_limits_does_not_redirect_if_limit_is_set():
+def test_api_with_limits_does_not_redirect_if_limit_is_set():
     client = APIClient()
     user = AuthorizedUser()
     client.force_authenticate(user)
@@ -27,7 +27,7 @@ def test_controller_with_limits_does_not_redirect_if_limit_is_set():
     assert response.json() == {'limit': 30, 'offset': None}
 
 
-def test_controller_with_limits_fails_if_maximum_limit_is_exceeded():
+def test_api_with_limits_fails_if_maximum_limit_is_exceeded():
     client = APIClient()
     user = AuthorizedUser()
     client.force_authenticate(user)

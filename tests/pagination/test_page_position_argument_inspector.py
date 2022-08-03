@@ -13,12 +13,12 @@ from winter.web.routing import get_route
     (object, False),
 ))
 def test_page_position_argument_inspector(argument_type, must_return_parameters):
-    class SimpleController:
+    class TestAPI:
         @winter.route_get('')
         def method(self, arg1: argument_type):  # pragma: no cover
             pass
 
-    route = get_route(SimpleController.method)
+    route = get_route(TestAPI.method)
 
     resolver = PagePositionArgumentResolver()
     inspector = PagePositionArgumentsInspector(resolver)
@@ -41,13 +41,13 @@ def test_page_position_argument_inspector(argument_type, must_return_parameters)
 @pytest.mark.parametrize(('default_sort', 'default_in_parameter'), ((None, None), (('id',), 'id')))
 def test_page_position_argument_inspector_with_allowed_order_by_fields(default_sort, default_in_parameter):
 
-    class SimpleController:
+    class TestAPI:
         @winter.route_get('')
         @winter.web.pagination.order_by(['id'], default_sort=default_sort)
         def method(self, arg1: PagePosition):  # pragma: no cover
             pass
 
-    route = get_route(SimpleController.method)
+    route = get_route(TestAPI.method)
 
     resolver = PagePositionArgumentResolver()
     inspector = PagePositionArgumentsInspector(resolver)

@@ -101,16 +101,16 @@ def test_annotate_with_instance(decorator_factory, error_message_template):
 
 def test_empty_annotation():
     @annotate(None)
-    class Controller:
+    class TestClass:
         @annotate(None)
         def simple_method(self):  # pragma: no cover
             pass
 
-    component = Component.get_by_cls(Controller)
+    component = Component.get_by_cls(TestClass)
 
     # Assert
-    assert Controller.simple_method.annotations.get_one_or_none(None) is None
-    assert Controller.simple_method.annotations.get_one_or_none(type(None)) is None
+    assert TestClass.simple_method.annotations.get_one_or_none(None) is None
+    assert TestClass.simple_method.annotations.get_one_or_none(type(None)) is None
     assert component.annotations.get_one_or_none(None) is None
     assert component.annotations.get_one_or_none(type(None)) is None
 

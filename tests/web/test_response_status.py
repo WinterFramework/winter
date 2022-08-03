@@ -12,12 +12,12 @@ def test_response_status(response_status, as_int):
     if as_int:
         response_status = response_status.value
 
-    class Controller:
+    class TestClass:
         @winter.response_status(response_status)
         def handler(self):  # pragma: no cover
             pass
 
-    status = get_default_response_status('post', Controller.handler)
+    status = get_default_response_status('post', TestClass.handler)
 
     assert status == response_status
 

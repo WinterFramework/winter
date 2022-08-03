@@ -10,7 +10,7 @@ import winter
 
 
 @winter.route('with-query-parameter')
-class ControllerWithQueryParameters:
+class APIWithQueryParameters:
 
     @winter.map_query_parameter('string', to='mapped_string')
     @winter.route_get('/{?date,boolean,optional_boolean,date_time,array,expanded_array*,string,uid}')

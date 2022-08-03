@@ -48,8 +48,8 @@ class ChildCustomException(CustomException):
     pass
 
 
-@winter.route('controller_with_exceptions/')
-class ControllerWithExceptions:
+@winter.route('with_exceptions/')
+class APIWithExceptions:
 
     @winter.route_get('declared_but_not_thrown/')
     @winter.raises(CustomException)

@@ -4,9 +4,9 @@ import pytest
 from mock import Mock
 from rest_framework.request import Request
 
-from tests.controllers.controller_with_path_parameters import ControllerWithPathParameters
-from tests.controllers.controller_with_path_parameters import OneTwoEnum
-from tests.controllers.controller_with_path_parameters import OneTwoEnumWithInt
+from tests.api.api_with_path_parameters import APIWithPathParameters
+from tests.api.api_with_path_parameters import OneTwoEnum
+from tests.api.api_with_path_parameters import OneTwoEnumWithInt
 from winter.core import Component
 from winter.web.argument_resolver import ArgumentNotSupported
 from winter.web.path_parameters_argument_resolver import PathParametersArgumentResolver
@@ -16,15 +16,15 @@ uuid_ = uuid.uuid4()
 
 @pytest.mark.parametrize(
     'path, arg_name, expected_value', [
-        (f'/controller_with_path_parameters/123/456/one/{uuid_}/2/', 'param1', '123'),
-        (f'/controller_with_path_parameters/123/456/one/{uuid_}/2/', 'param2', 456),
-        (f'/controller_with_path_parameters/123/456/one/{uuid_}/2/', 'param3', OneTwoEnum.ONE),
-        (f'/controller_with_path_parameters/123/456/one/{uuid_}/2/', 'param4', uuid_),
-        (f'/controller_with_path_parameters/123/456/one/{uuid_}/2/', 'param5', OneTwoEnumWithInt.TWO),
+        (f'/with-path-parameters/123/456/one/{uuid_}/2/', 'param1', '123'),
+        (f'/with-path-parameters/123/456/one/{uuid_}/2/', 'param2', 456),
+        (f'/with-path-parameters/123/456/one/{uuid_}/2/', 'param3', OneTwoEnum.ONE),
+        (f'/with-path-parameters/123/456/one/{uuid_}/2/', 'param4', uuid_),
+        (f'/with-path-parameters/123/456/one/{uuid_}/2/', 'param5', OneTwoEnumWithInt.TWO),
     ],
 )
 def test_resolve_path_parameter(path, arg_name, expected_value):
-    component = Component.get_by_cls(ControllerWithPathParameters)
+    component = Component.get_by_cls(APIWithPathParameters)
     argument = component.get_method('test').get_argument(arg_name)
     resolver = PathParametersArgumentResolver()
     request = Mock(spec=Request)
@@ -38,14 +38,14 @@ def test_resolve_path_parameter(path, arg_name, expected_value):
 
 
 @pytest.mark.parametrize(
-    'controller_class, method_name, arg_name, expected_value', [
-        (ControllerWithPathParameters, 'test', 'param1', True),
-        (ControllerWithPathParameters, 'test', 'param2', True),
-        (ControllerWithPathParameters, 'test', 'param6', False),
+    'api_class, method_name, arg_name, expected_value', [
+        (APIWithPathParameters, 'test', 'param1', True),
+        (APIWithPathParameters, 'test', 'param2', True),
+        (APIWithPathParameters, 'test', 'param6', False),
     ],
 )
-def test_is_supported_path_parameter(controller_class, method_name, arg_name, expected_value):
-    component = Component.get_by_cls(controller_class)
+def test_is_supported_path_parameter(api_class, method_name, arg_name, expected_value):
+    component = Component.get_by_cls(api_class)
     argument = component.get_method(method_name).get_argument(arg_name)
     resolver = PathParametersArgumentResolver()
 
@@ -59,11 +59,11 @@ def test_is_supported_path_parameter(controller_class, method_name, arg_name, ex
 
 
 def test_with_raises_argument_not_supported():
-    component = Component.get_by_cls(ControllerWithPathParameters)
+    component = Component.get_by_cls(APIWithPathParameters)
     argument = component.get_method('test').get_argument('param6')
     resolver = PathParametersArgumentResolver()
     request = Mock(spec=Request)
-    request.path_info = f'/controller_with_path_parameters/123/456/one/{uuid_}/2/'
+    request.path_info = f'/with-path-parameters/123/456/one/{uuid_}/2/'
 
     with pytest.raises(ArgumentNotSupported) as exception:
         resolver.resolve_argument(argument, request, {})

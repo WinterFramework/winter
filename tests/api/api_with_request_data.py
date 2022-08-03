@@ -24,7 +24,7 @@ class Data:
     with_default: int = 5
 
 
-class ControllerWithRequestData:
+class APIWithRequestData:
 
     @winter.request_body('data')
     @winter.route_post('with-request-data/{?query}')

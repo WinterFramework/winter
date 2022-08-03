@@ -1,12 +1,12 @@
 import uuid
 
-from tests.controllers import ControllerWithPathParameters
-from tests.controllers import SimpleController
+from tests.api import APIWithPathParameters
+from tests.api import SimpleAPI
 from winter.web.routing import reverse
 
 
 def test_reverse_without_args():
-    url = reverse(SimpleController.hello)
+    url = reverse(SimpleAPI.hello)
 
     # Assert
     assert url == '/winter-simple/'
@@ -15,17 +15,17 @@ def test_reverse_without_args():
 def test_reverse_with_args():
     uid = uuid.uuid4()
     url = reverse(
-        ControllerWithPathParameters.test,
+        APIWithPathParameters.test,
         args=('param1', 1, 'one', uid, '1'),
     )
     # Assert
-    assert url == f'/controller_with_path_parameters/param1/1/one/{uid}/1/'
+    assert url == f'/with-path-parameters/param1/1/one/{uid}/1/'
 
 
 def test_reverse_with_kwargs():
     uid = uuid.uuid4()
     url = reverse(
-        ControllerWithPathParameters.test,
+        APIWithPathParameters.test,
         kwargs={
             'param1': 'param1',
             'param2': '1',
@@ -35,4 +35,4 @@ def test_reverse_with_kwargs():
         },
     )
     # Assert
-    assert url == f'/controller_with_path_parameters/param1/1/one/{uid}/1/'
+    assert url == f'/with-path-parameters/param1/1/one/{uid}/1/'

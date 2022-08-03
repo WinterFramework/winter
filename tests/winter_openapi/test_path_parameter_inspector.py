@@ -50,7 +50,7 @@ class IntegerEnum(IntEnum):
     }),
 ])
 def test_path_parameter_inspector(type_hint, expected_parameter_properties):
-    class _TestController:
+    class _TestAPI:
         @winter.route_post('{param}/{not_in_method}/{?query_parameter}')
         def simple_method(
             self,
@@ -64,7 +64,7 @@ def test_path_parameter_inspector(type_hint, expected_parameter_properties):
             pass
 
     inspector = PathParametersInspector()
-    route = get_route(_TestController.simple_method)
+    route = get_route(_TestAPI.simple_method)
     expected_parameter = openapi.Parameter(
         name='param',
         in_=openapi.IN_PATH,

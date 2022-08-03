@@ -8,7 +8,7 @@ from winter.web import ResponseHeader
 
 
 @winter.route('with-response-headers/')
-class ControllerWithResponseHeaders:
+class APIWithResponseHeaders:
 
     @winter.response_header('x-header', 'header')
     @winter.route_get('str-header/')

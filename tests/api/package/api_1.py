@@ -1,8 +1,8 @@
 import winter
 
 
-@winter.route('controller_1/')
-class Controller1:
+@winter.route('api_1/')
+class API1:
     @winter.route_get('')
     def method_1(self) -> int:  # pragma: no cover
         return 1
