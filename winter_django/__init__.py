@@ -9,6 +9,7 @@ from .output_serializer import output_serializer
 from .output_template import output_template
 from .page_serializer import PageSerializer
 from .view import create_django_urls
+from .wsgi import create_wsgi
 
 
 def setup():
