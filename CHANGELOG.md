@@ -4,8 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [10.0.1]
 - Register ThrottleException as a global to simplify projects without throttling
+- Add Swagger UI which do not rely on drf_yasg and static file server: winter_openapi.get_swagger_ui_html, winter_openapi.create_swagger_ui_route
 
 ## [10.0.0]
 
