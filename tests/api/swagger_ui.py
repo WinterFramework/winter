@@ -10,7 +10,13 @@ class SwaggerUI:
     def get_swagger_ui(self):
         html = winter_openapi.get_swagger_ui_html(
             openapi_url='http://testserver/openapi.yml',
-            title='Test Swagger UI',
+        )
+        return HttpResponse(html, content_type='text/html')
+
+    @winter.route_get('swagger-ui-with-params/')
+    def get_swagger_ui_with_custom_parameters(self):
+        html = winter_openapi.get_swagger_ui_html(
+            openapi_url='http://testserver/openapi.yml',
             swagger_ui_parameters={'deepLinking': False},
         )
         return HttpResponse(html, content_type='text/html')
