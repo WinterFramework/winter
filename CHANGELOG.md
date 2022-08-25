@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [10.0.1]
 - Register ThrottleException as a global to simplify projects without throttling
-- Add Swagger UI which do not rely on drf_yasg and static file server: winter_openapi.get_swagger_ui_html, winter_openapi.create_swagger_ui_route
+- Add Swagger UI which do not rely on drf_yasg and static file server: winter_openapi.get_swagger_ui_html
 
 ## [10.0.0]
 

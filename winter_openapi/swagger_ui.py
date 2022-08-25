@@ -3,20 +3,16 @@ from typing import Any
 from typing import Dict
 from typing import Optional
 
-from django.http import HttpResponse
-
-import winter
-
 
 def get_swagger_ui_html(
     *,
     openapi_url: str,
-    title: str,
+    title: str = 'Swagger UI',
     swagger_js_url: str = "https://cdn.jsdelivr.net/npm/swagger-ui-dist@4/swagger-ui-bundle.js",
     swagger_css_url: str = "https://cdn.jsdelivr.net/npm/swagger-ui-dist@4/swagger-ui.css",
     swagger_favicon_url: str = "https://static1.smartbear.co/swagger/media/assets/swagger_fav.png",
-    oauth2_redirect_url: Optional[str] = None,
-    init_oauth: Optional[Dict[str, Any]] = None,
+    # oauth2_redirect_url: Optional[str] = None,
+    # init_oauth: Optional[Dict[str, Any]] = None,
     swagger_ui_parameters: Optional[Dict[str, Any]] = None,
 ) -> str:
     """Stolen from FastAPI"""
@@ -51,8 +47,8 @@ def get_swagger_ui_html(
     for key, value in current_swagger_ui_parameters.items():
         html += f"{json.dumps(key)}: {json.dumps(value)},\n"
 
-    if oauth2_redirect_url:
-        html += f"oauth2RedirectUrl: window.location.origin + '{oauth2_redirect_url}',"
+    # if oauth2_redirect_url:
+    #     html += f"oauth2RedirectUrl: window.location.origin + '{oauth2_redirect_url}',"
 
     html += """
     presets: [
@@ -61,10 +57,10 @@ def get_swagger_ui_html(
         ],
     })"""
 
-    if init_oauth:
-        html += f"""
-        ui.initOAuth({json.dumps(init_oauth)})
-        """
+    # if init_oauth:
+    #     html += f"""
+    #     ui.initOAuth({json.dumps(init_oauth)})
+    #     """
 
     html += """
     </script>
@@ -72,19 +68,3 @@ def get_swagger_ui_html(
     </html>
     """
     return html
-
-
-def create_swagger_ui_route(
-    *,
-    openapi_url: str,
-    title: str = 'Swagger UI',
-    url: str = 'docs',
-):
-    @winter.web.no_authentication
-    class WinterOpenapiEndpoint:
-        @winter.route_get(url)
-        def get_swagger_ui(self):
-            html = get_swagger_ui_html(openapi_url=openapi_url, title=title)
-            return HttpResponse(html, content_type='text/html')
-
-    return WinterOpenapiEndpoint

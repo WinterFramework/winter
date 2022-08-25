@@ -13,7 +13,6 @@ from .page_position_argument_inspector import PagePositionArgumentsInspector
 from .path_parameters_inspector import PathParametersInspector
 from .query_parameters_inspector import QueryParametersInspector
 from .swagger_auto_schema import SwaggerAutoSchema
-from .swagger_ui import create_swagger_ui_route
 from .swagger_ui import get_swagger_ui_html
 from .type_inspection import InspectorNotFound
 from .type_inspection import TypeInfo
