@@ -11,8 +11,6 @@ def get_swagger_ui_html(
     swagger_js_url: str = "https://cdn.jsdelivr.net/npm/swagger-ui-dist@4/swagger-ui-bundle.js",
     swagger_css_url: str = "https://cdn.jsdelivr.net/npm/swagger-ui-dist@4/swagger-ui.css",
     swagger_favicon_url: str = "https://static1.smartbear.co/swagger/media/assets/swagger_fav.png",
-    # oauth2_redirect_url: Optional[str] = None,
-    # init_oauth: Optional[Dict[str, Any]] = None,
     swagger_ui_parameters: Optional[Dict[str, Any]] = None,
 ) -> str:
     """Stolen from FastAPI"""
@@ -47,20 +45,12 @@ def get_swagger_ui_html(
     for key, value in current_swagger_ui_parameters.items():
         html += f"{json.dumps(key)}: {json.dumps(value)},\n"
 
-    # if oauth2_redirect_url:
-    #     html += f"oauth2RedirectUrl: window.location.origin + '{oauth2_redirect_url}',"
-
     html += """
     presets: [
         SwaggerUIBundle.presets.apis,
         SwaggerUIBundle.SwaggerUIStandalonePreset
         ],
     })"""
-
-    # if init_oauth:
-    #     html += f"""
-    #     ui.initOAuth({json.dumps(init_oauth)})
-    #     """
 
     html += """
     </script>
