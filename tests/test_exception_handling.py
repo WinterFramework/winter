@@ -123,6 +123,34 @@ def test_exception_handler_with_unknown_argument():
                 'detail': 'MyEntity with ID=1 not found',
             },
         ),
+        (
+            'json_decoder_errors_as_str_exception',
+            HTTPStatus.BAD_REQUEST,
+            'application/json+problem',
+            {
+                'status': 400,
+                'type': 'urn:problem-type:json-decode-error',
+                'title': 'Json decode error',
+                'detail': 'Cannot decode "data1" to integer',
+            },
+        ),
+        (
+            'json_decoder_errors_as_dict_exception',
+            HTTPStatus.BAD_REQUEST,
+            'application/json+problem',
+            {
+                'status': 400,
+                'type': 'urn:problem-type:json-decode-error',
+                'title': 'Json decode error',
+                'detail': 'Failed to decode json',
+                'errors': {
+                    'non_field_error': 'Missing fields: "id", "status", "int_status", "birthday"',
+                    'contact': {
+                        'phones': 'Cannot decode "123" to set',
+                    },
+                }
+            },
+        ),
     ),
 )
 def test_api_with_problem_exceptions(url_path, expected_status, expected_content_type, expected_body):

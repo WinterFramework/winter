@@ -4,6 +4,7 @@ from typing import Dict
 import dataclasses
 
 import winter.web
+from winter.core.json import JSONDecodeException
 from winter.data.exceptions import NotFoundException
 
 
@@ -87,3 +88,18 @@ class APIWithProblemExceptions:
     @winter.route_get('not_found_exception/')
     def not_found_exception(self) -> str:
         raise NotFoundException(entity_id=1, entity_cls=MyEntity)
+
+    @winter.route_get('json_decoder_errors_as_dict_exception/')
+    def json_decoder_errors_as_dict_exception(self) -> None:
+        errors = {
+            'non_field_error': 'Missing fields: "id", "status", "int_status", "birthday"',
+            'contact': {
+                'phones': 'Cannot decode "123" to set',
+            },
+        }
+        raise JSONDecodeException(errors)
+
+    @winter.route_get('json_decoder_errors_as_str_exception/')
+    def json_decoder_errors_as_str_exception(self) -> None:
+        errors = 'Cannot decode "data1" to integer'
+        raise JSONDecodeException(errors)

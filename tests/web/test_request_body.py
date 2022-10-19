@@ -84,10 +84,16 @@ def test_request_body_with_errors():
     }
 
     expected_data = {
-        'id': 'Cannot decode "invalid integer" to integer',
-        'status': 'Value not in allowed values("active", "super_active"): "invalid status"',
-        'items': 'Cannot decode "invalid integer" to integer',
-        'non_field_error': 'Missing fields: "name"',
+        'status': 400,
+        'type': 'urn:problem-type:json-decode-error',
+        'title': 'Json decode error',
+        'detail': 'Failed to decode json',
+        'errors': {
+            'id': 'Cannot decode "invalid integer" to integer',
+            'status': 'Value not in allowed values("active", "super_active"): "invalid status"',
+            'items': 'Cannot decode "invalid integer" to integer',
+            'non_field_error': 'Missing fields: "name"',
+        }
     }
     data = json.dumps(data)
 
