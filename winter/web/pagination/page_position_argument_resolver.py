@@ -6,12 +6,14 @@ from rest_framework.request import Request
 
 from winter.core import ComponentMethod
 from winter.core import ComponentMethodArgument
+from winter.core.json import JSONDecodeException
 from winter.core.json import json_decode
 from winter.core.utils import PositiveInteger
 from winter.data.pagination import PagePosition
 from winter.data.pagination import Sort
 from winter.web.argument_resolver import ArgumentResolver
 from winter.web.exceptions import RedirectException
+from winter.web.exceptions import RequestDataDecodeException
 from winter.web.pagination.check_sort import check_sort
 from winter.web.pagination.limits import Limits
 from winter.web.pagination.limits import LimitsAnnotation
@@ -74,8 +76,11 @@ class PagePositionArgumentResolver(ArgumentResolver):
         raw_limit = http_request.query_params.get(self.limit_name) or None
         raw_offset = http_request.query_params.get(self.offset_name) or None
         raw_order_by = http_request.query_params.get(self.order_by_name, '')
-        limit = json_decode(raw_limit, Optional[PositiveInteger])
-        offset = json_decode(raw_offset, Optional[PositiveInteger])
+        try:
+            limit = json_decode(raw_limit, Optional[PositiveInteger])
+            offset = json_decode(raw_offset, Optional[PositiveInteger])
+        except JSONDecodeException as e:
+            raise RequestDataDecodeException(e.errors)
         sort = self._parse_sort_properties(raw_order_by, argument)
         return PagePosition(limit=limit, offset=offset, sort=sort)
 

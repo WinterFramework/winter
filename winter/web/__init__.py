@@ -23,7 +23,6 @@ from .urls import register_url_regexp
 
 
 def setup():
-    from winter.core.json.decoder import JSONDecodeException
     from winter.data.exceptions import NotFoundException
     from .configurer import run_configurers
     from .exceptions import RedirectException
@@ -32,7 +31,6 @@ def setup():
     from .exceptions.problem_handling import ProblemExceptionMapper
     from .exceptions.problem_handling_info import ProblemHandlingInfo
     from .exception_handlers import RedirectExceptionHandler
-    from .exception_handlers import DecodeExceptionHandler
     from .pagination.page_processor_resolver import PageOutputProcessorResolver
     from .pagination.page_position_argument_resolver import PagePositionArgumentResolver
     from .path_parameters_argument_resolver import PathParametersArgumentResolver
@@ -53,7 +51,6 @@ def setup():
     exception_handler_generator = ProblemExceptionHandlerGenerator(exception_mapper)
     autodiscover_problem_annotations(exception_handler_generator)
     auto_handle_exceptions = {
-        JSONDecodeException: DecodeExceptionHandler,
         RedirectException: RedirectExceptionHandler,
         NotFoundException: exception_handler_generator.generate(NotFoundException, ProblemHandlingInfo(status=404)),
     }

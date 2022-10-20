@@ -14,8 +14,8 @@ import winter
 from tests.entities import AuthorizedUser
 from tests.utils import get_request
 from winter.core.annotations import AlreadyAnnotated
-from winter.core.json import decoder
 from winter.web.argument_resolver import ArgumentNotSupported
+from winter.web.exceptions import RequestDataDecodeException
 from winter.web.query_parameters.query_parameters_argument_resolver import QueryParameterArgumentResolver
 
 
@@ -47,12 +47,16 @@ def test_query_parameter_resolver(argument_name, query_string, expected_value):
 
 
 @pytest.mark.parametrize(
-    ('query_string', 'expected_exception_message'), (
-        ('query_param=invalid_int', 'Cannot decode "invalid_int" to integer'),
-        ('', 'Missing required query parameter "query_param"'),
+    ('query_string', 'expected_exception_message', 'expected_errors'), (
+        (
+            'query_param=invalid_int',
+            'Failed to decode request data',
+            {'error': 'Cannot decode "invalid_int" to integer'}
+        ),
+        ('', 'Failed to decode request data', {'error': 'Missing required query parameter "query_param"'}),
     ),
 )
-def test_query_parameter_resolver_with_raises_parse_error(query_string, expected_exception_message):
+def test_query_parameter_resolver_with_raises_parse_error(query_string, expected_exception_message, expected_errors):
     @winter.route_get('{?query_param}')
     def method(query_param: int):  # pragma: no cover
         return query_param
@@ -62,10 +66,11 @@ def test_query_parameter_resolver_with_raises_parse_error(query_string, expected
     argument = method.get_argument('query_param')
     request = get_request(query_string)
 
-    with pytest.raises(decoder.JSONDecodeException) as exception:
+    with pytest.raises(RequestDataDecodeException) as exception_info:
         resolver.resolve_argument(argument, request, {})
 
-    assert str(exception.value) == expected_exception_message
+    assert str(exception_info.value) == expected_exception_message
+    assert exception_info.value.errors == expected_errors
 
 
 def test_query_parameter_resolver_with_raises_parse_uuid_error():
@@ -78,10 +83,11 @@ def test_query_parameter_resolver_with_raises_parse_uuid_error():
     argument = method.get_argument('query_param')
     request = get_request('query_param=invalid_uuid')
 
-    with pytest.raises(decoder.JSONDecodeException) as exception:
+    with pytest.raises(RequestDataDecodeException) as exception_info:
         resolver.resolve_argument(argument, request, {})
 
-    assert str(exception.value) == 'Cannot decode "invalid_uuid" to uuid'
+    assert str(exception_info.value) == 'Failed to decode request data'
+    assert exception_info.value.errors == {'error': 'Cannot decode "invalid_uuid" to uuid'}
 
 
 @pytest.mark.parametrize(
@@ -160,10 +166,11 @@ def test_orphan_map_query_parameter_fails():
     argument = method.get_argument('x_param')
     request = get_request('?x=1')
 
-    with pytest.raises(decoder.JSONDecodeException) as exception:
+    with pytest.raises(RequestDataDecodeException) as exception_info:
         resolver.resolve_argument(argument, request, {})
 
-    assert str(exception.value) == 'Missing required query parameter "x"'
+    assert str(exception_info.value) == 'Failed to decode request data'
+    assert exception_info.value.errors == {'error': 'Missing required query parameter "x"'}
 
 
 @pytest.mark.parametrize(

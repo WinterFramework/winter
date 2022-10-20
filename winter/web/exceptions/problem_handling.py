@@ -1,11 +1,11 @@
-import re
-from typing import Dict
-from typing import Type
-
 import dataclasses
+import re
 from dataclasses import asdict
 from dataclasses import dataclass
 from dataclasses import is_dataclass
+from typing import Dict
+from typing import Type
+
 from rest_framework.request import Request
 
 from winter.core import Component
