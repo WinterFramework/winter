@@ -85,8 +85,8 @@ def test_request_body_with_errors():
 
     expected_data = {
         'status': 400,
-        'type': 'urn:problem-type:request-data-decoding',
-        'title': 'Request data decoding',
+        'type': 'urn:problem-type:request-data-decode',
+        'title': 'Request data decode',
         'detail': 'Failed to decode request data',
         'errors': {
             'id': 'Cannot decode "invalid integer" to integer',

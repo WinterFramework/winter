@@ -15,7 +15,7 @@ from tests.entities import AuthorizedUser
 from tests.utils import get_request
 from winter.core.annotations import AlreadyAnnotated
 from winter.web.argument_resolver import ArgumentNotSupported
-from winter.web.exceptions import RequestDataDecodingException
+from winter.web.exceptions import RequestDataDecodeException
 from winter.web.query_parameters.query_parameters_argument_resolver import QueryParameterArgumentResolver
 
 
@@ -66,7 +66,7 @@ def test_query_parameter_resolver_with_raises_parse_error(query_string, expected
     argument = method.get_argument('query_param')
     request = get_request(query_string)
 
-    with pytest.raises(RequestDataDecodingException) as exception_info:
+    with pytest.raises(RequestDataDecodeException) as exception_info:
         resolver.resolve_argument(argument, request, {})
 
     assert str(exception_info.value) == expected_exception_message
@@ -83,7 +83,7 @@ def test_query_parameter_resolver_with_raises_parse_uuid_error():
     argument = method.get_argument('query_param')
     request = get_request('query_param=invalid_uuid')
 
-    with pytest.raises(RequestDataDecodingException) as exception_info:
+    with pytest.raises(RequestDataDecodeException) as exception_info:
         resolver.resolve_argument(argument, request, {})
 
     assert str(exception_info.value) == 'Failed to decode request data'
@@ -166,7 +166,7 @@ def test_orphan_map_query_parameter_fails():
     argument = method.get_argument('x_param')
     request = get_request('?x=1')
 
-    with pytest.raises(RequestDataDecodingException) as exception_info:
+    with pytest.raises(RequestDataDecodeException) as exception_info:
         resolver.resolve_argument(argument, request, {})
 
     assert str(exception_info.value) == 'Failed to decode request data'

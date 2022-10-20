@@ -21,7 +21,7 @@ class RedirectException(Exception):
 
 @problem(status=HTTPStatus.BAD_REQUEST)
 @dataclasses.dataclass
-class RequestDataDecodingException(Exception):
+class RequestDataDecodeException(Exception):
     errors: dict = dataclasses.field(default_factory=dict)
 
     def __init__(self, errors: Optional[Union[str, Dict]]):

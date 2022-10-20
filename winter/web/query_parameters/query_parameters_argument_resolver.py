@@ -11,7 +11,7 @@ from winter.core.utils.typing import is_iterable_type
 from .query_parameter import QueryParameter
 from ..argument_resolver import ArgumentNotSupported
 from ..argument_resolver import ArgumentResolver
-from ..exceptions import RequestDataDecodingException
+from ..exceptions import RequestDataDecodeException
 from ..routing import get_route
 
 
@@ -45,14 +45,14 @@ class QueryParameterArgumentResolver(ArgumentResolver):
             try:
                 return argument.get_default()
             except ArgumentDoesNotHaveDefault:
-                raise RequestDataDecodingException(f'Missing required query parameter "{parameter_name}"')
+                raise RequestDataDecodeException(f'Missing required query parameter "{parameter_name}"')
 
         value = self._get_value(query_parameters, parameter_name, is_iterable, explode)
 
         try:
             return json_decode(value, argument.type_)
         except JSONDecodeException as e:
-            raise RequestDataDecodingException(e.errors)
+            raise RequestDataDecodeException(e.errors)
 
     def _get_query_parameter(self, argument: ComponentMethodArgument) -> Optional[QueryParameter]:
         if argument in self._query_parameters:

@@ -1,7 +1,7 @@
 from enum import Enum
 
 from winter.data.pagination import Page
-from winter.web.exceptions import RequestDataDecodingException
+from winter.web.exceptions import RequestDataDecodeException
 from winter.web.exceptions import ThrottleException
 from winter.web.pagination.limits import MaximumLimitValueExceeded
 from .annotations import global_exception
@@ -28,7 +28,7 @@ def setup(allow_missing_raises_annotation: bool = False):
 
     register_global_exception(MaximumLimitValueExceeded)
     register_global_exception(ThrottleException)
-    register_global_exception(RequestDataDecodingException)
+    register_global_exception(RequestDataDecodeException)
     hinting_type_info.insert(0, (Enum, inspect_enum_class))
     register_type_inspector(Page, func=inspect_page)
     register_route_parameters_inspector(PathParametersInspector())

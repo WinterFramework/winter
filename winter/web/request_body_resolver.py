@@ -3,7 +3,7 @@ from typing import MutableMapping
 from rest_framework.request import Request
 
 from .argument_resolver import ArgumentResolver
-from .exceptions.exceptions import RequestDataDecodingException
+from .exceptions.exceptions import RequestDataDecodeException
 from .request_body_annotation import RequestBodyAnnotation
 from ..core import ComponentMethodArgument
 from ..core.json import JSONDecodeException
@@ -27,4 +27,4 @@ class RequestBodyArgumentResolver(ArgumentResolver):
         try:
             return json_decode(request.data, argument.type_)
         except JSONDecodeException as e:
-            raise RequestDataDecodingException(e.errors)
+            raise RequestDataDecodeException(e.errors)

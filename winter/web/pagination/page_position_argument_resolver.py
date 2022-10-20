@@ -13,7 +13,7 @@ from winter.data.pagination import PagePosition
 from winter.data.pagination import Sort
 from winter.web.argument_resolver import ArgumentResolver
 from winter.web.exceptions import RedirectException
-from winter.web.exceptions import RequestDataDecodingException
+from winter.web.exceptions import RequestDataDecodeException
 from winter.web.pagination.check_sort import check_sort
 from winter.web.pagination.limits import Limits
 from winter.web.pagination.limits import LimitsAnnotation
@@ -80,7 +80,7 @@ class PagePositionArgumentResolver(ArgumentResolver):
             limit = json_decode(raw_limit, Optional[PositiveInteger])
             offset = json_decode(raw_offset, Optional[PositiveInteger])
         except JSONDecodeException as e:
-            raise RequestDataDecodingException(e.errors)
+            raise RequestDataDecodeException(e.errors)
         sort = self._parse_sort_properties(raw_order_by, argument)
         return PagePosition(limit=limit, offset=offset, sort=sort)
 

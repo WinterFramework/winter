@@ -9,7 +9,7 @@ from winter.core import ComponentMethod
 from winter.core.json import decoder
 from winter.data.pagination import PagePosition
 from winter.data.pagination import Sort
-from winter.web.exceptions import RequestDataDecodingException
+from winter.web.exceptions import RequestDataDecodeException
 from winter.web.pagination import PagePositionArgumentResolver
 
 
@@ -115,13 +115,13 @@ def test_resolve_argument_ok_in_page_position_argument_resolver_with_default(
     ('query_string', 'exception_type', 'message', 'errors_dict'), (
         (
             'limit=none',
-            RequestDataDecodingException,
+            RequestDataDecodeException,
             'Failed to decode request data',
             {'error': 'Cannot decode "none" to PositiveInteger'}
         ),
         (
             'offset=-20',
-            RequestDataDecodingException,
+            RequestDataDecodeException,
             'Failed to decode request data',
             {'error': 'Cannot decode "-20" to PositiveInteger'}
         ),

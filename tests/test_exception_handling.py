@@ -129,8 +129,8 @@ def test_exception_handler_with_unknown_argument():
             'application/json+problem',
             {
                 'status': 400,
-                'type': 'urn:problem-type:request-data-decoding',
-                'title': 'Request data decoding',
+                'type': 'urn:problem-type:request-data-decode',
+                'title': 'Request data decode',
                 'detail': 'Failed to decode request data',
                 'errors': {'error': 'Cannot decode "data1" to integer'},
             },
@@ -141,8 +141,8 @@ def test_exception_handler_with_unknown_argument():
             'application/json+problem',
             {
                 'status': 400,
-                'type': 'urn:problem-type:request-data-decoding',
-                'title': 'Request data decoding',
+                'type': 'urn:problem-type:request-data-decode',
+                'title': 'Request data decode',
                 'detail': 'Failed to decode request data',
                 'errors': {
                     'non_field_error': 'Missing fields: "id", "status", "int_status", "birthday"',
