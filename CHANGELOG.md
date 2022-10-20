@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [11.1.0]
 ### Changed
-- Adjust response body to comply with RFC7807 when request body json decoding fails
+- Adjust response body to comply with RFC7807 when request data decoding fails
 
 ## [11.0.0]
 ### Added
