@@ -1,12 +1,11 @@
-import re
-from http import HTTPStatus
-from typing import Dict
-from typing import Type
-
 import dataclasses
+import re
 from dataclasses import asdict
 from dataclasses import dataclass
 from dataclasses import is_dataclass
+from typing import Dict
+from typing import Type
+
 from rest_framework.request import Request
 
 from winter.core import Component
@@ -19,7 +18,6 @@ from .handlers import exception_handlers_registry
 from .problem_annotation import ProblemAnnotation
 from .problem_handling_info import ProblemHandlingInfo
 from ... import response_header
-from ...core.json import JSONDecodeException
 
 
 class ProblemExceptionHandlerGenerator(ExceptionHandlerGenerator):
@@ -92,29 +90,6 @@ class ProblemExceptionMapper(ExceptionMapper):
     @classmethod
     def _try_cut_exception_name_postfix(cls, exception_cls: Type[Exception]) -> str:
         return re.sub('Exception$', '', exception_cls.__name__)
-
-
-class JsonDecodeProblemExceptionMapper(ProblemExceptionMapper):
-    def to_response_body(
-        self,
-        request: Request,
-        exception: JSONDecodeException,
-        handling_info: ProblemHandlingInfo
-    ) -> Dict:
-        problem_handling_info = ProblemHandlingInfo(
-            status=handling_info.status or HTTPStatus.BAD_REQUEST,
-            title=handling_info.title or 'Json decode error',
-            type=handling_info.type or 'urn:problem-type:json-decode-error',
-            detail=handling_info.detail or (
-                exception.errors if type(exception.errors) == str else 'Failed to decode json'
-            ),
-        )
-
-        problem_dict = super().to_response_body(request, exception, problem_handling_info)
-        if exception.errors and not type(exception.errors) == str:
-            problem_dict['errors'] = exception.errors
-
-        return problem_dict
 
 
 def autodiscover_problem_annotations(handler_generator: ProblemExceptionHandlerGenerator):

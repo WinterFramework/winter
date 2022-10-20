@@ -85,9 +85,9 @@ def test_request_body_with_errors():
 
     expected_data = {
         'status': 400,
-        'type': 'urn:problem-type:json-decode-error',
-        'title': 'Json decode error',
-        'detail': 'Failed to decode json',
+        'type': 'urn:problem-type:request-data-decoding',
+        'title': 'Request data decoding',
+        'detail': 'Failed to decode request data',
         'errors': {
             'id': 'Cannot decode "invalid integer" to integer',
             'status': 'Value not in allowed values("active", "super_active"): "invalid status"',

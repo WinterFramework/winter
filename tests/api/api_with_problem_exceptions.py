@@ -4,8 +4,8 @@ from typing import Dict
 import dataclasses
 
 import winter.web
-from winter.core.json import JSONDecodeException
 from winter.data.exceptions import NotFoundException
+from winter.web.exceptions import RequestDataDecodingException
 
 
 @winter.web.problem(status=HTTPStatus.FORBIDDEN)
@@ -89,7 +89,7 @@ class APIWithProblemExceptions:
     def not_found_exception(self) -> str:
         raise NotFoundException(entity_id=1, entity_cls=MyEntity)
 
-    @winter.route_get('json_decoder_errors_as_dict_exception/')
+    @winter.route_get('request_data_decoding_exception_with_dict_errors/')
     def json_decoder_errors_as_dict_exception(self) -> None:
         errors = {
             'non_field_error': 'Missing fields: "id", "status", "int_status", "birthday"',
@@ -97,9 +97,9 @@ class APIWithProblemExceptions:
                 'phones': 'Cannot decode "123" to set',
             },
         }
-        raise JSONDecodeException(errors)
+        raise RequestDataDecodingException(errors)
 
-    @winter.route_get('json_decoder_errors_as_str_exception/')
+    @winter.route_get('request_data_decoding_exception_with_str_errors/')
     def json_decoder_errors_as_str_exception(self) -> None:
         errors = 'Cannot decode "data1" to integer'
-        raise JSONDecodeException(errors)
+        raise RequestDataDecodingException(errors)

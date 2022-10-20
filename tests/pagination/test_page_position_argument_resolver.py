@@ -9,6 +9,7 @@ from winter.core import ComponentMethod
 from winter.core.json import decoder
 from winter.data.pagination import PagePosition
 from winter.data.pagination import Sort
+from winter.web.exceptions import RequestDataDecodingException
 from winter.web.pagination import PagePositionArgumentResolver
 
 
@@ -111,19 +112,30 @@ def test_resolve_argument_ok_in_page_position_argument_resolver_with_default(
 
 
 @pytest.mark.parametrize(
-    ('query_string', 'exception_type', 'message'), (
-        ('limit=none', decoder.JSONDecodeException, 'Cannot decode "none" to PositiveInteger'),
-        ('offset=-20', decoder.JSONDecodeException, 'Cannot decode "-20" to PositiveInteger'),
-        ('order_by=id,', ParseError, 'Invalid field for order: ""'),
-        ('order_by=-', ParseError, 'Invalid field for order: "-"'),
+    ('query_string', 'exception_type', 'message', 'errors_dict'), (
+        (
+            'limit=none',
+            RequestDataDecodingException,
+            'Failed to decode request data',
+            {'error': 'Cannot decode "none" to PositiveInteger'}
+        ),
+        (
+            'offset=-20',
+            RequestDataDecodingException,
+            'Failed to decode request data',
+            {'error': 'Cannot decode "-20" to PositiveInteger'}
+        ),
+        ('order_by=id,', ParseError, 'Invalid field for order: ""', None),
+        ('order_by=-', ParseError, 'Invalid field for order: "-"', None),
         (
             'order_by=not_allowed_order_by_field',
             ParseError,
             'Fields do not allowed as order by fields: "not_allowed_order_by_field"',
+            None,
         ),
     ),
 )
-def test_resolve_argument_fails_in_page_position_argument_resolver(query_string, exception_type, message):
+def test_resolve_argument_fails_in_page_position_argument_resolver(query_string, exception_type, message, errors_dict):
     @winter.web.pagination.order_by(['id'])
     def method(arg1: int):  # pragma: no cover
         return arg1
@@ -140,3 +152,4 @@ def test_resolve_argument_fails_in_page_position_argument_resolver(query_string,
         resolver.resolve_argument(argument, request, {})
 
     assert exception_info.value.args[0] == message
+    assert not hasattr(exception_info.value, 'errors') or exception_info.value.errors == errors_dict

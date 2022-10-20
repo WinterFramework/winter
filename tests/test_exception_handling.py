@@ -124,25 +124,26 @@ def test_exception_handler_with_unknown_argument():
             },
         ),
         (
-            'json_decoder_errors_as_str_exception',
+            'request_data_decoding_exception_with_str_errors',
             HTTPStatus.BAD_REQUEST,
             'application/json+problem',
             {
                 'status': 400,
-                'type': 'urn:problem-type:json-decode-error',
-                'title': 'Json decode error',
-                'detail': 'Cannot decode "data1" to integer',
+                'type': 'urn:problem-type:request-data-decoding',
+                'title': 'Request data decoding',
+                'detail': 'Failed to decode request data',
+                'errors': {'error': 'Cannot decode "data1" to integer'},
             },
         ),
         (
-            'json_decoder_errors_as_dict_exception',
+            'request_data_decoding_exception_with_dict_errors',
             HTTPStatus.BAD_REQUEST,
             'application/json+problem',
             {
                 'status': 400,
-                'type': 'urn:problem-type:json-decode-error',
-                'title': 'Json decode error',
-                'detail': 'Failed to decode json',
+                'type': 'urn:problem-type:request-data-decoding',
+                'title': 'Request data decoding',
+                'detail': 'Failed to decode request data',
                 'errors': {
                     'non_field_error': 'Missing fields: "id", "status", "int_status", "birthday"',
                     'contact': {
