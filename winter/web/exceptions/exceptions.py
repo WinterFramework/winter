@@ -28,5 +28,5 @@ class RequestDataDecodeException(Exception):
         super().__init__('Failed to decode request data')
         if type(errors) == dict:
             self.errors = errors
-        elif type(errors) == str:
+        else:
             self.errors = {'error': errors}
