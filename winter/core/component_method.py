@@ -1,9 +1,9 @@
 import inspect
 import types
 from types import FunctionType
-from typing import Collection
 from typing import Mapping
 from typing import Optional
+from typing import Tuple
 from typing import Type
 from typing import Union
 from typing import get_type_hints
@@ -68,7 +68,7 @@ class ComponentMethod:
         return f'{self.component.component_cls.__name__}.{self.name}'
 
     @property
-    def arguments(self) -> Collection[ComponentMethodArgument]:
+    def arguments(self) -> Tuple[ComponentMethodArgument, ...]:
         return tuple(self._arguments.values())
 
     def get_argument(self, name: str) -> Optional[ComponentMethodArgument]:
