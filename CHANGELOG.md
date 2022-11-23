@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [13.0.1] - 2022-11-23
+### Bugfixes
+- Fixed but with dependency
+
+## [13.0.0] - 2022-11-23
+### Added
+- winter.messaging: EventBus interface added, SimpleEventBus implemented
+
 ## [12.0.0]
 ### Changed
 - Adjust response body to comply with RFC7807 when request data decoding fails
@@ -17,10 +25,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [10.0.1]
 - Register ThrottleException as a global to simplify projects without throttling
 - Add Swagger UI which do not rely on drf_yasg and static file server: winter_openapi.get_swagger_ui_html
-
-## [13.0.0] - 2022-11-23
-### Added
-- winter.messaging: EventBus interface added, SimpleEventBus implemented
 
 ## [10.0.0]
 

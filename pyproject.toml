@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "winter"
-version = "13.0.0"
+version = "13.0.1"
 homepage = "https://github.com/WinterFramework/winter"
 description = "Web Framework inspired by Spring Framework"
 authors = ["Alexander Egorov <mofr@zond.org>"]
@@ -33,7 +33,7 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.6"
 dataclasses = ">=0.6"
-djangorestframework = ">=3.9.0"
+djangorestframework = "~=3.9.0"
 Django = ">=1.11.16, <3.0.0"
 docstring-parser = ">=0.1"
 drf-yasg = ">=1.13.0"
