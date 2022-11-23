@@ -17,7 +17,7 @@ class SimpleEventBus(EventBus):
         injector = get_injector()
         event_type = type(event)
         for handler_method in self._handler_methods[event_type]:
-            handler_instance = injector.get(handler_method.component)
+            handler_instance = injector.get(handler_method.component.component_cls)
             handler_method.func(handler_instance, event)
 
     def register_handler(self, handler_method: ComponentMethod):
