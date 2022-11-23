@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Register ThrottleException as a global to simplify projects without throttling
 - Add Swagger UI which do not rely on drf_yasg and static file server: winter_openapi.get_swagger_ui_html
 
+## [13.0.0] - 2022-11-23
+### Added
+- winter.messaging: EventBus interface added, SimpleEventBus implemented
+
 ## [10.0.0]
 
 - Delete @winter.web.controller
