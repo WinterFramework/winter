@@ -29,7 +29,7 @@ class EventHandlers:
         self.result['handlers'].append(3)
         self.result['x'] += event.x
 
-    def handler4(self, event: Event3):
+    def handler4(self, event: Event3):  # pragma: no cover
         self.result['handlers'].append(4)
         self.result['x'] += event.x
 
