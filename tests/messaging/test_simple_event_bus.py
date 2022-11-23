@@ -1,6 +1,7 @@
 from injector import ClassProvider
 from injector import singleton
 
+from winter.core import annotate
 from winter.core import get_injector
 from winter.messaging import SimpleEventBus
 from winter.messaging import event_handler
@@ -8,6 +9,13 @@ from winter.messaging import get_all_event_handlers_for_package
 from .events import Event1
 from .events import Event2
 from .events import Event3
+
+
+class OtherAnnotation:
+    pass
+
+
+other_annotation = annotate(OtherAnnotation, single=True)
 
 
 class EventHandlers:
@@ -29,6 +37,7 @@ class EventHandlers:
         self.result['handlers'].append(3)
         self.result['x'] += event.x
 
+    @other_annotation
     def handler4(self, event: Event3):  # pragma: no cover
         self.result['handlers'].append(4)
         self.result['x'] += event.x
