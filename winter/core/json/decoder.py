@@ -22,6 +22,11 @@ from winter.core.utils.typing import get_generic_args
 from winter.core.utils.typing import get_origin_type
 from winter.core.utils.typing import is_optional
 
+try:
+    from collections.abc import Sequence
+except ImportError:
+    from collections import Sequence  # Old import for versions older than Python3.10
+
 _decoders = {}
 
 Item = TypeVar('Item')
@@ -236,6 +241,7 @@ def decode_datetime(value, type_) -> datetime.datetime:
 
 
 @json_decoder(list)
+@json_decoder(Sequence)
 def decode_list(value, type_) -> list:
     child_types = getattr(type_, '__args__', [])
     child_type = child_types[0] if child_types else Any

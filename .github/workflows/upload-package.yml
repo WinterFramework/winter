@@ -7,13 +7,13 @@ on:
 jobs:
   build-and-publish-python-package:
     name: Build Python package with sources and publish
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout the code
         uses: actions/checkout@v2
       - uses: actions/setup-python@v1
         with:
-          python-version: '3.6'
+          python-version: '3.7'
       - name: Build and publish to PyPi
         uses: JRubics/poetry-publish@v1.8
         with:

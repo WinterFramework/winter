@@ -1,24 +1,16 @@
 from abc import abstractmethod
 from typing import Generic
-
 from typing import Iterable
 from typing import Optional
 from typing import TypeVar
 
 from winter.core.utils.typing import get_generic_args
 
-try:
-    from typing import GenericMeta  # python 3.6
-except ImportError:
-    # in 3.7, GenericMeta doesn't exist but we don't need it
-    class GenericMeta(type):
-        pass
-
 T = TypeVar('T')
 K = TypeVar('K')
 
 
-class RepositoryGenericMeta(GenericMeta):
+class RepositoryGenericMeta(type):
     def __init__(cls, name, bases, attr, **kwargs):
         if name not in ('Repository', 'CRUDRepository'):
             args = get_generic_args(cls.__orig_bases__[0])
