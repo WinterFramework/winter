@@ -7,6 +7,7 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
+from typing import Sequence
 from typing import Set
 from typing import Tuple
 
@@ -128,6 +129,17 @@ def test_decode(data, expected_instance):
     ),
 )
 def test_decode_set(data, type_, expected_instance):
+    instance = json_decode(data, type_)
+    assert instance == expected_instance
+
+
+@pytest.mark.parametrize(
+    ('data', 'type_', 'expected_instance'), (
+        (['super'], Sequence[Status], [Status.SUPER]),
+        ([1], Sequence, [1]),
+    ),
+)
+def test_decode_sequence(data, type_, expected_instance):
     instance = json_decode(data, type_)
     assert instance == expected_instance
 

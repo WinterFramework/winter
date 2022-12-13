@@ -5,6 +5,7 @@ import enum
 import inspect
 import re
 import uuid
+from collections import Sequence
 from typing import Any
 from typing import Callable
 from typing import Dict
@@ -236,6 +237,7 @@ def decode_datetime(value, type_) -> datetime.datetime:
 
 
 @json_decoder(list)
+@json_decoder(Sequence)
 def decode_list(value, type_) -> list:
     child_types = getattr(type_, '__args__', [])
     child_type = child_types[0] if child_types else Any
