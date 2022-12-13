@@ -10,7 +10,7 @@ T = TypeVar('T')
 K = TypeVar('K')
 
 
-class RepositoryGenericMeta:
+class RepositoryGenericMeta(type):
     def __init__(cls, name, bases, attr, **kwargs):
         if name not in ('Repository', 'CRUDRepository'):
             args = get_generic_args(cls.__orig_bases__[0])
