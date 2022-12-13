@@ -5,7 +5,6 @@ import enum
 import inspect
 import re
 import uuid
-from collections import Sequence
 from typing import Any
 from typing import Callable
 from typing import Dict
@@ -22,6 +21,11 @@ from dateutil import parser
 from winter.core.utils.typing import get_generic_args
 from winter.core.utils.typing import get_origin_type
 from winter.core.utils.typing import is_optional
+
+try:
+    from collections.abc import Sequence
+except ImportError:
+    from collections import Sequence  # Old import for versions older than Python3.10
 
 _decoders = {}
 
