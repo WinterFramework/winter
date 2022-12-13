@@ -18,6 +18,7 @@ from typing import Type
 from drf_yasg import openapi
 from strenum import StrEnum
 
+from winter.core.docstring import Docstring
 from winter.core.utils import has_nested_type
 from winter.core.utils.typing import get_origin_type, get_generic_args
 from winter.core.utils.typing import is_any
@@ -62,6 +63,7 @@ class TypeInfo:
     properties_defaults: Dict[str, object] = dataclasses.field(default_factory=dict)
     enum: Optional[list] = None
     title: str = ''
+    description: str = ''
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
@@ -219,20 +221,34 @@ def inspect_optional(hint_class) -> TypeInfo:
 
 @register_type_inspector(object, checker=dataclasses.is_dataclass)
 def inspect_dataclass(hint_class) -> TypeInfo:
+    cls = hint_class if isinstance(hint_class, type) else type(hint_class)
+    title = cls.__name__
+    docstring = Docstring(cls.__doc__)
+    description = docstring.get_description()
+
     fields = dataclasses.fields(hint_class)
 
     properties = {
         field.name: inspect_type(field.type)
         for field in fields
     }
+    for field_name, type_info in properties.items():
+        field_description = docstring.get_argument_description(field_name)
+        type_info.description = field_description
+
     defaults = {
         field.name: field.default
         for field in fields
         if field.default != dataclasses.MISSING
     }
-    cls = hint_class if isinstance(hint_class, type) else type(hint_class)
-    title = cls.__name__
-    return TypeInfo(type_=openapi.TYPE_OBJECT, properties=properties, properties_defaults=defaults, title=title)
+
+    return TypeInfo(
+        type_=openapi.TYPE_OBJECT,
+        properties=properties,
+        properties_defaults=defaults,
+        title=title,
+        description=description,
+    )
 
 
 @register_type_inspector(object, checker=has_nested_type)

@@ -50,6 +50,11 @@ class TestAPI:
     def post(self, path_param: int, query_param: int, request_body: UserDTO) -> UserDTO:  # pragma: no cover
         """
         This is post method
+
+        This is a long multi-line text that provides a comprehensive description
+        of all the details of the method.
+        It is so long that does not fit in one line.
+        So it spans multiple lines
         :param path_param:
         :param query_param:
         :param request_body:
@@ -149,7 +154,13 @@ def test_get_operation():
         }),
         consumes=['application/json; charset=utf-8'],
         produces=['application/json; charset=utf-8'],
-        description='This is post method',
+        description=
+        'This is post method\n'
+        '\n'
+        'This is a long multi-line text that provides a comprehensive description\n'
+        'of all the details of the method.\n'
+        'It is so long that does not fit in one line.\n'
+        'So it spans multiple lines',
         tags=['test_app'],
         parameters=parameters,
     )
