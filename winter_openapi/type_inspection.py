@@ -79,6 +79,9 @@ class TypeInfo:
         if self.title:
             data['title'] = self.title
 
+        if self.description:
+            data['description'] = self.description
+
         if self.format_ is not None:
             data['format'] = self.format_
 
@@ -234,7 +237,8 @@ def inspect_dataclass(hint_class) -> TypeInfo:
     }
     for field_name, type_info in properties.items():
         field_description = docstring.get_argument_description(field_name)
-        type_info.description = field_description
+        if field_description:
+            type_info.description = field_description
 
     defaults = {
         field.name: field.default
