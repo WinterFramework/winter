@@ -113,21 +113,23 @@ class CustomPage(Page, Generic[CustomPageItem]):
             'nested': TypeInfo(openapi.TYPE_OBJECT,
                                title='NestedDataclass',
                                description='NestedDataclass(nested_number: int)',
-                               properties={'nested_number': TypeInfo(openapi.TYPE_INTEGER),}),
-    })),
+                               properties={'nested_number': TypeInfo(openapi.TYPE_INTEGER), }),
+        })),
     (Page[NestedDataclass], TypeInfo(openapi.TYPE_OBJECT, title='PageOfNestedDataclass', properties={
-        'meta': TypeInfo(openapi.TYPE_OBJECT, title='PageMeta', properties={
-            'total_count': TypeInfo(openapi.TYPE_INTEGER),
-            'limit': TypeInfo(openapi.TYPE_INTEGER, nullable=True),
-            'offset': TypeInfo(openapi.TYPE_INTEGER, nullable=True),
-            'previous': TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_URI, nullable=True),
-            'next': TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_URI, nullable=True),
-        }),
+        'meta': TypeInfo(openapi.TYPE_OBJECT,
+                         title='PageMeta',
+                         properties={
+                             'total_count': TypeInfo(openapi.TYPE_INTEGER),
+                             'limit': TypeInfo(openapi.TYPE_INTEGER, nullable=True),
+                             'offset': TypeInfo(openapi.TYPE_INTEGER, nullable=True),
+                             'previous': TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_URI, nullable=True),
+                             'next': TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_URI, nullable=True),
+                         }),
         'objects': TypeInfo(openapi.TYPE_ARRAY,
                             child=TypeInfo(openapi.TYPE_OBJECT,
                                            title='NestedDataclass',
                                            description='NestedDataclass(nested_number: int)',
-                                           properties={'nested_number': TypeInfo(openapi.TYPE_INTEGER),})),
+                                           properties={'nested_number': TypeInfo(openapi.TYPE_INTEGER), })),
     })),
     (CustomPage[int], TypeInfo(openapi.TYPE_OBJECT, title='PageOfInteger', properties={
         'meta': TypeInfo(openapi.TYPE_OBJECT, title='PageMeta', properties={
@@ -144,7 +146,7 @@ class CustomPage(Page, Generic[CustomPageItem]):
      TypeInfo(openapi.TYPE_OBJECT,
               title='NestedDataclass',
               description='NestedDataclass(nested_number: int)',
-              properties={'nested_number': TypeInfo(openapi.TYPE_INTEGER),})),
+              properties={'nested_number': TypeInfo(openapi.TYPE_INTEGER), })),
 ])
 def test_inspect_type(type_hint, expected_type_info):
     # Act
@@ -165,45 +167,45 @@ def test_get_argument_type_info_with_non_registered_type():
 
 
 @pytest.mark.parametrize(('first', 'second', 'is_same'), (
-    (TypeInfo(openapi.TYPE_INTEGER), TypeInfo(openapi.TYPE_INTEGER), True),
-    (TypeInfo(openapi.TYPE_INTEGER), TypeInfo(openapi.TYPE_NUMBER), False),
-    (TypeInfo(openapi.TYPE_INTEGER), None, False),
+        (TypeInfo(openapi.TYPE_INTEGER), TypeInfo(openapi.TYPE_INTEGER), True),
+        (TypeInfo(openapi.TYPE_INTEGER), TypeInfo(openapi.TYPE_NUMBER), False),
+        (TypeInfo(openapi.TYPE_INTEGER), None, False),
 ))
 def test_compare_type_info(first, second, is_same):
     assert (first == second) is is_same
 
 
 @pytest.mark.parametrize(('enum_cls', 'expected_value'), (
-    (IntegerValueEnum, {
-        'enum': [1, 2],
-        'type': 'integer',
-    }),
-    (StringValueEnum, {
-        'enum': ['red', 'green'],
-        'type': 'string',
-    }),
+        (IntegerValueEnum, {
+            'enum': [1, 2],
+            'type': 'integer',
+        }),
+        (StringValueEnum, {
+            'enum': ['red', 'green'],
+            'type': 'string',
+        }),
 ))
 def test_inspect_enum_class(enum_cls, expected_value):
     assert inspect_enum_class(enum_cls) == expected_value
 
 
 @pytest.mark.parametrize(('type_info', 'expected_data'), (
-    (
-        TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_URI, nullable=True),
-        {'format': 'uri', 'type': 'string', 'x-nullable': True},
-    ),
-    (
-        TypeInfo(openapi.TYPE_INTEGER, enum=[1, 2]),
-        {'enum': [1, 2], 'type': 'integer'},
-    ),
-    (
-        TypeInfo(openapi.TYPE_OBJECT, properties={'nested_number': TypeInfo(openapi.TYPE_INTEGER)}),
-        {'properties': {'nested_number': {'type': 'integer'}}, 'type': 'object', 'required': ['nested_number']},
-    ),
-    (
-        TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_INTEGER)),
-        {'items': {'type': 'integer'}, 'type': 'array'},
-    ),
+        (
+                TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_URI, nullable=True),
+                {'format': 'uri', 'type': 'string', 'x-nullable': True},
+        ),
+        (
+                TypeInfo(openapi.TYPE_INTEGER, enum=[1, 2]),
+                {'enum': [1, 2], 'type': 'integer'},
+        ),
+        (
+                TypeInfo(openapi.TYPE_OBJECT, properties={'nested_number': TypeInfo(openapi.TYPE_INTEGER)}),
+                {'properties': {'nested_number': {'type': 'integer'}}, 'type': 'object', 'required': ['nested_number']},
+        ),
+        (
+                TypeInfo(openapi.TYPE_ARRAY, child=TypeInfo(openapi.TYPE_INTEGER)),
+                {'items': {'type': 'integer'}, 'type': 'array'},
+        ),
 ))
 def test_as_dict_in_type_info(type_info, expected_data):
     assert type_info.as_dict() == expected_data
