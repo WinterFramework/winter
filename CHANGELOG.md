@@ -6,7 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [14.1.0] - 2022-12-14
 ### Added
-- Turn docstrings for operation methods, dataclasses and attributes into the corresponding OpenAPI schema descriptions
+- Long (multi-line) description from operation method docstring is included in the OpenAPI Operation description
+- Docstrings for dataclasses and their attributes are converted to corresponding OpenAPI descriptions
 
 ## [14.0.0] - 2022-12-13
 ### Removed
