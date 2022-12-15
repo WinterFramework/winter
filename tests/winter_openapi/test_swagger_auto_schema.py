@@ -98,7 +98,7 @@ user_dto_request_schema = openapi.Schema(
                 'It spans multiple lines.',
     type=openapi.TYPE_OBJECT,
     properties={
-        'name': openapi.Schema(type=openapi.TYPE_STRING, description = 'user name'),
+        'name': openapi.Schema(type=openapi.TYPE_STRING, description='user name'),
         'nested_dto': {
             'type': openapi.TYPE_OBJECT,
             'title': 'NestedDTO',
@@ -111,8 +111,8 @@ user_dto_request_schema = openapi.Schema(
             },
             'required': ['a', 'b'],
         },
-        'surname': openapi.Schema(type = openapi.TYPE_STRING, description = 'user lastname'),
-        'age': openapi.Schema(type = openapi.TYPE_INTEGER, description = 'user age', **{'x-nullable': True}),
+        'surname': openapi.Schema(type=openapi.TYPE_STRING, description='user lastname'),
+        'age': openapi.Schema(type=openapi.TYPE_INTEGER, description='user age', **{'x-nullable': True}),
     },
     required=['name', 'nested_dto'],
 )
@@ -126,7 +126,7 @@ user_dto_response_schema = openapi.Schema(
                 'It spans multiple lines.',
     type=openapi.TYPE_OBJECT,
     properties={
-        'name': openapi.Schema(type = openapi.TYPE_STRING, description = 'user name'),
+        'name': openapi.Schema(type=openapi.TYPE_STRING, description='user name'),
         'nested_dto': {
             'type': openapi.TYPE_OBJECT,
             'title': 'NestedDTO',
@@ -138,8 +138,8 @@ user_dto_response_schema = openapi.Schema(
             },
             'required': ['a', 'b'],
         },
-        'surname': openapi.Schema(type = openapi.TYPE_STRING, description = 'user lastname'),
-        'age': openapi.Schema(type = openapi.TYPE_INTEGER, description = 'user age', **{'x-nullable': True}),
+        'surname': openapi.Schema(type=openapi.TYPE_STRING, description='user lastname'),
+        'age': openapi.Schema(type=openapi.TYPE_INTEGER, description='user age', **{'x-nullable': True}),
     },
     required=['name', 'nested_dto', 'surname', 'age'],
 )
@@ -183,13 +183,12 @@ def test_get_operation():
         }),
         consumes=['application/json; charset=utf-8'],
         produces=['application/json; charset=utf-8'],
-        description=
-        'This is post method\n'
-        '\n'
-        'This is a long multi-line text that provides a comprehensive description\n'
-        'of all the details of the method.\n'
-        'It is so long that does not fit in one line.\n'
-        'So it spans multiple lines.',
+        description='This is post method\n'
+                    '\n'
+                    'This is a long multi-line text that provides a comprehensive description\n'
+                    'of all the details of the method.\n'
+                    'It is so long that does not fit in one line.\n'
+                    'So it spans multiple lines.',
         tags=['test_app'],
         parameters=parameters,
     )
