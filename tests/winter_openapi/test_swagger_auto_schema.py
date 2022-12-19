@@ -25,6 +25,24 @@ class NestedDTO:
 
 @dataclasses.dataclass
 class UserDTO:
+    """
+    This is a short one line description.
+
+    This is a long multi-line description.
+    It spans multiple lines.
+
+    Attributes
+    ----------
+    name : str
+        user name
+    nested_dto: NestedDTO
+        a nested dto object.
+        It contains some extra data.
+    surname: str, optional
+        user lastname
+    age: int, optional
+        user age
+    """
     name: str
     nested_dto: NestedDTO
     surname: str = ''
@@ -50,8 +68,13 @@ class TestAPI:
     def post(self, path_param: int, query_param: int, request_body: UserDTO) -> UserDTO:  # pragma: no cover
         """
         This is post method
+
+        This is a long multi-line text that provides a comprehensive description
+        of all the details of the method.
+        It is so long that does not fit in one line.
+        So it spans multiple lines.
         :param path_param:
-        :param query_param:
+        :param query_param: some parameter description
         :param request_body:
         :return:
         """
@@ -68,21 +91,28 @@ class TestAPI:
 
 
 user_dto_request_schema = openapi.Schema(
-    'UserDTO',
+    title='UserDTO',
+    description='This is a short one line description.\n'
+                '\n'
+                'This is a long multi-line description.\n'
+                'It spans multiple lines.',
     type=openapi.TYPE_OBJECT,
     properties={
-        'name': openapi.Schema(type=openapi.TYPE_STRING),
+        'name': openapi.Schema(type=openapi.TYPE_STRING, description='user name'),
         'nested_dto': {
             'type': openapi.TYPE_OBJECT,
             'title': 'NestedDTO',
+            'description': 'a nested dto object.\n'
+                           'It contains some extra data.',
+
             'properties': {
                 'a': {'type': openapi.TYPE_INTEGER},
                 'b': {'type': openapi.TYPE_STRING},
             },
             'required': ['a', 'b'],
         },
-        'surname': openapi.Schema(type=openapi.TYPE_STRING),
-        'age': openapi.Schema(type=openapi.TYPE_INTEGER, **{'x-nullable': True}),
+        'surname': openapi.Schema(type=openapi.TYPE_STRING, description='user lastname'),
+        'age': openapi.Schema(type=openapi.TYPE_INTEGER, description='user age', **{'x-nullable': True}),
     },
     required=['name', 'nested_dto'],
 )
@@ -90,20 +120,26 @@ user_dto_request_schema = openapi.Schema(
 
 user_dto_response_schema = openapi.Schema(
     'UserDTO',
+    description='This is a short one line description.\n'
+                '\n'
+                'This is a long multi-line description.\n'
+                'It spans multiple lines.',
     type=openapi.TYPE_OBJECT,
     properties={
-        'name': openapi.Schema(type=openapi.TYPE_STRING),
+        'name': openapi.Schema(type=openapi.TYPE_STRING, description='user name'),
         'nested_dto': {
             'type': openapi.TYPE_OBJECT,
             'title': 'NestedDTO',
+            'description': 'a nested dto object.\n'
+                           'It contains some extra data.',
             'properties': {
                 'a': {'type': openapi.TYPE_INTEGER},
                 'b': {'type': openapi.TYPE_STRING},
             },
             'required': ['a', 'b'],
         },
-        'surname': openapi.Schema(type=openapi.TYPE_STRING),
-        'age': openapi.Schema(type=openapi.TYPE_INTEGER, **{'x-nullable': True}),
+        'surname': openapi.Schema(type=openapi.TYPE_STRING, description='user lastname'),
+        'age': openapi.Schema(type=openapi.TYPE_INTEGER, description='user age', **{'x-nullable': True}),
     },
     required=['name', 'nested_dto', 'surname', 'age'],
 )
@@ -115,7 +151,6 @@ def test_get_operation():
     components = openapi.ReferenceResolver('definitions', force_init=True)
     auto_schema = SwaggerAutoSchema(view, 'path', route.http_method, components, 'request', {})
 
-    operation = auto_schema.get_operation(['test_app', 'post'])
     parameters = [
         openapi.Parameter(
             name='data',
@@ -133,13 +168,12 @@ def test_get_operation():
         openapi.Parameter(
             name='query_param',
             in_=openapi.IN_QUERY,
-            description='',
+            description='some parameter description',
             required=True,
             type=openapi.TYPE_INTEGER,
         ),
     ]
-
-    assert operation == openapi.Operation(
+    expected_operation = openapi.Operation(
         operation_id='TestAPI.post',
         responses=openapi.Responses({
             '200': openapi.Response(
@@ -149,10 +183,19 @@ def test_get_operation():
         }),
         consumes=['application/json; charset=utf-8'],
         produces=['application/json; charset=utf-8'],
-        description='This is post method',
+        description='This is post method\n'
+                    '\n'
+                    'This is a long multi-line text that provides a comprehensive description\n'
+                    'of all the details of the method.\n'
+                    'It is so long that does not fit in one line.\n'
+                    'So it spans multiple lines.',
         tags=['test_app'],
         parameters=parameters,
     )
+
+    operation = auto_schema.get_operation(['test_app', 'post'])
+
+    assert operation == expected_operation
 
 
 def test_get_operation_with_serializer():
@@ -240,6 +283,7 @@ def test_get_operation_without_route():
                 '200': openapi.Response('', openapi.Schema(type=openapi.TYPE_STRING)),
                 '400': openapi.Response('', openapi.Schema(
                     'CustomExceptionDTO',
+                    description='CustomExceptionDTO(message: str)',
                     type=openapi.TYPE_OBJECT,
                     properties={
                         'message': openapi.Schema(type=openapi.TYPE_STRING),
@@ -269,6 +313,8 @@ def test_get_operation_without_route():
                 '200': openapi.Response('', openapi.Schema(type=openapi.TYPE_STRING)),
                 '403': openapi.Response('', openapi.Schema(
                     title='ProblemExistsDataclassException',
+                    description='ProblemExistsDataclassException(status: int, title: str, detail: str, type: str, '
+                                'custom_field: str)',
                     type=openapi.TYPE_OBJECT,
                     properties={
                         'status': openapi.Schema(type=openapi.TYPE_INTEGER),

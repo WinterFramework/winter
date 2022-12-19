@@ -33,7 +33,7 @@ class SwaggerAutoSchema(SwaggerAutoSchemaBase):
 
         return openapi.Operation(
             operation_id=route.method.full_name,
-            description=route.method.docstring.short_description,
+            description=route.method.docstring.get_description(),
             responses=responses,
             parameters=parameters,
             consumes=consumes,
