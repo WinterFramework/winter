@@ -5,10 +5,10 @@ from drf_yasg import openapi
 
 from winter.core import ComponentMethodArgument
 from winter.web.routing import Route
-from .route_parameters_inspector import RouteParametersInspector
-from .type_inspection import InspectorNotFound
-from .type_inspection import TypeInfo
-from .type_inspection import inspect_type
+from winter_openapi.inspectors.route_parameters_inspector import RouteParametersInspector
+from winter_openapi.type_inspection import InspectorNotFound
+from winter_openapi.type_inspection import TypeInfo
+from winter_openapi.type_inspection import inspect_type
 
 
 class QueryParametersInspector(RouteParametersInspector):

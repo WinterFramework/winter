@@ -11,7 +11,7 @@ from winter.web.exceptions import MethodExceptionsManager
 from winter.web.exceptions import exception_handlers_registry
 from winter.web.routing import Route
 from winter_django import get_output_serializer
-from .route_parameters_inspector import get_route_parameters_inspectors
+from .inspectors import get_route_parameters_inspectors
 from .type_inspection import InspectorNotFound
 from .type_inspection import inspect_type
 

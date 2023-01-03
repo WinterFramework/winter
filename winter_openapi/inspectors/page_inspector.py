@@ -4,8 +4,8 @@ from typing import List
 from drf_yasg import openapi
 
 from winter.data.pagination import Page
-from .type_inspection import TypeInfo
-from .type_inspection import inspect_type
+from winter_openapi.type_inspection import TypeInfo
+from winter_openapi.type_inspection import inspect_type
 
 
 def inspect_page(hint_class) -> TypeInfo:

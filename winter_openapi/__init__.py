@@ -6,13 +6,13 @@ from winter.web.exceptions import ThrottleException
 from winter.web.pagination.limits import MaximumLimitValueExceeded
 from .annotations import global_exception
 from .annotations import register_global_exception
-from .enum_inspector import inspect_enum_class
-from .route_parameters_inspector import RouteParametersInspector
-from .route_parameters_inspector import get_route_parameters_inspectors
-from .route_parameters_inspector import register_route_parameters_inspector
-from .page_position_argument_inspector import PagePositionArgumentsInspector
-from .path_parameters_inspector import PathParametersInspector
-from .query_parameters_inspector import QueryParametersInspector
+from .inspectors import inspect_enum_class
+from .inspectors import RouteParametersInspector
+from .inspectors import get_route_parameters_inspectors
+from .inspectors import register_route_parameters_inspector
+from .inspectors import PagePositionArgumentsInspector
+from .inspectors import PathParametersInspector
+from .inspectors import QueryParametersInspector
 from .swagger_auto_schema import SwaggerAutoSchema
 from .swagger_ui import get_swagger_ui_html
 from .type_inspection import InspectorNotFound
@@ -24,7 +24,7 @@ from .validators import validate_missing_raises_annotations
 
 def setup(allow_missing_raises_annotation: bool = False):
     from drf_yasg.inspectors.field import hinting_type_info
-    from .page_inspector import inspect_page
+    from .inspectors.page_inspector import inspect_page
 
     register_global_exception(MaximumLimitValueExceeded)
     register_global_exception(ThrottleException)
