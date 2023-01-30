@@ -30,10 +30,6 @@ class MessageListener:
     def on_message_callback(self, channel, method_frame, properties, body):
         message_id = UUID(properties.message_id)
         event_type_name = properties.type
-        if self._inbox_message_dao.exists_handled(message_id, self.consumer_id):
-            channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-            return
-
         inbox_message = InboxMessage(
             id=message_id,
             consumer_id=self.consumer_id,
@@ -41,7 +37,10 @@ class MessageListener:
             # TODO date should be utc
             received_at=datetime.now(),
         )
-        self._inbox_message_dao.save(inbox_message)
+        is_new = self._inbox_message_dao.save_if_not_exists(inbox_message)
+        if not is_new:
+            channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+            return
 
         event_type = self._handler_registry.get_event_type(event_type_name)
         event_dict = json.loads(body)
