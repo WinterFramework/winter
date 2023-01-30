@@ -50,4 +50,4 @@ class Configuration(Module):
 
 
 def make_engine():
-    return create_engine('sqlite://')
+    return create_engine('postgresql+psycopg2://supplyshift:supplyshift@localhost/winter')
