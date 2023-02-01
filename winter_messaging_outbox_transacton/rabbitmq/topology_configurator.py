@@ -9,7 +9,7 @@ from pika.exchange_type import ExchangeType
 
 from winter.messaging import EventHandlerRegistry
 from winter.messaging import get_event_topic
-from winter_messaging_outbox_transacton.utils import get_consumer_name
+from winter_messaging_outbox_transacton.utils import get_consumer_queue
 from winter_messaging_outbox_transacton.utils import get_exchange_name
 from winter_messaging_outbox_transacton.utils import get_routing_key
 
@@ -72,7 +72,7 @@ class TopologyConfigurator:
 
         for topic, routing_key in listeners:
             exchange = config.get_exchange_key(topic)
-            consumer = get_consumer_name(consumer_id)
+            consumer = get_consumer_queue(consumer_id)
             result = self._channel.queue_declare(consumer, durable=True)
             self._channel.queue_bind(
                 exchange=exchange,
