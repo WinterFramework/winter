@@ -1,6 +1,7 @@
 from . import pagination
 from .argument_resolver import arguments_resolver
 from .auth import no_authentication
+from .autodiscovery import find_package_routes
 from .configurer import Configurer
 from .exceptions import ExceptionHandler
 from .exceptions import exception_handlers_registry

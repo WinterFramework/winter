@@ -1,4 +1,4 @@
-from winter.web.autodiscovery import find_package_routes
+from winter.web import find_package_routes
 
 
 def test_find_package_routes():
