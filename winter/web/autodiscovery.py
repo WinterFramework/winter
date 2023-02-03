@@ -7,7 +7,7 @@ from winter.web.routing import Route
 from winter.web.routing import get_route
 
 
-def get_routes_by_package(package_name: str) -> List[Route]:
+def find_package_routes(package_name: str) -> List[Route]:
     import_recursively(package_name)
     routes = []
 
