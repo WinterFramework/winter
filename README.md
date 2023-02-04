@@ -1,6 +1,6 @@
 # Winter
 
-[![Build Status](https://github.com/WinterFramework/winter/workflows/Testing/badge.svg)](https://github.com/WinterFramework/winter/actions)
+[![Build Status](https://github.com/WinterFramework/winter/workflows/Testing/badge.svg?branch=master)](https://github.com/WinterFramework/winter/actions)
 [![codecov](https://codecov.io/gh/WinterFramework/winter/branch/master/graph/badge.svg)](https://codecov.io/gh/WinterFramework/winter)
 [![Maintainability](https://api.codeclimate.com/v1/badges/876abe42ca943d9c6014/maintainability)](https://codeclimate.com/github/WinterFramework/winter/maintainability)
 [![PyPI version](https://badge.fury.io/py/winter.svg)](https://badge.fury.io/py/winter)
