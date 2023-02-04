@@ -3,8 +3,8 @@ from typing import List
 from winter.core import Component
 from winter.core.module_discovery import get_all_classes
 from winter.core.module_discovery import import_recursively
-from winter.web.routing import Route
-from winter.web.routing import get_route
+from .routing import Route
+from .routing import get_route
 
 
 def find_package_routes(package_name: str) -> List[Route]:

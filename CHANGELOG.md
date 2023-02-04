@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [15.0.1] - 2023-02-03
 ### Added
-- find_package_routes: function that returns a list of routes by the package name 
+- winter.web.find_package_routes: function that returns a list of routes by the package name 
 
 ## [15.0.0] - 2023-02-01
 ### Changed
