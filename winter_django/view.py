@@ -55,6 +55,19 @@ def create_django_urls(api_class_with_routes: Type) -> List:
     return django_urls
 
 
+def create_django_urls_from_routes(routes: List[Route]) -> List:
+    django_urls = []
+
+    for route in routes:
+        api_class_with_routes = route.method.component.component_cls
+        django_view = create_drf_view(api_class_with_routes, routes).as_view()
+        winter_url_path = f'^{route.url_path}$'
+        django_url_path = rewrite_uritemplate_with_regexps(winter_url_path, [route.method])
+        django_urls.append(url(django_url_path, django_view, name=route.method.full_name))
+
+    return django_urls
+
+
 def create_drf_view(api_class: Type, routes: List[Route]) -> 'rest_framework.views.APIView':
     import rest_framework.views
 
