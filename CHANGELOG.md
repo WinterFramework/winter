@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - winter_django.create_django_urls_from_routes: function that returns a list of django urls by the list of Routes 
 
+## [15.0.1] - 2023-02-03
+### Added
+- winter.web.find_package_routes: function that returns a list of routes by the package name 
+
 ## [15.0.0] - 2023-02-01
 ### Changed
 - winter.messaging: EventBus interface segregated and renamed to EventPublisher
