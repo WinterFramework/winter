@@ -14,7 +14,6 @@ from winter.web.request_header_annotation import RequestHeaderAnnotation
 class RequestHeaderArgumentResolver(ArgumentResolver):
     def __init__(self):
         super().__init__()
-        self._cache = {}
 
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
         annotations = argument.method.annotations.get(RequestHeaderAnnotation)
@@ -27,7 +26,7 @@ class RequestHeaderArgumentResolver(ArgumentResolver):
         response_headers: MutableMapping[str, str],
     ):
         request_headers = request.headers
-        annotation = next(  # pragma: no cover
+        annotation = next(
             (
                 annotation
                 for annotation in argument.method.annotations.get(RequestHeaderAnnotation)
