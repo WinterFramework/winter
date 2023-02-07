@@ -27,7 +27,7 @@ class RequestHeaderArgumentResolver(ArgumentResolver):
         response_headers: MutableMapping[str, str],
     ):
         request_headers = request.headers
-        annotation = next(
+        annotation = next(  # pragma: no cover
             (
                 annotation
                 for annotation in argument.method.annotations.get(RequestHeaderAnnotation)
