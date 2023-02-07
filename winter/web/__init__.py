@@ -12,6 +12,7 @@ from .media_type import MediaType
 from .output_processor import register_output_processor_resolver
 from .request_body_annotation import request_body
 from .request_body_resolver import RequestBodyArgumentResolver
+from .request_header_annotation import request_header
 from .response_entity import ResponseEntity
 from .response_header_annotation import ResponseHeader
 from .response_header_annotation import response_header
@@ -35,6 +36,7 @@ def setup():
     from .pagination.page_position_argument_resolver import PagePositionArgumentResolver
     from .path_parameters_argument_resolver import PathParametersArgumentResolver
     from .query_parameters.query_parameters_argument_resolver import QueryParameterArgumentResolver
+    from .request_header_resolver import RequestHeaderArgumentResolver
     from .response_header_serializers import DateTimeResponseHeaderSerializer
     from .response_header_serializers import LastModifiedResponseHeaderSerializer
 
@@ -46,6 +48,7 @@ def setup():
     arguments_resolver.add_argument_resolver(RequestBodyArgumentResolver())
     arguments_resolver.add_argument_resolver(ResponseHeaderArgumentResolver())
     arguments_resolver.add_argument_resolver(PagePositionArgumentResolver())
+    arguments_resolver.add_argument_resolver(RequestHeaderArgumentResolver())
 
     exception_mapper = ProblemExceptionMapper()
     exception_handler_generator = ProblemExceptionHandlerGenerator(exception_mapper)
