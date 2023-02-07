@@ -13,9 +13,6 @@ from winter.web.request_header_annotation import RequestHeaderAnnotation
 
 
 class RequestHeaderArgumentResolver(ArgumentResolver):
-    def __init__(self):
-        super().__init__()
-
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
         return self._get_annotation(argument) is not None
 
