@@ -2,6 +2,7 @@ from . import web
 from .web import ResponseEntity
 from .web import arguments_resolver
 from .web import request_body
+from .web import request_header
 from .web import response_header
 from .web import response_status
 from .web.argument_resolver import ArgumentResolver
