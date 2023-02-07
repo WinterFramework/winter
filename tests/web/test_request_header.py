@@ -30,6 +30,23 @@ def test_request_header():
     assert response.json() == 314
 
 
+def test_request_several_headers():
+    client = APIClient()
+    user = AuthorizedUser()
+    client.force_authenticate(user)
+
+    # Act
+    response = client.post(
+        '/with-request-several-headers/',
+        content_type='application/json',
+        HTTP_X_HEADER=314,
+        HTTP_Y_HEADER='314',
+    )
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == [314, '314']
+
+
 def test_request_header_invalid_type():
     client = APIClient()
     user = AuthorizedUser()
