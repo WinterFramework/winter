@@ -1,4 +1,5 @@
 from typing import MutableMapping
+from typing import Optional
 
 from rest_framework.request import Request
 
@@ -16,8 +17,7 @@ class RequestHeaderArgumentResolver(ArgumentResolver):
         super().__init__()
 
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
-        annotations = argument.method.annotations.get(RequestHeaderAnnotation)
-        return any(annotation.map_to == argument.name for annotation in annotations)
+        return self._get_annotation(argument) is not None
 
     def resolve_argument(
         self,
@@ -26,13 +26,7 @@ class RequestHeaderArgumentResolver(ArgumentResolver):
         response_headers: MutableMapping[str, str],
     ):
         request_headers = request.headers
-        annotation = next(
-            (
-                annotation
-                for annotation in argument.method.annotations.get(RequestHeaderAnnotation)
-                if annotation.map_to == argument.name
-            ),
-        )
+        annotation = self._get_annotation(argument)
         header_name = annotation.name
 
         if header_name not in request_headers:
@@ -45,3 +39,13 @@ class RequestHeaderArgumentResolver(ArgumentResolver):
             return json_decode(request_headers.get(header_name), argument.type_)
         except JSONDecodeException as e:
             raise RequestDataDecodeException(e.errors)
+
+    def _get_annotation(self, argument: ComponentMethodArgument) -> Optional[RequestHeaderAnnotation]:
+        return next(
+            (
+                annotation
+                for annotation in argument.method.annotations.get(RequestHeaderAnnotation)
+                if annotation.map_to == argument.name
+            ),
+            None,
+        )
