@@ -1,15 +1,14 @@
-from typing import Dict
 from typing import List
 
 from dataclasses import dataclass
-from rest_framework import serializers
 from rest_framework import status
 
 import winter
 
 
-class GreetingSerializer(serializers.Serializer):
-    name = serializers.CharField()
+@dataclass
+class GreetingRequest:
+    name: str
 
 
 class TestRepository:
@@ -48,7 +47,6 @@ class SampleWinterAPI:
         return Greeting('Welcome', name)
 
     @winter.route_post('example2')
-    @winter.input_serializer(GreetingSerializer, 'greeting')
-    @winter.output_serializer(GreetingSerializer)
-    def third_hello(self, greeting: Dict) -> Dict:
-        return greeting
+    @winter.request_body('greeting')
+    def third_hello(self, greeting: GreetingRequest) -> Greeting:
+        return Greeting(message='got it', name=greeting.name)

@@ -42,7 +42,7 @@ class PagePositionArgumentsInspector(RouteParametersInspector):
         if order_by_annotation:
             allowed_order_by_fields = ','.join(map(str, order_by_annotation.allowed_fields))
             default_sort = (
-                str(order_by_annotation.default_sort)
+                [str(order_by_annotation.default_sort)]
                 if order_by_annotation.default_sort is not None else
                 None
             )
