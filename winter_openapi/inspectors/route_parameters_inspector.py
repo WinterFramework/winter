@@ -1,7 +1,7 @@
 import abc
 from typing import List
 
-from drf_yasg import openapi
+from openapi_schema_pydantic import Parameter
 
 from winter.web.routing import Route
 
@@ -9,7 +9,7 @@ from winter.web.routing import Route
 class RouteParametersInspector(abc.ABC):
 
     @abc.abstractmethod
-    def inspect_parameters(self, route: 'Route') -> List[openapi.Parameter]:  # pragma: no cover
+    def inspect_parameters(self, route: 'Route') -> List[Parameter]:  # pragma: no cover
         return []
 
 

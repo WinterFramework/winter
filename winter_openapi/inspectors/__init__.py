@@ -1,4 +1,4 @@
-from .enum_inspector import inspect_enum_class
+from .page_inspector import inspect_page
 from .page_position_argument_inspector import PagePositionArgumentsInspector
 from .path_parameters_inspector import PathParametersInspector
 from .query_parameters_inspector import QueryParametersInspector

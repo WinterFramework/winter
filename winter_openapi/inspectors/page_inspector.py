@@ -1,13 +1,16 @@
 import dataclasses
 from typing import List
 
-from drf_yasg import openapi
-
 from winter.data.pagination import Page
-from winter_openapi.type_inspection import TypeInfo
-from winter_openapi.type_inspection import inspect_type
+from winter_openapi.inspection.data_formats import DataFormat
+from winter_openapi.inspection.data_types import DataTypes
+from winter_openapi.inspection.type_info import TypeInfo
+from winter_openapi.inspectors.standard_types_inspectors import inspect_type
+from winter_openapi.inspectors.standard_types_inspectors import register_type_inspector
 
 
+# noinspection PyUnusedLocal
+@register_type_inspector(Page)
 def inspect_page(hint_class) -> TypeInfo:
     args = getattr(hint_class, '__args__', None)
     child_class = args[0] if args else str
@@ -15,18 +18,18 @@ def inspect_page(hint_class) -> TypeInfo:
     child_type_info = inspect_type(child_class)
 
     return TypeInfo(
-        openapi.TYPE_OBJECT,
+        type_=DataTypes.OBJECT,
         title=f'PageOf{child_type_info.title or child_type_info.type_.capitalize()}',
         properties={
             'meta': TypeInfo(
-                openapi.TYPE_OBJECT,
+                type_=DataTypes.OBJECT,
                 title='PageMeta',
                 properties={
-                    'total_count': TypeInfo(openapi.TYPE_INTEGER),
-                    'limit': TypeInfo(openapi.TYPE_INTEGER, nullable=True),
-                    'offset': TypeInfo(openapi.TYPE_INTEGER, nullable=True),
-                    'previous': TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_URI, nullable=True),
-                    'next': TypeInfo(openapi.TYPE_STRING, openapi.FORMAT_URI, nullable=True),
+                    'total_count': TypeInfo(type_=DataTypes.INTEGER),
+                    'limit': TypeInfo(type_=DataTypes.INTEGER, nullable=True),
+                    'offset': TypeInfo(type_=DataTypes.INTEGER, nullable=True),
+                    'previous': TypeInfo(type_=DataTypes.STRING, format_=DataFormat.URI, nullable=True),
+                    'next': TypeInfo(type_=DataTypes.STRING, format_=DataFormat.URI, nullable=True),
                     **{extra_field.name: inspect_type(extra_field.type) for extra_field in extra_fields},
                 },
             ),

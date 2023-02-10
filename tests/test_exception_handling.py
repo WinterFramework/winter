@@ -64,7 +64,7 @@ def test_exception_handler_with_unknown_argument():
         (
             'problem_exists_exception',
             HTTPStatus.FORBIDDEN,
-            'application/json+problem',
+            'application/problem+json',
             {
                 'detail': 'Implicit string of detail',
                 'status': 403,
@@ -75,7 +75,7 @@ def test_exception_handler_with_unknown_argument():
         (
             'problem_exists_dataclass_exception',
             HTTPStatus.FORBIDDEN,
-            'application/json+problem',
+            'application/problem+json',
             {
                 'status': 403,
                 'type': 'urn:problem-type:problem-exists-dataclass',
@@ -87,7 +87,7 @@ def test_exception_handler_with_unknown_argument():
         (
             'all_field_const_problem_exists_exception',
             HTTPStatus.BAD_REQUEST,
-            'application/json+problem',
+            'application/problem+json',
             {
                 'status': 400,
                 'type': 'urn:problem-type:all-field-problem-exists',
@@ -98,7 +98,7 @@ def test_exception_handler_with_unknown_argument():
         (
             'inherited_problem_exists_exception',
             HTTPStatus.FORBIDDEN,
-            'application/json+problem',
+            'application/problem+json',
             {
                 'status': 403,
                 'type': 'urn:problem-type:inheritor-of-problem-exists',
@@ -115,7 +115,7 @@ def test_exception_handler_with_unknown_argument():
         (
             'not_found_exception',
             HTTPStatus.NOT_FOUND,
-            'application/json+problem',
+            'application/problem+json',
             {
                 'status': 404,
                 'type': 'urn:problem-type:not-found',
@@ -126,7 +126,7 @@ def test_exception_handler_with_unknown_argument():
         (
             'request_data_decoding_exception_with_str_errors',
             HTTPStatus.BAD_REQUEST,
-            'application/json+problem',
+            'application/problem+json',
             {
                 'status': 400,
                 'type': 'urn:problem-type:request-data-decode',
@@ -138,7 +138,7 @@ def test_exception_handler_with_unknown_argument():
         (
             'request_data_decoding_exception_with_dict_errors',
             HTTPStatus.BAD_REQUEST,
-            'application/json+problem',
+            'application/problem+json',
             {
                 'status': 400,
                 'type': 'urn:problem-type:request-data-decode',
