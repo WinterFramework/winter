@@ -44,6 +44,10 @@ class Id(int):
 
 @dataclass
 class Dataclass:
+    """
+    Parent data class description
+    @param nested: doc string for nested field
+    """
     nested: NestedDataclass
 
 
@@ -159,13 +163,13 @@ class CustomPage(Page, Generic[CustomPageItem]):
     ),
     (Set[int], {'schema': {'items': {'format': 'int32', 'type': 'integer'}, 'type': 'array'}}),
     (
-        Dataclass(NestedDataclass(1)),
+        Dataclass,
         {
             'schema': {
-                'description': 'Dataclass(nested: test_api_request_and_response_spec.NestedDataclass)',
+                'description': 'Parent data class description',
                 'properties': {
                     'nested': {
-                        'description': 'NestedDataclass(nested_number: int)',
+                        'description': 'doc string for nested field',
                         'properties': {'nested_number': {'format': 'int32', 'type': 'integer'}},
                         'required': ['nested_number'],
                         'title': 'NestedDataclass',
@@ -308,10 +312,10 @@ def test_response_with_invalid_return_type():
         Dataclass,
         {
             'schema': {
-                'description': 'Dataclass(nested: test_api_request_and_response_spec.NestedDataclass)',
+                'description': 'Parent data class description',
                 'properties': {
                     'nested': {
-                        'description': 'NestedDataclass(nested_number: int)',
+                        'description': 'doc string for nested field',
                         'properties': {'nested_number': {'format': 'int32', 'type': 'integer'}},
                         'required': ['nested_number'],
                         'title': 'NestedDataclass',
