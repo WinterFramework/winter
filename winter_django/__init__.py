@@ -4,7 +4,6 @@ from .body_with_context import BodyWithContext
 from .http_request_argument_resolver import HttpRequestArgumentResolver
 from .input_serializer import InputSerializer
 from .input_serializer import input_serializer
-from .output_serializer import get_output_serializer
 from .output_serializer import output_serializer
 from .output_template import output_template
 from .page_serializer import PageSerializer
