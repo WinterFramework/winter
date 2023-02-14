@@ -20,6 +20,10 @@ expected_error_response = {
     ('/with-throttling/', False, expected_error_response),
     ('/with-throttling/same/', False, expected_error_response),
     ('/with-throttling/custom-handler/', False, 'custom throttle exception'),
+    ('/with-throttling/', True, expected_error_response),
+    ('/with-throttling/same/', True, expected_error_response),
+    ('/with-throttling/custom-handler/', True, 'custom throttle exception'),
+
 ])
 def test_get_throttling(endpoint_url, need_auth, expected_response):
     now = datetime.datetime.now()
