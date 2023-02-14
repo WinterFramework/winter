@@ -31,49 +31,51 @@ def throttling(rate: Optional[str], scope: Optional[str] = None):
 
 
 class BaseRateThrottle:
-    cache = default_cache
-    cache_format = 'throttle_{scope}_{ident}'
-
     def __init__(self, throttling_: Throttling):
-        self.throttling_ = throttling_
+        self._throttling = throttling_
 
     def allow_request(self, request: Request) -> bool:
-        ident = self.get_ident(request)
-        key = self._get_cache_key(self.throttling_.scope, ident)
+        ident = _get_ident(request)
+        key = _get_cache_key(self._throttling.scope, ident)
 
-        history = self.cache.get(key, [])
+        history = default_cache.get(key, [])
         now = time.time()
 
-        while history and history[-1] <= now - self.throttling_.duration:
+        while history and history[-1] <= now - self._throttling.duration:
             history.pop()
 
-        if len(history) >= self.throttling_.num_requests:
+        if len(history) >= self._throttling.num_requests:
             return False
 
         history.insert(0, now)
-        self.cache.set(key, history, self.throttling_.duration)
+        default_cache.set(key, history, self._throttling.duration)
         return True
 
-    def _get_cache_key(self, scope: str, ident: str) -> str:
-        return self.cache_format.format(scope=scope, ident=ident)
 
-    def get_ident(self, request: Request) -> str:
-        user_pk = request.user.pk if request.user.is_authenticated else None
+def reset(request: Request, scope: str):
+    """
+        This function allows to reset the accumulated throttling state
+        for a specific user and scope
+    """
+    ident = _get_ident(request)
+    key = _get_cache_key(scope, ident)
+    default_cache.delete(key)
 
-        if user_pk is not None:
-            return str(user_pk)
-        return self.get_ident_from_meta(request)
 
-    def get_ident_from_meta(self, request: Request):
-        """
-        Identify the machine making the request by parsing HTTP_X_FORWARDED_FOR
-        if present. If not use all of HTTP_X_FORWARDED_FOR if it is available,
-        if not use REMOTE_ADDR.
-        """
-        xff = request.META.get('HTTP_X_FORWARDED_FOR')
-        remote_addr = request.META.get('REMOTE_ADDR')
+CACHE_FORMAT = 'throttle_{scope}_{ident}'
 
-        return ''.join(xff.split()) if xff else remote_addr
+
+def _get_cache_key(scope: str, ident: str) -> str:
+    return CACHE_FORMAT.format(scope=scope, ident=ident)
+
+
+def _get_ident(request: Request) -> str:
+    if request.user.is_authenticated:
+        return str(request.user.pk)
+
+    xff = request.META.get('HTTP_X_FORWARDED_FOR')
+    remote_addr = request.META.get('REMOTE_ADDR')
+    return ''.join(xff.split()) if xff else remote_addr
 
 
 def _parse_rate(rate: str) -> Tuple[int, int]:
