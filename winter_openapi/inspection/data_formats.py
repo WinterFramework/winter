@@ -17,8 +17,6 @@ class DataFormat(StrEnum):
     IPV4 = "ipv4"
     IPV6 = "ipv6"
     URI = "uri"
-
-    # pulled out of my ass
     UUID = "uuid"
     SLUG = "slug"
     DECIMAL = "decimal"
