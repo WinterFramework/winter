@@ -62,11 +62,11 @@ def reset(request: Request, scope: str):
     default_cache.delete(key)
 
 
-CACHE_FORMAT = 'throttle_{scope}_{ident}'
+CACHE_KEY_FORMAT = 'throttle_{scope}_{ident}'
 
 
 def _get_cache_key(scope: str, ident: str) -> str:
-    return CACHE_FORMAT.format(scope=scope, ident=ident)
+    return CACHE_KEY_FORMAT.format(scope=scope, ident=ident)
 
 
 def _get_ident(request: Request) -> str:
