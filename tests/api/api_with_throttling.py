@@ -1,8 +1,11 @@
 from http import HTTPStatus
 
+from rest_framework.request import Request
+
 import winter.web
 from winter.web import ExceptionHandler
 from winter.web.exceptions import ThrottleException
+from winter.web.throttling import reset
 
 
 class CustomThrottleExceptionHandler(ExceptionHandler):
@@ -37,4 +40,11 @@ class APIWithThrottling:
     @winter.web.throttling('5/s')
     @winter.raises(ThrottleException, CustomThrottleExceptionHandler)
     def simple_method_with_custom_handler(self) -> int:
+        return 1
+
+    @winter.route_get('with-reset/{?is_reset}')
+    @winter.web.throttling('5/s', 'reset_scope')
+    def simple_method_with_reset(self, request: Request, is_reset: bool) -> int:
+        if is_reset:
+            reset(request, 'reset_scope')
         return 1
