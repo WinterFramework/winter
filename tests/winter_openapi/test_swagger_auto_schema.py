@@ -1,20 +1,19 @@
 import dataclasses
 from typing import Optional
 
+import pytest
 from drf_yasg import openapi
 from rest_framework import serializers
 
-import pytest
 import winter
 import winter_django
-from winter.core import Component
-from winter_django.view import create_drf_view
-from winter_openapi import SwaggerAutoSchema
-from winter.web import MediaType
-from winter.web.routing import get_route
-
 from tests.api import APIWithExceptions
 from tests.api import APIWithProblemExceptions
+from winter.core import Component
+from winter.web import MediaType
+from winter.web.routing import get_route
+from winter_django.view import _create_drf_view
+from winter_openapi import SwaggerAutoSchema
 
 
 @dataclasses.dataclass
@@ -147,7 +146,7 @@ user_dto_response_schema = openapi.Schema(
 
 def test_get_operation():
     route = get_route(TestAPI.post)
-    view = create_drf_view(TestAPI, [route])
+    view = _create_drf_view(TestAPI, [route])
     components = openapi.ReferenceResolver('definitions', force_init=True)
     auto_schema = SwaggerAutoSchema(view, 'path', route.http_method, components, 'request', {})
 
@@ -200,7 +199,7 @@ def test_get_operation():
 
 def test_get_operation_with_serializer():
     route = get_route(TestAPI.post_with_serializer)
-    view = create_drf_view(TestAPI, [route])
+    view = _create_drf_view(TestAPI, [route])
     components = openapi.ReferenceResolver('definitions', force_init=True)
     auto_schema = SwaggerAutoSchema(view, 'path', route.http_method, components, 'request', {})
 
@@ -237,7 +236,7 @@ def test_get_operation_with_serializer():
 
 def test_get_operation_without_body():
     route = get_route(TestAPI.get)
-    view = create_drf_view(TestAPI, [route])
+    view = _create_drf_view(TestAPI, [route])
     components = openapi.ReferenceResolver('definitions', force_init=True)
     auto_schema = SwaggerAutoSchema(view, 'path', route.http_method, components, 'request', {})
 
@@ -258,7 +257,7 @@ def test_get_operation_without_body():
 
 
 def test_get_operation_without_route():
-    view = create_drf_view(TestAPI, [])
+    view = _create_drf_view(TestAPI, [])
     components = openapi.ReferenceResolver('definitions', 'parameters', force_init=True)
     auto_schema = SwaggerAutoSchema(view, 'path', 'get', components, 'request', {})
     operation = auto_schema.get_operation(['test_app', 'post'])
@@ -340,7 +339,7 @@ def test_exception_responses(api_class, method_name: str, expected_responses):
     method = component.get_method(method_name)
     route = get_route(method)
 
-    view = create_drf_view(api_class, [route])
+    view = _create_drf_view(api_class, [route])
     components = openapi.ReferenceResolver('definitions', 'parameters', force_init=True)
     auto_schema = SwaggerAutoSchema(view, 'path', route.http_method, components, 'request', {})
 
