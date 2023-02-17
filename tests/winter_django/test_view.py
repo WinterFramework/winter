@@ -1,4 +1,11 @@
+from http import HTTPStatus
+from uuid import uuid4
+
+import pytest
+from rest_framework.test import APIClient
+
 from tests.api.api_with_path_parameters import APIWithPathParameters
+from tests.entities import AuthorizedUser
 from winter.web import find_package_routes
 from winter_django import create_django_urls
 from winter_django.view import create_django_urls_from_routes
@@ -18,8 +25,22 @@ def test_create_django_urls():
 
 
 def test_create_django_urls_from_routes():
-    routes = find_package_routes('tests.api.notes_api')
+    client = APIClient()
+    user = AuthorizedUser()
+    client.force_authenticate(user)
+    url = f'/notes/?note_id={uuid4()}'
 
-    urls = create_django_urls_from_routes(routes=routes)
+    get_http_response = client.get(url)
+    post_http_response = client.post('/notes/', data=dict(name='Name'))
+    patch_http_response = client.patch(url, data=dict(name='New Name'))
 
-    assert [url.pattern.regex.pattern for url in urls] == ['^notes/$', '^notes/$', '^notes/$']
+    assert get_http_response.status_code == HTTPStatus.OK
+    assert post_http_response.status_code == HTTPStatus.OK
+    assert patch_http_response.status_code == HTTPStatus.OK
+
+
+def test_create_django_urls_from_routes_with_exception():
+    routes = find_package_routes('tests.api.exception_api')
+
+    with pytest.raises(Exception, match='All url path routes must be either with authentication or without'):
+        create_django_urls_from_routes(routes=routes)
