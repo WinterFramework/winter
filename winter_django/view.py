@@ -71,7 +71,8 @@ def create_django_urls_from_routes(routes: List[Route]) -> List[URLPattern]:
         django_url_path = rewrite_uritemplate_with_regexps(winter_url_path, methods)
 
         for route in routes:
-            django_urls.append(url(django_url_path, django_view, name=route.method.full_name))
+            django_url = url(django_url_path, django_view, name=route.method.full_name)
+            django_urls.append(django_url)
 
     return django_urls
 
@@ -79,14 +80,9 @@ def create_django_urls_from_routes(routes: List[Route]) -> List[URLPattern]:
 def _create_drf_view_from_routes(routes: List[Route]) -> 'rest_framework.views.APIView':
     import rest_framework.views
 
-    is_authentication_needed_count = sum(is_authentication_needed(route.method.component) for route in routes)
-
-    if is_authentication_needed_count != 0 and is_authentication_needed_count != len(routes):
-        raise Exception('All url path routes must be either with authentication or without')
-
     class WinterView(rest_framework.views.APIView):
         authentication_classes = (SessionAuthentication,)
-        permission_classes = (IsAuthenticated,) if is_authentication_needed_count != 0 else ()
+        permission_classes = (IsAuthenticated,) if _is_authentication_needed_for_routes(routes) else ()
 
     for route in routes:
         dispatch = _create_dispatch_function(route.method.component.component_cls, route)
@@ -95,6 +91,16 @@ def _create_drf_view_from_routes(routes: List[Route]) -> 'rest_framework.views.A
         setattr(WinterView, dispatch_method_name, dispatch)
 
     return WinterView()
+
+
+def _is_authentication_needed_for_routes(routes: List[Route]) -> bool:
+    is_authentication_needed_count = sum(is_authentication_needed(route.method.component) for route in routes)
+    is_authentication_needed_for_routes = is_authentication_needed_count != 0
+
+    if is_authentication_needed_for_routes and is_authentication_needed_count != len(routes):
+        raise Exception('All url path routes must be either with authentication or without')
+
+    return is_authentication_needed_for_routes
 
 
 def _create_drf_view(api_class: Type, routes: List[Route]) -> 'rest_framework.views.APIView':
