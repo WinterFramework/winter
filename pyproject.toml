@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "winter"
-version = "15.1.0"
+version = "15.2.1"
 homepage = "https://github.com/WinterFramework/winter"
 description = "Web Framework inspired by Spring Framework"
 authors = ["Alexander Egorov <mofr@zond.org>"]
