@@ -45,7 +45,7 @@ def setup_inject():
 
 
 @topic('sample')
-@dataclass
+@dataclass(frozen=True)
 class SampleIntegrationEvent(Event):
     entity_id: int
     name: str
