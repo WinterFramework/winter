@@ -6,9 +6,9 @@ from typing import Set
 from injector import inject
 from pika.adapters.blocking_connection import BlockingChannel
 from pika.exchange_type import ExchangeType
-
 from winter.messaging import EventHandlerRegistry
 from winter.messaging import get_event_topic
+
 from winter_messaging_outbox_transacton.utils import get_consumer_queue
 from winter_messaging_outbox_transacton.utils import get_exchange_name
 from winter_messaging_outbox_transacton.utils import get_routing_key
@@ -33,7 +33,7 @@ class TopologyConfigurator:
         self._handler_registry = handler_registry
 
     def autodiscover(self, package_name: str):
-        self._handler_registry.autodiscover(package_name)
+        self._handler_registry.autodiscover(f'{package_name}.event_handlers')
 
     def configure_topics(self):
         event_types = self._handler_registry.get_all_event_types()
@@ -61,7 +61,7 @@ class TopologyConfigurator:
             topic_info = get_event_topic(event_type)
             event_type_name = event_type.__name__
             event_routing_key = get_routing_key(topic_info.name, event_type_name)
-            routing_key = event_routing_key[:-len(event_type_name)] + '*'
+            routing_key = event_routing_key[: -len(event_type_name)] + '*'
             key = (topic_info.name, routing_key)
             merge_handlers_by_routing_keys.add(key)
 
