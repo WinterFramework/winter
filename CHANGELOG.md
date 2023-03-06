@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [15.2.2] - 2023-02-23
+### Added
+- winter_django.create_django_urls_from_routes: function that returns a list of django urls by the list of Routes 
+
 ## [15.2.1] - 2023-02-16
 ### Changed
 - winter.messaging: set frozen=true for Event class
