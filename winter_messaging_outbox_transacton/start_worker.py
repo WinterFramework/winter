@@ -1,12 +1,10 @@
 import argparse
 import importlib
-import signal
 import sys
 
 from injector import Injector
 
 from winter_messaging_outbox_transacton.consumer_worker import ConsumerWorker
-from winter_messaging_outbox_transacton.exceptions import InterruptProcessException
 from winter_messaging_outbox_transacton.injection import Configuration
 
 
@@ -44,26 +42,24 @@ if __name__ == '__main__':
     consumer_id = args.consumer
     package_name = args.package_module
 
-    worker_module = importlib.import_module(f'{package_name}.worker')
+    try:
+        worker_module = importlib.import_module(f'{package_name}.worker')
+    except ModuleNotFoundError:
+        worker_module = None
 
     winter_django.setup()
     django.setup()
 
-    modules_for_injector = worker_module.worker_configuration.get_modules_for_injector()
-    injector_modules = [*modules_for_injector, Configuration()]
+    if worker_module:
+        modules_for_injector = worker_module.worker_configuration.get_modules_for_injector()
+        injector_modules = [*modules_for_injector, Configuration()]
+    else:
+        injector_modules = [Configuration()]
 
     injector = Injector(injector_modules)
     winter.core.set_injector(injector)
 
     worker = injector.get(ConsumerWorker)
-
-
-    def stop_worker(signum, frame):
-        worker.stop()
-        raise InterruptProcessException()
-
-    signal.signal(signal.SIGTERM, stop_worker)
-    signal.signal(signal.SIGINT, stop_worker)
 
     print(f'Starting message consumer id: {consumer_id}; in package: {package_name}')
     worker.start(consumer_id=consumer_id, package_name=package_name)

@@ -1,2 +1,0 @@
-class InterruptProcessException(Exception):
-    pass

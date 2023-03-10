@@ -1,9 +1,9 @@
+import signal
 from injector import inject
 from pika.adapters.blocking_connection import BlockingChannel
 from pika.exceptions import AMQPConnectionError
 from retry import retry
 from winter.messaging import EventHandlerRegistry
-
 from winter_messaging_outbox_transacton.message_listener import MessageListener
 from winter_messaging_outbox_transacton.rabbitmq import TopologyConfigurator
 
@@ -34,6 +34,12 @@ class ConsumerWorker:
 
         self._start_with_retry(consumer_id)
 
+        def handle_interrupt_signal(signum, frame):
+            self._channel.stop_consuming()
+
+        signal.signal(signal.SIGTERM, handle_interrupt_signal)
+        signal.signal(signal.SIGINT, handle_interrupt_signal)
+
     @retry(AMQPConnectionError, delay=5, jitter=(1, 3))
     def _start_with_retry(self, consumer_id):
         # TODO add reconnect method
@@ -41,9 +47,7 @@ class ConsumerWorker:
             self._channel.start_consuming()
         except Exception as e:
             print(f'Consumer worker {consumer_id} stopping by Exception: {e}')
+        finally:
             self._channel.stop_consuming()
         self._channel.connection.close()
 
-    def stop(self):
-        self._channel.stop_consuming()
-        self._channel.connection.close()

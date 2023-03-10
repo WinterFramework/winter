@@ -3,7 +3,6 @@ import logging
 from datetime import datetime
 from uuid import UUID
 
-from django.db import transaction
 from injector import inject
 from pika import BasicProperties
 from pika.adapters.blocking_connection import BlockingChannel
@@ -14,7 +13,6 @@ from winter.messaging import Event
 from winter.messaging import EventHandlerRegistry
 from winter.messaging.event_dispacher import EventDispatcher
 
-from winter_messaging_outbox_transacton.exceptions import InterruptProcessException
 from winter_messaging_outbox_transacton.inbox.inbox_message import InboxMessage
 from winter_messaging_outbox_transacton.inbox.inbox_message_dao import InboxMessageDAO
 from winter_messaging_outbox_transacton.retry_on_deadlock import retry_on_deadlock_decorator
@@ -82,19 +80,15 @@ class MessageListener:
         except TimeoutException:
             logger.error(f'Timeout Error is raised during handling event({message_id})')
             channel.basic_nack(delivery_tag=method_frame.delivery_tag)
-        except InterruptProcessException:
-            # TODO: what to do with the "is_new" check
-            channel.basic_nack(delivery_tag=method_frame.delivery_tag, requeue=True)
         except Exception as e:
             logger.error(f'Exception is raised during handling {message_id}: {e}')
             channel.basic_nack(delivery_tag=method_frame.delivery_tag)
 
     @retry_on_deadlock_decorator(RETRY_ON_DEADLOCK_ATTEMPTS)
     @timeout(EVENT_HANDLING_TIMEOUT)
-    @transaction.atomic
     def _dispatch_event(self, event: Event):
+        before_event_handling_signal.send()
         try:
-            before_event_handling_signal.send()
             self._event_dispatcher.dispatch(event)
         finally:
             after_event_handling_signal.send()
