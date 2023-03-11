@@ -12,13 +12,13 @@ from winter.core.json import json_decode
 from winter.messaging import Event
 from winter.messaging import EventHandlerRegistry
 from winter.messaging.event_dispacher import EventDispatcher
-
+from winter_messaging_outbox_transacton.event_processing_logger import EventProcessingLogger
 from winter_messaging_outbox_transacton.inbox.inbox_message import InboxMessage
 from winter_messaging_outbox_transacton.inbox.inbox_message_dao import InboxMessageDAO
 from winter_messaging_outbox_transacton.middleware_registry import MiddlewareRegistry
 from winter_messaging_outbox_transacton.signals import after_event_handling_signal
 from winter_messaging_outbox_transacton.signals import before_event_handling_signal
-from winter_messaging_outbox_transacton.timeout import timeout
+from winter_messaging_outbox_transacton.timeout_handler import TimeoutHandler
 
 logger = logging.getLogger('event_handling')
 
@@ -56,6 +56,7 @@ class MessageListener:
     ):
         try:
             message_id = UUID(properties.message_id)
+            logger.info(f'Message({message_id}) is received')
             event_type_name = properties.type
             inbox_message = InboxMessage(
                 id=message_id,
@@ -73,13 +74,14 @@ class MessageListener:
             event_dict = json.loads(body)
             event = json_decode(event_dict, hint_class=event_type)
 
-            self._dispatch_event(event=event, message_id=message_id)
+            with EventProcessingLogger(message_id=message_id, event_type_name=event_type_name):
+                self._dispatch_event(event=event, message_id=message_id)
             channel.basic_ack(delivery_tag=method_frame.delivery_tag)
         except Exception:
             logger.exception(f'Exception is raised during handling {message_id}')
             channel.basic_nack(delivery_tag=method_frame.delivery_tag, requeue=False)
 
-    @timeout(seconds=EVENT_HANDLING_TIMEOUT, retries=RETRIES_ON_TIMEOUT)
+    @TimeoutHandler.timeout(seconds=EVENT_HANDLING_TIMEOUT, retries=RETRIES_ON_TIMEOUT)
     def _dispatch_event(self, event: Event, message_id: UUID):
         with self._engine.begin():
             before_event_handling_signal.send()

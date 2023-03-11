@@ -1,3 +1,4 @@
+import logging
 import signal
 from injector import inject
 from pika.adapters.blocking_connection import BlockingChannel
@@ -6,6 +7,9 @@ from retry import retry
 from winter.messaging import EventHandlerRegistry
 from winter_messaging_outbox_transacton.message_listener import MessageListener
 from winter_messaging_outbox_transacton.rabbitmq import TopologyConfigurator
+from winter_messaging_outbox_transacton.timeout_handler import TimeoutHandler
+
+logger = logging.getLogger('event_handling')
 
 
 class ConsumerWorker:
@@ -34,6 +38,7 @@ class ConsumerWorker:
 
         def handle_interrupt_signal(signum, frame):
             self._channel.stop_consuming()
+            TimeoutHandler.can_retry = False
 
         signal.signal(signal.SIGTERM, handle_interrupt_signal)
         signal.signal(signal.SIGINT, handle_interrupt_signal)
@@ -45,8 +50,8 @@ class ConsumerWorker:
         # TODO add reconnect method
         try:
             self._channel.start_consuming()
-        except Exception as e:
-            print(f'Consumer worker {consumer_id} stopping by Exception: {e}')
+        except Exception:
+            logger.exception(f'Consumer worker {consumer_id} stopping by Exception')
         finally:
             self._channel.stop_consuming()
         self._channel.connection.close()
