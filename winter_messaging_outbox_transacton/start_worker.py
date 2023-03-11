@@ -1,5 +1,6 @@
 import argparse
 import importlib
+import logging
 import sys
 
 from injector import Injector
@@ -8,6 +9,8 @@ from winter_messaging_outbox_transacton.consumer_worker import ConsumerWorker
 from winter_messaging_outbox_transacton.injection import Configuration
 from winter_messaging_outbox_transacton.middleware_registry import MiddlewareRegistry
 from winter_messaging_outbox_transacton.worker_configuration import WorkerConfiguration
+
+logger = logging.getLogger('event_handling')
 
 
 class Parser(argparse.ArgumentParser):
@@ -67,5 +70,5 @@ if __name__ == '__main__':
     middleware_registry.set_middlewares(middlewares)
     worker = injector.get(ConsumerWorker)
 
-    print(f'Starting message consumer id: {consumer_id}; in package: {package_name}')
+    logger.info(f'Starting message consumer id: {consumer_id}; in package: {package_name}')
     worker.start(consumer_id=consumer_id, package_name=package_name)

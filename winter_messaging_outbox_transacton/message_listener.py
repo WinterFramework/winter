@@ -16,16 +16,14 @@ from winter.messaging.event_dispacher import EventDispatcher
 from winter_messaging_outbox_transacton.inbox.inbox_message import InboxMessage
 from winter_messaging_outbox_transacton.inbox.inbox_message_dao import InboxMessageDAO
 from winter_messaging_outbox_transacton.middleware_registry import MiddlewareRegistry
-from winter_messaging_outbox_transacton.retry_on_deadlock import retry_on_deadlock_decorator
 from winter_messaging_outbox_transacton.signals import after_event_handling_signal
 from winter_messaging_outbox_transacton.signals import before_event_handling_signal
-from winter_messaging_outbox_transacton.timeout import TimeoutException
 from winter_messaging_outbox_transacton.timeout import timeout
 
 logger = logging.getLogger('event_handling')
 
 EVENT_HANDLING_TIMEOUT = 15
-RETRY_ON_DEADLOCK_ATTEMPTS = 1
+RETRIES_ON_TIMEOUT = 1
 
 
 class MessageListener:
@@ -75,19 +73,19 @@ class MessageListener:
             event_dict = json.loads(body)
             event = json_decode(event_dict, hint_class=event_type)
 
-            with self._engine.begin():
-                self._dispatch_event(event)
-                self._inbox_message_dao.mark_as_handled(inbox_message.id, self._consumer_id)
-
+            self._dispatch_event(event=event, message_id=message_id)
             channel.basic_ack(delivery_tag=method_frame.delivery_tag)
         except Exception:
             logger.exception(f'Exception is raised during handling {message_id}')
-            channel.basic_nack(delivery_tag=method_frame.delivery_tag)
+            channel.basic_nack(delivery_tag=method_frame.delivery_tag, requeue=False)
 
-    @timeout(EVENT_HANDLING_TIMEOUT)
-    def _dispatch_event(self, event: Event):
-        before_event_handling_signal.send()
-        try:
-            self._middleware_registry.run_with_middlewares(lambda: self._event_dispatcher.dispatch(event))
-        finally:
-            after_event_handling_signal.send()
+    @timeout(seconds=EVENT_HANDLING_TIMEOUT, retries=RETRIES_ON_TIMEOUT)
+    def _dispatch_event(self, event: Event, message_id: UUID):
+        with self._engine.begin():
+            before_event_handling_signal.send()
+            try:
+                self._middleware_registry.run_with_middlewares(lambda: self._event_dispatcher.dispatch(event))
+            finally:
+                after_event_handling_signal.send()
+
+            self._inbox_message_dao.mark_as_handled(message_id, self._consumer_id)
