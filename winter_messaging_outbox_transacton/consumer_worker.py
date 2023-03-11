@@ -22,7 +22,7 @@ class ConsumerWorker:
         self._message_listener = message_listener
         self._channel = channel
 
-    def start(self, consumer_id, package_name: str):
+    def start(self, consumer_id: str, package_name: str):
         self._message_listener.set_consumer_id(consumer_id)
         self._configurator.autodiscover(package_name)
         configuration = self._configurator.configure_topics()
@@ -32,13 +32,13 @@ class ConsumerWorker:
             self._message_listener.on_message_callback,
         )
 
-        self._start_with_retry(consumer_id)
-
         def handle_interrupt_signal(signum, frame):
             self._channel.stop_consuming()
 
         signal.signal(signal.SIGTERM, handle_interrupt_signal)
         signal.signal(signal.SIGINT, handle_interrupt_signal)
+
+        self._start_with_retry(consumer_id)
 
     @retry(AMQPConnectionError, delay=5, jitter=(1, 3))
     def _start_with_retry(self, consumer_id):

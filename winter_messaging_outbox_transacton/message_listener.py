@@ -15,6 +15,7 @@ from winter.messaging.event_dispacher import EventDispatcher
 
 from winter_messaging_outbox_transacton.inbox.inbox_message import InboxMessage
 from winter_messaging_outbox_transacton.inbox.inbox_message_dao import InboxMessageDAO
+from winter_messaging_outbox_transacton.middleware_registry import MiddlewareRegistry
 from winter_messaging_outbox_transacton.retry_on_deadlock import retry_on_deadlock_decorator
 from winter_messaging_outbox_transacton.signals import after_event_handling_signal
 from winter_messaging_outbox_transacton.signals import before_event_handling_signal
@@ -34,11 +35,13 @@ class MessageListener:
         handler_registry: EventHandlerRegistry,
         event_dispatcher: EventDispatcher,
         inbox_message_dao: InboxMessageDAO,
+        middleware_registry: MiddlewareRegistry,
         engine: Engine,
     ) -> None:
         self._handler_registry = handler_registry
         self._event_dispatcher = event_dispatcher
         self._inbox_message_dao = inbox_message_dao
+        self._middleware_registry = middleware_registry
         self._engine = engine
 
         self._consumer_id = None
@@ -77,18 +80,14 @@ class MessageListener:
                 self._inbox_message_dao.mark_as_handled(inbox_message.id, self._consumer_id)
 
             channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-        except TimeoutException:
-            logger.error(f'Timeout Error is raised during handling event({message_id})')
-            channel.basic_nack(delivery_tag=method_frame.delivery_tag)
-        except Exception as e:
-            logger.error(f'Exception is raised during handling {message_id}: {e}')
+        except Exception:
+            logger.exception(f'Exception is raised during handling {message_id}')
             channel.basic_nack(delivery_tag=method_frame.delivery_tag)
 
-    @retry_on_deadlock_decorator(RETRY_ON_DEADLOCK_ATTEMPTS)
     @timeout(EVENT_HANDLING_TIMEOUT)
     def _dispatch_event(self, event: Event):
         before_event_handling_signal.send()
         try:
-            self._event_dispatcher.dispatch(event)
+            self._middleware_registry.run_with_middlewares(lambda: self._event_dispatcher.dispatch(event))
         finally:
             after_event_handling_signal.send()

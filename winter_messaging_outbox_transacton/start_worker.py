@@ -6,6 +6,8 @@ from injector import Injector
 
 from winter_messaging_outbox_transacton.consumer_worker import ConsumerWorker
 from winter_messaging_outbox_transacton.injection import Configuration
+from winter_messaging_outbox_transacton.middleware_registry import MiddlewareRegistry
+from winter_messaging_outbox_transacton.worker_configuration import WorkerConfiguration
 
 
 class Parser(argparse.ArgumentParser):
@@ -50,15 +52,19 @@ if __name__ == '__main__':
     winter_django.setup()
     django.setup()
 
-    if worker_module:
+    if worker_module and isinstance(worker_module.worker_configuration, WorkerConfiguration):
         modules_for_injector = worker_module.worker_configuration.get_modules_for_injector()
         injector_modules = [*modules_for_injector, Configuration()]
+        middlewares = worker_module.worker_configuration.get_middlewares()
     else:
         injector_modules = [Configuration()]
+        middlewares = []
 
     injector = Injector(injector_modules)
     winter.core.set_injector(injector)
 
+    middleware_registry = injector.get(MiddlewareRegistry)
+    middleware_registry.set_middlewares(middlewares)
     worker = injector.get(ConsumerWorker)
 
     print(f'Starting message consumer id: {consumer_id}; in package: {package_name}')
