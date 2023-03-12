@@ -39,11 +39,14 @@ class MessageListener:
         self._inbox_message_dao = inbox_message_dao
         self._middleware_registry = middleware_registry
         self._engine = engine
-
         self._consumer_id = None
 
     def set_consumer_id(self, consumer_id: str):
         self._consumer_id = consumer_id
+
+    def set_timeout_handler(self, timeout_handler: TimeoutHandler):
+        timeout_decorator = timeout_handler.timeout(seconds=EVENT_HANDLING_TIMEOUT, retries=RETRIES_ON_TIMEOUT)
+        self._dispatch_event = timeout_decorator(self._dispatch_event)
 
     def on_message_callback(
         self,
@@ -79,7 +82,6 @@ class MessageListener:
             logger.exception('Exception is raised during handling Message(%s)', message_id)
             channel.basic_nack(delivery_tag=method_frame.delivery_tag, requeue=False)
 
-    @TimeoutHandler.timeout(seconds=EVENT_HANDLING_TIMEOUT, retries=RETRIES_ON_TIMEOUT)
     def _dispatch_event(self, event: Event, message_id: UUID):
         with self._engine.begin():
             self._middleware_registry.run_with_middlewares(lambda: self._event_dispatcher.dispatch(event))

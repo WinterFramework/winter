@@ -1,6 +1,9 @@
+import logging
 import signal
 from functools import wraps
+from typing import Callable
 
+logger = logging.getLogger('event_handling')
 
 class TimeoutException(Exception):
     pass
@@ -11,28 +14,34 @@ def raise_timeout_exception(signum, frame):
 
 
 class TimeoutHandler:
-    can_retry = True
+    def __init__(self):
+        self.can_retry = True
 
-    @staticmethod
-    def timeout(seconds: int, retries: int = 0):
-        def _decorator(func):
+    def timeout(self, seconds: int, retries: int = 0):
+        def _decorator(func: Callable):
             @wraps(func)
             def decorated_func(*args, **kwargs):
-                attempts = 0
-                while True:
+                timeout_exception = None
+                for attempts in range(1 + retries):
                     signal.signal(signal.SIGALRM, raise_timeout_exception)
                     signal.setitimer(signal.ITIMER_REAL, seconds)
                     try:
-                        func(*args, **kwargs)
+                        return func(*args, **kwargs)
                     except TimeoutException as e:
-                        attempts += 1
-                        if not TimeoutHandler.can_retry or retries < attempts:
-                            raise e
-                    else:
-                        break
+                        timeout_exception = e
+                        if not self.can_retry:
+                            raise timeout_exception
+                        logger.warning(
+                            'Timeout is raised during execution %s with args: %s, kwargs: %s',
+                            func.__name__,
+                            args,
+                            kwargs,
+                        )
                     finally:
                         signal.setitimer(signal.ITIMER_REAL, 0)
                         signal.signal(signal.SIGALRM, signal.SIG_DFL)
+
+                raise timeout_exception
 
             return decorated_func
 

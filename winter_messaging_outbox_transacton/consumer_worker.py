@@ -25,9 +25,11 @@ class ConsumerWorker:
         self._configurator = configurator
         self._message_listener = message_listener
         self._channel = channel
+        self._timeout_handler = TimeoutHandler()
 
     def start(self, consumer_id: str, package_name: str):
         self._message_listener.set_consumer_id(consumer_id)
+        self._message_listener.set_timeout_handler(self._timeout_handler)
         self._configurator.autodiscover(package_name)
         configuration = self._configurator.configure_topics()
         self._configurator.configure_listener(
@@ -38,7 +40,7 @@ class ConsumerWorker:
 
         def handle_interrupt_signal(signum, frame):
             self._channel.stop_consuming()
-            TimeoutHandler.can_retry = False
+            self._timeout_handler.can_retry = False
 
         signal.signal(signal.SIGTERM, handle_interrupt_signal)
         signal.signal(signal.SIGINT, handle_interrupt_signal)
