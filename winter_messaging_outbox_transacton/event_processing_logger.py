@@ -16,10 +16,13 @@ class EventProcessingLogger:
         self._start_time = time.perf_counter()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        elapsed_time = round(time.perf_counter() - self._start_time, 1)
+        elapsed_time = time.perf_counter() - self._start_time
         if exc_type is None:
             logger.info(
-                f'{self._event_type_name} from Message({self._message_id}) is successfully processed in {elapsed_time}',
+                '%s from Message(%s) successfully processed in %0.1f',
+                self._event_type_name,
+                self._message_id,
+                elapsed_time,
             )
 
 

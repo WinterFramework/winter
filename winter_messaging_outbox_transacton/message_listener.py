@@ -54,7 +54,7 @@ class MessageListener:
     ):
         try:
             message_id = UUID(properties.message_id)
-            logger.info(f'Message({message_id}) is received')
+            logger.info(f'Message(%s) is received', message_id)
             event_type_name = properties.type
             inbox_message = InboxMessage(
                 id=message_id,
@@ -76,7 +76,7 @@ class MessageListener:
                 self._dispatch_event(event=event, message_id=message_id)
             channel.basic_ack(delivery_tag=method_frame.delivery_tag)
         except Exception:
-            logger.exception(f'Exception is raised during handling {message_id}')
+            logger.exception('Exception is raised during handling Message(%s)', message_id)
             channel.basic_nack(delivery_tag=method_frame.delivery_tag, requeue=False)
 
     @TimeoutHandler.timeout(seconds=EVENT_HANDLING_TIMEOUT, retries=RETRIES_ON_TIMEOUT)

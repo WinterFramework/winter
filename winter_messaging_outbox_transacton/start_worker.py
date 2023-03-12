@@ -70,5 +70,5 @@ if __name__ == '__main__':
     middleware_registry.set_middlewares(middlewares)
     worker = injector.get(ConsumerWorker)
 
-    logger.info(f'Starting message consumer id: {consumer_id}; in package: {package_name}')
+    logger.info(f'Starting message consumer id: %s; in package: %s', consumer_id, package_name)
     worker.start(consumer_id=consumer_id, package_name=package_name)

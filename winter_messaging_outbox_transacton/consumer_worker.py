@@ -51,7 +51,7 @@ class ConsumerWorker:
         try:
             self._channel.start_consuming()
         except Exception:
-            logger.exception(f'Consumer worker {consumer_id} stopping by Exception')
+            logger.exception('Consumer worker %s stopping by Exception', consumer_id)
         finally:
             self._channel.stop_consuming()
         self._channel.connection.close()
