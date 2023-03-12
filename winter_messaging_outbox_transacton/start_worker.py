@@ -2,13 +2,16 @@ import argparse
 import importlib
 import logging
 import sys
+import django
+import winter.core
+import winter_django
 
 from injector import Injector
 
 from winter_messaging_outbox_transacton.consumer_worker import ConsumerWorker
 from winter_messaging_outbox_transacton.injection import Configuration
 from winter_messaging_outbox_transacton.middleware_registry import MiddlewareRegistry
-from winter_messaging_outbox_transacton.worker_configuration import WorkerConfiguration
+from winter_messaging_outbox_transacton.worker_configuration import get_worker_configuration
 
 logger = logging.getLogger('event_handling')
 
@@ -37,10 +40,6 @@ def parse_args(parser_object):
 
 
 if __name__ == '__main__':
-    import django
-    import winter.core
-    import winter_django
-
     parser = Parser(description='Run consumer worker')
     args = parse_args(parser)
 
@@ -55,10 +54,11 @@ if __name__ == '__main__':
     winter_django.setup()
     django.setup()
 
-    if worker_module and isinstance(worker_module.worker_configuration, WorkerConfiguration):
-        modules_for_injector = worker_module.worker_configuration.get_modules_for_injector()
+    worker_configuration = get_worker_configuration(package_name)
+    if worker_configuration:
+        modules_for_injector = worker_configuration.get_modules_for_injector()
         injector_modules = [*modules_for_injector, Configuration()]
-        middlewares = worker_module.worker_configuration.get_middlewares()
+        middlewares = worker_configuration.get_middlewares()
     else:
         injector_modules = [Configuration()]
         middlewares = []
