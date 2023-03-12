@@ -16,8 +16,6 @@ from winter_messaging_outbox_transacton.event_processing_logger import EventProc
 from winter_messaging_outbox_transacton.inbox.inbox_message import InboxMessage
 from winter_messaging_outbox_transacton.inbox.inbox_message_dao import InboxMessageDAO
 from winter_messaging_outbox_transacton.middleware_registry import MiddlewareRegistry
-from winter_messaging_outbox_transacton.signals import after_event_handling_signal
-from winter_messaging_outbox_transacton.signals import before_event_handling_signal
 from winter_messaging_outbox_transacton.timeout_handler import TimeoutHandler
 
 logger = logging.getLogger('event_handling')
@@ -84,10 +82,5 @@ class MessageListener:
     @TimeoutHandler.timeout(seconds=EVENT_HANDLING_TIMEOUT, retries=RETRIES_ON_TIMEOUT)
     def _dispatch_event(self, event: Event, message_id: UUID):
         with self._engine.begin():
-            before_event_handling_signal.send()
-            try:
-                self._middleware_registry.run_with_middlewares(lambda: self._event_dispatcher.dispatch(event))
-            finally:
-                after_event_handling_signal.send()
-
+            self._middleware_registry.run_with_middlewares(lambda: self._event_dispatcher.dispatch(event))
             self._inbox_message_dao.mark_as_handled(message_id, self._consumer_id)
