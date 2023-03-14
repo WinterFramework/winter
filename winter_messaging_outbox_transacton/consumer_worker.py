@@ -24,17 +24,17 @@ class ConsumerWorker:
         self._configurator = configurator
         self._message_listener = message_listener
         self._rabbit_client = rabbit_client
-        self._timeout_handler = TimeoutHandler()
+        self._is_interrupted = False
 
     def start(self, consumer_id: str):
         self._message_listener.set_consumer_id(consumer_id)
-        self._message_listener.set_timeout_handler(self._timeout_handler)
         queue = self._configurator.get_consumer_queue(consumer_id)
         self._rabbit_client.start_consuming(queue, self._message_listener.on_message_callback)
 
         def handle_interrupt_signal(signum, frame):
+            self._is_interrupted = True
+            self._message_listener.stop()
             self._rabbit_client.stop_consuming()
-            self._timeout_handler.can_retry = False
 
         signal.signal(signal.SIGTERM, handle_interrupt_signal)
         signal.signal(signal.SIGINT, handle_interrupt_signal)
@@ -48,6 +48,7 @@ class ConsumerWorker:
         except Exception:
             logger.exception('Consumer worker %s stopping by Exception', consumer_id)
         finally:
-            self._rabbit_client.stop_consuming()
-        self._channel.connection.close()
+            if not self._is_interrupted:
+                self._rabbit_client.stop_consuming()
+            self._rabbit_client.close()
 

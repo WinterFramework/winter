@@ -95,3 +95,7 @@ class RabbitMQClient:
 
     def stop_consuming(self):
         self._channel.stop_consuming()
+
+    def close(self):
+        self._channel.close()
+        self._connection.close()

@@ -39,14 +39,13 @@ class MessageListener:
         self._inbox_message_dao = inbox_message_dao
         self._middleware_registry = middleware_registry
         self._engine = engine
+        self._timeout_handler = TimeoutHandler()
+        timeout_decorator = self._timeout_handler.timeout(seconds=EVENT_HANDLING_TIMEOUT, retries=RETRIES_ON_TIMEOUT)
+        self._dispatch_event = timeout_decorator(self._dispatch_event)
         self._consumer_id = None
 
     def set_consumer_id(self, consumer_id: str):
         self._consumer_id = consumer_id
-
-    def set_timeout_handler(self, timeout_handler: TimeoutHandler):
-        timeout_decorator = timeout_handler.timeout(seconds=EVENT_HANDLING_TIMEOUT, retries=RETRIES_ON_TIMEOUT)
-        self._dispatch_event = timeout_decorator(self._dispatch_event)
 
     def on_message_callback(
         self,
@@ -55,9 +54,9 @@ class MessageListener:
         properties: BasicProperties,
         body: bytes,
     ):
+        message_id = UUID(properties.message_id)
+        logger.info(f'Message(%s) is received', message_id)
         try:
-            message_id = UUID(properties.message_id)
-            logger.info(f'Message(%s) is received', message_id)
             event_type_name = properties.type
             inbox_message = InboxMessage(
                 id=message_id,
@@ -84,3 +83,6 @@ class MessageListener:
         with self._engine.begin():
             self._middleware_registry.run_with_middlewares(lambda: self._event_dispatcher.dispatch(event))
             self._inbox_message_dao.mark_as_handled(message_id, self._consumer_id)
+
+    def stop(self):
+        self._timeout_handler.can_retry = False

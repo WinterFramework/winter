@@ -5,6 +5,7 @@ from typing import Callable
 
 logger = logging.getLogger('event_handling')
 
+
 class TimeoutException(Exception):
     pass
 
