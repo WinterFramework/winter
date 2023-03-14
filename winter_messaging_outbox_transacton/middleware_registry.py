@@ -15,10 +15,7 @@ MiddlewareClass = Type[Middleware]
 
 
 class MiddlewareRegistry:
-    def __init__(self):
-        self._middlewares = []
-
-    def set_middlewares(self, middlewares: List[MiddlewareClass]):
+    def __init__(self, middlewares):
         self._middlewares = middlewares
 
     def run_with_middlewares(self, func: Callable[[], None]):

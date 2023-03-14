@@ -1,3 +1,2 @@
-from .channel_factory import connect_to_rabbit
-from .topology_configurator import TopologyConfig
+from .connection_factory import create_connection
 from .topology_configurator import TopologyConfigurator

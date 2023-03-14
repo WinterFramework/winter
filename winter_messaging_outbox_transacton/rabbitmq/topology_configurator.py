@@ -1,90 +1,91 @@
-from dataclasses import dataclass
-from typing import Callable
-from typing import Mapping
-from typing import Set
+import logging
+from collections import defaultdict
+from typing import Dict
 
 from injector import inject
-from pika.adapters.blocking_connection import BlockingChannel
-from pika.exchange_type import ExchangeType
+
+from winter.core import Component
 from winter.messaging import EventHandlerRegistry
 from winter.messaging import get_event_topic
+from winter.messaging.topic_annotation import TopicAnnotation
+from winter.messaging.messaging_config import MessagingConfig
+from winter_messaging_outbox_transacton.rabbitmq.rabbitmq_client import RabbitMQClient
+from winter_messaging_outbox_transacton.naming_convention import get_consumer_queue
+from winter_messaging_outbox_transacton.naming_convention import get_exchange_name
+from winter_messaging_outbox_transacton.naming_convention import get_routing_key
 
-from winter_messaging_outbox_transacton.utils import get_consumer_queue
-from winter_messaging_outbox_transacton.utils import get_exchange_name
-from winter_messaging_outbox_transacton.utils import get_routing_key
+
+log = logging.getLogger(__name__)
 
 
-@dataclass
-class TopologyConfig:
-    topic_to_exchange_map: Mapping[str, str]
-
-    def get_exchange_key(self, topic: str) -> str:
-        return self.topic_to_exchange_map[topic]
+class InvalidTopologyException(Exception):
+    pass
 
 
 class TopologyConfigurator:
     @inject
     def __init__(
         self,
-        channel: BlockingChannel,
+        rabbit_client: RabbitMQClient,
         handler_registry: EventHandlerRegistry,
+        config: MessagingConfig
     ) -> None:
-        self._channel = channel
+        self._rabbit_client = rabbit_client
         self._handler_registry = handler_registry
+        self._config = config
+        self._topic_to_exchange_map: Dict[str, str] = {}
+        self._consumer_id_to_queue = {}
+        self._consumer_to_events_map = defaultdict(set)
+        self._configure()
 
-    def autodiscover(self, package_name: str):
-        self._handler_registry.autodiscover(f'{package_name}.event_handlers')
+    def _configure(self):
+        for consumer_id, packages in self._config.consumers.items():
+            for package_name in packages:
+                self._handler_registry.autodiscover(consumer_id, package_name)
 
-    def configure_topics(self):
-        event_types = self._handler_registry.get_all_event_types()
-        topics = self._collect_unique_topics(event_types)
-        topic_to_exchange_map = {}
-        for topic in topics:
-            exchange_name = get_exchange_name(topic)
-            self._channel.exchange_declare(
-                exchange=exchange_name,
-                exchange_type=ExchangeType.topic.value,
-                durable=True,
-            )
-            topic_to_exchange_map[topic] = exchange_name
-
-        self._channel.confirm_delivery()
-        return TopologyConfig(topic_to_exchange_map=topic_to_exchange_map)
-
-    def configure_listener(self, consumer_id: str, config: TopologyConfig, on_message_callback: Callable):
-        listeners = []
-        handlers = self._handler_registry.get_all_handlers()
-
-        merge_handlers_by_routing_keys = set()
-        for handler_info in handlers:
+        all_handlers = self._handler_registry.get_all_handlers()
+        discovered_topics = set()
+        for handler_info in all_handlers:
             event_type = handler_info.arguments[0].type_
+            component = Component.get_by_cls(event_type)
+            topic_annotation = component.annotations.get_one_or_none(TopicAnnotation)
+            if not topic_annotation:
+                msg = f'Event "{event_type}" must be annotated with @topic for handler: "{handler_info.name}"'
+                raise InvalidTopologyException(msg)
+
             topic_info = get_event_topic(event_type)
-            event_type_name = event_type.__name__
-            event_routing_key = get_routing_key(topic_info.name, event_type_name)
-            routing_key = event_routing_key[: -len(event_type_name)] + '*'
-            key = (topic_info.name, routing_key)
-            merge_handlers_by_routing_keys.add(key)
+            topic_name = topic_info.name
+            discovered_topics.add(topic_name)
+            event_routing_key = get_routing_key(topic_name, topic_info.event_name)
+            exchange_name = get_exchange_name(topic_name)
+            self._topic_to_exchange_map[topic_name] = exchange_name
+            key = (exchange_name, event_routing_key)
+            # TODO fix monkey patching consumer_id in self._handler_registry.autodiscover
+            consumer_id = handler_info.consumer_id
+            self._consumer_to_events_map[consumer_id].add(key)
 
-        for topic, routing_key in merge_handlers_by_routing_keys:
-            item = (topic, routing_key)
-            listeners.append(item)
-        print(f'Collected listeners: {listeners}')
+        declared_topics = self._config.topics
+        if declared_topics != discovered_topics:
+            raise InvalidTopologyException(f'Not all topics are declared: {discovered_topics - declared_topics}')
 
-        for topic, routing_key in listeners:
-            exchange = config.get_exchange_key(topic)
-            consumer = get_consumer_queue(consumer_id)
-            result = self._channel.queue_declare(consumer, durable=True)
-            self._channel.queue_bind(
-                exchange=exchange,
-                queue=result.method.queue,
-                routing_key=routing_key,
-            )
-            self._channel.basic_consume(consumer, on_message_callback)
+        log.info(f'Listeners: {self._config.consumers}')
 
-    @staticmethod
-    def _collect_unique_topics(event_types) -> Set[str]:
-        topics = set()
-        for event_type in event_types:
-            topic_info = get_event_topic(event_type)
-            topics.add(topic_info.name)
-        return topics
+        self._rabbit_client.declare_dead_letter()
+
+        for topic in declared_topics:
+            exchange_name = self._topic_to_exchange_map[topic]
+            self._rabbit_client.declare_exchange(exchange_name)
+
+        for consumer_id in self._config.consumers.keys():
+            consumer_queue = get_consumer_queue(consumer_id)
+            self._consumer_id_to_queue[consumer_id] = consumer_queue
+            queue_result = self._rabbit_client.declare_queue(consumer_queue)
+            consumer_listen_topics = self._consumer_to_events_map[consumer_id]
+            for exchange, routing_key in consumer_listen_topics:
+                self._rabbit_client.queue_bind(exchange, queue_result, routing_key)
+
+    def get_exchange_key(self, topic: str) -> str:
+        return self._topic_to_exchange_map[topic]
+
+    def get_consumer_queue(self, process_id):
+        return self._consumer_id_to_queue[process_id]

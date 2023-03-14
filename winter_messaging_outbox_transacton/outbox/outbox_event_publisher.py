@@ -26,9 +26,7 @@ class OutboxEventPublisher(EventPublisher):
         outbox_message = OutboxMessage(
             id=uuid4(),
             topic=topic_info.name,
-            type=topic_info.event_name or event_type.__name__,
+            type=topic_info.event_name,
             body=body,
-            # TODO date should be utc
-            create_at=datetime.now(),
         )
         self._outbox_message_dao.save(outbox_message)

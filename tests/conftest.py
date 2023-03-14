@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import django
@@ -39,15 +40,17 @@ def pytest_configure():
             'tests',
         ),
     )
-    injector = Injector([Configuration])
+    injector = Injector([TestConfiguration])
     set_injector(injector)
     django.setup()
 
 
-class Configuration(Module):
+class TestConfiguration(Module):
     def configure(self, binder):
         binder.bind(Engine, to=CallableProvider(make_engine), scope=singleton)
 
 
 def make_engine():
-    return create_engine('postgresql+psycopg2://supplyshift:supplyshift@localhost/winter')
+    url = os.getenv('WINTER_DATABASE_URL')
+    return create_engine(url)
+

@@ -18,7 +18,7 @@ from winter_messaging_outbox_transacton.inbox.inbox_message_dao import InboxMess
 from winter_messaging_outbox_transacton.middleware_registry import MiddlewareRegistry
 from winter_messaging_outbox_transacton.timeout_handler import TimeoutHandler
 
-logger = logging.getLogger('event_handling')
+logger = logging.getLogger(__name__)
 
 EVENT_HANDLING_TIMEOUT = 15
 RETRIES_ON_TIMEOUT = 1
@@ -63,8 +63,6 @@ class MessageListener:
                 id=message_id,
                 consumer_id=self._consumer_id,
                 name=event_type_name,
-                # TODO date should be utc
-                received_at=datetime.now(),
             )
             is_new = self._inbox_message_dao.save_if_not_exists(inbox_message)
             if not is_new:

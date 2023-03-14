@@ -13,10 +13,15 @@ class TopicAnnotation:
 
 
 def topic(name: str, event_name: str = ''):
-    return annotate(TopicAnnotation(name, event_name), single=True)
+    def wrapper(event_type):
+        assert issubclass(event_type, Event), f'Class "{event_type}" must be a subclass of Event'
+        event_name_ = event_name or event_type.__name__
+        annotation_decorator = annotate(TopicAnnotation(name, event_name_), single=True)
+        return annotation_decorator(event_type)
+
+    return wrapper
 
 
 def get_event_topic(event_type: Type[Event]) -> TopicAnnotation:
     event_component = Component.get_by_cls(event_type)
-    topic_info = event_component.annotations.get_one(TopicAnnotation)
-    return topic_info
+    return event_component.annotations.get_one(TopicAnnotation)

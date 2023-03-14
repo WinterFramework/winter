@@ -9,11 +9,12 @@ import winter_django
 from injector import Injector
 
 from winter_messaging_outbox_transacton.consumer_worker import ConsumerWorker
-from winter_messaging_outbox_transacton.injection import Configuration
+
+from winter_messaging_outbox_transacton.injector_config import MessagingConfiguration
 from winter_messaging_outbox_transacton.middleware_registry import MiddlewareRegistry
 from winter_messaging_outbox_transacton.worker_configuration import get_worker_configuration
 
-logger = logging.getLogger('event_handling')
+logger = logging.getLogger(__name__)
 
 
 class Parser(argparse.ArgumentParser):
@@ -45,7 +46,8 @@ if __name__ == '__main__':
 
     consumer_id = args.consumer
     package_name = args.package_module
-
+    injector = Injector([MessagingConfiguration()])
+    winter.core.set_injector(injector)
     try:
         worker_module = importlib.import_module(f'{package_name}.worker')
     except ModuleNotFoundError:
@@ -54,21 +56,16 @@ if __name__ == '__main__':
     winter_django.setup()
     django.setup()
 
+    middlewares = []
     worker_configuration = get_worker_configuration(package_name)
     if worker_configuration:
         modules_for_injector = worker_configuration.get_modules_for_injector()
-        injector_modules = [*modules_for_injector, Configuration()]
+        injector_modules = [*modules_for_injector]
         middlewares = worker_configuration.get_middlewares()
-    else:
-        injector_modules = [Configuration()]
-        middlewares = []
+        injector.binder.install(*injector_modules)
 
-    injector = Injector(injector_modules)
-    winter.core.set_injector(injector)
-
-    middleware_registry = injector.get(MiddlewareRegistry)
-    middleware_registry.set_middlewares(middlewares)
+    middleware_registry = MiddlewareRegistry(middlewares)
     worker = injector.get(ConsumerWorker)
 
     logger.info(f'Starting message consumer id: %s; in package: %s', consumer_id, package_name)
-    worker.start(consumer_id=consumer_id, package_name=package_name)
+    worker.start(consumer_id=consumer_id)
