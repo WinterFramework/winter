@@ -32,12 +32,15 @@ class EventHandlerRegistry:
     def autodiscover(self, consumer_id: str, package_name: str):
         import_recursively(package_name)
         for class_name, class_ in get_all_classes(package_name):
-            component = Component.get_by_cls(class_)
-            for component_method in component.methods:
-                event_handler_annotation = component_method.annotations.get_one_or_none(EventHandlerAnnotation)
-                if event_handler_annotation:
-                    self._register_handler(component_method)
-                    component_method.consumer_id = consumer_id
+            self.register_class(consumer_id, class_)
+
+    def register_class(self, consumer_id, class_):
+        component = Component.get_by_cls(class_)
+        for component_method in component.methods:
+            event_handler_annotation = component_method.annotations.get_one_or_none(EventHandlerAnnotation)
+            if event_handler_annotation:
+                self._register_handler(component_method)
+                component_method.consumer_id = consumer_id
 
     def _register_handler(self, handler_method: ComponentMethod):
         event_type: Type[Event] = handler_method.arguments[0].type_
@@ -47,3 +50,12 @@ class EventHandlerRegistry:
     def _register_event(self, event_type: Type[Event]):
         assert issubclass(event_type, Event), f'Class "{event_type}" must be a subclass of Event'
         self._event_name_to_event_type_map[event_type.__name__] = event_type
+
+    def unregister_class(self, class_):
+        component = Component.get_by_cls(class_)
+        for component_method in component.methods:
+            event_handler_annotation = component_method.annotations.get_one_or_none(EventHandlerAnnotation)
+            if event_handler_annotation:
+                event_type: Type[Event] = component_method.arguments[0].type_
+                self._register_event(event_type)
+                self._event_type_to_handler_map[event_type].remove(component_method)

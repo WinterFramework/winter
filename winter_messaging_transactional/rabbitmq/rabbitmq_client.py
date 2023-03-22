@@ -8,9 +8,9 @@ from pika.exchange_type import ExchangeType
 from retry import retry
 
 from winter.web import MediaType
-from winter_messaging_outbox_transacton.outbox.outbox_message import OutboxMessage
-from winter_messaging_outbox_transacton.rabbitmq import create_connection
-from winter_messaging_outbox_transacton.naming_convention import get_routing_key
+from winter_messaging_transactional.producer.outbox import OutboxMessage
+from winter_messaging_transactional.rabbitmq import create_connection
+from winter_messaging_transactional.naming_convention import get_routing_key
 
 
 class MessageNotPublishedException(Exception):

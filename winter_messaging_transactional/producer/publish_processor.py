@@ -3,10 +3,10 @@ from threading import Event
 
 from injector import inject
 
-from winter_messaging_outbox_transacton.rabbitmq import TopologyConfigurator
-from winter_messaging_outbox_transacton.rabbitmq.rabbitmq_client import MessageNotPublishedException
-from winter_messaging_outbox_transacton.rabbitmq.rabbitmq_client import RabbitMQClient
-from winter_messaging_outbox_transacton.outbox.outbox_message_dao import OutboxMessageDAO
+from winter_messaging_transactional.rabbitmq import TopologyConfigurator
+from winter_messaging_transactional.rabbitmq.rabbitmq_client import MessageNotPublishedException
+from winter_messaging_transactional.rabbitmq.rabbitmq_client import RabbitMQClient
+from winter_messaging_transactional.producer.outbox.outbox_message_dao import OutboxMessageDAO
 
 log = logging.getLogger(__name__)
 

@@ -9,10 +9,10 @@ from winter.messaging import EventHandlerRegistry
 from winter.messaging import get_event_topic
 from winter.messaging.topic_annotation import TopicAnnotation
 from winter.messaging.messaging_config import MessagingConfig
-from winter_messaging_outbox_transacton.rabbitmq.rabbitmq_client import RabbitMQClient
-from winter_messaging_outbox_transacton.naming_convention import get_consumer_queue
-from winter_messaging_outbox_transacton.naming_convention import get_exchange_name
-from winter_messaging_outbox_transacton.naming_convention import get_routing_key
+from winter_messaging_transactional.rabbitmq.rabbitmq_client import RabbitMQClient
+from winter_messaging_transactional.naming_convention import get_consumer_queue
+from winter_messaging_transactional.naming_convention import get_exchange_name
+from winter_messaging_transactional.naming_convention import get_routing_key
 
 
 log = logging.getLogger(__name__)

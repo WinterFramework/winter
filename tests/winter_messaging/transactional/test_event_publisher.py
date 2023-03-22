@@ -1,24 +1,14 @@
 from http import HTTPStatus
 from time import sleep
 
-import pytest
-from rest_framework.test import APIClient
 from sqlalchemy import select
 from sqlalchemy.engine import Engine
 
-from tests.entities import AuthorizedUser
 from winter.core import get_injector
-from winter_messaging_outbox_transacton.outbox import OutboxMessage
-from winter_messaging_outbox_transacton.outbox import outbox_message_table
+from winter_messaging_transactional.producer.outbox import OutboxMessage
+from winter_messaging_transactional.producer.outbox import outbox_message_table
 
 consumer_queue = 'winter.consumer_correct_events_queue'
-
-
-@pytest.fixture()
-def api_client():
-    client = APIClient()
-    client.force_authenticate(user=AuthorizedUser())
-    return client
 
 
 def test_publish_without_error(api_client, run_processor, broker_channel):
@@ -27,12 +17,11 @@ def test_publish_without_error(api_client, run_processor, broker_channel):
 
     # Assert
     assert response.status_code == HTTPStatus.OK
-    sleep(1)
+    sleep(2)
     messages = _read_all_outbox_messages()
     assert len(messages) == 1
     published_message = messages[0]
     assert published_message.id
-    print(published_message.id)
     assert published_message.sent_at is not None
 
     method, properties, body = broker_channel.basic_get(queue=consumer_queue, auto_ack=True)

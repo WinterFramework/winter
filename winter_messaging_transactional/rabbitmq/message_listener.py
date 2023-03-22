@@ -1,6 +1,5 @@
 import json
 import logging
-from datetime import datetime
 from uuid import UUID
 
 from injector import inject
@@ -12,11 +11,11 @@ from winter.core.json import json_decode
 from winter.messaging import Event
 from winter.messaging import EventHandlerRegistry
 from winter.messaging.event_dispacher import EventDispatcher
-from winter_messaging_outbox_transacton.event_processing_logger import EventProcessingLogger
-from winter_messaging_outbox_transacton.inbox.inbox_message import InboxMessage
-from winter_messaging_outbox_transacton.inbox.inbox_message_dao import InboxMessageDAO
-from winter_messaging_outbox_transacton.middleware_registry import MiddlewareRegistry
-from winter_messaging_outbox_transacton.timeout_handler import TimeoutHandler
+from winter_messaging_transactional.consumer.event_processing_logger import EventProcessingLogger
+from winter_messaging_transactional.consumer.inbox.inbox_message import InboxMessage
+from winter_messaging_transactional.consumer.inbox.inbox_message_dao import InboxMessageDAO
+from winter_messaging_transactional.consumer.middleware_registry import MiddlewareRegistry
+from winter_messaging_transactional.consumer.timeout_handler import TimeoutHandler
 
 logger = logging.getLogger(__name__)
 

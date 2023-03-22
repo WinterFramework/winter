@@ -3,12 +3,11 @@ from datetime import datetime
 from typing import Optional
 
 import sqlalchemy as sa
-from sqlalchemy import MetaData
 from sqlalchemy import func
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import UUID
 
-outbox_metadata = MetaData()
+from winter_messaging_transactional.table_metadata import messaging_metadata
 
 
 @dataclass
@@ -23,7 +22,7 @@ class OutboxMessage:
 
 outbox_message_table = sa.Table(
     'winter_outbox_message',
-    outbox_metadata,
+    messaging_metadata,
     sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False, primary_key=True),
     sa.Column('topic', sa.TEXT, nullable=False),
     sa.Column('type', sa.TEXT, nullable=False),

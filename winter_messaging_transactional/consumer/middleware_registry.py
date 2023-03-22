@@ -1,5 +1,5 @@
 from typing import Callable
-from typing import List
+from typing import Iterable
 from typing import Type
 
 
@@ -12,10 +12,11 @@ class Middleware:
 
 
 MiddlewareClass = Type[Middleware]
+MiddlewareCollection = Iterable[MiddlewareClass]
 
 
 class MiddlewareRegistry:
-    def __init__(self, middlewares):
+    def __init__(self, middlewares: MiddlewareCollection):
         self._middlewares = middlewares
 
     def run_with_middlewares(self, func: Callable[[], None]):

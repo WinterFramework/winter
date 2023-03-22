@@ -5,10 +5,9 @@ from injector import inject
 from pika.exceptions import AMQPConnectionError
 from retry import retry
 
-from winter_messaging_outbox_transacton.rabbitmq import TopologyConfigurator
-from winter_messaging_outbox_transacton.rabbitmq.message_listener import MessageListener
-from winter_messaging_outbox_transacton.rabbitmq.rabbitmq_client import RabbitMQClient
-from winter_messaging_outbox_transacton.timeout_handler import TimeoutHandler
+from winter_messaging_transactional.rabbitmq import TopologyConfigurator
+from winter_messaging_transactional.rabbitmq.message_listener import MessageListener
+from winter_messaging_transactional.rabbitmq.rabbitmq_client import RabbitMQClient
 
 logger = logging.getLogger(__name__)
 
