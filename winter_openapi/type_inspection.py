@@ -77,7 +77,10 @@ class TypeInfo:
         }
 
         if self.title:
-            data['title'] = self.title
+            if output:
+                data['title'] = self.title
+            else:
+                data['title'] = f'{self.title}Input'
 
         if self.description:
             data['description'] = self.description
