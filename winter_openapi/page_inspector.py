@@ -13,14 +13,15 @@ def inspect_page(hint_class) -> TypeInfo:
     child_class = args[0] if args else str
     extra_fields = set(dataclasses.fields(hint_class.__origin__)) - set(dataclasses.fields(Page))
     child_type_info = inspect_type(child_class)
+    title = child_type_info.title or child_type_info.type_.capitalize()
 
     return TypeInfo(
         openapi.TYPE_OBJECT,
-        title=f'PageOf{child_type_info.title or child_type_info.type_.capitalize()}',
+        title=f'PageOf{title}',
         properties={
             'meta': TypeInfo(
                 openapi.TYPE_OBJECT,
-                title='PageMeta',
+                title=f'PageMetaOf{title}',
                 properties={
                     'total_count': TypeInfo(openapi.TYPE_INTEGER),
                     'limit': TypeInfo(openapi.TYPE_INTEGER, nullable=True),

@@ -90,7 +90,7 @@ class TestAPI:
 
 
 user_dto_request_schema = openapi.Schema(
-    title='UserDTO',
+    title='UserDTOInput',
     description='This is a short one line description.\n'
                 '\n'
                 'This is a long multi-line description.\n'
@@ -100,7 +100,7 @@ user_dto_request_schema = openapi.Schema(
         'name': openapi.Schema(type=openapi.TYPE_STRING, description='user name'),
         'nested_dto': {
             'type': openapi.TYPE_OBJECT,
-            'title': 'NestedDTO',
+            'title': 'NestedDTOInput',
             'description': 'a nested dto object.\n'
                            'It contains some extra data.',
 

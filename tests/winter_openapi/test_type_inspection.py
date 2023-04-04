@@ -117,7 +117,7 @@ class CustomPage(Page, Generic[CustomPageItem]):
         })),
     (Page[NestedDataclass], TypeInfo(openapi.TYPE_OBJECT, title='PageOfNestedDataclass', properties={
         'meta': TypeInfo(openapi.TYPE_OBJECT,
-                         title='PageMeta',
+                         title='PageMetaOfNestedDataclass',
                          properties={
                              'total_count': TypeInfo(openapi.TYPE_INTEGER),
                              'limit': TypeInfo(openapi.TYPE_INTEGER, nullable=True),
@@ -132,7 +132,7 @@ class CustomPage(Page, Generic[CustomPageItem]):
                                            properties={'nested_number': TypeInfo(openapi.TYPE_INTEGER), })),
     })),
     (CustomPage[int], TypeInfo(openapi.TYPE_OBJECT, title='PageOfInteger', properties={
-        'meta': TypeInfo(openapi.TYPE_OBJECT, title='PageMeta', properties={
+        'meta': TypeInfo(openapi.TYPE_OBJECT, title='PageMetaOfInteger', properties={
             'total_count': TypeInfo(openapi.TYPE_INTEGER),
             'limit': TypeInfo(openapi.TYPE_INTEGER, nullable=True),
             'offset': TypeInfo(openapi.TYPE_INTEGER, nullable=True),
