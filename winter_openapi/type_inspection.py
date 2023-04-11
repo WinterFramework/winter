@@ -106,7 +106,7 @@ class TypeInfo:
             required_properties = [
                 property_name
                 for property_name in self.properties
-                if property_name not in self.properties_defaults
+                if property_name not in self.properties_defaults and not self.properties[property_name].nullable
             ]
 
         if required_properties:
