@@ -32,7 +32,7 @@ jobs:
     - name: Upload coverage report
       uses: actions/upload-artifact@v3
       with:
-        name: coverage
+        name: coverage-reports
         path: ".coverage.${{ matrix.name }}"
 
   coverage-check:
@@ -51,10 +51,10 @@ jobs:
       - name: Download coverage reports
         uses: actions/download-artifact@v1
         with:
-          name: coverage
+          name: coverage-reports
       - name: Combine reports
         run: |
-          cd coverage
           ls -l
-          coverage combine ../coverage
-          coverage report --rcfile=../.coveragerc --fail-under=100
+          ls -l ./coverage-reports
+          coverage combine coverage-reports
+          coverage report --fail-under=100
