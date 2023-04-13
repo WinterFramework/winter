@@ -54,7 +54,5 @@ jobs:
           name: coverage-reports
       - name: Combine reports
         run: |
-          ls -la
-          ls -la ./coverage-reports
-          coverage combine coverage-reports || true
+          coverage combine coverage-reports
           coverage report --fail-under=100
