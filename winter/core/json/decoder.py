@@ -24,7 +24,7 @@ from winter.core.utils.typing import is_optional
 
 try:
     from collections.abc import Sequence
-except ImportError:
+except ImportError:  # pragma: no cover
     from collections import Sequence  # Old import for versions older than Python3.10
 
 _decoders = {}

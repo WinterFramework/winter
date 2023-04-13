@@ -70,18 +70,6 @@ python-versions = ">=3.6.0"
 unicode_backport = ["unicodedata2"]
 
 [[package]]
-name = "codecov"
-version = "2.1.12"
-description = "Hosted coverage reports for GitHub, Bitbucket and Gitlab"
-category = "dev"
-optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
-
-[package.dependencies]
-coverage = "*"
-requests = ">=2.7.9"
-
-[[package]]
 name = "colorama"
 version = "0.4.6"
 description = "Cross-platform colored terminal text."
@@ -116,7 +104,7 @@ jinja2 = "*"
 
 [[package]]
 name = "coverage"
-version = "6.5.0"
+version = "7.2.3"
 description = "Code coverage measurement for Python"
 category = "dev"
 optional = false
@@ -825,7 +813,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "flake8 (<5)", "pytest-co
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "b2c07184554087f40c09a430ea65c5d375f4191991a137fb42ea171be83b4ce8"
+content-hash = "7051815a6f184f8be60e6a487b6f64b19a13d53cab200996c1c9c3981e3fa2a3"
 
 [metadata.files]
 add-trailing-comma = []
@@ -835,69 +823,44 @@ attrs = []
 certifi = []
 cfgv = []
 charset-normalizer = []
-codecov = []
 colorama = []
-coreapi = [
-    {file = "coreapi-2.3.3-py2.py3-none-any.whl", hash = "sha256:bf39d118d6d3e171f10df9ede5666f63ad80bba9a29a8ec17726a66cf52ee6f3"},
-    {file = "coreapi-2.3.3.tar.gz", hash = "sha256:46145fcc1f7017c076a2ef684969b641d18a2991051fddec9458ad3f78ffc1cb"},
-]
-coreschema = [
-    {file = "coreschema-0.0.4-py2-none-any.whl", hash = "sha256:5e6ef7bf38c1525d5e55a895934ab4273548629f16aed5c0a6caa74ebf45551f"},
-    {file = "coreschema-0.0.4.tar.gz", hash = "sha256:9503506007d482ab0867ba14724b93c18a33b22b6d19fb419ef2d239dd4a1607"},
-]
+coreapi = []
+coreschema = []
 coverage = []
-dataclasses = [
-    {file = "dataclasses-0.6-py3-none-any.whl", hash = "sha256:454a69d788c7fda44efd71e259be79577822f5e3f53f029a22d08004e951dc9f"},
-    {file = "dataclasses-0.6.tar.gz", hash = "sha256:6988bd2b895eef432d562370bb707d540f32f7360ab13da45340101bc2307d84"},
-]
+dataclasses = []
 distlib = []
 django = []
 djangorestframework = []
 docstring-parser = []
-drf-yasg = [
-    {file = "drf-yasg-1.20.0.tar.gz", hash = "sha256:d50f197c7f02545d0b736df88c6d5cf874f8fea2507ad85ad7de6ae5bf2d9e5a"},
-    {file = "drf_yasg-1.20.0-py2.py3-none-any.whl", hash = "sha256:8b72e5b1875931a8d11af407be3a9a5ba8776541492947a0df5bafda6b7f8267"},
-]
+drf-yasg = []
 entrypoints = []
 filelock = []
 flake8 = []
-flake8-commas = []
+flake8-commas = [
+    {file = "flake8-commas-2.0.0.tar.gz", hash = "sha256:d3005899466f51380387df7151fb59afec666a0f4f4a2c6a8995b975de0f44b7"},
+    {file = "flake8_commas-2.0.0-py2.py3-none-any.whl", hash = "sha256:ee2141a3495ef9789a3894ed8802d03eff1eaaf98ce6d8653a7c573ef101935e"},
+]
 flake8-formatter-abspath = []
 freezegun = []
-furl = [
-    {file = "furl-2.0.0-py2.py3-none-any.whl", hash = "sha256:f7e90e9f85ef3f2e64485f04c2a80b50af6133942812fd87a44d45305b079018"},
-    {file = "furl-2.0.0.tar.gz", hash = "sha256:fdcaedc1fb19a63d7d875b0105b0a5b496dd0989330d454a42bcb401fa5454ec"},
-]
+furl = []
 greenlet = []
 identify = []
 idna = []
 importlib-metadata = []
-inflection = [
-    {file = "inflection-0.5.1-py2.py3-none-any.whl", hash = "sha256:f38b2b640938a4f35ade69ac3d053042959b62a0f1076a5bbaa1b9526605a8a2"},
-    {file = "inflection-0.5.1.tar.gz", hash = "sha256:1a29730d366e996aaacffb2f1f1cb9593dc38e2ddd30c91250c6dde09ea9b417"},
-]
-iniconfig = [
-    {file = "iniconfig-1.1.1-py2.py3-none-any.whl", hash = "sha256:011e24c64b7f47f6ebd835bb12a743f2fbe9a26d4cecaa7f53bc4f35ee9da8b3"},
-    {file = "iniconfig-1.1.1.tar.gz", hash = "sha256:bc3af051d7d14b2ee5ef9969666def0cd1a000e121eaea580d4a313df4b37f32"},
-]
-injector = [
-    {file = "injector-0.15.0-py2.py3-none-any.whl", hash = "sha256:78cdce4b89a1635a6314d673a61516ff5af292337285898ffc2f2e72961d6773"},
-    {file = "injector-0.15.0.tar.gz", hash = "sha256:6f9602671e19ec8c85e69160b1b5469211a3ce749ccbe5d311e6ae987617ca33"},
-]
-itypes = [
-    {file = "itypes-1.2.0-py2.py3-none-any.whl", hash = "sha256:03da6872ca89d29aef62773672b2d408f490f80db48b23079a4b194c86dd04c6"},
-    {file = "itypes-1.2.0.tar.gz", hash = "sha256:af886f129dea4a2a1e3d36595a2d139589e4dd287f5cab0b40e799ee81570ff1"},
-]
+inflection = []
+iniconfig = []
+injector = []
+itypes = []
 jinja2 = []
 lxml = []
 markupsafe = []
-mccabe = []
+mccabe = [
+    {file = "mccabe-0.6.1-py2.py3-none-any.whl", hash = "sha256:ab8a6258860da4b6677da4bd2fe5dc2c659cff31b3ee4f7f5d64e79735b80d42"},
+    {file = "mccabe-0.6.1.tar.gz", hash = "sha256:dd8d182285a0fe56bace7f45b5e7d1a6ebcbf524e8f3bd87eb0f125271b8831f"},
+]
 mock = []
 nodeenv = []
-orderedmultidict = [
-    {file = "orderedmultidict-1.0.1-py2.py3-none-any.whl", hash = "sha256:43c839a17ee3cdd62234c47deca1a8508a3f2ca1d0678a3bf791c87cf84adbf3"},
-    {file = "orderedmultidict-1.0.1.tar.gz", hash = "sha256:04070bbb5e87291cc9bfa51df413677faf2141c73c61d2a5f7b26bea3cd882ad"},
-]
+orderedmultidict = []
 packaging = []
 pbr = []
 platformdirs = []
@@ -911,28 +874,19 @@ pytest = []
 pytest-cov = []
 pytest-django = []
 pytest-pythonpath = []
-python-dateutil = [
-    {file = "python-dateutil-2.8.0.tar.gz", hash = "sha256:c89805f6f4d64db21ed966fda138f8a5ed7a4fdbc1a8ee329ce1b74e3c74da9e"},
-    {file = "python_dateutil-2.8.0-py2.py3-none-any.whl", hash = "sha256:7e6584c74aeed623791615e26efd690f29817a27c73085b78e4bad02493df2fb"},
-]
+python-dateutil = []
 pytz = []
 pyyaml = []
 requests = []
 "ruamel.yaml" = []
 "ruamel.yaml.clib" = []
 semver = []
-six = [
-    {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
-    {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
-]
+six = []
 sqlalchemy = []
 sqlparse = []
 strenum = []
 tokenize-rt = []
-toml = [
-    {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
-    {file = "toml-0.10.2.tar.gz", hash = "sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f"},
-]
+toml = []
 tomli = []
 typing-extensions = []
 uritemplate = []
