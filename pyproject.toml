@@ -44,7 +44,6 @@ typing-extensions = "^3.10.0"
 StrEnum = "^0.4.8"
 
 [tool.poetry.dev-dependencies]
-codecov = ">=2.0.9"
 flake8 = "3.7.7"
 flake8-commas = "2.0.0"
 flake8-formatter-abspath = "1.0.1"

@@ -28,6 +28,31 @@ jobs:
     - name: Test with pytest
       run: |
         poetry run pytest -rfs --cov --cov-config=.coveragerc --cov-report="" --disable-warnings
-        poetry run coverage combine || true
-        poetry run coverage report
-        poetry run codecov
+        cp .coverage ".coverage.${{ matrix.name }}"
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage
+        path: ".coverage.${{ matrix.name }}"
+
+  coverage-check:
+    name: Coverage check
+    runs-on: ubuntu-20.04
+    needs: [build]
+    steps:
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.10
+      - name: Install dependencies
+        run: |
+          pip3 install coverage==7.2.3
+      - name: Download coverage reports
+        uses: actions/download-artifact@v1
+        with:
+          name: coverage
+      - name: Combine reports
+        run: |
+          cd coverage
+          coverage combine ../coverage
+          coverage report --fail-under=100
