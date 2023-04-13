@@ -40,10 +40,10 @@ jobs:
     runs-on: ubuntu-20.04
     needs: [build]
     steps:
-      - name: Set up Python 3.10
+      - name: Set up Python 3.9
         uses: actions/setup-python@v4
         with:
-          python-version: 3.10
+          python-version: 3.9
       - name: Install dependencies
         run: |
           pip3 install coverage==7.2.3
