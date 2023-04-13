@@ -55,5 +55,6 @@ jobs:
       - name: Combine reports
         run: |
           cd coverage
+          ls -l
           coverage combine ../coverage
           coverage report --rcfile=../.coveragerc --fail-under=100
