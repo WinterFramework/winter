@@ -2,6 +2,7 @@
 source = .
 branch = True
 disable_warnings = module-not-measured
+omit = samples/*
 
 [report]
 # Regexes for lines to exclude from consideration
@@ -37,6 +38,7 @@ exclude_lines =
 ignore_errors = True
 precision = 2
 show_missing = True
+skip_covered = True
 
 [paths]
 source = .

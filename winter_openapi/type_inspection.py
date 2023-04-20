@@ -77,7 +77,10 @@ class TypeInfo:
         }
 
         if self.title:
-            data['title'] = self.title
+            if output:
+                data['title'] = self.title
+            else:
+                data['title'] = f'{self.title}Input'
 
         if self.description:
             data['description'] = self.description
@@ -103,7 +106,7 @@ class TypeInfo:
             required_properties = [
                 property_name
                 for property_name in self.properties
-                if property_name not in self.properties_defaults
+                if property_name not in self.properties_defaults and not self.properties[property_name].nullable
             ]
 
         if required_properties:

@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [16.0.1] - 2023-04-12
+### Bugfixes
+- Fixed specification of optional properties in OpenAPI schema for models, which used as input parameters
+
+## [16.0.0] - 2023-04-04
+### Changed
+- Duplicate model names for different models don't appear in OpenAPI schema anymore - `PageMeta` renamed to `PageMetaOf{PageName}`, models in input parameters now have the suffix `Input`  
+
 ## [15.2.2] - 2023-02-23
 ### Added
 - winter_django.create_django_urls_from_routes: function that returns a list of django urls by the list of Routes 
