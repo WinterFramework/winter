@@ -45,9 +45,8 @@ if __name__ == '__main__':
     consumer_id = args.consumer
     package_name = args.package_module
 
-    injector = Injector([BaseModule(), ConsumerModule(), ProducerModule()])
+    injector = Injector([ConsumerModule])
     winter.core.set_injector(injector)
-    winter_django.setup()
     django.setup()
     setup()
 

@@ -7,6 +7,8 @@ from injector import singleton
 from winter.core import get_injector
 from winter.messaging import MessagingConfig
 from winter_messaging_transactional.consumer import MiddlewareCollection
+from winter_messaging_transactional.injection_modules import BaseModule
+from winter_messaging_transactional.injection_modules import ProducerModule
 from winter_messaging_transactional.messaging_app import MessagingApp
 
 
@@ -19,6 +21,8 @@ def setup():
     messaging_app = _get_messaging_app()
     modules_for_injector = messaging_app.get_injector_modules()
     injector.binder.install(*modules_for_injector)
+    injector.binder.install(BaseModule)
+    injector.binder.install(ProducerModule)
     middlewares = messaging_app.get_listener_middlewares()
     injector.binder.bind(MiddlewareCollection, InstanceProvider(middlewares), scope=singleton)
     config = messaging_app.get_configuration()
