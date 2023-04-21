@@ -26,7 +26,7 @@ class PublishProcessor:
         self._topology_configurator = configurator
 
     def run(self, cancellation: Event, app_id: str):
-        log.info('Publish processor started with sleep time: %s, app_id: %x', self.SLEEP_TIME, app_id)
+        log.info('Publish processor started with sleep time: %s, app_id: %s', self.SLEEP_TIME, app_id)
         while not cancellation.wait(self.SLEEP_TIME):
             outbox_messages = self._outbox_message_doa.select_unsent()
             for index, outbox_message in enumerate(outbox_messages):

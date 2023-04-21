@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
+from uuid import UUID
 
 import sqlalchemy as sa
 from sqlalchemy import func
 from sqlalchemy.dialects import postgresql
-from sqlalchemy.dialects.postgresql import UUID
 
 from winter_messaging_transactional.table_metadata import messaging_metadata
 

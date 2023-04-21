@@ -1,1 +1,1 @@
-from .setup import setup
+from .messaging_app import MessagingApp

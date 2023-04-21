@@ -3,15 +3,10 @@ import logging
 import sys
 
 import django
-from injector import Injector
 
-import winter.core
-import winter_django
-from winter_messaging_transactional.consumer import ConsumerWorker
-from winter_messaging_transactional.injection_modules import BaseModule
-from winter_messaging_transactional.injection_modules import ConsumerModule
-from winter_messaging_transactional.injection_modules import ProducerModule
-from winter_messaging_transactional.setup import setup
+from winter.core import get_injector
+from .consumer import ConsumerWorker
+from .setup import setup
 
 logger = logging.getLogger(__name__)
 
@@ -45,11 +40,10 @@ if __name__ == '__main__':
     consumer_id = args.consumer
     package_name = args.package_module
 
-    injector = Injector([ConsumerModule])
-    winter.core.set_injector(injector)
     django.setup()
     setup()
 
+    injector = get_injector()
     worker = injector.get(ConsumerWorker)
     logger.info(f'Starting message consumer id: %s; in package: %s', consumer_id, package_name)
     worker.start(consumer_id=consumer_id)

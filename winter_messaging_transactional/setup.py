@@ -1,15 +1,9 @@
 import importlib
 import os
 
-from injector import InstanceProvider
-from injector import singleton
-
 from winter.core import get_injector
-from winter.messaging import MessagingConfig
-from winter_messaging_transactional.consumer import MiddlewareCollection
-from winter_messaging_transactional.injection_modules import BaseModule
-from winter_messaging_transactional.injection_modules import ProducerModule
-from winter_messaging_transactional.messaging_app import MessagingApp
+from .injection_modules import TransactionalMessagingModule
+from .messaging_app import MessagingApp
 
 
 class InvalidConfiguration(Exception):
@@ -19,14 +13,8 @@ class InvalidConfiguration(Exception):
 def setup():
     injector = get_injector()
     messaging_app = _get_messaging_app()
-    modules_for_injector = messaging_app.get_injector_modules()
-    injector.binder.install(*modules_for_injector)
-    injector.binder.install(BaseModule)
-    injector.binder.install(ProducerModule)
-    middlewares = messaging_app.get_listener_middlewares()
-    injector.binder.bind(MiddlewareCollection, InstanceProvider(middlewares), scope=singleton)
-    config = messaging_app.get_configuration()
-    injector.binder.bind(MessagingConfig, InstanceProvider(config), scope=singleton)
+    messaging_app.setup(injector)
+    injector.binder.install(TransactionalMessagingModule)
 
 
 def _get_messaging_app() -> MessagingApp:

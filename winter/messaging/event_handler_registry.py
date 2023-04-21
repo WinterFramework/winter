@@ -48,7 +48,8 @@ class EventHandlerRegistry:
         self._event_type_to_handler_map[event_type].append(handler_method)
 
     def _register_event(self, event_type: Type[Event]):
-        assert issubclass(event_type, Event), f'Class "{event_type}" must be a subclass of Event'
+        assert isinstance(event_type, type) and issubclass(event_type, Event), \
+            f'Class "{event_type}" must be a subclass of Event'
         self._event_name_to_event_type_map[event_type.__name__] = event_type
 
     def unregister_class(self, class_):

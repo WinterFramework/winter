@@ -2,6 +2,8 @@ from typing import Callable
 from typing import Iterable
 from typing import Type
 
+from injector import inject
+
 
 class Middleware:
     def __init__(self, _next: Callable[[], None]):
@@ -16,6 +18,7 @@ MiddlewareCollection = Iterable[MiddlewareClass]
 
 
 class MiddlewareRegistry:
+    @inject
     def __init__(self, middlewares: MiddlewareCollection):
         self._middlewares = middlewares
 

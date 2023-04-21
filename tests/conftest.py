@@ -13,7 +13,7 @@ from sqlalchemy.engine import Engine
 from tests.entities import AuthorizedUser
 from winter.core import get_injector
 from winter.core import set_injector
-from winter_messaging_transactional.injection_modules import BaseModule as MessagingBaseModule
+from winter_messaging_transactional.injection_modules import TransactionalMessagingModule as MessagingBaseModule
 from winter_messaging_transactional.table_metadata import messaging_metadata
 from .entities import Guest
 
