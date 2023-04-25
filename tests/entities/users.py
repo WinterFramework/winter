@@ -16,6 +16,10 @@ class Guest(User):
     def is_anonymous(self):  # pragma: no cover
         return True
 
+    @property
+    def is_active(self):
+        return True
+
 
 class AuthorizedUser(User):
     def __init__(self, pk=None):
