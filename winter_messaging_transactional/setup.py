@@ -1,9 +1,13 @@
 import importlib
+import inspect
 import os
+
+from sqlalchemy.engine import Engine
 
 from winter.core import get_injector
 from .injection_modules import TransactionalMessagingModule
 from .messaging_app import MessagingApp
+from .table_metadata import messaging_metadata
 
 
 class InvalidConfiguration(Exception):
@@ -12,19 +16,26 @@ class InvalidConfiguration(Exception):
 
 def setup():
     injector = get_injector()
-    messaging_app = _get_messaging_app()
+    messaging_app = _create_messaging_app()
     messaging_app.setup(injector)
     injector.binder.install(TransactionalMessagingModule)
+    engine = injector.get(Engine)
+    messaging_metadata.create_all(engine)
 
 
-def _get_messaging_app() -> MessagingApp:
+def _create_messaging_app() -> MessagingApp:
     winter_settings_module = _init_winter_settings()
 
-    messaging_app = getattr(winter_settings_module, 'messaging_app', None)
-    if not isinstance(messaging_app, MessagingApp):
-        raise InvalidConfiguration('worker_configuration must be instance of MessagingApp')
+    messaging_app_class = None
+    for class_name, class_ in inspect.getmembers(winter_settings_module, inspect.isclass):
+        if issubclass(class_, MessagingApp) and class_ is not MessagingApp:
+            messaging_app_class = class_
+            break
 
-    return messaging_app
+    if not messaging_app_class:
+        raise InvalidConfiguration('Define subclass of MessagingApp and override setup method')
+
+    return messaging_app_class()
 
 
 def _init_winter_settings():
