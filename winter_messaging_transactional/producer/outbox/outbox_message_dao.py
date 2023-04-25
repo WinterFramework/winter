@@ -19,14 +19,14 @@ class OutboxMessageDAO:
         self._engine = engine
 
     def select_unsent(self) -> Iterable[OutboxMessage]:
-        query = select(
+        query = select([
             outbox_message_table.c.id,
             outbox_message_table.c.topic,
             outbox_message_table.c.type,
             outbox_message_table.c.body,
             outbox_message_table.c.created_at,
             outbox_message_table.c.sent_at,
-        ).where(outbox_message_table.c.sent_at.is_(None))
+        ]).where(outbox_message_table.c.sent_at.is_(None))
         with self._engine.connect() as connection:
             records = connection.execute(query)
             return (OutboxMessage(*record) for record in records)
