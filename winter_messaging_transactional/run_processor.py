@@ -10,8 +10,6 @@ from winter.core import get_injector
 from .producer.publish_processor import PublishProcessor
 from .setup import setup
 
-logger = logging.getLogger(__name__)
-
 
 class Parser(argparse.ArgumentParser):
     def error(self, message):
@@ -31,17 +29,4 @@ if __name__ == '__main__':
 
     injector = get_injector()
     processor = injector.get(PublishProcessor)
-    logger.info(f'Starting message processor id: %s', processor_id)
-
-    cancel_token = Event()
-
-
-    def stop_processor():
-        logger.info(f'Stopping message processor id: %s', processor_id)
-        cancel_token.set()
-
-
-    signal.signal(signal.SIGTERM, stop_processor)
-    signal.signal(signal.SIGINT, stop_processor)
-
-    processor.run(cancel_token, processor_id)
+    processor.run()

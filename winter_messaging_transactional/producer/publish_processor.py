@@ -1,4 +1,5 @@
 import logging
+import signal
 from threading import Event
 
 from injector import inject
@@ -25,18 +26,33 @@ class PublishProcessor:
         self._outbox_message_doa = outbox_message_doa
         self._topology_configurator = configurator
 
-    def run(self, cancellation: Event, app_id: str):
-        log.info('Publish processor started with sleep time: %s, app_id: %s', self.SLEEP_TIME, app_id)
-        while not cancellation.wait(self.SLEEP_TIME):
+    def run(self):
+        log.info('Publishing processor started with sleep time: %s', self.SLEEP_TIME)
+        cancel_token = Event()
+
+        def handle_interrupt_signal(signum, frame):
+            cancel_token.set()
+
+        signal.signal(signal.SIGTERM, handle_interrupt_signal)
+        signal.signal(signal.SIGINT, handle_interrupt_signal)
+
+        is_error_occurred = False
+        while not cancel_token.wait(self.SLEEP_TIME):
             outbox_messages = self._outbox_message_doa.select_unsent()
             for index, outbox_message in enumerate(outbox_messages):
                 exchange = self._topology_configurator.get_exchange_key(outbox_message.topic)
                 try:
-                    self._rabbitmq_client.publish(outbox_message, exchange, app_id)
+                    self._rabbitmq_client.publish(outbox_message, exchange)
                     self._outbox_message_doa.mark_as_sent([outbox_message])
                 except MessageNotPublishedException:
-                    log.exception('Publisher processor error. Message not published: %s', outbox_message.id)
+                    log.exception('Publishing processor error. Message not published: %s', outbox_message.message_id)
+                    is_error_occurred = True
+                    break
 
-            if cancellation.is_set():
-                log.info('Publish processor stopped app_id: %s', app_id)
+            if is_error_occurred:
+                log.error('Publishing process aborted due to an error')
+                break
+
+            if cancel_token.is_set():
+                log.info('Publishing processor stopped')
                 break

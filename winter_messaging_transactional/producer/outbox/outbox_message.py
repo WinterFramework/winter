@@ -12,18 +12,17 @@ from winter_messaging_transactional.table_metadata import messaging_metadata
 
 @dataclass
 class OutboxMessage:
-    id: UUID
+    message_id: UUID
     topic: str
     type: str
     body: str
-    created_at: Optional[datetime] = None
-    sent_at: Optional[datetime] = None
 
 
 outbox_message_table = sa.Table(
     'winter_outbox_message',
     messaging_metadata,
-    sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False, primary_key=True),
+    sa.Column('id', sa.INTEGER, nullable=False, primary_key=True, autoincrement=True),
+    sa.Column('message_id', postgresql.UUID(as_uuid=True), nullable=False, unique=True),
     sa.Column('topic', sa.TEXT, nullable=False),
     sa.Column('type', sa.TEXT, nullable=False),
     sa.Column('body', sa.TEXT, nullable=False),

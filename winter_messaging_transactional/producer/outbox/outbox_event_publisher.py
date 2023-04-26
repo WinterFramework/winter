@@ -24,7 +24,7 @@ class OutboxEventPublisher(EventPublisher):
         event_dict = dataclasses.asdict(event)
         body = json.dumps(event_dict, ensure_ascii=False, cls=JSONEncoder)
         outbox_message = OutboxMessage(
-            id=uuid4(),
+            message_id=uuid4(),
             topic=topic_info.name,
             type=topic_info.event_name,
             body=body,

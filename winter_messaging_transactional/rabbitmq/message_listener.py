@@ -24,6 +24,8 @@ RETRIES_ON_TIMEOUT = 1
 
 
 class MessageListener:
+    MAX_RETRIES = 3
+
     @inject
     def __init__(
         self,
@@ -54,34 +56,36 @@ class MessageListener:
         body: bytes,
     ):
         message_id = UUID(properties.message_id)
-        logger.info(f'Message(%s) is received', message_id)
-        try:
-            event_type_name = properties.type
-            inbox_message = InboxMessage(
-                id=message_id,
-                consumer_id=self._consumer_id,
-                name=event_type_name,
-            )
-            is_new = self._inbox_message_dao.save_if_not_exists(inbox_message)
-            if not is_new:
-                channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-                return
+        event_type_name = properties.type
+        logger.info(f'Message(%s) is received with type: %s', message_id, event_type_name)
+        inbox_message = InboxMessage(
+            id=message_id,
+            consumer_id=self._consumer_id,
+            name=event_type_name,
+        )
+        result = self._inbox_message_dao.upsert(inbox_message)
+        if result.processed_at is not None:
+            channel.basic_ack(delivery_tag=method_frame.delivery_tag)
+            return
 
+        try:
             event_type = self._handler_registry.get_event_type(event_type_name)
             event_dict = json.loads(body)
             event = json_decode(event_dict, hint_class=event_type)
-
-            with EventProcessingLogger(message_id=message_id, event_type_name=event_type_name):
-                self._dispatch_event(event=event, message_id=message_id)
+            self._dispatch_event(event=event, message_id=message_id)
             channel.basic_ack(delivery_tag=method_frame.delivery_tag)
         except Exception:
-            logger.exception('Exception is raised during handling Message(%s)', message_id)
-            channel.basic_nack(delivery_tag=method_frame.delivery_tag, requeue=False)
+            if result.counter < self.MAX_RETRIES:
+                channel.basic_nack(delivery_tag=method_frame.delivery_tag, requeue=True)
+            else:
+                logger.exception('Exception is raised during handling Message(%s)', message_id)
+                channel.basic_nack(delivery_tag=method_frame.delivery_tag, requeue=False)
 
     def _dispatch_event(self, event: Event, message_id: UUID):
-        with self._engine.begin():
-            self._middleware_registry.run_with_middlewares(lambda: self._event_dispatcher.dispatch(event))
-            self._inbox_message_dao.mark_as_handled(message_id, self._consumer_id)
+        with EventProcessingLogger(message_id=message_id, event_type_name=event.__class__.__name__):
+            with self._engine.begin():
+                self._middleware_registry.run_with_middlewares(lambda: self._event_dispatcher.dispatch(event))
+                self._inbox_message_dao.mark_as_handled(message_id, self._consumer_id)
 
     def stop(self):
         self._timeout_handler.can_retry = False

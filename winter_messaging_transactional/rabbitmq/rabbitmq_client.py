@@ -31,20 +31,20 @@ class RabbitMQClient:
         self._channel.confirm_delivery()
 
     def declare_dead_letter(self):
-        self._channel.exchange_declare(self.DLX, ExchangeType.direct.value, durable=True)
+        self._channel.exchange_declare(self.DLX, ExchangeType.fanout.value, durable=True)
         result_queue = self._channel.queue_declare(self.DLQ, durable=True, arguments={"x-queue-type": "quorum"})
         self._channel.queue_bind(result_queue.method.queue, self.DLX, "*")
 
     @retry(AMQPConnectionError, delay=1)
-    def publish(self, message: OutboxMessage, exchange: str, app_id: str):
+    def publish(self, message: OutboxMessage, exchange: str):
         if self._connection.is_closed or self._channel.is_closed:
             self._init_channel()
 
         routing_key = get_routing_key(message.topic, message.type)
         properties = BasicProperties(
-            app_id=app_id,
+            app_id=message.topic,
             type=message.type,
-            message_id=str(message.id),
+            message_id=str(message.message_id),
             content_type=str(MediaType.APPLICATION_JSON),
             delivery_mode=DeliveryMode.Persistent,
         )
@@ -57,7 +57,7 @@ class RabbitMQClient:
                 mandatory=True,
             )
         except (UnroutableError, NackError):
-            err_message = f'Published failed. Message id: {message.id}; ' \
+            err_message = f'Published failed. Message id: {message.message_id}; ' \
                           f'routing key: {routing_key}; exchange: {exchange}. ' \
                           f'Check configuration settings for confirmation'
             raise MessageNotPublishedException(err_message)

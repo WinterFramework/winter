@@ -14,22 +14,33 @@ from .inbox_message import InboxMessage
 from .inbox_message import inbox_message_table
 
 
+@dataclasses.dataclass
+class InboxResult:
+    id: UUID
+    counter: int
+    processed_at: datetime
+
+
 class InboxMessageDAO:
 
     @inject
     def __init__(self, engine: Engine):
         self._engine = engine
 
-    def save_if_not_exists(self, event: InboxMessage) -> bool:
+    def upsert(self, event: InboxMessage) -> InboxResult:
         inbox_event_dict = dataclasses.asdict(event)
-        del inbox_event_dict['received_at']
-        statement = insert(inbox_message_table).values(**inbox_event_dict).on_conflict_do_nothing(
-            index_elements=[inbox_message_table.c.id, inbox_message_table.c.consumer_id]
-        ).returning(inbox_message_table.c.id)
+        statement = insert(inbox_message_table).values(**inbox_event_dict).on_conflict_do_update(
+            index_elements=[inbox_message_table.c.id, inbox_message_table.c.consumer_id],
+            set_=dict(counter=inbox_message_table.c.counter + 1),
+        ).returning(
+            inbox_message_table.c.id,
+            inbox_message_table.c.counter,
+            inbox_message_table.c.processed_at,
+        )
         with self._engine.connect() as connection:
             result = connection.execute(statement)
             inserted_record = result.fetchone()
-            return inserted_record is not None
+            return InboxResult(*inserted_record)
 
     def mark_as_handled(self, id_: UUID, consumer_id: str):
         statement = update(inbox_message_table).where(

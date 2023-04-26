@@ -26,6 +26,7 @@ class ConsumerWorker:
         self._is_interrupted = False
 
     def start(self, consumer_id: str):
+        logger.info(f'Starting message consumer id: %s', consumer_id)
         self._message_listener.set_consumer_id(consumer_id)
         queue = self._configurator.get_consumer_queue(consumer_id)
         self._rabbit_client.start_consuming(queue, self._message_listener.on_message_callback)
@@ -45,7 +46,7 @@ class ConsumerWorker:
         try:
             self._rabbit_client.start_consuming()
         except Exception:
-            logger.exception('Consumer worker %s stopping by Exception', consumer_id)
+            logger.exception('Consumer worker %s stopping by error', consumer_id)
         finally:
             if not self._is_interrupted:
                 self._rabbit_client.stop_consuming()
