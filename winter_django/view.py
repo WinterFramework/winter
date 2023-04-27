@@ -112,7 +112,7 @@ def _is_authentication_needed_for_routes(routes: List[Route]) -> bool:
 
 
 def _is_csrf_needed_for_routes(routes: List[Route]) -> bool:
-    is_csrf_needed_count = sum(is_csrf_needed(route.method.component) for route in routes)
+    is_csrf_needed_count = sum(is_csrf_needed(route.method) for route in routes)
     is_csrf_needed_for_routes = is_csrf_needed_count != 0
 
     if is_csrf_needed_for_routes and is_csrf_needed_count != len(routes):

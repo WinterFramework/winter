@@ -64,8 +64,8 @@ def test_create_django_urls_from_routes_with_csrf_exempt_exception():
         def get(self):  # pragma: no cover
             pass
 
-    @winter.web.csrf_exempt
     class API2:
+        @winter.web.csrf_exempt
         @winter.route_patch("csrf_exempt/")
         def update(self):  # pragma: no cover
             pass
