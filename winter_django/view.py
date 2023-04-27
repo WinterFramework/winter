@@ -21,6 +21,7 @@ from winter.web import ResponseEntity
 from winter.web import response_headers_serializer
 from winter.web.argument_resolver import arguments_resolver
 from winter.web.auth import is_authentication_needed
+from winter.web.auth import is_csrf_needed
 from winter.web.default_response_status import get_default_response_status
 from winter.web.exceptions import MethodExceptionsManager
 from winter.web.exceptions import ThrottleException
@@ -39,7 +40,12 @@ class SessionAuthentication(rest_framework.authentication.SessionAuthentication)
     """SessionAuthentication with supporting 401 status code"""
 
     def authenticate_header(self, request):
-        return 'Unauthorized'
+        return "Unauthorized"
+
+
+class CsrfExemptSessionAuthentication(SessionAuthentication):
+    def enforce_csrf(self, request):
+        return  # To not perform the csrf check previously happening
 
 
 def create_django_urls(api_class_with_routes: Type) -> List:
@@ -81,7 +87,9 @@ def _create_drf_view_from_routes(routes: List[Route]) -> 'rest_framework.views.A
     import rest_framework.views
 
     class WinterView(rest_framework.views.APIView):
-        authentication_classes = (SessionAuthentication,)
+        authentication_classes = (
+            (SessionAuthentication,) if _is_csrf_needed_for_routes(routes) else (CsrfExemptSessionAuthentication,)
+        )
         permission_classes = (IsAuthenticated,) if _is_authentication_needed_for_routes(routes) else ()
 
     for route in routes:
@@ -101,6 +109,16 @@ def _is_authentication_needed_for_routes(routes: List[Route]) -> bool:
         raise Exception('All url path routes must be either with authentication or without')
 
     return is_authentication_needed_for_routes
+
+
+def _is_csrf_needed_for_routes(routes: List[Route]) -> bool:
+    is_csrf_needed_count = sum(is_csrf_needed(route.method) for route in routes)
+    is_csrf_needed_for_routes = is_csrf_needed_count != 0
+
+    if is_csrf_needed_for_routes and is_csrf_needed_count != len(routes):
+        raise Exception("All url path routes must be either with csrf or without")
+
+    return is_csrf_needed_for_routes
 
 
 def _create_drf_view(api_class: Type, routes: List[Route]) -> 'rest_framework.views.APIView':
