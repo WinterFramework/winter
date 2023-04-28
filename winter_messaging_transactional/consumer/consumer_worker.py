@@ -28,8 +28,6 @@ class ConsumerWorker:
     def start(self, consumer_id: str):
         logger.info(f'Starting message consumer id: %s', consumer_id)
         self._message_listener.set_consumer_id(consumer_id)
-        queue = self._configurator.get_consumer_queue(consumer_id)
-        self._rabbit_client.start_consuming(queue, self._message_listener.on_message_callback)
 
         def handle_interrupt_signal(signum, frame):
             self._is_interrupted = True
@@ -39,16 +37,12 @@ class ConsumerWorker:
         signal.signal(signal.SIGTERM, handle_interrupt_signal)
         signal.signal(signal.SIGINT, handle_interrupt_signal)
 
-        self._start_with_retry(consumer_id)
-
-    @retry(AMQPConnectionError, delay=5, jitter=(1, 3))
-    def _start_with_retry(self, consumer_id):
+        queue = self._configurator.get_consumer_queue(consumer_id)
         try:
-            self._rabbit_client.start_consuming()
+            self._rabbit_client.start_consuming(queue, self._message_listener.on_message_callback)
         except Exception:
             logger.exception('Consumer worker %s stopping by error', consumer_id)
         finally:
             if not self._is_interrupted:
                 self._rabbit_client.stop_consuming()
             self._rabbit_client.close()
-

@@ -39,7 +39,7 @@ class RabbitMQClient:
         result_queue = self._channel.queue_declare(self.DLQ, durable=True, arguments={"x-queue-type": "quorum"})
         self._channel.queue_bind(result_queue.method.queue, self.DLX, "*")
 
-    @retry(AMQPConnectionError, delay=1)
+    @retry(AMQPConnectionError, delay=1, backoff=2)
     def publish(self, message: OutboxMessage, exchange: str):
         if self._connection.is_closed or self._channel.is_closed:
             self._init_channel()
