@@ -1,3 +1,5 @@
+import logging
+
 from injector import inject
 from pika import BasicProperties
 from pika import DeliveryMode
@@ -11,6 +13,8 @@ from winter.web import MediaType
 from winter_messaging_transactional.producer.outbox import OutboxMessage
 from winter_messaging_transactional.rabbitmq import create_connection
 from winter_messaging_transactional.naming_convention import get_routing_key
+
+logger = logging.getLogger(__name__)
 
 
 class MessageNotPublishedException(Exception):
@@ -56,7 +60,10 @@ class RabbitMQClient:
                 properties=properties,
                 mandatory=True,
             )
-        except (UnroutableError, NackError):
+        except UnroutableError:
+            warn_message = 'The message was not routed to any queue. Message id: %s; routing key: %s; exchange: %s'
+            logger.warning(warn_message, message.message_id, routing_key, exchange)
+        except NackError:
             err_message = f'Published failed. Message id: {message.message_id}; ' \
                           f'routing key: {routing_key}; exchange: {exchange}. ' \
                           f'Check configuration settings for confirmation'
