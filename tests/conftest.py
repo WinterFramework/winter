@@ -40,10 +40,14 @@ def pytest_configure():
         INSTALLED_APPS=(
             # Hack for making module discovery working
             'django.contrib.admin',
+            'django.contrib.auth',
             'django.contrib.contenttypes',
             # End hack
             'tests',
         ),
+        MIDDLEWARE=[
+            'tests.middleware.AuthenticationMiddleware',
+        ]
     )
     injector = Injector([TestConfiguration, MessagingBaseModule()])
     set_injector(injector)
