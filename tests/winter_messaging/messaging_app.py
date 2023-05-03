@@ -8,7 +8,7 @@ from winter_messaging_transactional.messaging_app import MessagingApp
 from winter_messaging_transactional.producer.outbox import OutboxEventPublisher
 
 
-class TestMessagingApp(MessagingApp):
+class WinterMessagingApp(MessagingApp):
 
     def setup(self, injector):
         injector.binder.bind(EventPublisher, to=ClassProvider(OutboxEventPublisher))
@@ -21,6 +21,3 @@ class TestMessagingApp(MessagingApp):
             }
         )
         injector.binder.bind(MessagingConfig, to=InstanceProvider(config), scope=singleton)
-
-
-messaging_app = TestMessagingApp()

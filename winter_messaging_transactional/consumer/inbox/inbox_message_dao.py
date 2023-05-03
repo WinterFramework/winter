@@ -4,7 +4,7 @@ from datetime import timedelta
 from uuid import UUID
 
 from injector import inject
-from sqlalchemy import delete
+from sqlalchemy import delete, and_
 from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy import update
@@ -44,8 +44,10 @@ class InboxMessageDAO:
 
     def mark_as_handled(self, id_: UUID, consumer_id: str):
         statement = update(inbox_message_table).where(
-            inbox_message_table.c.id == id_,
-            inbox_message_table.c.consumer_id == consumer_id,
+            and_(
+                inbox_message_table.c.id == id_,
+                inbox_message_table.c.consumer_id == consumer_id,
+            )
         ).values(
             {inbox_message_table.c.processed_at: func.now()}
         )

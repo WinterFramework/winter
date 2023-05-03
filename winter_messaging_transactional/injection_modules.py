@@ -24,7 +24,6 @@ class TransactionalMessagingModule(Module):
         binder.bind(EventHandlerRegistry, to=ClassProvider(EventHandlerRegistry), scope=singleton)
         binder.bind(EventDispatcher, to=ClassProvider(EventDispatcher))
         binder.bind(TopologyConfigurator, to=ClassProvider(TopologyConfigurator), scope=singleton)
-        binder.bind(BlockingConnection, to=CallableProvider(create_connection), scope=singleton)
         binder.bind(ConsumerWorker, to=ClassProvider(ConsumerWorker))
         binder.bind(MiddlewareRegistry, to=ClassProvider(MiddlewareRegistry), scope=singleton)
         binder.bind(InboxCleanupProcessor, to=ClassProvider(InboxCleanupProcessor))

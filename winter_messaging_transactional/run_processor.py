@@ -1,8 +1,5 @@
 import argparse
-import logging
-import signal
 import sys
-from threading import Event
 
 import django
 
