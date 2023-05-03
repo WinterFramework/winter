@@ -1,4 +1,6 @@
 import dataclasses
+from datetime import datetime
+from datetime import timedelta
 from typing import Iterable
 
 from injector import inject
@@ -46,6 +48,7 @@ class OutboxMessageDAO:
             connection.execute(statement)
 
     def remove_sent(self):
-        statement = delete(outbox_message_table).where(outbox_message_table.c.sent_at.isnot_(None))
+        day_before = datetime.utcnow() - timedelta(days=1)
+        statement = delete(outbox_message_table).where(outbox_message_table.c.sent_at <= day_before)
         with self._engine.connect() as connection:
             connection.execute(statement)

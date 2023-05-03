@@ -1,6 +1,4 @@
 from dataclasses import dataclass
-from datetime import datetime
-from typing import Optional
 
 import sqlalchemy as sa
 from sqlalchemy import func
@@ -25,5 +23,5 @@ inbox_message_table = sa.Table(
     sa.Column('name', postgresql.TEXT, nullable=False),
     sa.Column('counter', postgresql.INTEGER, nullable=False, server_default='0'),
     sa.Column('received_at', sa.TIMESTAMP, nullable=False, server_default=func.now()),
-    sa.Column('processed_at', sa.TIMESTAMP, nullable=True),
+    sa.Column('processed_at', sa.TIMESTAMP, nullable=True, index=True),
 )
