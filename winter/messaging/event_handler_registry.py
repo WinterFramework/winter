@@ -7,7 +7,7 @@ from typing import Type
 from winter.core import Component
 from winter.core import ComponentMethod
 from winter.core.module_discovery import get_all_classes
-from winter.core.module_discovery import import_recursively
+from winter.core.module_discovery import get_all_modules
 from .event import Event
 from .event_handler import EventHandlerAnnotation
 
@@ -32,7 +32,7 @@ class EventHandlerRegistry:
         return self._event_type_to_handler_methods[event_type]
 
     def autodiscover(self, package_name: str):
-        import_recursively(package_name)
+        get_all_modules(package_name)
         for class_name, class_ in get_all_classes(package_name):
             component = Component.get_by_cls(class_)
             for component_method in component.methods:
