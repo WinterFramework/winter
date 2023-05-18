@@ -15,6 +15,8 @@ def get_all_classes(package: str) -> Generator[Tuple[str, Type], None, None]:
             for class_name, class_ in inspect.getmembers(module, inspect.isclass):
                 if class_ in classes_set:
                     continue
+                if not class_.__module__.startswith(package):
+                    continue
                 yield class_name, class_
                 classes_set.add(class_)
         except ImportError:
