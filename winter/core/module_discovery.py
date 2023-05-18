@@ -22,24 +22,20 @@ def get_all_classes(package: str) -> Generator[Tuple[str, Type], None, None]:
 
 
 def get_all_subclasses(supertype: Type) -> Generator[Tuple[str, Type], None, None]:
-    classes_set = set()
     for module in dict(sys.modules).values():
         try:
-            members = inspect.getmembers(module, inspect.isclass)
-        except ImportError:
-            pass
-        for class_name, class_ in members:
-            if class_ in classes_set:
-                continue
-            try:
-                # Workaround to not fail in the issubclass check
-                from _weakref import ReferenceType
+            for class_name, class_ in inspect.getmembers(module, inspect.isclass):
+                try:
+                    # Workaround to not fail in the issubclass check
+                    from _weakref import ReferenceType
 
-                ReferenceType(class_)
-            except TypeError:
-                continue
-            if class_ is not supertype and issubclass(class_, supertype):
-                yield class_name, class_
+                    ReferenceType(class_)
+                except TypeError:
+                    continue
+                if class_ is not supertype and issubclass(class_, supertype):
+                    yield class_name, class_
+        except ImportError:  # pragma: no cover
+            pass
 
 
 def import_recursively(package: str) -> Generator[ModuleType, None, None]:
