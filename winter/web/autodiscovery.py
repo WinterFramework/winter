@@ -2,13 +2,13 @@ from typing import List
 
 from winter.core import Component
 from winter.core.module_discovery import get_all_classes
-from winter.core.module_discovery import get_all_modules
+from winter.core.module_discovery import import_recursively
 from .routing import Route
 from .routing import get_route
 
 
 def find_package_routes(package_name: str) -> List[Route]:
-    get_all_modules(package_name)
+    import_recursively(package_name)
     routes = []
 
     for class_name, cls in get_all_classes(package_name):
