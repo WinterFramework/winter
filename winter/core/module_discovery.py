@@ -10,7 +10,7 @@ from typing import Type
 
 def get_all_classes(package: Union[str, ModuleType]) -> Generator[Tuple[str, Type], None, None]:
     classes_set = set()
-    for module in get_all_modules(package):
+    for module in import_recursively(package):
         try:
             for class_name, class_ in inspect.getmembers(module, inspect.isclass):
                 if class_ in classes_set:
@@ -41,7 +41,7 @@ def get_all_subclasses(supertype: Type) -> Generator[Tuple[str, Type], None, Non
             pass
 
 
-def get_all_modules(package: Union[str, ModuleType]) -> Generator[ModuleType, None, None]:
+def import_recursively(package: Union[str, ModuleType]) -> Generator[ModuleType, None, None]:
     if isinstance(package, str):
         package = importlib.import_module(package)
     for loader, name, is_pkg in pkgutil.walk_packages(package.__path__, package.__name__ + '.'):
