@@ -127,7 +127,9 @@ def _create_drf_view(api_class: Type, routes: List[Route]) -> 'rest_framework.vi
     component = Component.get_by_cls(api_class)
 
     class WinterView(rest_framework.views.APIView):
-        authentication_classes = (SessionAuthentication,)
+        authentication_classes = (
+            (SessionAuthentication,) if _is_csrf_needed_for_routes(routes) else (CsrfExemptSessionAuthentication,)
+        )
         permission_classes = (IsAuthenticated,) if is_authentication_needed(component) else ()
 
     # It's useful for New Relic APM
