@@ -18,6 +18,10 @@ from typing import Type
 from drf_yasg import openapi
 from strenum import StrEnum
 
+from winter.core.json import Undefined
+from winter.core.utils.typing import get_union_args
+from winter.core.utils.typing import is_union
+
 from winter.core.docstring import Docstring
 from winter.core.utils import has_nested_type
 from winter.core.utils.typing import get_origin_type, get_generic_args
@@ -59,6 +63,7 @@ class TypeInfo:
     format_: Optional[str] = None
     child: Optional['TypeInfo'] = None
     nullable: bool = False
+    can_be_undefined: bool = False
     properties: Dict[str, 'TypeInfo'] = dataclasses.field(default_factory=OrderedDict)
     properties_defaults: Dict[str, object] = dataclasses.field(default_factory=dict)
     enum: Optional[list] = None
@@ -106,7 +111,9 @@ class TypeInfo:
             required_properties = [
                 property_name
                 for property_name in self.properties
-                if property_name not in self.properties_defaults and not self.properties[property_name].nullable
+                if property_name not in self.properties_defaults
+                   and not self.properties[property_name].nullable
+                   and not self.properties[property_name].can_be_undefined
             ]
 
         if required_properties:
@@ -222,6 +229,20 @@ def inspect_optional(hint_class) -> TypeInfo:
     child_type = hint_class.__args__[0]
     type_info = inspect_type(child_type)
     type_info.nullable = True
+    return type_info
+
+
+def can_be_undefined(type_):
+    return is_union(type_) and Undefined in get_union_args(type_)
+
+
+@register_type_inspector(object, checker=can_be_undefined)
+def inspect_can_be_undefined(hint_class) -> TypeInfo:
+    union_args = get_union_args(hint_class)
+    assert len(union_args) == 2, 'Union with Undefined must have 2 args'
+    value_type = union_args[0] if union_args[0] is not Undefined else union_args[1]
+    type_info = inspect_type(value_type)
+    type_info.can_be_undefined = True
     return type_info
 
 

@@ -1,5 +1,6 @@
 import dataclasses
 from typing import Optional
+from typing import Union
 
 import pytest
 from drf_yasg import openapi
@@ -10,6 +11,7 @@ import winter_django
 from tests.api import APIWithExceptions
 from tests.api import APIWithProblemExceptions
 from winter.core import Component
+from winter.core.json import Undefined
 from winter.web import MediaType
 from winter.web.routing import get_route
 from winter_django.view import _create_drf_view
@@ -348,3 +350,56 @@ def test_exception_responses(api_class, method_name: str, expected_responses):
 
     # Assert
     assert operation.responses == openapi.Responses(expected_responses)
+
+
+def test_undefined_fields():
+    @dataclasses.dataclass
+    class RequestBody:
+        """Some description"""
+        field_a: Union[str, Undefined]
+        field_b: Union[str, Undefined] = Undefined()
+
+    class SomeAPI:
+        @winter.route_post()
+        @winter.request_body('body')
+        def post(self, body: RequestBody):  # pragma: no cover
+            pass
+
+
+    route = get_route(SomeAPI.post)
+    view = _create_drf_view(TestAPI, [route])
+    components = openapi.ReferenceResolver('definitions', force_init=True)
+    auto_schema = SwaggerAutoSchema(view, 'path', route.http_method, components, 'request', {})
+
+    parameters = [
+        openapi.Parameter(
+            name='data',
+            in_=openapi.IN_BODY,
+            required=True,
+            schema=openapi.Schema(
+                title='RequestBodyInput',
+                description='Some description',
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'field_a': openapi.Schema(type=openapi.TYPE_STRING),
+                    'field_b': openapi.Schema(type=openapi.TYPE_STRING),
+                },
+            ),
+        ),
+    ]
+    expected_operation = openapi.Operation(
+        operation_id='SomeAPI.post',
+        responses=openapi.Responses({
+            '200': openapi.Response(
+                description='',
+            ),
+        }),
+        consumes=['application/json'],
+        produces=['application/json'],
+        tags=['test_app'],
+        parameters=parameters,
+    )
+
+    operation = auto_schema.get_operation(['test_app', 'post'])
+
+    assert operation == expected_operation

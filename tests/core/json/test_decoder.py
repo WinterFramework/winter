@@ -10,11 +10,13 @@ from typing import Optional
 from typing import Sequence
 from typing import Set
 from typing import Tuple
+from typing import Union
 
 import pytest
 from dateutil.tz import tzutc
 
 from winter.core.json import JSONDecodeException
+from winter.core.json import Undefined
 from winter.core.json import json_decode
 
 empty = object()
@@ -456,3 +458,26 @@ def test_decode_bool_with_errors(data, type_, expected_errors):
     with pytest.raises(JSONDecodeException) as ex:
         json_decode(data, type_)
     assert ex.value.errors == expected_errors
+
+
+@dataclasses.dataclass
+class DataclassWithUndefinedType:
+    a: Union[int, Undefined]
+
+
+@dataclasses.dataclass
+class DataclassWithUndefinedByDefault:
+    a: Union[int, Undefined] = Undefined()
+
+
+@pytest.mark.parametrize(
+    ('data', 'type_', 'expected_result'), (
+        ({}, DataclassWithUndefinedType, DataclassWithUndefinedType(a=Undefined())),
+        ({'a': 123}, DataclassWithUndefinedType, DataclassWithUndefinedType(a=123)),
+        ({}, DataclassWithUndefinedByDefault, DataclassWithUndefinedByDefault(a=Undefined())),
+        ({'a': 123}, DataclassWithUndefinedByDefault, DataclassWithUndefinedByDefault(a=123)),
+    ),
+)
+def test_decode_dataclass_with_no_value(data, type_, expected_result):
+    instance = json_decode(data, type_)
+    assert instance == expected_result
