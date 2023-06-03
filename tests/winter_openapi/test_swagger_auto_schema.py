@@ -365,7 +365,6 @@ def test_undefined_fields():
         def post(self, body: RequestBody):  # pragma: no cover
             pass
 
-
     route = get_route(SomeAPI.post)
     view = _create_drf_view(TestAPI, [route])
     components = openapi.ReferenceResolver('definitions', force_init=True)
