@@ -9,7 +9,7 @@ UnionType = type(Union)
 
 
 def is_optional(type_: object) -> bool:
-    return is_union(type_) and NoneType in (getattr(type_, '__args__', []) or [])
+    return is_union(type_) and NoneType in get_union_args(type_)
 
 
 def is_any(type_: object) -> bool:
@@ -30,6 +30,10 @@ def is_iterable_type(type_: object) -> bool:
 
 def is_union(type_: object) -> bool:
     return get_origin_type(type_) == Union
+
+
+def get_union_args(type_: object) -> list:
+    return getattr(type_, '__args__', []) or []
 
 
 def get_origin_type(hint_class):

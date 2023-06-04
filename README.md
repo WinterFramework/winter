@@ -255,3 +255,31 @@ class HelloWorldConfigurer(Configurer):
         registry.add_interceptor(HelloWorldInterceptor())
 
 ```
+
+## Undefined JSON fields
+
+By default, if a JSON request contains a field that is not defined in a dataclass, an exception will be thrown.
+To accept missing fields in dataclass, you can use Undefined class to explicitly mark fields as optional.
+
+```python
+import winter
+from dataclasses import dataclass
+from typing import Union
+from winter.core.json import Undefined
+
+
+@dataclass
+class RequestBody:
+    field_a: Union[str, Undefined]
+    field_b: Union[str, Undefined] = Undefined()  # explicit default value is not required
+
+
+class SomeAPI:
+    @winter.route_post('/')
+    @winter.request_body('body')
+    def some_method(self, body: RequestBody):
+        if body.field_a == Undefined():
+            print('Field A is not defined in JSON request')
+        if body.field_b == Undefined():
+            print('Field B is not defined in JSON request')
+```
