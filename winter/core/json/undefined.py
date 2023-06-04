@@ -4,7 +4,7 @@ class Undefined:
         return isinstance(other, Undefined)
 
     def __hash__(self):
-        return 123456789
+        return 0
 
     def __repr__(self):
         return 'Undefined'
