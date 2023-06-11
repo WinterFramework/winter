@@ -7,7 +7,6 @@ from .input_serializer import input_serializer
 from .output_serializer import get_output_serializer
 from .output_serializer import output_serializer
 from .output_template import output_template
-from .page_serializer import PageSerializer
 from .view import create_django_urls
 from .view import create_django_urls_from_routes
 
