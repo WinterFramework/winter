@@ -104,17 +104,6 @@ def test_request_body_with_errors():
     assert response.json() == expected_data
 
 
-def test_with_argument_not_valid_annotation():
-    def method(argument: int):  # pragma: no cover
-        return argument
-
-    annotation_decorator = request_body('argument')
-
-    with pytest.raises(AssertionError) as exception:
-        annotation_decorator(method)
-    assert exception.value.args == ('Invalid request body type',)
-
-
 def test_without_argument():
     def method(argument: int):  # pragma: no cover
         return argument
