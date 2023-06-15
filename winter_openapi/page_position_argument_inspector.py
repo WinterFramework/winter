@@ -55,6 +55,7 @@ class PagePositionArgumentsInspector(RouteParametersInspector):
                 type=openapi.TYPE_ARRAY,
                 items={'type': openapi.TYPE_STRING},
                 default=default_sort,
+                collectionFormat='multi',
             )
             parameters.append(order_by_parameter)
 
