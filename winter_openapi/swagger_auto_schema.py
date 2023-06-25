@@ -8,7 +8,6 @@ from drf_yasg.utils import merge_params
 from winter.web.request_body_annotation import RequestBodyAnnotation
 from winter.web.routing import Route
 from winter.web.routing import RouteAnnotation
-from winter_django import InputSerializer
 from .generation import get_route_parameters
 from .generation import build_responses_schemas
 from .type_inspection import inspect_type
@@ -61,13 +60,7 @@ class SwaggerAutoSchema(SwaggerAutoSchemaBase):
 
     def _get_request_body_parameters(self, route: Route) -> List[openapi.Parameter]:
         method = route.method
-        input_serializer = method.annotations.get_one_or_none(InputSerializer)
-        if input_serializer is not None:
-            serializer = input_serializer.class_()
-            schema = self.get_request_body_schema(serializer)
-            return [openapi.Parameter(name='data', in_=openapi.IN_BODY, required=True, schema=schema)]
         request_body_annotation = method.annotations.get_one_or_none(RequestBodyAnnotation)
-
         if request_body_annotation is not None:
             argument = method.get_argument(request_body_annotation.argument_name)
             type_info = inspect_type(argument.type_)
