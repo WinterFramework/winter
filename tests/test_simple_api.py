@@ -46,27 +46,35 @@ def test_get_response_entity():
     }
 
 
-def test_page_response():
+@pytest.mark.parametrize(('limit', 'offset', 'expected_previous', 'expected_next'), (
+    (1, 1, 'http://testserver/winter-simple/page-response/?limit=1', 'http://testserver/winter-simple/page-response/?limit=1&offset=2'),
+    (None, None, None, None),
+    (2, 3, 'http://testserver/winter-simple/page-response/?limit=2&offset=1', 'http://testserver/winter-simple/page-response/?limit=2&offset=5'),
+    (9, 3, 'http://testserver/winter-simple/page-response/?limit=9', None),
+))
+def test_page_response(limit, offset, expected_previous, expected_next):
     client = APIClient()
     user = AuthorizedUser()
     client.force_authenticate(user)
+    url = f'/winter-simple/page-response/?'
+    if limit is not None:
+        url += f'&limit={limit}'
+    if offset is not None:
+        url += f'&offset={offset}'
+
     expected_body = {
         'objects': [{'number': 1}],
         'meta': {
-            'limit': 2,
-            'offset': 2,
-            'next': 'http://testserver/winter-simple/page-response/?limit=2&offset=4',
-            'previous': 'http://testserver/winter-simple/page-response/?limit=2',
+            'limit': limit,
+            'offset': offset,
+            'next': expected_next,
+            'previous': expected_previous,
             'total_count': 10,
         },
     }
-    data = {
-        'limit': 2,
-        'offset': 2,
-    }
 
     # Act
-    response = client.get('/winter-simple/page-response/', data=data)
+    response = client.get(url)
 
     # Assert
     assert response.status_code == HTTPStatus.OK, response.content

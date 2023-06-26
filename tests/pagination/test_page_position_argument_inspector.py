@@ -60,6 +60,7 @@ def test_page_position_argument_inspector_with_allowed_order_by_fields(default_s
         type=openapi.TYPE_ARRAY,
         items={'type': openapi.TYPE_STRING},
         default=default_in_parameter,
+        collectionFormat='multi',
     )
 
     expected_parameters = [

@@ -10,7 +10,6 @@ from winter.web.default_response_status import get_default_response_status
 from winter.web.exceptions import MethodExceptionsManager
 from winter.web.exceptions import exception_handlers_registry
 from winter.web.routing import Route
-from winter_django import get_output_serializer
 from .route_parameters_inspector import get_route_parameters_inspectors
 from .type_inspection import InspectorNotFound
 from .type_inspection import inspect_type
@@ -58,10 +57,6 @@ def build_responses_schemas(route: Route):
 
 
 def build_response_schema(method: ComponentMethod):
-    output_serializer = get_output_serializer(method)
-    if output_serializer is not None:
-        return output_serializer.class_(**output_serializer.kwargs)
-
     return_value_type = method.return_value_type
 
     if (
