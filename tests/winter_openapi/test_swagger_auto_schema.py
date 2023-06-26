@@ -4,10 +4,8 @@ from typing import Union
 
 import pytest
 from drf_yasg import openapi
-from rest_framework import serializers
 
 import winter
-import winter_django
 from tests.api import APIWithExceptions
 from tests.api import APIWithProblemExceptions
 from winter.core import Component
@@ -50,14 +48,6 @@ class UserDTO:
     age: Optional[int] = None
 
 
-class UserSerializer(serializers.Serializer):
-    name = serializers.CharField(required=True)
-
-    def to_internal_value(self, data):  # pragma: no cover
-        data = super().to_internal_value(data)
-        return UserDTO(**data)
-
-
 class TestAPI:
 
     @winter.request_body(argument_name='request_body')
@@ -79,11 +69,6 @@ class TestAPI:
         :param request_body:
         :return:
         """
-        return request_body
-
-    @winter_django.input_serializer(UserSerializer, argument_name='request_body')
-    @winter.route_post('with-serializer/')
-    def post_with_serializer(self, request_body: UserDTO) -> UserDTO:  # pragma: no cover
         return request_body
 
     @winter.route_get('without-body/')
@@ -197,43 +182,6 @@ def test_get_operation():
     operation = auto_schema.get_operation(['test_app', 'post'])
 
     assert operation == expected_operation
-
-
-def test_get_operation_with_serializer():
-    route = get_route(TestAPI.post_with_serializer)
-    view = _create_drf_view(TestAPI, [route])
-    components = openapi.ReferenceResolver('definitions', force_init=True)
-    auto_schema = SwaggerAutoSchema(view, 'path', route.http_method, components, 'request', {})
-
-    # Act
-    operation = auto_schema.get_operation(['test_app', 'post'])
-
-    # Assert
-    assert operation == openapi.Operation(
-        operation_id='TestAPI.post_with_serializer',
-        responses=openapi.Responses({
-            200: openapi.Response(description='', schema=user_dto_response_schema),
-        }),
-        consumes=['application/json'],
-        produces=['application/json'],
-        tags=['test_app'],
-        parameters=[
-            openapi.Parameter(
-                name='data',
-                in_=openapi.IN_BODY,
-                required=True,
-                schema=openapi.SchemaRef(components, 'User'),
-            ),
-        ],
-    )
-
-    assert components.get('User', 'definitions') == openapi.Schema(
-        type='object',
-        properties={
-            'name': openapi.Schema('Name', type='string', minLength=1),
-        },
-        required=['name'],
-    )
 
 
 def test_get_operation_without_body():
