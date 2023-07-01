@@ -156,7 +156,7 @@ def inspect_dataclass(hint_class) -> TypeInfo:
         for field in fields
         if field.default != dataclasses.MISSING
     }
-    # TODO fix field
+
     return TypeInfo(
         type_=DataTypes.OBJECT,
         properties=properties,
