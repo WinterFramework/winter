@@ -30,13 +30,17 @@ class QueryParametersInspector(RouteParametersInspector):
             type_info = TypeInfo(openapi.TYPE_STRING)
             description = 'winter_openapi has failed to inspect the parameter'
 
+        type_info_dict = type_info.as_dict(output=False)
+        if type_info.type_ == openapi.TYPE_ARRAY:
+            type_info_dict['collectionFormat'] = 'multi'
+
         return openapi.Parameter(
             name=name,
             description=description,
             required=argument.required,
             in_=openapi.IN_QUERY,
             default=argument.get_default(None),
-            **type_info.as_dict(output=False),
+            **type_info_dict,
         )
 
     def _query_arguments(self, route: 'Route') -> List[Tuple[ComponentMethodArgument, str]]:

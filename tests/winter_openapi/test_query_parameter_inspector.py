@@ -42,11 +42,13 @@ class IntegerEnum(IntEnum):
         'type': openapi.TYPE_ARRAY,
         'items': {'type': openapi.TYPE_INTEGER, 'enum': [1, 2]},
         'description': 'docstr',
+        'collectionFormat': 'multi',
     }),
     (List[StringValueEnum], {
         'type': openapi.TYPE_ARRAY,
         'items': {'type': openapi.TYPE_STRING, 'enum': ['red', 'green']},
         'description': 'docstr',
+        'collectionFormat': 'multi',
     }),
 ])
 def test_query_parameter_inspector(type_hint, expected_parameter_properties):

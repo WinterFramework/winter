@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [18.0.0] - 2023-06-25
+### Deprecation
+- DRF serializers are not supported anymore, use dataclasses instead. Classes and annotations deleted: PageSerializer, BodyWithContext, @input_serializer, @output_serializer
+
+## [17.0.5] - 2023-06-15
+### Bugfixes
+- Fixed missing `collectionFormat` field in a OpenAPI schema for query array parameters
+
+## [17.0.3] - 2023-06-02
+### Added
+- Add winter.core.json.Undefined class to represent absence of value in JSON object
+
+## [17.0.2] - 2023-05-31
+### Bugfixes
+- @winter.web.csrf_exempt: fixed bug with csrf_exempt decorator for old views
+
 ## [17.0.0] - 2023-05-18
 ### Changed
 - winter.core.module_discovery functions are now generators, package is no longer optional
