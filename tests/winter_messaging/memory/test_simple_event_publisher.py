@@ -1,4 +1,6 @@
+import pytest
 from injector import ClassProvider
+from injector import InstanceProvider
 from injector import singleton
 
 from winter.core import annotate
@@ -19,8 +21,7 @@ other_annotation = annotate(OtherAnnotation, single=True)
 
 
 class EventHandlers:
-    def __init__(self):
-        self.result = {'handlers': [], 'x': 0}
+    result = {'handlers': [], 'x': 0}
 
     @event_handler
     def handler1(self, event: Event1):
@@ -43,24 +44,27 @@ class EventHandlers:
         self.result['x'] += event.x
 
 
-def test_simple_event_publisher():
+@pytest.fixture(scope='module', autouse=True)
+def registry():
     injector = get_injector()
-    injector.binder.bind(EventHandlers, to=ClassProvider(EventHandlers), scope=singleton)
-    injector.binder.bind(EventHandlerRegistry, to=ClassProvider(EventHandlerRegistry), scope=singleton)
-
-    simple_event_publisher = injector.get(SimpleEventPublisher)
     registry = injector.get(EventHandlerRegistry)
-    registry.autodiscover('tests.messaging')
+    registry.register_class('test_consumer1', EventHandlers)
+    yield
+    registry.unregister_class(EventHandlers)
+
+
+@pytest.mark.parametrize('event, expected_result', [
+    (Event1(10), {'handlers': [1, 2], 'x': 20}),
+    (Event1(20), {'handlers': [1, 2, 1, 2], 'x': 60}),
+    (Event2(100), {'handlers': [1, 2, 1, 2], 'x': 60}),
+    (Event3(1000), {'handlers': [1, 2, 1, 2, 3], 'x': 1060})
+])
+def test_simple_event_publisher(event, expected_result):
+    injector = get_injector()
+    simple_event_publisher = injector.get(SimpleEventPublisher)
 
     # Act
-    simple_event_publisher.emit(Event1(10))
+    simple_event_publisher.emit(event)
 
     # Assert
-    result = injector.get(EventHandlers).result
-    assert result == {'handlers': [1, 2], 'x': 20}
-    simple_event_publisher.emit(Event1(20))
-    assert result == {'handlers': [1, 2, 1, 2], 'x': 60}
-    simple_event_publisher.emit(Event2(100))
-    assert result == {'handlers': [1, 2, 1, 2], 'x': 60}
-    simple_event_publisher.emit(Event3(1000))
-    assert result == {'handlers': [1, 2, 1, 2, 3], 'x': 1060}
+    assert EventHandlers.result == expected_result
