@@ -60,8 +60,7 @@ class TopologyConfigurator:
             exchange_name = get_exchange_name(topic_name)
             self._topic_to_exchange_map[topic_name] = exchange_name
             key = (exchange_name, event_routing_key)
-            # TODO fix monkey patching consumer_id in self._handler_registry.autodiscover
-            consumer_id = handler_info.consumer_id
+            consumer_id = self._handler_registry.get_consumer_id(handler_info)
             self._consumer_to_events_map[consumer_id].add(key)
 
         declared_topics = self._config.topics
