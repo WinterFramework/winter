@@ -85,7 +85,7 @@ class MessageListener:
         with EventProcessingLogger(message_id=message_id, event_type_name=event.__class__.__name__):
             with self._engine.begin():
                 self._middleware_registry.run_with_middlewares(lambda: self._event_dispatcher.dispatch(event))
-                self._inbox_message_dao.mark_as_handled(message_id, self._consumer_id)
+                self._inbox_message_dao.mark_as_processed(message_id, self._consumer_id)
 
     def stop(self):
         self._timeout_handler.can_retry = False

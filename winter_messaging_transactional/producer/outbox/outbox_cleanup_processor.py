@@ -22,7 +22,7 @@ class OutboxCleanupProcessor:
     def run(self, cancellation: Event):
         log.info('Cleanup outbox processor started with sleep time: %s', self._cleanup_interval)
         while not cancellation.wait(self._cleanup_interval):
-            self._outbox_message_doa.remove_sent()
+            self._outbox_message_doa.remove_published()
 
             if cancellation.is_set():
                 log.info('Cleanup outbox processor stopped')

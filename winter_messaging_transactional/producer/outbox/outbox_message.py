@@ -27,5 +27,5 @@ outbox_message_table = sa.Table(
     sa.Column('type', sa.TEXT, nullable=False),
     sa.Column('body', sa.TEXT, nullable=False),
     sa.Column('created_at', sa.TIMESTAMP, nullable=False, server_default=func.now()),
-    sa.Column('sent_at', sa.TIMESTAMP, nullable=True, index=True),
+    sa.Column('published_at', sa.TIMESTAMP, nullable=True, index=True),
 )

@@ -27,7 +27,7 @@ class OutboxMessageDAO:
             outbox_message_table.c.type,
             outbox_message_table.c.body,
         ]).where(
-            outbox_message_table.c.sent_at.is_(None)
+            outbox_message_table.c.published_at.is_(None)
         ).order_by(outbox_message_table.c.id)
         with self._engine.connect() as connection:
             records = connection.execute(query)
@@ -43,12 +43,12 @@ class OutboxMessageDAO:
         ids = [event.message_id for event in events]
         statement = update(outbox_message_table).where(
             outbox_message_table.c.message_id.in_(ids)
-        ).values({outbox_message_table.c.sent_at: func.now()})
+        ).values({outbox_message_table.c.published_at: func.now()})
         with self._engine.connect() as connection:
             connection.execute(statement)
 
-    def remove_sent(self):
+    def remove_published(self):
         day_before = datetime.utcnow() - timedelta(days=1)
-        statement = delete(outbox_message_table).where(outbox_message_table.c.sent_at <= day_before)
+        statement = delete(outbox_message_table).where(outbox_message_table.c.published_at <= day_before)
         with self._engine.connect() as connection:
             connection.execute(statement)

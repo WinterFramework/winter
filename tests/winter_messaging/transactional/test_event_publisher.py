@@ -22,7 +22,7 @@ def test_publish_without_error(api_client, run_processor, broker_channel):
     assert len(messages) == 1
     published_message = messages[0]
     assert published_message.id
-    assert published_message.sent_at is not None
+    assert published_message.published_at is not None
 
     method, properties, body = broker_channel.basic_get(queue=consumer_queue, auto_ack=True)
     assert method is not None

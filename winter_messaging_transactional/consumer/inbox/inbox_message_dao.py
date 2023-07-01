@@ -42,7 +42,7 @@ class InboxMessageDAO:
             inserted_record = result.fetchone()
             return InboxResult(*inserted_record)
 
-    def mark_as_handled(self, id_: UUID, consumer_id: str):
+    def mark_as_processed(self, id_: UUID, consumer_id: str):
         statement = update(inbox_message_table).where(
             and_(
                 inbox_message_table.c.id == id_,
