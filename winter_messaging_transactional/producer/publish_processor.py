@@ -50,7 +50,7 @@ class PublishProcessor:
                     break
 
             if is_error_occurred:
-                log.error('Publishing process aborted due to an error')
+                log.error('Publishing processor aborted due to an error')
                 break
 
             if cancel_token.is_set():
