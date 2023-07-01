@@ -15,6 +15,7 @@ from typing import TypeVar
 from typing import Union
 
 import pytest
+from openapi_spec_validator import validate_spec
 from strenum import StrEnum
 
 import winter
@@ -265,7 +266,7 @@ class RequestBodyWithUndefined:
 ])
 def test_response_return_type(type_hint, expected_response_info):
     class _TestAPI:
-        @winter.route_get('types/')
+        @winter.route_get('/types/')
         def simple_method(self) -> type_hint:  # pragma: no cover
             pass
 
@@ -289,8 +290,9 @@ def test_response_return_type(type_hint, expected_response_info):
     result = generate_openapi(title='title', version='1.0.0', routes=[route])
 
     # Assert
-    method_info = result['paths']['types/']['get']
+    method_info = result['paths']['/types/']['get']
     assert method_info == expected_method_info, type_hint
+    validate_spec(result)
 
 
 def test_response_with_invalid_return_type():
@@ -354,7 +356,7 @@ def test_response_with_invalid_return_type():
 ])
 def test_request_type(type_hint, expected_request_body_spec):
     class _TestAPI:
-        @winter.route_post('types/')
+        @winter.route_post('/types/')
         @winter.request_body('data')
         def simple_method(self, data: type_hint):  # pragma: no cover
             pass
@@ -365,5 +367,6 @@ def test_request_type(type_hint, expected_request_body_spec):
     result = generate_openapi(title='title', version='1.0.0', routes=[route])
 
     # Assert
-    method_info = result['paths']['types/']['post']['requestBody']
+    method_info = result['paths']['/types/']['post']['requestBody']
     assert method_info == {'content': {'application/json': expected_request_body_spec}, 'required': False}
+    validate_spec(result)
