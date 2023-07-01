@@ -167,4 +167,3 @@ def test_query_parameter_without_python_argument():
 
     # Assert
     assert str(exc_info.value) == 'Argument "test" not found in _TestAPI.api_method, but listed in query parameters'
-
