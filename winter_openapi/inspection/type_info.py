@@ -14,6 +14,7 @@ class TypeInfo:
     format_: Optional[DataFormat] = None
     child: Optional['TypeInfo'] = None
     nullable: bool = False
+    can_be_undefined: bool = False
     properties: Dict[str, 'TypeInfo'] = field(default_factory=OrderedDict)
     properties_defaults: Dict[str, object] = field(default_factory=dict)
     enum: Optional[list] = None

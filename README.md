@@ -1,7 +1,6 @@
 # Winter
 
 [![Build Status](https://github.com/WinterFramework/winter/workflows/Testing/badge.svg?branch=master)](https://github.com/WinterFramework/winter/actions)
-[![codecov](https://codecov.io/gh/WinterFramework/winter/branch/master/graph/badge.svg)](https://codecov.io/gh/WinterFramework/winter)
 [![Maintainability](https://api.codeclimate.com/v1/badges/876abe42ca943d9c6014/maintainability)](https://codeclimate.com/github/WinterFramework/winter/maintainability)
 [![PyPI version](https://badge.fury.io/py/winter.svg)](https://badge.fury.io/py/winter)
 [![Gitter](https://badges.gitter.im/winter-python/community.svg)](https://gitter.im/winter-python/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
@@ -255,4 +254,32 @@ class HelloWorldConfigurer(Configurer):
     def add_interceptors(self, registry: InterceptorRegistry):
         registry.add_interceptor(HelloWorldInterceptor())
 
+```
+
+## Undefined JSON fields
+
+By default, if a JSON request contains a field that is not defined in a dataclass, an exception will be thrown.
+To accept missing fields in dataclass, you can use Undefined class to explicitly mark fields as optional.
+
+```python
+import winter
+from dataclasses import dataclass
+from typing import Union
+from winter.core.json import Undefined
+
+
+@dataclass
+class RequestBody:
+    field_a: Union[str, Undefined]
+    field_b: Union[str, Undefined] = Undefined()  # explicit default value is not required
+
+
+class SomeAPI:
+    @winter.route_post('/')
+    @winter.request_body('body')
+    def some_method(self, body: RequestBody):
+        if body.field_a == Undefined():
+            print('Field A is not defined in JSON request')
+        if body.field_b == Undefined():
+            print('Field B is not defined in JSON request')
 ```

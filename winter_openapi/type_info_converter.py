@@ -12,7 +12,7 @@ def convert_type_info_to_openapi_schema(value: TypeInfo, *, output: bool) -> Sch
         'type': value.type_.value
     }
     if value.title:
-        data['title'] = value.title
+        data['title'] = value.title if output else f'{value.title}Input'
 
     if value.description:
         data['description'] = value.description
@@ -42,6 +42,8 @@ def convert_type_info_to_openapi_schema(value: TypeInfo, *, output: bool) -> Sch
             property_name
             for property_name in value.properties
             if property_name not in value.properties_defaults
+               and not value.properties[property_name].nullable
+               and not value.properties[property_name].can_be_undefined
         ]
 
     if required_properties:

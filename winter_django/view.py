@@ -1,14 +1,16 @@
+import warnings
 from collections import defaultdict
 from functools import wraps
 from typing import Any
 from typing import List
-from typing import Type
 from typing import TYPE_CHECKING
+from typing import Type
 
 import django.http
 import rest_framework.authentication
 import rest_framework.response
 from django.conf.urls import url
+from django.urls import URLPattern
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 
@@ -19,6 +21,7 @@ from winter.web import ResponseEntity
 from winter.web import response_headers_serializer
 from winter.web.argument_resolver import arguments_resolver
 from winter.web.auth import is_authentication_needed
+from winter.web.auth import is_csrf_needed
 from winter.web.default_response_status import get_default_response_status
 from winter.web.exceptions import MethodExceptionsManager
 from winter.web.exceptions import ThrottleException
@@ -29,7 +32,6 @@ from winter.web.routing import get_route
 from winter.web.throttling import create_throttle_class
 from winter.web.urls import rewrite_uritemplate_with_regexps
 
-
 if TYPE_CHECKING:
     import rest_framework.views
 
@@ -38,15 +40,21 @@ class SessionAuthentication(rest_framework.authentication.SessionAuthentication)
     """SessionAuthentication with supporting 401 status code"""
 
     def authenticate_header(self, request):
-        return 'Unauthorized'
+        return "Unauthorized"
+
+
+class CsrfExemptSessionAuthentication(SessionAuthentication):
+    def enforce_csrf(self, request):
+        return  # To not perform the csrf check previously happening
 
 
 def create_django_urls(api_class_with_routes: Type) -> List:
+    warnings.warn('Deprecated. Use create_django_urls_from_routes instead.', DeprecationWarning)
     component = Component.get_by_cls(api_class_with_routes)
     django_urls = []
 
     for url_path, routes in _group_routes_by_url_path(component.methods):
-        django_view = create_drf_view(api_class_with_routes, routes).as_view()
+        django_view = _create_drf_view(api_class_with_routes, routes).as_view()
         winter_url_path = f'^{url_path}$'
         methods = [route.method for route in routes]
         django_url_path = rewrite_uritemplate_with_regexps(winter_url_path, methods)
@@ -55,13 +63,73 @@ def create_django_urls(api_class_with_routes: Type) -> List:
     return django_urls
 
 
-def create_drf_view(api_class: Type, routes: List[Route]) -> 'rest_framework.views.APIView':
+def create_django_urls_from_routes(routes: List[Route]) -> List[URLPattern]:
+    django_urls = []
+    grouped_routes = defaultdict(list)
+
+    for route in routes:
+        grouped_routes[route.url_path].append(route)
+
+    for url_path, routes in grouped_routes.items():
+        django_view = _create_drf_view_from_routes(routes).as_view()
+        winter_url_path = f'^{url_path}$'
+        methods = [route.method for route in routes]
+        django_url_path = rewrite_uritemplate_with_regexps(winter_url_path, methods)
+
+        for route in routes:
+            django_url = url(django_url_path, django_view, name=route.method.full_name)
+            django_urls.append(django_url)
+
+    return django_urls
+
+
+def _create_drf_view_from_routes(routes: List[Route]) -> 'rest_framework.views.APIView':
+    import rest_framework.views
+
+    class WinterView(rest_framework.views.APIView):
+        authentication_classes = (
+            (SessionAuthentication,) if _is_csrf_needed_for_routes(routes) else (CsrfExemptSessionAuthentication,)
+        )
+        permission_classes = (IsAuthenticated,) if _is_authentication_needed_for_routes(routes) else ()
+
+    for route in routes:
+        dispatch = _create_dispatch_function(route.method.component.component_cls, route)
+        dispatch.route = route
+        dispatch_method_name = route.http_method.lower()
+        setattr(WinterView, dispatch_method_name, dispatch)
+
+    return WinterView()
+
+
+def _is_authentication_needed_for_routes(routes: List[Route]) -> bool:
+    is_authentication_needed_count = sum(is_authentication_needed(route.method.component) for route in routes)
+    is_authentication_needed_for_routes = is_authentication_needed_count != 0
+
+    if is_authentication_needed_for_routes and is_authentication_needed_count != len(routes):
+        raise Exception('All url path routes must be either with authentication or without')
+
+    return is_authentication_needed_for_routes
+
+
+def _is_csrf_needed_for_routes(routes: List[Route]) -> bool:
+    is_csrf_needed_count = sum(is_csrf_needed(route.method) for route in routes)
+    is_csrf_needed_for_routes = is_csrf_needed_count != 0
+
+    if is_csrf_needed_for_routes and is_csrf_needed_count != len(routes):
+        raise Exception("All url path routes must be either with csrf or without")
+
+    return is_csrf_needed_for_routes
+
+
+def _create_drf_view(api_class: Type, routes: List[Route]) -> 'rest_framework.views.APIView':
     import rest_framework.views
 
     component = Component.get_by_cls(api_class)
 
     class WinterView(rest_framework.views.APIView):
-        authentication_classes = (SessionAuthentication,)
+        authentication_classes = (
+            (SessionAuthentication,) if _is_csrf_needed_for_routes(routes) else (CsrfExemptSessionAuthentication,)
+        )
         permission_classes = (IsAuthenticated,) if is_authentication_needed(component) else ()
 
     # It's useful for New Relic APM
@@ -122,7 +190,7 @@ def _call_api(api_class_instance, route: Route, request: Request):
         )
         result = method(handler, **arguments)
 
-    response = convert_result_to_http_response(request, result, method)
+    response = _convert_result_to_http_response(request, result, method)
     _fill_response_headers(response, response_headers)
     return response
 
@@ -133,7 +201,7 @@ def _fill_response_headers(response, response_headers):
     response.content_type = response_headers.get('content-type')
 
 
-def convert_result_to_http_response(request: Request, result: Any, method: ComponentMethod):
+def _convert_result_to_http_response(request: Request, result: Any, method: ComponentMethod):
     if isinstance(result, django.http.HttpResponse):
         return result
     if isinstance(result, ResponseEntity):

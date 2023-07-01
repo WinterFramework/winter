@@ -81,6 +81,40 @@ def test_query_parameter_inspector(type_hint, expected_parameter_properties):
 
 
 @pytest.mark.parametrize('type_hint, expected_parameter_properties', param_with_diff_types)
+def test_query_parameter_inspector_with_explode(type_hint, expected_parameter_properties):
+    class _TestAPI:
+        @winter.route_get('/resource/{?query_param*}')
+        @winter.map_query_parameter('mapped_query_param', to='invalid_query_param')
+        def simple_method(
+            self,
+            query_param: type_hint,
+        ):  # pragma: no cover
+            """
+            :param query_param: docstr
+            """
+            pass
+
+    expected_parameter = {
+        'name': 'query_param',
+        'in': 'query',
+        'required': True,
+        'allowEmptyValue': False,
+        'allowReserved': False,
+        'deprecated': False,
+        'explode': True,
+        'description': 'docstr',
+        **expected_parameter_properties,
+    }
+    route = get_route(_TestAPI.simple_method)
+    # Act
+    result = generate_openapi(title='title', version='1.0.0', routes=[route])
+
+    # Assert
+    parameters = result["paths"]["/resource/"]["get"]["parameters"]
+    assert parameters == [expected_parameter]
+
+
+@pytest.mark.parametrize('type_hint, expected_parameter_properties', param_with_diff_types)
 def test_path_parameter_different_types(type_hint, expected_parameter_properties):
     class _TestAPI:
         @winter.route_post('{param}/{not_in_method}/')

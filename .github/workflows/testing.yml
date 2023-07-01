@@ -22,12 +22,37 @@ jobs:
     - name: Install and configure Poetry
       uses: snok/install-poetry@v1
       with:
-        version: 1.3.1
+        version: 1.3.2
     - name: Install dependencies
       run: poetry install
     - name: Test with pytest
       run: |
         poetry run pytest -rfs --cov --cov-config=.coveragerc --cov-report="" --disable-warnings
-        poetry run coverage combine || true
-        poetry run coverage report
-        poetry run codecov
+        cp .coverage ".coverage.${{ matrix.python-version }}"
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-reports
+        path: ".coverage.${{ matrix.python-version }}"
+
+  coverage-check:
+    name: Coverage check
+    runs-on: ubuntu-20.04
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        run: |
+          pip3 install coverage==7.2.3
+      - name: Download coverage reports
+        uses: actions/download-artifact@v1
+        with:
+          name: coverage-reports
+      - name: Combine reports
+        run: |
+          coverage combine coverage-reports
+          coverage report --fail-under=100

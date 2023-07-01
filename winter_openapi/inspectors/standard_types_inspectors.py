@@ -11,11 +11,14 @@ from typing import Type
 from strenum import StrEnum
 
 from winter.core.docstring import Docstring
+from winter.core.json import Undefined
 from winter.core.utils import has_nested_type
 from winter.core.utils.typing import get_generic_args
+from winter.core.utils.typing import get_union_args
 from winter.core.utils.typing import is_any
 from winter.core.utils.typing import is_optional
 from winter.core.utils.typing import is_type_var
+from winter.core.utils.typing import is_union
 from winter_openapi.inspection.data_formats import DataFormat
 from winter_openapi.inspection.data_types import DataTypes
 from winter_openapi.inspection.inspection import inspect_type
@@ -184,3 +187,17 @@ def inspect_new_type(hint_class) -> TypeInfo:
 )
 def inspect_new_type_class(hint_class) -> TypeInfo:
     return inspect_type(hint_class.__supertype__)
+
+
+def can_be_undefined(type_):
+    return is_union(type_) and Undefined in get_union_args(type_)
+
+
+@register_type_inspector(object, checker=can_be_undefined)
+def inspect_can_be_undefined(hint_class) -> TypeInfo:
+    union_args = get_union_args(hint_class)
+    assert len(union_args) == 2, 'Union with Undefined must have 2 args'
+    value_type = union_args[0] if union_args[0] is not Undefined else union_args[1]
+    type_info = inspect_type(value_type)
+    type_info.can_be_undefined = True
+    return type_info

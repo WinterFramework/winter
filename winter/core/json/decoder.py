@@ -20,11 +20,14 @@ from dateutil import parser
 
 from winter.core.utils.typing import get_generic_args
 from winter.core.utils.typing import get_origin_type
+from winter.core.utils.typing import get_union_args
 from winter.core.utils.typing import is_optional
+from winter.core.utils.typing import is_union
+from .undefined import Undefined
 
 try:
     from collections.abc import Sequence
-except ImportError:
+except ImportError:  # pragma: no cover
     from collections import Sequence  # Old import for versions older than Python3.10
 
 _decoders = {}
@@ -98,6 +101,18 @@ def decode_optional(value, type_: Type[Item]) -> Item:
     return json_decode(value, type_)
 
 
+def can_be_undefined(type_):
+    return is_union(type_) and Undefined in get_union_args(type_)
+
+
+@json_decoder(object, validator=can_be_undefined)
+def decode_undefined(value, type_: Type[Item]) -> Item:
+    union_args = get_union_args(type_)
+    assert len(union_args) == 2, 'Union with Undefined must have 2 args'
+    value_type = union_args[0] if union_args[0] is not Undefined else union_args[1]
+    return json_decode(value, value_type)
+
+
 @json_decoder(object, validator=dataclasses.is_dataclass)
 def decode_dataclass(value: Dict[str, Any], type_: Type[Item]) -> Item:
     if not isinstance(value, Mapping):
@@ -151,6 +166,8 @@ def _decode_dataclass_field(value, field: dataclasses.Field):
         return field.default_factory()
     elif is_optional(field.type):
         return None
+    elif can_be_undefined(field.type):
+        return Undefined()
     else:
         raise _MissingException
 

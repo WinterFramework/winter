@@ -54,6 +54,7 @@ class PagePositionArgumentsInspector(RouteParametersInspector):
                 type=DataTypes.ARRAY,
                 param_schema=Schema(type=DataTypes.STRING),
                 default=default_sort,
+                collectionFormat='multi',
             )
             parameters.append(order_by_parameter)
 

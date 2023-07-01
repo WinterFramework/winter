@@ -1,2 +1,1 @@
 from .api_with_output_template import APIWithOutputTemplate
-from .api_with_serializer import APIWithSerializer

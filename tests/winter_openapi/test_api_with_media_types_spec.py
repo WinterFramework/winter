@@ -68,7 +68,7 @@ def test_generate_spec_for_media_type_consumes():
                                 'description': 'Data(field1: str)',
                                 'properties': {'field1': {'type': 'string'}},
                                 'required': ['field1'],
-                                'title': 'Data',
+                                'title': 'DataInput',
                                 'type': 'object',
                             },
                         },

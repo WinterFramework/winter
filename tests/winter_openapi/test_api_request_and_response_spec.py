@@ -12,12 +12,14 @@ from typing import NewType
 from typing import Optional
 from typing import Set
 from typing import TypeVar
+from typing import Union
 
 import pytest
 from strenum import StrEnum
 
 import winter
 import winter.core
+from winter.core.json import Undefined
 from winter.core.utils import TypeWrapper
 from winter.data.pagination import Page
 from winter.web.routing import get_route
@@ -81,6 +83,13 @@ CustomPageItem = TypeVar('CustomPageItem')
 @dataclass(frozen=True)
 class CustomPage(Page, Generic[CustomPageItem]):
     extra: str
+
+
+@dataclass
+class RequestBodyWithUndefined:
+    """Some description"""
+    field_a: Union[str, Undefined]
+    field_b: Union[str, Undefined] = Undefined()
 
 
 @pytest.mark.parametrize('type_hint, expected_response_info', [
@@ -196,7 +205,7 @@ class CustomPage(Page, Generic[CustomPageItem]):
                             'total_count': {'type': 'integer'},
                         },
                         'required': ['total_count', 'limit', 'offset', 'previous', 'next'],
-                        'title': 'PageMeta',
+                        'title': 'PageMetaOfNestedDataclass',
                         'type': 'object',
                     },
                     'objects': {
@@ -230,7 +239,7 @@ class CustomPage(Page, Generic[CustomPageItem]):
                             'previous': {'format': 'uri', 'nullable': True, 'type': 'string'},
                             'total_count': {'type': 'integer'}},
                         'required': ['total_count', 'limit', 'offset', 'previous', 'next', 'extra'],
-                        'title': 'PageMeta',
+                        'title': 'PageMetaOfInteger',
                         'type': 'object',
                     },
                     'objects': {'items': {'format': 'int32', 'type': 'integer'}, 'type': 'array'},
@@ -302,7 +311,7 @@ def test_response_with_invalid_return_type():
     )
 
 
-@pytest.mark.parametrize('type_hint, expected_request_info', [
+@pytest.mark.parametrize('type_hint, expected_request_body_spec', [
     (
         List[IntegerValueEnum],
         {'schema': {'items': {'enum': [1, 2], 'format': 'int32', 'type': 'integer'}, 'type': 'array'}}
@@ -318,18 +327,32 @@ def test_response_with_invalid_return_type():
                         'description': 'doc string for nested field',
                         'properties': {'nested_number': {'format': 'int32', 'type': 'integer'}},
                         'required': ['nested_number'],
-                        'title': 'NestedDataclass',
+                        'title': 'NestedDataclassInput',
                         'type': 'object',
                     },
                 },
                 'required': ['nested'],
-                'title': 'Dataclass',
+                'title': 'DataclassInput',
                 'type': 'object',
             },
         },
     ),
+    (
+        RequestBodyWithUndefined,
+        {
+            'schema': {
+                'title': 'RequestBodyWithUndefinedInput',
+                'description': 'Some description',
+                'type': 'object',
+                'properties': {
+                    'field_a': {'type': 'string'},
+                    'field_b': {'type': 'string'},
+                },
+            },
+        },
+    ),
 ])
-def test_request_type(type_hint, expected_request_info):
+def test_request_type(type_hint, expected_request_body_spec):
     class _TestAPI:
         @winter.route_post('types/')
         @winter.request_body('data')
@@ -343,4 +366,4 @@ def test_request_type(type_hint, expected_request_info):
 
     # Assert
     method_info = result['paths']['types/']['post']['requestBody']
-    assert method_info == {'content': {'application/json': expected_request_info}, 'required': False}
+    assert method_info == {'content': {'application/json': expected_request_body_spec}, 'required': False}

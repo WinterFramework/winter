@@ -4,6 +4,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [18.0.0] - 2023-06-25
+### Changed
+- OpenAPI updated to version 3.0.3
+
+### Deprecation
+- DRF serializers are not supported anymore, use dataclasses instead. Classes and annotations deleted: PageSerializer, BodyWithContext, @input_serializer, @output_serializer
+- drf_yasg deleted from dependencies
+
+## [17.0.5] - 2023-06-15
+### Bugfixes
+- Fixed missing `collectionFormat` field in a OpenAPI schema for query array parameters
+
+## [17.0.3] - 2023-06-02
+### Added
+- Add winter.core.json.Undefined class to represent absence of value in JSON object
+
+## [17.0.2] - 2023-05-31
+### Bugfixes
+- @winter.web.csrf_exempt: fixed bug with csrf_exempt decorator for old views
+
+## [17.0.0] - 2023-05-18
+### Changed
+- winter.core.module_discovery functions are now generators, package is no longer optional
+
+## [16.0.2] - 2023-01-25
+### Added
+- @winter.web.csrf_exempt: this decorator marks api class as being exempt from the protection ensured by the middleware
+
+## [16.0.1] - 2023-04-12
+### Bugfixes
+- Fixed specification of optional properties in OpenAPI schema for models, which used as input parameters
+
+## [16.0.0] - 2023-04-04
+### Changed
+- Duplicate model names for different models don't appear in OpenAPI schema anymore - `PageMeta` renamed to `PageMetaOf{PageName}`, models in input parameters now have the suffix `Input`  
+
+## [15.2.2] - 2023-02-23
+### Added
+- winter_django.create_django_urls_from_routes: function that returns a list of django urls by the list of Routes 
+
 ## [15.2.1] - 2023-02-16
 ### Changed
 - winter.messaging: set frozen=true for Event class
