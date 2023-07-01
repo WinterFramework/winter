@@ -2,9 +2,9 @@ from sqlalchemy import select
 from sqlalchemy.engine import Engine
 
 from winter.core import get_injector
-from winter_messaging_outbox_transacton.consumer_worker import ConsumerWorker
-from winter_messaging_outbox_transacton.inbox.inbox_message import InboxMessage
-from winter_messaging_outbox_transacton.inbox.inbox_message import inbox_message_table
+from winter_messaging_transactional.consumer import ConsumerWorker
+from winter_messaging_transactional.consumer.inbox.inbox_message import InboxMessage
+from winter_messaging_transactional.consumer.inbox.inbox_message import inbox_message_table
 
 
 def test_consume_without_error(broker_channel):
@@ -18,7 +18,6 @@ def test_consume_without_error(broker_channel):
     assert len(messages) == 1
     consumed_message = messages[0]
     assert consumed_message.id
-    print(consumed_message.id)
     assert consumed_message.received_at is not None
     assert consumed_message.processed_at is not None
 

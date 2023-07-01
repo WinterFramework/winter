@@ -17,7 +17,6 @@ def create_connection():
     params = ConnectionParameters(
         host=parsed_url.hostname,
         port=parsed_url.port,
-        # virtual_host=parsed_url.path[1:],
         credentials=PlainCredentials(parsed_url.username, parsed_url.password),
         heartbeat=int(os.getenv('WINTER_RABBIT_HEARTBEAT', 600)),
         blocked_connection_timeout=int(os.getenv('WINTER_RABBIT_TIMEOUT', 300)),

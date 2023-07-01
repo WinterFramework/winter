@@ -1,4 +1,4 @@
-from injector import ClassProvider
+from injector import ClassProvider, Injector
 from injector import InstanceProvider
 from injector import singleton
 
@@ -10,7 +10,7 @@ from winter_messaging_transactional.producer.outbox import OutboxEventPublisher
 
 class WinterMessagingApp(MessagingApp):
 
-    def setup(self, injector):
+    def setup(self, injector: Injector):
         injector.binder.bind(EventPublisher, to=ClassProvider(OutboxEventPublisher))
         config = MessagingConfig(
             topics={'sample-producer-topic'},

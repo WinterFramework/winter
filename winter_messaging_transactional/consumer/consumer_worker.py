@@ -42,6 +42,7 @@ class ConsumerWorker:
             self._rabbit_client.start_consuming(queue, self._message_listener.on_message_callback)
         except Exception:
             logger.exception('Consumer worker %s stopping by error', consumer_id)
+            raise
         finally:
             if not self._is_interrupted:
                 self._rabbit_client.stop_consuming()

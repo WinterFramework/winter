@@ -13,9 +13,9 @@ class TestAppConfig(AppConfig):
         import winter
         import winter_django
         import winter_openapi
-        import winter_messaging_transactional.setup as transactional_setup
+        import winter_messaging_transactional
 
         winter_openapi.setup()
         winter.web.setup()
         winter_django.setup()
-        transactional_setup.setup()
+        winter_messaging_transactional.setup()

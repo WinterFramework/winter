@@ -13,7 +13,7 @@ from sqlalchemy.engine import Engine
 from tests.entities import AuthorizedUser
 from winter.core import get_injector
 from winter.core import set_injector
-from winter_messaging_transactional.injection_modules import TransactionalMessagingModule as MessagingBaseModule
+from winter_messaging_transactional.injection_modules import TransactionalMessagingModule
 from winter_messaging_transactional.table_metadata import messaging_metadata
 from .entities import Guest
 
@@ -49,7 +49,7 @@ def pytest_configure():
             'tests.middleware.AuthenticationMiddleware',
         ]
     )
-    injector = Injector([TestConfiguration, MessagingBaseModule()])
+    injector = Injector([TestConfiguration, TransactionalMessagingModule()])
     set_injector(injector)
     django.setup()
     engine = injector.get(Engine)

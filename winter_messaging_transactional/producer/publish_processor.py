@@ -13,21 +13,21 @@ log = logging.getLogger(__name__)
 
 
 class PublishProcessor:
-    SLEEP_TIME = 1.0
-
     @inject
     def __init__(
         self,
         rabbitmq_client: RabbitMQClient,
         outbox_message_doa: OutboxMessageDAO,
         configurator: TopologyConfigurator,
+        publish_interval: float = 1.0,
     ) -> None:
         self._rabbitmq_client = rabbitmq_client
         self._outbox_message_doa = outbox_message_doa
         self._topology_configurator = configurator
+        self._publish_interval =publish_interval
 
     def run(self):
-        log.info('Publishing processor started with sleep time: %s', self.SLEEP_TIME)
+        log.info('Publishing processor started with sleep time: %s', self._publish_interval)
         cancel_token = Event()
 
         def handle_interrupt_signal(signum, frame):
@@ -37,9 +37,9 @@ class PublishProcessor:
         signal.signal(signal.SIGINT, handle_interrupt_signal)
 
         is_error_occurred = False
-        while not cancel_token.wait(self.SLEEP_TIME):
+        while not cancel_token.wait(self._publish_interval):
             outbox_messages = self._outbox_message_doa.select_unsent()
-            for index, outbox_message in enumerate(outbox_messages):
+            for outbox_message in outbox_messages:
                 exchange = self._topology_configurator.get_exchange_key(outbox_message.topic)
                 try:
                     self._rabbitmq_client.publish(outbox_message, exchange)

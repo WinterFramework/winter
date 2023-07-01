@@ -4,7 +4,7 @@ from sqlalchemy import Integer
 from sqlalchemy import MetaData
 from sqlalchemy import String
 from sqlalchemy import Table
-from sqlalchemy.future import Engine
+from sqlalchemy.engine import Engine
 
 metadata = MetaData()
 consumer_table = Table(
