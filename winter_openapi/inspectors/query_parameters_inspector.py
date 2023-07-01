@@ -53,6 +53,8 @@ class QueryParametersInspector(RouteParametersInspector):
 
         for query_parameter in query_parameters:
             argument = route.method.get_argument(query_parameter.map_to)
-            if argument is not None:
-                query_arguments.append((argument, query_parameter))
+            if argument is None:
+                raise ValueError(f'Argument "{query_parameter.map_to}" not found in {route.method.full_name}, '
+                                 f'but listed in query parameters')
+            query_arguments.append((argument, query_parameter))
         return query_arguments

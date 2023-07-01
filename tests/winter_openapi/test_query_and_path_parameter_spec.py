@@ -147,3 +147,24 @@ def test_path_parameter_different_types(type_hint, expected_parameter_properties
     parameters = result["paths"]["{param}/{not_in_method}/"]["post"]["parameters"]
     assert parameters == [expected_parameter]
 
+
+def test_query_parameter_without_python_argument():
+    class _TestAPI:
+        @winter.route_post('{?test}')
+        def api_method(
+            self,
+        ):  # pragma: no cover
+            """
+            :param param: docstr
+            """
+            pass
+
+    route = get_route(_TestAPI.api_method)
+
+    # Act
+    with pytest.raises(Exception) as exc_info:
+        generate_openapi(title='title', version='1.0.0', routes=[route])
+
+    # Assert
+    assert str(exc_info.value) == 'Argument "test" not found in _TestAPI.api_method, but listed in query parameters'
+
