@@ -120,14 +120,15 @@ class CanNotInspectReturnType(Exception):
         return f'{method_path}: -> {self._return_type}: {self._message}'
 
 
-def get_url_path_without_prefix(url_path: str, path_prefix: Optional[str]) -> str:
+def get_url_path_without_prefix(url_path: str, path_prefix: str) -> str:
     # TODO: use removeprefix when python 3.9 will be used
     path_prefix_stripped = path_prefix.strip('/')
+    url_path_stripped = url_path.strip('/')
 
-    if url_path.startswith(path_prefix_stripped):
-        url_path = url_path[len(path_prefix_stripped):]
-
-    return url_path
+    if path_prefix_stripped and url_path_stripped.startswith(path_prefix_stripped):
+        return url_path_stripped[len(path_prefix_stripped):]
+    else:
+        return url_path
 
 
 def get_url_path_tag(route: Route, path_prefix: str) -> str:

@@ -4,6 +4,7 @@ import winter
 from winter.web.routing import get_route
 from winter_openapi.generator import determine_path_prefix
 from winter_openapi.generator import get_url_path_tag
+from winter_openapi.generator import get_url_path_without_prefix
 
 
 def test_determine_path_prefix_when_prefix_exist():
@@ -12,7 +13,7 @@ def test_determine_path_prefix_when_prefix_exist():
         def get_resource(self):  # pragma: no cover
             pass
 
-        @winter.route_post('prefix-1/prefix-2/post-resource')
+        @winter.route_post('prefix-1/prefix-3/post-resource')
         def post_resource(self):  # pragma: no cover
             pass
 
@@ -24,7 +25,7 @@ def test_determine_path_prefix_when_prefix_exist():
     path_prefix = determine_path_prefix([route_1, route_2])
 
     # Assert
-    assert path_prefix == '/prefix-1/prefix-2'
+    assert path_prefix == '/prefix-1'
 
 
 def test_determine_path_prefix_without_prefix():
@@ -146,3 +147,21 @@ def test_get_url_path_tag_when_url_path_is_shorter_when_prefix():
     # Act & Assert
     with pytest.raises(ValueError, match='Invalid path prefix /prefix-1/prefix-2 for url_path get-resource'):
         get_url_path_tag(route, '/prefix-1/prefix-2')
+
+
+@pytest.mark.parametrize(
+    'url_path,path_prefix,expected_result',
+    [
+        ('/get-resource', '/', '/get-resource'),
+        ('/get-resource', '/prefix-1/prefix-2', '/get-resource'),
+        ('/prefix-1/prefix-2/get-resource', '/prefix-1/prefix-2', '/get-resource'),
+        ('/prefix-1/prefix-2/get-resource', '/prefix-1', '/prefix-2/get-resource'),
+        ('prefix-1/prefix-2/get-resource', '/prefix-1/prefix-2', '/get-resource'),
+    ]
+)
+def test_get_url_path_without_prefix(url_path, path_prefix, expected_result):
+    # Act
+    url_path_without_prefix = get_url_path_without_prefix(url_path, path_prefix)
+
+    # Assert
+    assert url_path_without_prefix == expected_result
