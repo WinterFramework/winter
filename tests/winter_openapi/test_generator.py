@@ -97,7 +97,7 @@ def test_get_url_path_tag_when_url_path_is_prefix():
     url_path_tag = get_url_path_tag(route, '/prefix')
 
     # Assert
-    assert url_path_tag == is None
+    assert url_path_tag is None
 
 
 def test_get_url_path_tag_when_url_path_is_shorter_when_prefix():
