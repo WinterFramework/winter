@@ -33,7 +33,7 @@ def test_generate_openapi_with_all_args_spec():
                     'operationId': '_TestAPI.get_resource',
                     'parameters': [],
                     'responses': {'200': {'description': ''}},
-                    'tags': ['tag_value'],
+                    'tags': ['tag_value', 'resource'],
                 },
             },
         },

@@ -31,7 +31,7 @@ def test_generate_spec_for_media_type_produces():
                         'description': '',
                     },
                 },
-                'tags': [],
+                'tags': ['xml'],
             },
         },
     }
@@ -76,7 +76,7 @@ def test_generate_spec_for_media_type_consumes():
                     'required': False,
                 },
                 'responses': {'200': {'description': ''}},
-                'tags': [],
+                'tags': ['xml'],
             },
         },
     }
