@@ -51,7 +51,7 @@ def generate_openapi(
     tag_names = [tag_.name for tag_ in tags_]
     paths: Paths = {}
     operation_ids: Set[str] = set()
-    path_prefix = determine_path_prefix(routes)
+    path_prefix = determine_path_prefix([route.url_path for route in routes])
 
     for url_path, group_routes in groupby(routes, key=lambda r: r.url_path):
         url_path_without_prefix = get_url_path_without_prefix(url_path, path_prefix)
@@ -131,7 +131,7 @@ def get_url_path_without_prefix(url_path: str, path_prefix: str) -> str:
         return url_path
 
 
-def get_url_path_tag(route: Route, path_prefix: str) -> str:
+def get_url_path_tag(route: Route, path_prefix: str) -> Optional[str]:
     path_prefix_segments = path_prefix.strip('/').split('/')
     url_path_segments = route.url_path.strip('/').split('/')
     path_prefix_segments = [segment for segment in path_prefix_segments if segment]  # remove empty segments like ['']
@@ -139,14 +139,14 @@ def get_url_path_tag(route: Route, path_prefix: str) -> str:
     # for the cases with single route
     if len(url_path_segments) <= len(path_prefix_segments):
         if len(url_path_segments) == len(path_prefix_segments):
-            return ''
+            return None
         else:
             raise ValueError(f'Invalid path prefix {path_prefix} for url_path {route.url_path}')
 
     url_path_tag = url_path_segments[len(path_prefix_segments)]
 
     if url_path_tag.startswith('{'):
-        return ''
+        return None
 
     return url_path_tag
 
@@ -198,8 +198,17 @@ def get_responses_schemas(route: Route) -> Responses:
     return responses
 
 
-def determine_path_prefix(routes: Sequence[Route]) -> str:
+def determine_path_prefix(url_paths: List[str]) -> str:
     """
+    https://github.com/encode/django-rest-framework/blob/master/LICENSE.md
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+    INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+    SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+    SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+    WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+    USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
     Given a list of all paths, return the common prefix which should be
     discounted when generating a schema structure.
 
@@ -214,8 +223,7 @@ def determine_path_prefix(routes: Sequence[Route]) -> str:
     The path prefix is '/api/v1'
     """
     prefixes = []
-    for route in routes:
-        path = route.url_path
+    for path in url_paths:
         components = path.strip('/').split('/')
         initial_components = []
         for component in components:
