@@ -56,11 +56,12 @@ def generate_openapi(
     for url_path, group_routes in groupby(routes, key=lambda r: r.url_path):
         url_path_without_prefix = get_url_path_without_prefix(url_path, path_prefix)
         url_path_tag = get_url_path_tag(url_path, path_prefix)
+        path_tag_names = list(tag_names)
 
         if url_path_tag:
-            tag_names = list(tag_names) + [url_path_tag]
+            path_tag_names.append(url_path_tag)
 
-        path_item = _get_openapi_path(routes=group_routes, operation_ids=operation_ids, tag_names=tag_names)
+        path_item = _get_openapi_path(routes=group_routes, operation_ids=operation_ids, tag_names=path_tag_names)
         paths[url_path_without_prefix] = path_item
 
     info = Info(title=title, version=version, description=description)
@@ -123,8 +124,8 @@ class CanNotInspectReturnType(Exception):
 
 def get_url_path_without_prefix(url_path: str, path_prefix: str) -> str:
     # TODO: use removeprefix when python 3.9 will be used
-    path_prefix_stripped = path_prefix.strip('/')
-    url_path_stripped = url_path.strip('/')
+    path_prefix_stripped = path_prefix.lstrip('/')
+    url_path_stripped = url_path.lstrip('/')
 
     if path_prefix_stripped and url_path_stripped.startswith(path_prefix_stripped):
         return url_path_stripped[len(path_prefix_stripped):]
@@ -133,8 +134,8 @@ def get_url_path_without_prefix(url_path: str, path_prefix: str) -> str:
 
 
 def get_url_path_tag(url_path: str, path_prefix: str) -> Optional[str]:
-    path_prefix_segments = path_prefix.strip('/').split('/')
-    url_path_segments = url_path.strip('/').split('/')
+    path_prefix_segments = path_prefix.lstrip('/').split('/')
+    url_path_segments = url_path.lstrip('/').split('/')
     path_prefix_segments = [segment for segment in path_prefix_segments if segment]  # remove empty segments like ['']
 
     # for the cases with single route
