@@ -1,7 +1,5 @@
 import pytest
 
-import winter
-from winter.web.routing import get_route
 from winter_openapi.generator import determine_path_prefix
 from winter_openapi.generator import get_url_path_tag
 from winter_openapi.generator import get_url_path_without_prefix
