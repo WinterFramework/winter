@@ -283,7 +283,7 @@ def test_response_return_type(type_hint, expected_response_info):
                 'description': '',
             },
         },
-        'tags': [],
+        'tags': ['types'],
 
     }
     # Act

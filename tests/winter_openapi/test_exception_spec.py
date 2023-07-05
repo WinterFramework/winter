@@ -39,7 +39,7 @@ def test_global_exception_annotated_on_method():
                     'operationId': '_TestAPI.get_resource',
                     'parameters': [],
                     'responses': {'200': {'description': ''}},
-                    'tags': [],
+                    'tags': ['resource'],
                 },
             },
         },
@@ -112,7 +112,7 @@ def test_exception_annotated_on_method_with_custom_handler_with_dto(handler_retu
                         '200': {'description': ''},
                         '403': {**handler_spec, 'description': ''}
                     },
-                    'tags': [],
+                    'tags': ['resource'],
                 },
             },
         },

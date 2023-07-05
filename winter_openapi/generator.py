@@ -51,9 +51,17 @@ def generate_openapi(
     tag_names = [tag_.name for tag_ in tags_]
     paths: Paths = {}
     operation_ids: Set[str] = set()
-    for key, group_routes in groupby(routes, key=lambda r: r.url_path):
-        path = _get_openapi_path(route=group_routes, operation_ids=operation_ids, tag_names=tag_names)
-        paths[key] = path
+    path_prefix = determine_path_prefix([route.url_path for route in routes])
+
+    for url_path, group_routes in groupby(routes, key=lambda r: r.url_path):
+        url_path_without_prefix = get_url_path_without_prefix(url_path, path_prefix)
+        url_path_tag = get_url_path_tag(url_path, path_prefix)
+
+        if url_path_tag:
+            tag_names = list(tag_names) + [url_path_tag]
+
+        path_item = _get_openapi_path(routes=group_routes, operation_ids=operation_ids, tag_names=tag_names)
+        paths[url_path_without_prefix] = path_item
 
     info = Info(title=title, version=version, description=description)
     servers_ = [Server(**server) for server in servers or []]
@@ -61,9 +69,9 @@ def generate_openapi(
     return open_api.dict(by_alias=True, exclude_none=True)
 
 
-def _get_openapi_path(*, route: Iterable[Route], operation_ids: Set[str], tag_names: Iterable[str]) -> PathItem:
+def _get_openapi_path(*, routes: Iterable[Route], operation_ids: Set[str], tag_names: Iterable[str]) -> PathItem:
     path = {}
-    for route_item in route:
+    for route_item in routes:
         operation_id = route_item.method.full_name
         if operation_id in operation_ids:
             warnings.warn(f"Duplicate Operation ID {operation_id}")
@@ -113,6 +121,37 @@ class CanNotInspectReturnType(Exception):
         return f'{method_path}: -> {self._return_type}: {self._message}'
 
 
+def get_url_path_without_prefix(url_path: str, path_prefix: str) -> str:
+    # TODO: use removeprefix when python 3.9 will be used
+    path_prefix_stripped = path_prefix.strip('/')
+    url_path_stripped = url_path.strip('/')
+
+    if path_prefix_stripped and url_path_stripped.startswith(path_prefix_stripped):
+        return url_path_stripped[len(path_prefix_stripped):]
+    else:
+        return url_path
+
+
+def get_url_path_tag(url_path: str, path_prefix: str) -> Optional[str]:
+    path_prefix_segments = path_prefix.strip('/').split('/')
+    url_path_segments = url_path.strip('/').split('/')
+    path_prefix_segments = [segment for segment in path_prefix_segments if segment]  # remove empty segments like ['']
+
+    # for the cases with single route
+    if len(url_path_segments) <= len(path_prefix_segments):
+        if len(url_path_segments) == len(path_prefix_segments):
+            return None
+        else:
+            raise ValueError(f'Invalid path prefix {path_prefix} for url_path {url_path}')
+
+    url_path_tag = url_path_segments[len(path_prefix_segments)]
+
+    if url_path_tag.startswith('{'):
+        return None
+
+    return url_path_tag
+
+
 def get_route_parameters(route: Route) -> List[Parameter]:
     parameters = []
     for inspector in get_route_parameters_inspectors():
@@ -158,6 +197,58 @@ def get_responses_schemas(route: Route) -> Responses:
         response_status = str(get_default_response_status(http_method, handle_method))
         responses[response_status] = _build_response_exception_handler_schema(handle_method)
     return responses
+
+
+def determine_path_prefix(url_paths: List[str]) -> str:
+    """
+    https://github.com/encode/django-rest-framework/blob/master/LICENSE.md
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+    INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+    SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+    SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+    WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+    USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+    Given a list of all paths, return the common prefix which should be
+    discounted when generating a schema structure.
+
+    This will be the longest common string that does not include that last
+    component of the URL, or the last component before a path parameter.
+
+    For example:
+
+    /api/v1/users/
+    /api/v1/users/{pk}/
+
+    The path prefix is '/api/v1'
+    """
+    prefixes = []
+    for path in url_paths:
+        components = path.strip('/').split('/')
+        initial_components = []
+        for component in components:
+            if '{' in component:
+                break
+            initial_components.append(component)
+        prefix = '/'.join(initial_components[:-1])
+        if not prefix:
+            # We can just break early in the case that there's at least
+            # one URL that doesn't have a path prefix.
+            return '/'
+        prefixes.append('/' + prefix + '/')
+
+    split_paths = [path.strip('/').split('/') for path in prefixes]
+    s1 = min(split_paths)
+    s2 = max(split_paths)
+    common = s1
+
+    for i, c in enumerate(s1):
+        if c != s2[i]:
+            common = s1[:i]
+            break
+
+    return '/' + '/'.join(common)
 
 
 def _build_response_schema(method: ComponentMethod) -> Response:
