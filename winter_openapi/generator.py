@@ -55,7 +55,12 @@ def generate_openapi(
 
     for url_path, group_routes in groupby(routes, key=lambda r: r.url_path):
         url_path_without_prefix = get_url_path_without_prefix(url_path, path_prefix)
-        path_item = _get_openapi_path(routes=group_routes, operation_ids=operation_ids, tag_names=tag_names, path_prefix=path_prefix)
+        url_path_tag = get_url_path_tag(url_path, path_prefix)
+
+        if url_path_tag:
+            tag_names = list(tag_names) + [url_path_tag]
+
+        path_item = _get_openapi_path(routes=group_routes, operation_ids=operation_ids, tag_names=tag_names)
         paths[url_path_without_prefix] = path_item
 
     info = Info(title=title, version=version, description=description)
@@ -64,17 +69,13 @@ def generate_openapi(
     return open_api.dict(by_alias=True, exclude_none=True)
 
 
-def _get_openapi_path(*, routes: Iterable[Route], operation_ids: Set[str], tag_names: Iterable[str], path_prefix: str) -> PathItem:
+def _get_openapi_path(*, routes: Iterable[Route], operation_ids: Set[str], tag_names: Iterable[str]) -> PathItem:
     path = {}
     for route_item in routes:
         operation_id = route_item.method.full_name
         if operation_id in operation_ids:
             warnings.warn(f"Duplicate Operation ID {operation_id}")
         operation_ids.add(operation_id)
-        url_path_tag = get_url_path_tag(route_item, path_prefix)
-
-        if url_path_tag:
-            tag_names = list(tag_names) + [url_path_tag]
 
         operation = _get_openapi_operation(route=route_item, operation_id=operation_id, tag_names=tag_names)
         path[route_item.http_method.lower()] = operation
@@ -131,9 +132,9 @@ def get_url_path_without_prefix(url_path: str, path_prefix: str) -> str:
         return url_path
 
 
-def get_url_path_tag(route: Route, path_prefix: str) -> Optional[str]:
+def get_url_path_tag(url_path: str, path_prefix: str) -> Optional[str]:
     path_prefix_segments = path_prefix.strip('/').split('/')
-    url_path_segments = route.url_path.strip('/').split('/')
+    url_path_segments = url_path.strip('/').split('/')
     path_prefix_segments = [segment for segment in path_prefix_segments if segment]  # remove empty segments like ['']
 
     # for the cases with single route
@@ -141,7 +142,7 @@ def get_url_path_tag(route: Route, path_prefix: str) -> Optional[str]:
         if len(url_path_segments) == len(path_prefix_segments):
             return None
         else:
-            raise ValueError(f'Invalid path prefix {path_prefix} for url_path {route.url_path}')
+            raise ValueError(f'Invalid path prefix {path_prefix} for url_path {url_path}')
 
     url_path_tag = url_path_segments[len(path_prefix_segments)]
 

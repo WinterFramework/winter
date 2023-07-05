@@ -55,62 +55,26 @@ def test_determine_path_prefix_when_prefix_exist(url_paths, expected_result):
     assert path_prefix == expected_result
 
 
-def test_get_url_path_tag():
-    class _TestAPI:
-        @winter.route_get('prefix/get-resource')
-        def get_resource(self):  # pragma: no cover
-            pass
-
-    route = get_route(_TestAPI.get_resource)
-
+@pytest.mark.parametrize(
+    'url_path, path_prefix, expected_result',
+    [
+        ('prefix/get-resource', '/prefix', 'get-resource'),
+        ('prefix/{id}/get-resource', '/prefix', None),
+        ('prefix', '/prefix', None),
+    ]
+)
+def test_get_url_path_tag(url_path, path_prefix, expected_result):
     # Act
-    url_path_tag = get_url_path_tag(route, '/prefix')
+    url_path_tag = get_url_path_tag(url_path, path_prefix)
 
     # Assert
-    assert url_path_tag == 'get-resource'
-
-
-def test_get_url_path_tag_ignore_params():
-    class _TestAPI:
-        @winter.route_get('prefix/{id}/get-resource')
-        def get_resource(self):  # pragma: no cover
-            pass
-
-    route = get_route(_TestAPI.get_resource)
-
-    # Act
-    url_path_tag = get_url_path_tag(route, '/prefix')
-
-    # Assert
-    assert url_path_tag is None
-
-
-def test_get_url_path_tag_when_url_path_is_prefix():
-    class _TestAPI:
-        @winter.route_get('prefix')
-        def get_resource(self):  # pragma: no cover
-            pass
-
-    route = get_route(_TestAPI.get_resource)
-
-    # Act
-    url_path_tag = get_url_path_tag(route, '/prefix')
-
-    # Assert
-    assert url_path_tag is None
+    assert url_path_tag == expected_result
 
 
 def test_get_url_path_tag_when_url_path_is_shorter_when_prefix():
-    class _TestAPI:
-        @winter.route_get('get-resource')
-        def get_resource(self):  # pragma: no cover
-            pass
-
-    route = get_route(_TestAPI.get_resource)
-
     # Act & Assert
     with pytest.raises(ValueError, match='Invalid path prefix /prefix-1/prefix-2 for url_path get-resource'):
-        get_url_path_tag(route, '/prefix-1/prefix-2')
+        get_url_path_tag('get-resource', '/prefix-1/prefix-2')
 
 
 @pytest.mark.parametrize(
