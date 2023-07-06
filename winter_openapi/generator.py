@@ -55,6 +55,10 @@ def generate_openapi(
 
     for url_path, group_routes in groupby(routes, key=lambda r: r.url_path):
         url_path_without_prefix = get_url_path_without_prefix(url_path, path_prefix)
+
+        if not url_path_without_prefix.startswith('/'):
+            url_path_without_prefix = '/' + url_path_without_prefix
+
         url_path_tag = get_url_path_tag(url_path, path_prefix)
         path_tag_names = list(tag_names)
 
@@ -65,7 +69,7 @@ def generate_openapi(
         paths[url_path_without_prefix] = path_item
 
     info = Info(title=title, version=version, description=description)
-    servers_ = [Server(**server) for server in servers or []]
+    servers_ = [Server(**server) for server in servers or []] or [Server(url=path_prefix)]
     open_api = OpenAPI(info=info, servers=servers_, paths=paths, components=components, tags=tags_)
     return open_api.dict(by_alias=True, exclude_none=True)
 
@@ -155,8 +159,15 @@ def get_url_path_tag(url_path: str, path_prefix: str) -> Optional[str]:
 
 def get_route_parameters(route: Route) -> List[Parameter]:
     parameters = []
+    inspector_classes = []
     for inspector in get_route_parameters_inspectors():
+        inspector_class = inspector.__class__
+
+        if inspector_class in inspector_classes:
+            continue
+
         parameters += inspector.inspect_parameters(route)
+        inspector_classes.append(inspector_class)
     return parameters
 
 

@@ -18,7 +18,7 @@ def test_generate_page_position_argument_spec():
     result = generate_openapi(title='title', version='1.0.0', routes=[route])
 
     # Assert
-    parameters = result['paths']['pageable_resource']['get']['parameters']
+    parameters = result['paths']['/pageable_resource']['get']['parameters']
     assert parameters == [
         {
             'allowEmptyValue': False,
@@ -29,6 +29,7 @@ def test_generate_page_position_argument_spec():
             'in': 'query',
             'name': 'limit',
             'required': False,
+            'schema': {'type': 'integer'}
         },
         {
             'allowEmptyValue': False,
@@ -39,6 +40,7 @@ def test_generate_page_position_argument_spec():
             'in': 'query',
             'name': 'offset',
             'required': False,
+            'schema': {'type': 'integer'}
         }
     ]
 
@@ -55,7 +57,7 @@ def test_generate_object_argument_spec():
     result = generate_openapi(title='title', version='1.0.0', routes=[route])
 
     # Assert
-    parameters = result['paths']['pageable_resource']['get']['parameters']
+    parameters = result['paths']['/pageable_resource']['get']['parameters']
     assert parameters == []
 
 
@@ -73,7 +75,7 @@ def test_page_position_argument_inspector_with_allowed_order_by_fields(default_s
     result = generate_openapi(title='title', version='1.0.0', routes=[route])
 
     # Assert
-    parameters = result['paths']['ordered_resource']['get']['parameters']
+    parameters = result['paths']['/ordered_resource']['get']['parameters']
     assert parameters == [
         {
             'allowEmptyValue': False,
@@ -84,6 +86,7 @@ def test_page_position_argument_inspector_with_allowed_order_by_fields(default_s
             'in': 'query',
             'name': 'limit',
             'required': False,
+            'schema': {'type': 'integer'}
         },
         {
             'allowEmptyValue': False,
@@ -94,6 +97,7 @@ def test_page_position_argument_inspector_with_allowed_order_by_fields(default_s
             'in': 'query',
             'name': 'offset',
             'required': False,
+            'schema': {'type': 'integer'}
         },
         {
             'allowEmptyValue': False,
