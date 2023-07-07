@@ -6,7 +6,10 @@ from winter_openapi.inspection import TypeInfo
 
 def convert_type_info_to_openapi_schema(value: TypeInfo, *, output: bool) -> Schema:
     if value.type_ == DataTypes.ANY:
-        return any_type_schema
+        return Schema(
+            description='Can be any value - string, number, boolean, array or object.',
+            nullable=value.nullable,
+        )
 
     data = {
         'type': value.type_.value
@@ -50,16 +53,3 @@ def convert_type_info_to_openapi_schema(value: TypeInfo, *, output: bool) -> Sch
         data['required'] = required_properties
 
     return Schema(**data)
-
-
-any_type_schema = Schema(
-    anyOf=[
-        Schema(type=DataTypes.STRING),
-        Schema(type=DataTypes.INTEGER),
-        Schema(type=DataTypes.OBJECT),
-        Schema(type=DataTypes.BOOLEAN),
-        Schema(type=DataTypes.NUMBER),
-        Schema(type=DataTypes.ARRAY),
-    ],
-    description='Can be any value - string, number, boolean, array or object.'
-)
