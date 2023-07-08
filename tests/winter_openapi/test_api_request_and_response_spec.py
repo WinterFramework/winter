@@ -120,6 +120,7 @@ class RequestBodyWithUndefined:
         Any,
         {
             'schema': {
+                'nullable': False,
                 'description': 'Can be any value - string, number, boolean, array or object.',
             }
         }
@@ -129,6 +130,7 @@ class RequestBodyWithUndefined:
         {
             'schema': {
                 'items': {
+                    'nullable': False,
                     'description': 'Can be any value - string, number, boolean, array or object.',
                 },
                 'type': 'array',
@@ -140,6 +142,7 @@ class RequestBodyWithUndefined:
         {
             'schema': {
                 'items': {
+                    'nullable': False,
                     'description': 'Can be any value - string, number, boolean, array or object.',
                 },
                 'type': 'array',
