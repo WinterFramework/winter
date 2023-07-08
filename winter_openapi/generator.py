@@ -46,6 +46,8 @@ def generate_openapi(
     tags: Optional[List[Dict[str, Any]]] = None,
     servers: Optional[List[Dict[str, str]]] = None,
 ) -> Dict[str, Any]:
+    routes = list(routes)
+    routes.sort(key=lambda r: r.url_path)
     components: Components = Components(responses=[], schemas=[], parameters=[])
     tags_ = [Tag(**tag) for tag in tags or []]
     tag_names = [tag_.name for tag_ in tags_]
