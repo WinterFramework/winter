@@ -15,7 +15,6 @@ from typing import TypeVar
 from typing import Union
 
 import pytest
-from openapi_spec_validator import validate_spec
 from strenum import StrEnum
 
 import winter
@@ -140,6 +139,7 @@ class RequestBodyWithUndefined:
         {
             'schema': {
                 'items': {
+                    'nullable': False,
                     'description': 'Can be any value - string, number, boolean, array or object.',
                     'nullable': False
                 },
@@ -152,6 +152,7 @@ class RequestBodyWithUndefined:
         {
             'schema': {
                 'items': {
+                    'nullable': False,
                     'description': 'Can be any value - string, number, boolean, array or object.',
                     'nullable': False
                 },
@@ -280,7 +281,6 @@ def test_response_return_type(type_hint, expected_response_info):
     # Assert
     method_info = result['paths']['/types/']['get']
     assert method_info == expected_method_info, type_hint
-    validate_spec(result)
 
 
 def test_response_with_invalid_return_type():
@@ -357,4 +357,3 @@ def test_request_type(type_hint, expected_request_body_spec):
     # Assert
     method_info = result['paths']['/types/']['post']['requestBody']
     assert method_info == {'content': {'application/json': expected_request_body_spec}, 'required': False}
-    validate_spec(result)

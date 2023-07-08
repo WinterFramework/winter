@@ -1,6 +1,5 @@
 import inspect
 import warnings
-from itertools import groupby
 from typing import Any
 from typing import Dict
 from typing import Iterable
@@ -10,6 +9,7 @@ from typing import Sequence
 from typing import Set
 
 from django.http.response import HttpResponseBase
+from itertools import groupby
 from openapi_schema_pydantic.v3.v3_0_3 import Components
 from openapi_schema_pydantic.v3.v3_0_3 import Info
 from openapi_schema_pydantic.v3.v3_0_3 import MediaType as MediaTypeModel
@@ -23,6 +23,7 @@ from openapi_schema_pydantic.v3.v3_0_3 import Response
 from openapi_schema_pydantic.v3.v3_0_3 import Responses
 from openapi_schema_pydantic.v3.v3_0_3 import Server
 from openapi_schema_pydantic.v3.v3_0_3 import Tag
+from openapi_spec_validator import validate_spec
 
 from winter.core import ComponentMethod
 from winter.web import MediaType
@@ -44,11 +45,11 @@ def generate_openapi(
     routes: Sequence[Route],
     description: Optional[str] = None,
     tags: Optional[List[Dict[str, Any]]] = None,
-    servers: Optional[List[Dict[str, str]]] = None,
+    validate: bool = True,
 ) -> Dict[str, Any]:
     routes = list(routes)
     routes.sort(key=lambda r: r.url_path)
-    components: Components = Components(responses=[], schemas=[], parameters=[])
+    components = Components(responses=[], schemas=[], parameters=[])
     tags_ = [Tag(**tag) for tag in tags or []]
     tag_names = [tag_.name for tag_ in tags_]
     paths: Paths = {}
@@ -71,9 +72,12 @@ def generate_openapi(
         paths[url_path_without_prefix] = path_item
 
     info = Info(title=title, version=version, description=description)
-    servers_ = [Server(**server) for server in servers or []] or [Server(url=path_prefix)]
-    open_api = OpenAPI(info=info, servers=servers_, paths=paths, components=components, tags=tags_)
-    return open_api.dict(by_alias=True, exclude_none=True)
+    servers_ = [Server(url=path_prefix)]
+    openapi = OpenAPI(info=info, servers=servers_, paths=paths, components=components, tags=tags_)
+    openapi_dict = openapi.dict(by_alias=True, exclude_none=True)
+    if validate:
+        validate_spec(openapi_dict)
+    return openapi_dict
 
 
 def _get_openapi_path(*, routes: Iterable[Route], operation_ids: Set[str], tag_names: Iterable[str]) -> PathItem:

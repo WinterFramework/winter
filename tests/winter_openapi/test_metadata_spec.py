@@ -11,7 +11,6 @@ def test_generate_openapi_with_all_args_spec():
 
     route = get_route(_TestAPI.get_resource)
     tags = [{'name': 'tag_value'}]
-    servers = [{'url': 'https://api.example.com/v1'}]
     # Act
     result = generate_openapi(
         title='title',
@@ -19,7 +18,6 @@ def test_generate_openapi_with_all_args_spec():
         description='description',
         routes=[route],
         tags=tags,
-        servers=servers,
     )
     # Assert
     assert result == {
@@ -37,6 +35,6 @@ def test_generate_openapi_with_all_args_spec():
                 },
             },
         },
-        'servers': [{'url': 'https://api.example.com/v1'}],
+        'servers': [{'url': '/'}],
         'tags': [{'name': 'tag_value'}]
     }

@@ -3,7 +3,6 @@ from enum import IntEnum
 from typing import List
 
 import pytest
-from openapi_spec_validator import validate_spec
 
 import winter
 from winter.web.routing import get_route
@@ -79,7 +78,6 @@ def test_query_parameter_inspector(type_hint, expected_parameter_properties):
     # Assert
     parameters = result["paths"]["/resource/"]["get"]["parameters"]
     assert parameters == [expected_parameter]
-    validate_spec(result)
 
 
 @pytest.mark.parametrize('type_hint, expected_parameter_properties', param_with_diff_types)
@@ -119,7 +117,7 @@ def test_query_parameter_inspector_with_explode(type_hint, expected_parameter_pr
 @pytest.mark.parametrize('type_hint, expected_parameter_properties', param_with_diff_types)
 def test_path_parameter_different_types(type_hint, expected_parameter_properties):
     class _TestAPI:
-        @winter.route_post('{param}/{not_in_method}/')
+        @winter.route_post('{param}/')
         def simple_method_with_path_param(
             self,
             param: type_hint,
@@ -146,7 +144,7 @@ def test_path_parameter_different_types(type_hint, expected_parameter_properties
     result = generate_openapi(title='title', version='1.0.0', routes=[route])
 
     # Assert
-    parameters = result["paths"]["/{param}/{not_in_method}/"]["post"]["parameters"]
+    parameters = result["paths"]["/{param}/"]["post"]["parameters"]
     assert parameters == [expected_parameter]
 
 
@@ -169,3 +167,24 @@ def test_query_parameter_without_python_argument():
 
     # Assert
     assert str(exc_info.value) == 'Argument "test" not found in _TestAPI.api_method, but listed in query parameters'
+
+
+def test_path_parameter_without_python_argument():
+    class _TestAPI:
+        @winter.route_post('{test}')
+        def api_method(
+            self,
+        ):  # pragma: no cover
+            """
+            :param param: docstr
+            """
+            pass
+
+    route = get_route(_TestAPI.api_method)
+
+    # Act
+    with pytest.raises(Exception) as exc_info:
+        generate_openapi(title='title', version='1.0.0', routes=[route])
+
+    # Assert
+    assert str(exc_info.value) == 'Path variable "test" not found in method _TestAPI.api_method'
