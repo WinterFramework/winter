@@ -20,7 +20,7 @@ def test_generate_spec_for_media_type_produces():
     # Assert
     paths = result['paths']
     assert paths == {
-        'xml/': {
+        '/xml/': {
             'get': {
                 'deprecated': False,
                 'operationId': '_TestAPI.get_xml',
@@ -56,7 +56,7 @@ def test_generate_spec_for_media_type_consumes():
     # Assert
     paths = result['paths']
     assert paths == {
-        'xml/': {
+        '/xml/': {
             'post': {
                 'deprecated': False,
                 'operationId': '_TestAPI.get_xml',

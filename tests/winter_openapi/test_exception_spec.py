@@ -33,7 +33,7 @@ def test_global_exception_annotated_on_method():
         'info': {'title': 'title', 'version': '1.0.0'},
         'openapi': '3.0.3',
         'paths': {
-            'resource': {
+            '/resource': {
                 'get': {
                     'deprecated': False,
                     'operationId': '_TestAPI.get_resource',
@@ -43,7 +43,7 @@ def test_global_exception_annotated_on_method():
                 },
             },
         },
-        'servers': [],
+        'servers': [{'url': '/'}],
         'tags': [],
     }
 
@@ -103,7 +103,7 @@ def test_exception_annotated_on_method_with_custom_handler_with_dto(handler_retu
         'info': {'title': 'title', 'version': '1.0.0'},
         'openapi': '3.0.3',
         'paths': {
-            'resource': {
+            '/resource': {
                 'get': {
                     'deprecated': False,
                     'operationId': '_TestAPI.get_resource',
@@ -116,6 +116,6 @@ def test_exception_annotated_on_method_with_custom_handler_with_dto(handler_retu
                 },
             },
         },
-        'servers': [],
+        'servers': [{'url': '/'}],
         'tags': [],
     }

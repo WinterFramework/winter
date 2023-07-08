@@ -146,7 +146,7 @@ def test_path_parameter_different_types(type_hint, expected_parameter_properties
     result = generate_openapi(title='title', version='1.0.0', routes=[route])
 
     # Assert
-    parameters = result["paths"]["{param}/{not_in_method}/"]["post"]["parameters"]
+    parameters = result["paths"]["/{param}/{not_in_method}/"]["post"]["parameters"]
     assert parameters == [expected_parameter]
 
 

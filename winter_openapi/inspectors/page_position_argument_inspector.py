@@ -20,6 +20,7 @@ class PagePositionArgumentsInspector(RouteParametersInspector):
             required=False,
             param_in="query",
             type=DataTypes.INTEGER,
+            param_schema=Schema(type=DataTypes.INTEGER),
         )
         self.offset_parameter = Parameter(
             name=page_position_argument_resolver.offset_name,
@@ -27,6 +28,7 @@ class PagePositionArgumentsInspector(RouteParametersInspector):
             required=False,
             param_in="query",
             type=DataTypes.INTEGER,
+            param_schema=Schema(type=DataTypes.INTEGER)
         )
 
     def inspect_parameters(self, route: 'Route') -> List[Parameter]:
