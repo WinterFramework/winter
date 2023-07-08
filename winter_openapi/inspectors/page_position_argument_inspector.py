@@ -53,10 +53,13 @@ class PagePositionArgumentsInspector(RouteParametersInspector):
                 description=f'Comma separated order by fields. Allowed fields: {allowed_order_by_fields}.',
                 required=False,
                 param_in="query",
-                type=DataTypes.ARRAY,
-                param_schema=Schema(type=DataTypes.STRING),
-                default=default_sort,
-                collectionFormat='multi',
+                param_schema=Schema(
+                    type=DataTypes.ARRAY,
+                    default=default_sort,
+                    items=Schema(
+                        type=DataTypes.STRING,
+                    )
+                ),
             )
             parameters.append(order_by_parameter)
 

@@ -121,15 +121,17 @@ class RequestBodyWithUndefined:
         Any,
         {
             'schema': {
-                'anyOf': [
-                    {'type': 'string'},
-                    {'type': 'integer'},
-                    {'type': 'object'},
-                    {'type': 'boolean'},
-                    {'type': 'number'},
-                    {'type': 'array'}
-                ],
                 'description': 'Can be any value - string, number, boolean, array or object.',
+                'nullable': False
+            }
+        }
+    ),
+    (
+        Optional[Any],
+        {
+            'schema': {
+                'description': 'Can be any value - string, number, boolean, array or object.',
+                'nullable': True
             }
         }
     ),
@@ -138,15 +140,8 @@ class RequestBodyWithUndefined:
         {
             'schema': {
                 'items': {
-                    'anyOf': [
-                        {'type': 'string'},
-                        {'type': 'integer'},
-                        {'type': 'object'},
-                        {'type': 'boolean'},
-                        {'type': 'number'},
-                        {'type': 'array'}
-                    ],
                     'description': 'Can be any value - string, number, boolean, array or object.',
+                    'nullable': False
                 },
                 'type': 'array',
             },
@@ -157,15 +152,8 @@ class RequestBodyWithUndefined:
         {
             'schema': {
                 'items': {
-                    'anyOf': [
-                        {'type': 'string'},
-                        {'type': 'integer'},
-                        {'type': 'object'},
-                        {'type': 'boolean'},
-                        {'type': 'number'},
-                        {'type': 'array'}
-                    ],
                     'description': 'Can be any value - string, number, boolean, array or object.',
+                    'nullable': False
                 },
                 'type': 'array',
             },
