@@ -45,6 +45,7 @@ class PathParametersInspector(RouteParametersInspector):
         path_arguments = []
         for path_variable in route.get_path_variables():
             argument = route.method.get_argument(path_variable)
-            if argument is not None:
-                path_arguments.append(argument)
+            if argument is None:
+                raise ValueError(f'Path variable "{path_variable}" not found in method {route.method.full_name}')
+            path_arguments.append(argument)
         return path_arguments
