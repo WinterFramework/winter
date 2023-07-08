@@ -161,15 +161,8 @@ def get_url_path_tag(url_path: str, path_prefix: str) -> Optional[str]:
 
 def get_route_parameters(route: Route) -> List[Parameter]:
     parameters = []
-    inspector_classes = []
     for inspector in get_route_parameters_inspectors():
-        inspector_class = inspector.__class__
-
-        if inspector_class in inspector_classes:
-            continue
-
         parameters += inspector.inspect_parameters(route)
-        inspector_classes.append(inspector_class)
     return parameters
 
 
