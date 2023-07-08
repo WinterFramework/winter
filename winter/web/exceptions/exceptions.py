@@ -1,9 +1,8 @@
+import dataclasses
 from http import HTTPStatus
 from typing import Dict
 from typing import Optional
 from typing import Union
-
-import dataclasses
 
 from .problem import problem
 
@@ -22,7 +21,7 @@ class RedirectException(Exception):
 @problem(status=HTTPStatus.BAD_REQUEST)
 @dataclasses.dataclass
 class RequestDataDecodeException(Exception):
-    errors: dict = dataclasses.field(default_factory=dict)
+    errors: Dict = dataclasses.field(default_factory=dict)
 
     def __init__(self, errors: Optional[Union[str, Dict]]):
         super().__init__('Failed to decode request data')

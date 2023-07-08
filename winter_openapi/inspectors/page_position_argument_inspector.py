@@ -1,33 +1,37 @@
 from typing import List
 
-from drf_yasg import openapi
+from openapi_schema_pydantic.v3.v3_0_3 import Parameter
+from openapi_schema_pydantic.v3.v3_0_3 import Schema
 
 from winter.data.pagination import PagePosition
 from winter.web.pagination.order_by import OrderByAnnotation
 from winter.web.pagination.page_position_argument_resolver import PagePositionArgumentResolver
 from winter.web.routing import Route
+from winter_openapi.inspection.data_types import DataTypes
 from .route_parameters_inspector import RouteParametersInspector
 
 
 class PagePositionArgumentsInspector(RouteParametersInspector):
     def __init__(self, page_position_argument_resolver: PagePositionArgumentResolver):
         self._page_position_argument_resolver = page_position_argument_resolver
-        self.limit_parameter = openapi.Parameter(
+        self.limit_parameter = Parameter(
             name=page_position_argument_resolver.limit_name,
             description='Number of results to return per page',
             required=False,
-            in_=openapi.IN_QUERY,
-            type=openapi.TYPE_INTEGER,
+            param_in="query",
+            type=DataTypes.INTEGER,
+            param_schema=Schema(type=DataTypes.INTEGER),
         )
-        self.offset_parameter = openapi.Parameter(
+        self.offset_parameter = Parameter(
             name=page_position_argument_resolver.offset_name,
             description='The initial index from which to return the results',
             required=False,
-            in_=openapi.IN_QUERY,
-            type=openapi.TYPE_INTEGER,
+            param_in="query",
+            type=DataTypes.INTEGER,
+            param_schema=Schema(type=DataTypes.INTEGER)
         )
 
-    def inspect_parameters(self, route: 'Route') -> List[openapi.Parameter]:
+    def inspect_parameters(self, route: 'Route') -> List[Parameter]:
         parameters = []
         has_page_position_argument = any(argument.type_ == PagePosition for argument in route.method.arguments)
         if not has_page_position_argument:
@@ -44,18 +48,18 @@ class PagePositionArgumentsInspector(RouteParametersInspector):
                 if order_by_annotation.default_sort is not None else
                 None
             )
-            order_by_parameter = openapi.Parameter(
+            order_by_parameter = Parameter(
                 name=self._page_position_argument_resolver.order_by_name,
-                description=(
-                    f'Comma separated order by fields. '
-                    f'Allowed fields: {allowed_order_by_fields}.'
-                ),
+                description=f'Comma separated order by fields. Allowed fields: {allowed_order_by_fields}.',
                 required=False,
-                in_=openapi.IN_QUERY,
-                type=openapi.TYPE_ARRAY,
-                items={'type': openapi.TYPE_STRING},
-                default=default_sort,
-                collectionFormat='multi',
+                param_in="query",
+                param_schema=Schema(
+                    type=DataTypes.ARRAY,
+                    default=default_sort,
+                    items=Schema(
+                        type=DataTypes.STRING,
+                    )
+                ),
             )
             parameters.append(order_by_parameter)
 

@@ -5,8 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [18.0.0] - 2023-06-25
+### Changed
+- OpenAPI updated to version 3.0.3
+
 ### Deprecation
 - DRF serializers are not supported anymore, use dataclasses instead. Classes and annotations deleted: PageSerializer, BodyWithContext, @input_serializer, @output_serializer
+- drf_yasg deleted from dependencies
 
 ## [17.0.5] - 2023-06-15
 ### Bugfixes

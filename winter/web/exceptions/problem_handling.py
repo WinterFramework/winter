@@ -17,6 +17,7 @@ from .handlers import ExceptionHandler
 from .handlers import exception_handlers_registry
 from .problem_annotation import ProblemAnnotation
 from .problem_handling_info import ProblemHandlingInfo
+from .. import MediaType
 from ... import response_header
 
 
@@ -39,7 +40,7 @@ class ProblemExceptionHandlerGenerator(ExceptionHandlerGenerator):
             content_type_header: ResponseHeader[str],
             **kwargs,
         ) -> return_type_class:
-            content_type_header.set('application/json+problem')
+            content_type_header.set(MediaType.APPLICATION_PROBLEM_JSON)
             return exception_mapper.to_response_body(request, exception, handling_info)
 
         handler_class_name = exception_class.__name__ + 'Handler'
