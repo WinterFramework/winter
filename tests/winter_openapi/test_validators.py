@@ -34,4 +34,3 @@ def test_validate_spec(validate):
 
     # Act
     generate_openapi(title='title', version='1.0.0', routes=[route], validate=validate)
-
