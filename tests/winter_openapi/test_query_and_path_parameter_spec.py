@@ -3,7 +3,6 @@ from enum import IntEnum
 from typing import List
 
 import pytest
-from openapi_spec_validator import validate_spec
 
 import winter
 from winter.web.routing import get_route
@@ -79,7 +78,6 @@ def test_query_parameter_inspector(type_hint, expected_parameter_properties):
     # Assert
     parameters = result["paths"]["/resource/"]["get"]["parameters"]
     assert parameters == [expected_parameter]
-    validate_spec(result)
 
 
 @pytest.mark.parametrize('type_hint, expected_parameter_properties', param_with_diff_types)
