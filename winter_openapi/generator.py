@@ -23,6 +23,7 @@ from openapi_schema_pydantic.v3.v3_0_3 import Response
 from openapi_schema_pydantic.v3.v3_0_3 import Responses
 from openapi_schema_pydantic.v3.v3_0_3 import Server
 from openapi_schema_pydantic.v3.v3_0_3 import Tag
+from openapi_spec_validator import validate_spec
 
 from winter.core import ComponentMethod
 from winter.web import MediaType
@@ -45,6 +46,7 @@ def generate_openapi(
     description: Optional[str] = None,
     tags: Optional[List[Dict[str, Any]]] = None,
     servers: Optional[List[Dict[str, str]]] = None,
+    validate: bool = True,
 ) -> Dict[str, Any]:
     routes = list(routes)
     routes.sort(key=lambda r: r.url_path)
@@ -72,8 +74,11 @@ def generate_openapi(
 
     info = Info(title=title, version=version, description=description)
     servers_ = [Server(**server) for server in servers or []] or [Server(url=path_prefix)]
-    open_api = OpenAPI(info=info, servers=servers_, paths=paths, components=components, tags=tags_)
-    return open_api.dict(by_alias=True, exclude_none=True)
+    openapi = OpenAPI(info=info, servers=servers_, paths=paths, components=components, tags=tags_)
+    openapi_dict = openapi.dict(by_alias=True, exclude_none=True)
+    if validate:
+        validate_spec(openapi_dict)
+    return openapi_dict
 
 
 def _get_openapi_path(*, routes: Iterable[Route], operation_ids: Set[str], tag_names: Iterable[str]) -> PathItem:
