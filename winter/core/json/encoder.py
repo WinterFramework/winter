@@ -85,9 +85,7 @@ def timedelta_encoder(timedelta: datetime.timedelta):
 
 @register_encoder
 def decimal_encoder(number: decimal.Decimal):
-    from rest_framework.settings import api_settings
-    TYPE_DECIMAL = str if api_settings.COERCE_DECIMAL_TO_STRING else float
-    return TYPE_DECIMAL(number)
+    return str(number)
 
 
 @register_encoder

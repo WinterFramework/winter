@@ -3,11 +3,10 @@ import decimal
 import enum
 import json
 import uuid
+from dataclasses import dataclass
 
-import mock
 import pytest
 import pytz
-from dataclasses import dataclass
 from django.utils.translation import ugettext
 from django.utils.translation import ugettext_lazy
 
@@ -109,14 +108,3 @@ def test_encoder_with_raises(value, exception_type, exception_messages):
         json.dumps(data, cls=JSONEncoder)
 
     assert exception.value.args[0] in exception_messages
-
-
-@mock.patch('rest_framework.settings.api_settings.COERCE_DECIMAL_TO_STRING', False)
-def test_encode_decimal():
-    data = {'value': decimal.Decimal('3.0')}
-
-    # Act
-    data = json.dumps(data, cls=JSONEncoder)
-
-    # Assert
-    assert data == '{"value": 3.0}'
