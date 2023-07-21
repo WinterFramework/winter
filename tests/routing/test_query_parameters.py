@@ -6,11 +6,9 @@ from uuid import UUID
 from uuid import uuid4
 
 import pytest
-from dateutil import parser
 from uritemplate import URITemplate
 
 import winter
-from tests.entities import AuthorizedUser
 from tests.utils import get_request
 from winter.core.annotations import AlreadyAnnotated
 from winter.web.argument_resolver import ArgumentNotSupported
@@ -210,7 +208,7 @@ def test_query_parameter(api_client, date, date_time, boolean, optional_boolean,
     base_uri = base_uri.expand(**query_params)
 
     # Act
-    http_response = api_client.get(base_uri, headers={'Test-Authorize': 'user'})
+    http_response = api_client.get(base_uri)
     assert http_response.json() == expected_data
 
 
@@ -232,5 +230,5 @@ def test_invalid_uuid_query_parameter_triggers_400(api_client):
     base_uri = base_uri.expand(**query_params)
 
     # Act
-    http_response = api_client.get(base_uri, headers={'Test-Authorize': 'user'})
+    http_response = api_client.get(base_uri)
     assert http_response.status_code == HTTPStatus.BAD_REQUEST

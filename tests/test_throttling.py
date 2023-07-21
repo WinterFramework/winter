@@ -4,8 +4,6 @@ from http import HTTPStatus
 import freezegun
 import pytest
 
-from .entities import AuthorizedUser
-
 
 expected_error_response = {
     'status': 429,
@@ -55,7 +53,7 @@ def test_post_without_throttling(api_client, need_auth):
 
 def test_throttling_without_throttling(api_client):
     for i in range(1, 16):
-        response = api_client.get('/with-throttling/without-throttling/', headers={'Test-Authorize': 'user'})
+        response = api_client.get('/with-throttling/without-throttling/')
         assert response.status_code == HTTPStatus.OK, i
 
 
@@ -65,8 +63,5 @@ def test_get_throttling_with_conditional_reset(api_client):
     with freezegun.freeze_time(now):
         for i in range(1, 10):
             is_reset = True if i == 5 else False
-            response = api_client.get(
-                f'/with-throttling/with-reset/?is_reset={is_reset}',
-                headers={'Test-Authorize': 'user'},
-            )
+            response = api_client.get(f'/with-throttling/with-reset/?is_reset={is_reset}')
             assert response.status_code == HTTPStatus.OK, i

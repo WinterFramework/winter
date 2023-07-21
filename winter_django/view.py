@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 from typing import Type
 
 import django.http
-import rest_framework.authentication
 from django.conf.urls import url
 from django.urls import URLPattern
 
@@ -29,18 +28,6 @@ from winter.web.urls import rewrite_uritemplate_with_regexps
 
 if TYPE_CHECKING:
     from django.views.generic import View
-
-
-class SessionAuthentication(rest_framework.authentication.SessionAuthentication):
-    """SessionAuthentication with supporting 401 status code"""
-
-    def authenticate_header(self, request):
-        return "Unauthorized"
-
-
-class CsrfExemptSessionAuthentication(SessionAuthentication):
-    def enforce_csrf(self, request):
-        return  # To not perform the csrf check previously happening
 
 
 def create_django_urls_from_routes(routes: List[Route]) -> List[URLPattern]:

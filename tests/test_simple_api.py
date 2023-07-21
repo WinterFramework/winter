@@ -2,9 +2,6 @@ from http import HTTPStatus
 
 import pytest
 
-from .entities import AuthorizedUser
-from .entities import User
-
 
 @pytest.mark.parametrize(['params', 'expected_body'], (
     ({'name': 'Winter'}, 'Hello, Winter!'),
@@ -12,23 +9,13 @@ from .entities import User
     ({}, 'Hello, stranger!'),
 ))
 def test_simple_api(api_client, params, expected_body):
-    response = api_client.get('/winter-simple/', params=params, headers={'Test-Authorize': 'user'})
+    response = api_client.get('/winter-simple/', params=params)
     assert response.status_code == HTTPStatus.OK
     assert response.json() == expected_body
 
 
-def test_401_not_authenticated(api_client):
-    response = api_client.get('/winter-simple/')
-    assert response.status_code == HTTPStatus.UNAUTHORIZED
-
-
-def test_403_forbidden(api_client):
-    response = api_client.get('/winter-simple/', headers={'Test-Authorize': 'guest'})
-    assert response.status_code == HTTPStatus.FORBIDDEN
-
-
 def test_get_response_entity(api_client):
-    response = api_client.get('/winter-simple/get-response-entity/', headers={'Test-Authorize': 'user'})
+    response = api_client.get('/winter-simple/get-response-entity/')
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {
         'number': 123,
@@ -60,7 +47,7 @@ def test_page_response(api_client, limit, offset, expected_previous, expected_ne
     }
 
     # Act
-    response = api_client.get(url, headers={'Test-Authorize': 'user'})
+    response = api_client.get(url)
 
     # Assert
     assert response.status_code == HTTPStatus.OK, response.content
@@ -85,25 +72,15 @@ def test_custom_page_response(api_client):
     }
 
     # Act
-    response = api_client.get(
-        '/winter-simple/custom-page-response/',
-        params=request_data,
-        headers={'Test-Authorize': 'user'},
-    )
+    response = api_client.get('/winter-simple/custom-page-response/', params=request_data)
 
     # Assert
     assert response.status_code == HTTPStatus.OK, response.content
     assert response.json() == expected_body
 
 
-def test_no_authentication_api(api_client):
-    response = api_client.get('/winter-no-auth/')
-    assert response.status_code == HTTPStatus.OK
-    assert response.json() == 'Hello, World!'
-
-
 def test_return_response(api_client):
-    response = api_client.get('/winter-simple/return-response/', headers={'Test-Authorize': 'user'})
+    response = api_client.get('/winter-simple/return-response/')
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {'logged_in': True}
 
@@ -117,5 +94,5 @@ def test_return_response(api_client):
 ))
 def test_methods(api_client, method, http_response_status):
     url = f'/winter-simple/{method}/'
-    response = getattr(api_client, method)(url, headers={'Test-Authorize': 'user'})
+    response = getattr(api_client, method)(url)
     assert response.status_code == http_response_status

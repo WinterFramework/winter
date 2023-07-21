@@ -15,7 +15,6 @@ class CustomThrottleExceptionHandler(ExceptionHandler):
 
 
 @winter.route_get('with-throttling/')
-@winter.web.no_authentication
 class APIWithThrottling:
 
     @winter.route_get()

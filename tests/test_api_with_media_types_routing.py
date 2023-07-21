@@ -6,7 +6,6 @@ def test_api_with_media_types_routing_returns_200(api_client):
         '/with-media-types-routing/xml/',
         headers={
             'Accept': 'application/xml',
-            'Test-Authorize': 'user',
         },
     )
 

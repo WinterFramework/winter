@@ -5,7 +5,6 @@ import pytest
 from winter.web.argument_resolver import ArgumentNotSupported
 from .api.api_with_exceptions import CustomException
 from .api.api_with_exceptions import ExceptionWithoutHandler
-from .entities import AuthorizedUser
 
 
 @pytest.mark.parametrize(
@@ -20,7 +19,7 @@ def test_api_with_exceptions(api_client, url_path, expected_status, expected_bod
     url = f'/with_exceptions/{url_path}/'
 
     # Act
-    response = api_client.get(url, headers={'Test-Authorize': 'user'})
+    response = api_client.get(url)
 
     # Assert
     assert response.status_code == expected_status
@@ -38,7 +37,7 @@ def test_api_with_exceptions_throws(api_client, url_path, expected_exception_cls
 
     # Act
     with pytest.raises(expected_exception_cls):
-        api_client.get(url, headers={'Test-Authorize': 'user'})
+        api_client.get(url)
 
 
 def test_exception_handler_with_unknown_argument(api_client):
@@ -46,7 +45,7 @@ def test_exception_handler_with_unknown_argument(api_client):
 
     # Act
     with pytest.raises(ArgumentNotSupported):
-        api_client.get(url, headers={'Test-Authorize': 'user'})
+        api_client.get(url)
 
 
 @pytest.mark.parametrize(
@@ -148,7 +147,7 @@ def test_api_with_problem_exceptions(api_client, url_path, expected_status, expe
     url = f'/with-problem-exceptions/{url_path}/'
 
     # Act
-    response = api_client.get(url, headers={'Test-Authorize': 'user'})
+    response = api_client.get(url)
 
     # Assert
     assert response.status_code == expected_status

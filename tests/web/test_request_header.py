@@ -19,7 +19,6 @@ def test_without_arguments():
 def test_request_header(api_client):
     # Act
     response = api_client.post('/with-request-header/', headers={
-        'Test-Authorize': 'user',
         'x-header': '314',
     })
 
@@ -32,14 +31,13 @@ def test_request_several_headers(api_client):
     response = api_client.post(
         '/with-request-several-headers/',
         headers={
-            'Test-Authorize': 'user',
             'x-header': '314',
             'y-header': '315',
         },
     )
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == ['314', '315']
+    assert response.json() == [314, '315']
 
 
 def test_request_header_invalid_type(api_client):
@@ -47,7 +45,6 @@ def test_request_header_invalid_type(api_client):
     response = api_client.post(
         '/with-request-header/',
         headers={
-            'Test-Authorize': 'user',
             'x-header': 'abracadabra',
         },
     )
@@ -66,7 +63,7 @@ def test_request_header_invalid_type(api_client):
 
 def test_request_header_without_header(api_client):
     # Act
-    response = api_client.post('/with-request-header/', headers={'Test-Authorize': 'user'})
+    response = api_client.post('/with-request-header/')
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.json() == {

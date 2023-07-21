@@ -2,11 +2,8 @@ import datetime
 import uuid
 from http import HTTPStatus
 
-import pytest
 import pytz
 
-from tests.entities import AuthorizedUser
-from winter.web.argument_resolver import ArgumentNotSupported
 from winter.web import ResponseHeader
 
 
@@ -23,10 +20,7 @@ def test_response_header_sets_header():
 
 def test_str_response_header(api_client):
     # Act
-    response = api_client.get(
-        '/with-response-headers/str-header/',
-        headers={'Test-Authorize': 'user'},
-    )
+    response = api_client.get('/with-response-headers/str-header/')
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == 'OK'
@@ -35,10 +29,7 @@ def test_str_response_header(api_client):
 
 def test_int_response_header(api_client):
     # Act
-    response = api_client.get(
-        '/with-response-headers/int-header/',
-        headers={'Test-Authorize': 'user'},
-    )
+    response = api_client.get('/with-response-headers/int-header/')
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == 'OK'
@@ -49,10 +40,7 @@ def test_datetime_isoformat_response_header(api_client):
     now = datetime.datetime.now()
 
     # Act
-    response = api_client.get(
-        f'/with-response-headers/datetime-isoformat-header/?now={now.timestamp()}',
-        headers={'Test-Authorize': 'user'},
-    )
+    response = api_client.get(f'/with-response-headers/datetime-isoformat-header/?now={now.timestamp()}')
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == 'OK'
@@ -63,10 +51,7 @@ def test_last_modified_response_header(api_client):
     now = datetime.datetime.now()
 
     # Act
-    response = api_client.get(
-        f'/with-response-headers/last-modified-header/?now={now.timestamp()}',
-        headers={'Test-Authorize': 'user'},
-    )
+    response = api_client.get(f'/with-response-headers/last-modified-header/?now={now.timestamp()}')
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == 'OK'
@@ -77,7 +62,7 @@ def test_uuid_response_header(api_client):
     uid = uuid.uuid4()
 
     # Act
-    response = api_client.get(f'/with-response-headers/uuid-header/?uid={uid}', headers={'Test-Authorize': 'user'})
+    response = api_client.get(f'/with-response-headers/uuid-header/?uid={uid}')
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == 'OK'
@@ -86,7 +71,7 @@ def test_uuid_response_header(api_client):
 
 def test_two_response_headers(api_client):
     # Act
-    response = api_client.get('/with-response-headers/two-headers/', headers={'Test-Authorize': 'user'})
+    response = api_client.get('/with-response-headers/two-headers/')
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == 'OK'
@@ -96,7 +81,7 @@ def test_two_response_headers(api_client):
 
 def test_header_without_annotation(api_client):
     # Act
-    response = api_client.get('/with-response-headers/header-without-annotation/', headers={'Test-Authorize': 'user'})
+    response = api_client.get('/with-response-headers/header-without-annotation/')
 
     # Assert
     assert response.status_code == 500  # It's better to be replaced with something more human readable
