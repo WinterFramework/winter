@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Default Authorization and CSRF protection are removed from the framework
 - Always encode decimals as strings despite COERCE_DECIMAL_TO_STRING setting
 - Removed: JSONRenderer, create_django_urls_for_package, create_django_urls
+- Removed djangorestframework from dependencies
 
 ## [18.0.0] - 2023-06-25
 ### Changed
