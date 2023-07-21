@@ -1,8 +1,7 @@
 from typing import Optional
 
 import django.http
-from rest_framework.utils.urls import remove_query_param
-from rest_framework.utils.urls import replace_query_param
+from furl import furl
 
 from winter.data.pagination import Page
 
@@ -14,15 +13,17 @@ def get_previous_page_url(page: Page, request: django.http.HttpRequest) -> Optio
     if not offset or limit is None:
         return None
 
-    url = request.build_absolute_uri()
-    url = replace_query_param(url, 'limit', limit)
+    url = furl(request.build_absolute_uri())
+    url.query.set([('limit', limit)])
 
     previous_offset = offset - limit
 
     if previous_offset <= 0:
-        return remove_query_param(url, 'offset')
+        url.query.remove('offset')
+    else:
+        url.query.set([('offset', previous_offset)])
 
-    return replace_query_param(url, 'offset', previous_offset)
+    return url.tostr()
 
 
 def get_next_page_url(page: Page, request: django.http.HttpRequest) -> Optional[str]:
@@ -38,7 +39,9 @@ def get_next_page_url(page: Page, request: django.http.HttpRequest) -> Optional[
     if next_offset >= total:
         return None
 
-    url = request.build_absolute_uri()
-    url = replace_query_param(url, 'limit', limit)
-
-    return replace_query_param(url, 'offset', next_offset)
+    url = furl(request.build_absolute_uri())
+    url.query.set([
+        ('limit', limit),
+        ('offset', next_offset),
+    ])
+    return url.tostr()

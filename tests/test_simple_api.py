@@ -30,10 +30,12 @@ def test_get_response_entity(api_client):
 ))
 def test_page_response(api_client, limit, offset, expected_previous, expected_next):
     url = f'/winter-simple/page-response/?'
+    query_params = []
     if limit is not None:
-        url += f'&limit={limit}'
+        query_params.append(f'limit={limit}')
     if offset is not None:
-        url += f'&offset={offset}'
+        query_params.append(f'offset={offset}')
+    url += '&'.join(query_params)
 
     expected_body = {
         'objects': [{'number': 1}],
