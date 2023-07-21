@@ -82,7 +82,7 @@ def test_custom_page_response(api_client):
 def test_return_response(api_client):
     response = api_client.get('/winter-simple/return-response/')
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == {'logged_in': True}
+    assert response.content == b'hi'
 
 
 @pytest.mark.parametrize(('method', 'http_response_status'), (

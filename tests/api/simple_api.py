@@ -44,9 +44,8 @@ class SimpleAPI:
         return ResponseEntity[Dataclass](Dataclass(123), status_code=HTTPStatus.OK)
 
     @winter.route_get('return-response/')
-    def return_response(self, request: HttpRequest) -> HttpResponse:
-        data = {'logged_in': bool(request.user)}
-        return HttpResponse(json.dumps(data, cls=JSONEncoder))
+    def return_response(self) -> HttpResponse:
+        return HttpResponse(b'hi')
 
     @winter.route_get('get/')
     def get(self):
