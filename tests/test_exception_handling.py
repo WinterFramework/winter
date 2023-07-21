@@ -27,25 +27,16 @@ def test_api_with_exceptions(api_client, url_path, expected_status, expected_bod
 
 
 @pytest.mark.parametrize(
-    ['url_path', 'expected_exception_cls'], (
-        ('not_declared_but_thrown', CustomException),
-        ('declared_but_no_handler', ExceptionWithoutHandler),
+    'url_path', (
+        '/with_exceptions/not_declared_but_thrown/',
+        '/with_exceptions/declared_but_no_handler/',
+        '/with_exceptions/with_unknown_argument_exception/',
     ),
 )
-def test_api_with_exceptions_throws(api_client, url_path, expected_exception_cls):
-    url = f'/with_exceptions/{url_path}/'
+def test_api_with_exceptions_throws_500(api_client, url_path):
+    response = api_client.get(url_path)
 
-    # Act
-    with pytest.raises(expected_exception_cls):
-        api_client.get(url)
-
-
-def test_exception_handler_with_unknown_argument(api_client):
-    url = '/with_exceptions/with_unknown_argument_exception/'
-
-    # Act
-    with pytest.raises(ArgumentNotSupported):
-        api_client.get(url)
+    assert response.status_code == 500
 
 
 @pytest.mark.parametrize(
