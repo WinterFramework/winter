@@ -51,3 +51,29 @@ def test_paginated_api(api_client, query_string, expected_limit, expected_offset
         'offset': expected_offset,
         'sort': expected_sort,
     }
+
+
+@pytest.mark.parametrize(
+    ('query_string', 'message', 'errors_dict'), (
+        ('limit=none', 'Failed to decode request data', {'error': 'Cannot decode "none" to PositiveInteger'}),
+        ('offset=-20', 'Failed to decode request data', {'error': 'Cannot decode "-20" to PositiveInteger'}),
+        ('order_by=id,', 'Invalid field for order: ""', {'error': 'Invalid field for order: ""'}),
+        ('order_by=-', 'Invalid field for order: "-"', {'error': 'Invalid field for order: "-"'}),
+        (
+            'order_by=not_allowed_order_by_field',
+            'Fields do not allowed as order by fields: "not_allowed_order_by_field"',
+            {'error': 'Fields do not allowed as order by fields: "not_allowed_order_by_field"'},
+        ),
+    ),
+)
+def test_invalid_pagination(api_client, query_string, message, errors_dict):
+    response = api_client.get('/paginated/?' + query_string)
+
+    assert response.status_code == 400
+    assert response.json() == {
+        'status': 400,
+        'type': 'urn:problem-type:request-data-decode',
+        'title': 'Request data decode',
+        'detail': 'Failed to decode request data',
+        'errors': errors_dict,
+    }
