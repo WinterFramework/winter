@@ -18,8 +18,6 @@ from winter.core.json import JSONEncoder
 from winter.web import ResponseEntity
 from winter.web import response_headers_serializer
 from winter.web.argument_resolver import arguments_resolver
-from winter.web.auth import is_authentication_needed
-from winter.web.auth import is_csrf_needed
 from winter.web.default_response_status import get_default_response_status
 from winter.web.exceptions import MethodExceptionsManager
 from winter.web.exceptions import ThrottleException
@@ -80,26 +78,6 @@ def _create_django_view_from_routes(routes: List[Route]) -> 'View':
         setattr(WinterView, dispatch_method_name, dispatch)
 
     return WinterView()
-
-
-def _is_authentication_needed_for_routes(routes: List[Route]) -> bool:
-    is_authentication_needed_count = sum(is_authentication_needed(route.method.component) for route in routes)
-    is_authentication_needed_for_routes = is_authentication_needed_count != 0
-
-    if is_authentication_needed_for_routes and is_authentication_needed_count != len(routes):
-        raise Exception('All url path routes must be either with authentication or without')
-
-    return is_authentication_needed_for_routes
-
-
-def _is_csrf_needed_for_routes(routes: List[Route]) -> bool:
-    is_csrf_needed_count = sum(is_csrf_needed(route.method) for route in routes)
-    is_csrf_needed_for_routes = is_csrf_needed_count != 0
-
-    if is_csrf_needed_for_routes and is_csrf_needed_count != len(routes):
-        raise Exception("All url path routes must be either with csrf or without")
-
-    return is_csrf_needed_for_routes
 
 
 def _create_dispatch_function(api_class: Type, route: Route):
