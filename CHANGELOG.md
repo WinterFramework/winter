@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [19.0.0] - 2023-07-21
 ### Changed
 - DRF request and response are replaced with Django HttpRequest and HttpResponse
+- Default Authorization and CSRF protection are removed from the framework
 
 ## [18.0.0] - 2023-06-25
 ### Changed
