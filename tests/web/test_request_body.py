@@ -25,7 +25,7 @@ def test_request_body(api_client):
     }
 
     # Act
-    response = api_client.post('/with-request-data/', data=data)
+    response = api_client.post('/with-request-data/', json=data)
 
     assert response.status_code == HTTPStatus.OK, response.json()
     assert response.json() == expected_data
@@ -49,10 +49,9 @@ def test_request_body_as_list(api_client):
         'items': [1, 2],
         'optional_items': None,
     }]
-    data = json.dumps(data)
 
     # Act
-    response = api_client.post('/with-request-data/many/', data=data)
+    response = api_client.post('/with-request-data/many/', json=data)
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == expected_data

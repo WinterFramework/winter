@@ -1,4 +1,5 @@
 import json
+from json import JSONDecodeError
 from typing import MutableMapping
 
 import django.http
@@ -29,3 +30,6 @@ class RequestBodyArgumentResolver(ArgumentResolver):
             return json_decode(json.loads(request.body), argument.type_)
         except JSONDecodeException as e:
             raise RequestDataDecodeException(e.errors)
+        except JSONDecodeError as e:
+            # TODO need to check content type first and return 406 if it's not application/json
+            raise RequestDataDecodeException(f'Invalid JSON: {e}')
