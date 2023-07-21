@@ -62,7 +62,7 @@ def test_with_raises_argument_not_supported():
     component = Component.get_by_cls(APIWithPathParameters)
     argument = component.get_method('test').get_argument('param6')
     resolver = PathParametersArgumentResolver()
-    request = Mock(spec=Request)
+    request = Mock(spec=HttpRequest)
     request.path_info = f'/with-path-parameters/123/456/one/{uuid_}/2/'
 
     with pytest.raises(ArgumentNotSupported) as exception:
