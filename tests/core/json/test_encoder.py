@@ -45,10 +45,6 @@ def generator():
     yield Enum.NUMBER
 
 
-def get_encoder_class():
-    return JSONEncoder
-
-
 @pytest.mark.parametrize(
     ('value', 'expected_value'), [
         (None, None),
@@ -86,8 +82,7 @@ def get_encoder_class():
     ],
 )
 def test_encoder(value, expected_value):
-    encoder_class = get_encoder_class()
-    assert expected_value == json.loads(json.dumps(value, cls=encoder_class))
+    assert expected_value == json.loads(json.dumps(value, cls=JSONEncoder))
 
 
 @pytest.mark.parametrize(
@@ -108,23 +103,20 @@ def test_encoder(value, expected_value):
     ),
 )
 def test_encoder_with_raises(value, exception_type, exception_messages):
-    encoder_class = get_encoder_class()
     data = {'key': value}
 
     with pytest.raises(exception_type) as exception:
-        json.dumps(data, cls=encoder_class)
+        json.dumps(data, cls=JSONEncoder)
 
     assert exception.value.args[0] in exception_messages
 
 
 @mock.patch('rest_framework.settings.api_settings.COERCE_DECIMAL_TO_STRING', False)
 def test_encode_decimal():
-    encoder_class = get_encoder_class()
-    data = {'key': decimal.Decimal('3.0')}
-    expected_data = {'key': 3.0}
+    data = {'value': decimal.Decimal('3.0')}
 
     # Act
-    data = json.loads(json.dumps(data, cls=encoder_class))
+    data = json.dumps(data, cls=JSONEncoder)
 
     # Assert
-    assert data == expected_data
+    assert data == '{"value": 3.0}'
