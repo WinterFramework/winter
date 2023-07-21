@@ -10,7 +10,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 
 from winter.core import set_injector
-from .entities import Guest
 
 
 def pytest_configure():

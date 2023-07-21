@@ -15,12 +15,6 @@ class User:
         return True
 
 
-class Guest(User):
-    @property
-    def is_anonymous(self):  # pragma: no cover
-        return True
-
-
 class AuthorizedUser(User):
     def __init__(self, pk=None):
         self.pk = pk if pk is not None else uuid.uuid4()

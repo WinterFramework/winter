@@ -13,21 +13,21 @@ expected_error_response = {
 }
 
 
-@pytest.mark.parametrize('endpoint_url, need_auth, expected_response', [
-    ('/with-throttling/', False, expected_error_response),
-    ('/with-throttling/same/', False, expected_error_response),
-    ('/with-throttling/custom-handler/', False, 'custom throttle exception'),
-    ('/with-throttling/', True, expected_error_response),
-    ('/with-throttling/same/', True, expected_error_response),
-    ('/with-throttling/custom-handler/', True, 'custom throttle exception'),
+@pytest.mark.parametrize('endpoint_url, auth, expected_response', [
+    ('/with-throttling/', '', expected_error_response),
+    ('/with-throttling/same/', '', expected_error_response),
+    ('/with-throttling/custom-handler/', '', 'custom throttle exception'),
+    ('/with-throttling/', 'user', expected_error_response),
+    ('/with-throttling/same/', 'user', expected_error_response),
+    ('/with-throttling/custom-handler/', 'user', 'custom throttle exception'),
 ])
-def test_get_throttling(api_client, endpoint_url, need_auth, expected_response):
+def test_get_throttling(api_client, endpoint_url, auth, expected_response):
     now = datetime.datetime.now()
     duration = datetime.timedelta(milliseconds=150)
 
     for i in range(1, 16):
         with freezegun.freeze_time(now):
-            response = api_client.get(endpoint_url, headers={'Test-Authorize': 'user'} if need_auth else {})
+            response = api_client.get(endpoint_url, headers={'Test-Authorize': auth})
 
             if 5 < i < 8 or 13 <= i < 15:
                 assert response.status_code == HTTPStatus.TOO_MANY_REQUESTS, i
