@@ -10,4 +10,5 @@ def test_api_with_media_types_routing_returns_200(api_client):
     )
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == 'Hello, sir!'
+    assert response.content == b'Hello, sir!'
+    assert response.headers['content-type'] == 'application/xml'

@@ -1,5 +1,5 @@
 from .api_with_exceptions import APIWithExceptions
-from .api_with_limits import APIWithLimits
+from .api_with_pagination import APIWithPagination
 from .api_with_media_types_routing import APIWithMediaTypesRouting
 from .api_with_path_parameters import APIWithPathParameters
 from .api_with_problem_exceptions import APIWithProblemExceptions
