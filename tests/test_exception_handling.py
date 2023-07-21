@@ -142,5 +142,5 @@ def test_api_with_problem_exceptions(api_client, url_path, expected_status, expe
 
     # Assert
     assert response.status_code == expected_status
-    assert response.get('Content-Type') == expected_content_type
+    assert response.headers.get('Content-Type') == expected_content_type
     assert response.json() == expected_body
