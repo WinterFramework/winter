@@ -1,15 +1,13 @@
 import abc
 from abc import abstractmethod
 from typing import Any
-from typing import Callable
 from typing import Dict
 from typing import List
 from typing import Mapping
 from typing import MutableMapping
 from typing import Optional
-from typing import Type
 
-from rest_framework.request import Request
+import django.http
 
 from winter.core import ComponentMethod
 from winter.core import ComponentMethodArgument
@@ -34,7 +32,7 @@ class ArgumentResolver(abc.ABC):
     def resolve_argument(
         self,
         argument: ComponentMethodArgument,
-        request: Request,
+        request: django.http.HttpRequest,
         response_headers: MutableMapping[str, str],
     ):  # pragma: no cover
         pass
@@ -53,7 +51,7 @@ class ArgumentsResolver:
     def resolve_arguments(
         self,
         method: ComponentMethod,
-        request: Request,
+        request: django.http.HttpRequest,
         response_headers: MutableMapping[str, str],
         context: Optional[Mapping[str, Any]] = None,
     ) -> Dict[str, Any]:
@@ -72,7 +70,7 @@ class ArgumentsResolver:
     def _resolve_argument(
         self,
         argument: ComponentMethodArgument,
-        request: Request,
+        request: django.http.HttpRequest,
         response_headers: MutableMapping[str, str],
     ) -> Any:
         argument_resolver = self._get_argument_resolver(argument)
@@ -86,26 +84,6 @@ class ArgumentsResolver:
                 self._cache[argument] = argument_resolver
                 return argument_resolver
         raise ArgumentNotSupported(argument)
-
-
-class GenericArgumentResolver(ArgumentResolver):
-
-    def __init__(self, arg_name: str, arg_type: Type, resolve_argument: Callable):
-        super().__init__()
-        self._arg_name = arg_name
-        self._arg_type = arg_type
-        self._resolve_argument = resolve_argument
-
-    def is_supported(self, argument: ComponentMethodArgument) -> bool:
-        return argument.name == self._arg_name and argument.type_ == self._arg_type
-
-    def resolve_argument(
-        self,
-        argument: ComponentMethodArgument,
-        request: Request,
-        response_headers: MutableMapping[str, str],
-    ):
-        return self._resolve_argument(argument, request, response_headers)
 
 
 arguments_resolver = ArgumentsResolver()

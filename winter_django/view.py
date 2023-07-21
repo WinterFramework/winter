@@ -1,4 +1,4 @@
-import warnings
+import json
 from collections import defaultdict
 from functools import wraps
 from typing import Any
@@ -8,15 +8,13 @@ from typing import Type
 
 import django.http
 import rest_framework.authentication
-import rest_framework.response
 from django.conf.urls import url
 from django.urls import URLPattern
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.request import Request
 
 from winter.core import Component
 from winter.core import ComponentMethod
 from winter.core import get_injector
+from winter.core.json import JSONEncoder
 from winter.web import ResponseEntity
 from winter.web import response_headers_serializer
 from winter.web.argument_resolver import arguments_resolver
@@ -28,12 +26,11 @@ from winter.web.exceptions import ThrottleException
 from winter.web.interceptor import interceptor_registry
 from winter.web.output_processor import get_output_processor
 from winter.web.routing import Route
-from winter.web.routing import get_route
 from winter.web.throttling import create_throttle_class
 from winter.web.urls import rewrite_uritemplate_with_regexps
 
 if TYPE_CHECKING:
-    import rest_framework.views
+    from django.views.generic import View
 
 
 class SessionAuthentication(rest_framework.authentication.SessionAuthentication):
@@ -48,21 +45,6 @@ class CsrfExemptSessionAuthentication(SessionAuthentication):
         return  # To not perform the csrf check previously happening
 
 
-def create_django_urls(api_class_with_routes: Type) -> List:
-    warnings.warn('Deprecated. Use create_django_urls_from_routes instead.', DeprecationWarning)
-    component = Component.get_by_cls(api_class_with_routes)
-    django_urls = []
-
-    for url_path, routes in _group_routes_by_url_path(component.methods):
-        django_view = _create_drf_view(api_class_with_routes, routes).as_view()
-        winter_url_path = f'^{url_path}$'
-        methods = [route.method for route in routes]
-        django_url_path = rewrite_uritemplate_with_regexps(winter_url_path, methods)
-        for route in routes:
-            django_urls.append(url(django_url_path, django_view, name=route.method.full_name))
-    return django_urls
-
-
 def create_django_urls_from_routes(routes: List[Route]) -> List[URLPattern]:
     django_urls = []
     grouped_routes = defaultdict(list)
@@ -71,7 +53,7 @@ def create_django_urls_from_routes(routes: List[Route]) -> List[URLPattern]:
         grouped_routes[route.url_path].append(route)
 
     for url_path, routes in grouped_routes.items():
-        django_view = _create_drf_view_from_routes(routes).as_view()
+        django_view = _create_django_view_from_routes(routes).as_view()
         winter_url_path = f'^{url_path}$'
         methods = [route.method for route in routes]
         django_url_path = rewrite_uritemplate_with_regexps(winter_url_path, methods)
@@ -83,14 +65,13 @@ def create_django_urls_from_routes(routes: List[Route]) -> List[URLPattern]:
     return django_urls
 
 
-def _create_drf_view_from_routes(routes: List[Route]) -> 'rest_framework.views.APIView':
-    import rest_framework.views
+def _create_django_view_from_routes(routes: List[Route]) -> 'View':
+    from django.views.generic import View
 
-    class WinterView(rest_framework.views.APIView):
-        authentication_classes = (
-            (SessionAuthentication,) if _is_csrf_needed_for_routes(routes) else (CsrfExemptSessionAuthentication,)
-        )
-        permission_classes = (IsAuthenticated,) if _is_authentication_needed_for_routes(routes) else ()
+    class WinterView(View):
+        @classmethod
+        def as_view(cls, **initkwargs):
+            return super().as_view(**initkwargs)
 
     for route in routes:
         dispatch = _create_dispatch_function(route.method.component.component_cls, route)
@@ -121,41 +102,18 @@ def _is_csrf_needed_for_routes(routes: List[Route]) -> bool:
     return is_csrf_needed_for_routes
 
 
-def _create_drf_view(api_class: Type, routes: List[Route]) -> 'rest_framework.views.APIView':
-    import rest_framework.views
-
-    component = Component.get_by_cls(api_class)
-
-    class WinterView(rest_framework.views.APIView):
-        authentication_classes = (
-            (SessionAuthentication,) if _is_csrf_needed_for_routes(routes) else (CsrfExemptSessionAuthentication,)
-        )
-        permission_classes = (IsAuthenticated,) if is_authentication_needed(component) else ()
-
-    # It's useful for New Relic APM
-    WinterView.__module__ = api_class.__module__
-    WinterView.__qualname__ = api_class.__qualname__
-
-    for route in routes:
-        dispatch = _create_dispatch_function(api_class, route)
-        dispatch.route = route
-        dispatch_method_name = route.http_method.lower()
-        setattr(WinterView, dispatch_method_name, dispatch)
-    return WinterView()
-
-
 def _create_dispatch_function(api_class: Type, route: Route):
     component = Component.get_by_cls(api_class)
 
     @wraps(route.method.func)
-    def dispatch(winter_view, request: Request, **path_variables):
+    def dispatch(winter_view, request: django.http.HttpRequest, **path_variables):
         api_class_instance = get_injector().get(component.component_cls)
         return _call_api(api_class_instance, route, request)
 
     return dispatch
 
 
-def _call_api(api_class_instance, route: Route, request: Request):
+def _call_api(api_class_instance, route: Route, request: django.http.HttpRequest):
     method = route.method
     method_exceptions_manager = MethodExceptionsManager(method)
     response_headers = {}
@@ -201,7 +159,7 @@ def _fill_response_headers(response, response_headers):
     response.content_type = response_headers.get('content-type')
 
 
-def _convert_result_to_http_response(request: Request, result: Any, method: ComponentMethod):
+def _convert_result_to_http_response(request: django.http.HttpRequest, result: Any, method: ComponentMethod):
     if isinstance(result, django.http.HttpResponse):
         return result
     if isinstance(result, ResponseEntity):
@@ -215,13 +173,5 @@ def _convert_result_to_http_response(request: Request, result: Any, method: Comp
         body = output_processor.process_output(body, request)
     if isinstance(body, django.http.response.HttpResponseBase):
         return body
-    return rest_framework.response.Response(body, status=status_code)
-
-
-def _group_routes_by_url_path(methods: List[ComponentMethod]):
-    result = defaultdict(list)
-    for method in methods:
-        route = get_route(method)
-        if route is not None:
-            result[route.url_path].append(route)
-    return result.items()
+    content = json.dumps(body, cls=JSONEncoder).encode()
+    return django.http.HttpResponse(content, status=status_code, content_type='application/json')

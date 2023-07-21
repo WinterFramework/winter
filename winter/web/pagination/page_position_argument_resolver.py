@@ -1,8 +1,8 @@
 from typing import MutableMapping
 from typing import Optional
 
+import django.http
 from furl import furl
-from rest_framework.request import Request
 
 from winter.core import ComponentMethod
 from winter.core import ComponentMethodArgument
@@ -43,7 +43,7 @@ class PagePositionArgumentResolver(ArgumentResolver):
     def resolve_argument(
         self,
         argument: ComponentMethodArgument,
-        request: Request,
+        request: django.http.HttpRequest,
         response_headers: MutableMapping[str, str],
     ) -> PagePosition:
         page_position = self._parse_page_position(argument, request)
@@ -72,10 +72,14 @@ class PagePositionArgumentResolver(ArgumentResolver):
             return limits_annotation.limits
         return self.limits
 
-    def _parse_page_position(self, argument: ComponentMethodArgument, http_request: Request) -> PagePosition:
-        raw_limit = http_request.query_params.get(self.limit_name) or None
-        raw_offset = http_request.query_params.get(self.offset_name) or None
-        raw_order_by = http_request.query_params.get(self.order_by_name, '')
+    def _parse_page_position(
+        self,
+        argument: ComponentMethodArgument,
+        request: django.http.HttpRequest,
+    ) -> PagePosition:
+        raw_limit = request.GET.get(self.limit_name) or None
+        raw_offset = request.GET.get(self.offset_name) or None
+        raw_order_by = request.GET.get(self.order_by_name, '')
         try:
             limit = json_decode(raw_limit, Optional[PositiveInteger])
             offset = json_decode(raw_offset, Optional[PositiveInteger])

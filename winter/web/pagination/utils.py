@@ -1,13 +1,13 @@
 from typing import Optional
 
-from rest_framework.request import Request as DRFRequest
+import django.http
 from rest_framework.utils.urls import remove_query_param
 from rest_framework.utils.urls import replace_query_param
 
 from winter.data.pagination import Page
 
 
-def get_previous_page_url(page: Page, request: DRFRequest) -> Optional[str]:
+def get_previous_page_url(page: Page, request: django.http.HttpRequest) -> Optional[str]:
     offset = page.position.offset
     limit = page.position.limit
 
@@ -25,7 +25,7 @@ def get_previous_page_url(page: Page, request: DRFRequest) -> Optional[str]:
     return replace_query_param(url, 'offset', previous_offset)
 
 
-def get_next_page_url(page: Page, request: DRFRequest) -> Optional[str]:
+def get_next_page_url(page: Page, request: django.http.HttpRequest) -> Optional[str]:
     offset = page.position.offset or 0
     limit = page.position.limit
     total = page.total_count

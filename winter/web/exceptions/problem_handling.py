@@ -6,7 +6,7 @@ from dataclasses import is_dataclass
 from typing import Dict
 from typing import Type
 
-from rest_framework.request import Request
+from django.http import HttpRequest
 
 from winter.core import Component
 from winter.core.utils import camel_to_human
@@ -35,7 +35,7 @@ class ProblemExceptionHandlerGenerator(ExceptionHandlerGenerator):
         @response_header('Content-Type', 'content_type_header')
         def handle_method(
             self,
-            request: Request,
+            request: HttpRequest,
             exception: exception_class,
             content_type_header: ResponseHeader[str],
             **kwargs,
@@ -64,7 +64,7 @@ class ProblemExceptionHandlerGenerator(ExceptionHandlerGenerator):
 
 
 class ProblemExceptionMapper(ExceptionMapper):
-    def to_response_body(self, request: Request, exception: Exception, handling_info: ProblemHandlingInfo) -> Dict:
+    def to_response_body(self, request: HttpRequest, exception: Exception, handling_info: ProblemHandlingInfo) -> Dict:
         exception_class = exception.__class__
 
         problem_dict = dict(

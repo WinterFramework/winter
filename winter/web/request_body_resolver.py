@@ -1,6 +1,7 @@
+import json
 from typing import MutableMapping
 
-from rest_framework.request import Request
+import django.http
 
 from .argument_resolver import ArgumentResolver
 from .exceptions.exceptions import RequestDataDecodeException
@@ -21,10 +22,10 @@ class RequestBodyArgumentResolver(ArgumentResolver):
     def resolve_argument(
         self,
         argument: ComponentMethodArgument,
-        request: Request,
+        request: django.http.HttpRequest,
         response_headers: MutableMapping[str, str],
     ):
         try:
-            return json_decode(request.data, argument.type_)
+            return json_decode(json.loads(request.body), argument.type_)
         except JSONDecodeException as e:
             raise RequestDataDecodeException(e.errors)

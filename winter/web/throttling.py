@@ -1,11 +1,11 @@
+import dataclasses
 import time
 from typing import Optional
 from typing import TYPE_CHECKING
 from typing import Tuple
 
-import dataclasses
+import django.http
 from django.core.cache import cache as default_cache
-from rest_framework.request import Request
 
 from winter.core import annotate_method
 
@@ -34,7 +34,7 @@ class BaseRateThrottle:
     def __init__(self, throttling_: Throttling):
         self._throttling = throttling_
 
-    def allow_request(self, request: Request) -> bool:
+    def allow_request(self, request: django.http.HttpRequest) -> bool:
         ident = _get_ident(request)
         key = _get_cache_key(self._throttling.scope, ident)
 
@@ -52,7 +52,7 @@ class BaseRateThrottle:
         return True
 
 
-def reset(request: Request, scope: str):
+def reset(request: django.http.HttpRequest, scope: str):
     """
         This function allows to reset the accumulated throttling state
         for a specific user and scope
@@ -69,7 +69,7 @@ def _get_cache_key(scope: str, ident: str) -> str:
     return CACHE_KEY_FORMAT.format(scope=scope, ident=ident)
 
 
-def _get_ident(request: Request) -> str:
+def _get_ident(request: django.http.HttpRequest) -> str:
     if request.user.is_authenticated:
         return str(request.user.pk)
 

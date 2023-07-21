@@ -1,12 +1,11 @@
 import pytest
+from django.http import HttpRequest
 from django.http import QueryDict
 from mock import Mock
 from rest_framework.exceptions import ParseError
-from rest_framework.request import Request as DRFRequest
 
 import winter
 from winter.core import ComponentMethod
-from winter.core.json import decoder
 from winter.data.pagination import PagePosition
 from winter.data.pagination import Sort
 from winter.web.exceptions import RequestDataDecodeException
@@ -41,7 +40,7 @@ def test_resolve_argument_with_order_by_without_order_by_annotation():
 
     argument = method.get_argument('arg1')
     resolver = PagePositionArgumentResolver()
-    request = Mock(spec=DRFRequest)
+    request = Mock(spec=HttpRequest)
     request.query_params = QueryDict('order_by=id')
 
     # Act

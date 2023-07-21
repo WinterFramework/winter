@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from rest_framework.request import Request
+from django.http import HttpRequest
 
 import winter.web
 from winter.web import ExceptionHandler
@@ -44,7 +44,7 @@ class APIWithThrottling:
 
     @winter.route_get('with-reset/{?is_reset}')
     @winter.web.throttling('5/s', 'reset_scope')
-    def simple_method_with_reset(self, request: Request, is_reset: bool) -> int:
+    def simple_method_with_reset(self, request: HttpRequest, is_reset: bool) -> int:
         if is_reset:
             reset(request, 'reset_scope')
         return 1

@@ -1,7 +1,7 @@
 from typing import MutableMapping
 from typing import Optional
 
-from rest_framework.request import Request
+import django.http
 
 from winter.core import ArgumentDoesNotHaveDefault
 from winter.core import ComponentMethodArgument
@@ -27,10 +27,10 @@ class QueryParameterArgumentResolver(ArgumentResolver):
     def resolve_argument(
         self,
         argument: ComponentMethodArgument,
-        request: Request,
+        request: django.http.HttpRequest,
         response_headers: MutableMapping[str, str],
     ):
-        query_parameters = request.query_params
+        query_parameters = request.GET
 
         query_parameter = self._get_query_parameter(argument)
 

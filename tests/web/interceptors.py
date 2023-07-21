@@ -1,4 +1,4 @@
-from rest_framework.request import Request
+from django.http import HttpRequest
 
 import winter
 from winter.core import ComponentMethod
@@ -14,12 +14,12 @@ class HelloWorldInterceptor(Interceptor):
     def pre_handle(
         self,
         method: ComponentMethod,
-        request: Request,
+        request: HttpRequest,
         method_header: ResponseHeader[str],
         hello_world_header: ResponseHeader[str],
     ):
         method_header.set(method.full_name)
-        if 'hello_world' in request.query_params:
+        if 'hello_world' in request.GET:
             hello_world_header.set('Hello, World!')
 
 
