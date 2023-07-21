@@ -2,17 +2,10 @@ import json
 from http import HTTPStatus
 
 import pytest
-from rest_framework.test import APIClient
-
-from tests.entities import AuthorizedUser
 from winter import request_body
 
 
-def test_request_body():
-    client = APIClient()
-    user = AuthorizedUser()
-    client.force_authenticate(user)
-
+def test_request_body(api_client):
     data = {
         'id': 1,
         'name': 'test name',
@@ -30,20 +23,15 @@ def test_request_body():
         'items': [1, 2],
         'optional_items': None,
     }
-    data = json.dumps(data)
 
     # Act
-    response = client.post('/with-request-data/', data=data, content_type='application/json')
+    response = api_client.post('/with-request-data/', data=data, headers={'Test-Authorize': 'user'})
 
     assert response.status_code == HTTPStatus.OK, response.json()
     assert response.json() == expected_data
 
 
-def test_request_body_as_list():
-    client = APIClient()
-    user = AuthorizedUser()
-    client.force_authenticate(user)
-
+def test_request_body_as_list(api_client):
     data = [{
         'id': 1,
         'name': 'test name',
@@ -64,17 +52,13 @@ def test_request_body_as_list():
     data = json.dumps(data)
 
     # Act
-    response = client.post('/with-request-data/many/', data=data, content_type='application/json')
+    response = api_client.post('/with-request-data/many/', data=data, headers={'Test-Authorize': 'user'})
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == expected_data
 
 
-def test_request_body_with_errors():
-    client = APIClient()
-    user = AuthorizedUser()
-    client.force_authenticate(user)
-
+def test_request_body_with_errors(api_client):
     data = {
         'id': 'invalid integer',
         'is_god': False,
@@ -98,7 +82,7 @@ def test_request_body_with_errors():
     data = json.dumps(data)
 
     # Act
-    response = client.post('/with-request-data/', data=data, content_type='application/json')
+    response = api_client.post('/with-request-data/', data=data, headers={'Test-Authorize': 'user'})
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.json() == expected_data

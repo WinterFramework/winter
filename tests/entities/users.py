@@ -10,14 +10,14 @@ class User:
     def is_anonymous(self):  # pragma: no cover
         return False
 
+    @property
+    def is_active(self):
+        return True
+
 
 class Guest(User):
     @property
     def is_anonymous(self):  # pragma: no cover
-        return True
-
-    @property
-    def is_active(self):
         return True
 
 

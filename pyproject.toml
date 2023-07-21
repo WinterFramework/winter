@@ -43,6 +43,7 @@ StrEnum = "^0.4.8"
 openapi-schema-pydantic = "^1.2.4"
 openapi-spec-validator = "^0.5.7"
 uritemplate = "^4.1.1"
+httpx = "^0.24.1"
 
 [tool.poetry.dev-dependencies]
 flake8 = "3.7.7"

@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import django
+import pytest
 from injector import CallableProvider
 from injector import Injector
 from injector import Module
@@ -55,3 +56,15 @@ class Configuration(Module):
 
 def make_engine():
     return create_engine('sqlite://')
+
+
+@pytest.fixture(scope='session')
+def wsgi():
+    from django.core.wsgi import get_wsgi_application
+    return get_wsgi_application()
+
+
+@pytest.fixture()
+def api_client(wsgi):
+    import httpx
+    return httpx.Client(app=wsgi, base_url='http://testserver')

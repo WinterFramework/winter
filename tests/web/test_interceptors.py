@@ -1,7 +1,4 @@
 import pytest
-from rest_framework.test import APIClient
-
-from tests.entities import AuthorizedUser
 
 
 @pytest.mark.parametrize(
@@ -11,11 +8,8 @@ from tests.entities import AuthorizedUser
         ('?hello_world', 'Hello, World!'),
     ],
 )
-def test_interceptor_headers(hello_world_query, hello_world_header):
-    client = APIClient()
-    user = AuthorizedUser()
-    client.force_authenticate(user)
+def test_interceptor_headers(api_client, hello_world_query, hello_world_header):
     url = f'/winter-simple/get/{hello_world_query}'
-    response = client.get(url)
-    assert response.get('x-method') == 'SimpleAPI.get'
-    assert response.get('x-hello-world') == hello_world_header
+    response = api_client.get(url, headers={'Test-Authorize': 'user'})
+    assert response.headers.get('x-method') == 'SimpleAPI.get'
+    assert response.headers.get('x-hello-world') == hello_world_header

@@ -1,20 +1,13 @@
 from http import HTTPStatus
 from uuid import uuid4
 
-from rest_framework.test import APIClient
 
-from tests.entities import AuthorizedUser
-
-
-def test_create_django_urls_from_routes():
-    client = APIClient()
-    user = AuthorizedUser()
-    client.force_authenticate(user)
+def test_create_django_urls_from_routes(api_client):
     url = f"/notes/?note_id={uuid4()}"
 
-    get_http_response = client.get(url)
-    post_http_response = client.post("/notes/", data=dict(name="Name"))
-    patch_http_response = client.patch(url, data=dict(name="New Name"))
+    get_http_response = api_client.get(url, headers={'Test-Authorize': 'user'})
+    post_http_response = api_client.post("/notes/", data=dict(name="Name"), headers={'Test-Authorize': 'user'})
+    patch_http_response = api_client.patch(url, data=dict(name="New Name"), headers={'Test-Authorize': 'user'})
 
     assert get_http_response.status_code == HTTPStatus.OK
     assert post_http_response.status_code == HTTPStatus.OK
