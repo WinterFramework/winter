@@ -18,10 +18,6 @@ def pytest_configure():
     app_dir = Path(__file__)
     settings.configure(
         ROOT_URLCONF='tests.urls',
-        REST_FRAMEWORK={
-            'DEFAULT_RENDERER_CLASSES': ('winter_django.renderers.JSONRenderer',),
-            'UNAUTHENTICATED_USER': Guest,
-        },
         TEMPLATES=[
             {
                 'BACKEND': 'django.template.backends.django.DjangoTemplates',
