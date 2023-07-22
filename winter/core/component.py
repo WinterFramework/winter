@@ -20,9 +20,6 @@ class Component:
         self._methods: Dict[str, 'ComponentMethod'] = {}
 
     def __repr__(self):
-        return str(self)
-
-    def __str__(self):
         return f'Component(component_cls={self.component_cls.__name__})'
 
     @property

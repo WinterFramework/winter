@@ -200,10 +200,6 @@ def get_responses_schemas(route: Route) -> Responses:
 
     for exception_cls in method_exceptions_manager.declared_exception_classes:
         handler = method_exceptions_manager.get_handler(exception_cls)
-        if handler is None:
-            handler = exception_handlers_registry.get_handler(exception_cls)
-        if handler is None:
-            continue
         handle_method = ComponentMethod.get_or_create(handler.__class__.handle)
         response_status = str(get_response_status(http_method, handle_method))
         responses[response_status] = _build_response_exception_handler_schema(handle_method)
