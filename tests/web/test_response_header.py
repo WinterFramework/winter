@@ -2,12 +2,8 @@ import datetime
 import uuid
 from http import HTTPStatus
 
-import pytest
 import pytz
-from rest_framework.test import APIClient
 
-from tests.entities import AuthorizedUser
-from winter.web.argument_resolver import ArgumentNotSupported
 from winter.web import ResponseHeader
 
 
@@ -22,99 +18,70 @@ def test_response_header_sets_header():
     assert headers['my-header'] == uid
 
 
-def test_str_response_header():
-    client = APIClient()
-    user = AuthorizedUser()
-    client.force_authenticate(user)
-
+def test_str_response_header(api_client):
     # Act
-    response = client.get('/with-response-headers/str-header/', content_type='application/json')
+    response = api_client.get('/with-response-headers/str-header/')
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == 'OK'
-    assert response['x-header'] == 'test header'
+    assert response.headers['x-header'] == 'test header'
 
 
-def test_int_response_header():
-    client = APIClient()
-    user = AuthorizedUser()
-    client.force_authenticate(user)
-
+def test_int_response_header(api_client):
     # Act
-    response = client.get('/with-response-headers/int-header/', content_type='application/json')
+    response = api_client.get('/with-response-headers/int-header/')
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == 'OK'
-    assert response['x-header'] == '123'
+    assert response.headers['x-header'] == '123'
 
 
-def test_datetime_isoformat_response_header():
-    client = APIClient()
-    user = AuthorizedUser()
-    client.force_authenticate(user)
+def test_datetime_isoformat_response_header(api_client):
     now = datetime.datetime.now()
 
     # Act
-    response = client.get(
-        f'/with-response-headers/datetime-isoformat-header/?now={now.timestamp()}',
-        content_type='application/json',
-    )
+    response = api_client.get(f'/with-response-headers/datetime-isoformat-header/?now={now.timestamp()}')
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == 'OK'
-    assert response['x-header'] == now.isoformat()
+    assert response.headers['x-header'] == now.isoformat()
 
 
-def test_last_modified_response_header():
-    client = APIClient()
-    user = AuthorizedUser()
-    client.force_authenticate(user)
+def test_last_modified_response_header(api_client):
     now = datetime.datetime.now()
 
     # Act
-    response = client.get(
-        f'/with-response-headers/last-modified-header/?now={now.timestamp()}',
-        content_type='application/json',
-    )
+    response = api_client.get(f'/with-response-headers/last-modified-header/?now={now.timestamp()}')
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == 'OK'
-    assert response['last-modified'] == now.astimezone(pytz.utc).strftime('%a, %d %b %Y %X GMT')
+    assert response.headers['last-modified'] == now.astimezone(pytz.utc).strftime('%a, %d %b %Y %X GMT')
 
 
-def test_uuid_response_header():
-    client = APIClient()
-    user = AuthorizedUser()
-    client.force_authenticate(user)
+def test_uuid_response_header(api_client):
     uid = uuid.uuid4()
 
     # Act
-    response = client.get(f'/with-response-headers/uuid-header/?uid={uid}', content_type='application/json')
+    response = api_client.get(f'/with-response-headers/uuid-header/?uid={uid}')
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == 'OK'
-    assert response['x-header'] == str(uid)
+    assert response.headers['x-header'] == str(uid)
 
 
-def test_two_response_headers():
-    client = APIClient()
-    user = AuthorizedUser()
-    client.force_authenticate(user)
-
+def test_two_response_headers(api_client):
     # Act
-    response = client.get('/with-response-headers/two-headers/', content_type='application/json')
+    response = api_client.get('/with-response-headers/two-headers/')
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == 'OK'
-    assert response['x-header1'] == 'header1'
-    assert response['x-header2'] == 'header2'
+    assert response.headers['x-header1'] == 'header1'
+    assert response.headers['x-header2'] == 'header2'
 
 
-def test_header_without_annotation():
-    client = APIClient()
-    user = AuthorizedUser()
-    client.force_authenticate(user)
+def test_header_without_annotation(api_client):
+    # Act
+    response = api_client.get('/with-response-headers/header-without-annotation/')
 
-    with pytest.raises(ArgumentNotSupported):
-        # Act
-        client.get('/with-response-headers/header-without-annotation/', content_type='application/json')
+    # Assert
+    assert response.status_code == 500  # It's better to be replaced with something more human readable

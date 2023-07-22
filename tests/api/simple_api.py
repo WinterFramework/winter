@@ -1,11 +1,13 @@
+import json
+from dataclasses import dataclass
 from http import HTTPStatus
 
-from dataclasses import dataclass
-from rest_framework.request import Request
-from rest_framework.response import Response
+from django.http import HttpRequest
+from django.http import HttpResponse
 
 import winter
 from winter import ResponseEntity
+from winter.core.json import JSONEncoder
 from winter.data.pagination import Page
 from winter.data.pagination import PagePosition
 
@@ -42,9 +44,8 @@ class SimpleAPI:
         return ResponseEntity[Dataclass](Dataclass(123), status_code=HTTPStatus.OK)
 
     @winter.route_get('return-response/')
-    def return_response(self, request: Request) -> Response:
-        data = {'logged_in': bool(request.user)}
-        return Response(data=data)
+    def return_response(self) -> HttpResponse:
+        return HttpResponse(b'hi')
 
     @winter.route_get('get/')
     def get(self):

@@ -2,44 +2,8 @@ import pytest
 from mock import Mock
 
 from winter import ArgumentsResolver
-from winter import GenericArgumentResolver
-from winter.web.argument_resolver import ArgumentNotSupported
 from winter.core import ComponentMethod
-from winter.core import ComponentMethodArgument
-
-
-@pytest.mark.parametrize('arg_name, arg_type, resolver_arg_name, resolver_arg_type, expected_supported', [
-    ('a', int, 'a', int, True),
-    ('a', int, 'b', int, False),
-    ('a', int, 'a', str, False),
-    ('a', int, 'b', str, False),
-])
-def test_generic_argument_resolver_is_supported(arg_name, arg_type, resolver_arg_name, resolver_arg_type,
-                                                expected_supported):
-    resolve_argument_mock = Mock()
-    generic_argument_resolver = GenericArgumentResolver(resolver_arg_name, resolver_arg_type, resolve_argument_mock)
-    argument = ComponentMethodArgument(Mock(), arg_name, arg_type)
-
-    # Act
-    is_supported = generic_argument_resolver.is_supported(argument)
-
-    # Assert
-    assert is_supported is expected_supported
-    resolve_argument_mock.assert_not_called()
-
-
-def test_generic_argument_resolver_resolve_argument():
-    resolve_argument_mock = Mock()
-    generic_argument_resolver = GenericArgumentResolver('a', int, resolve_argument_mock)
-    argument = ComponentMethodArgument(Mock(), 'a', int)
-    request = Mock()
-    response_headers = Mock()
-
-    # Act
-    generic_argument_resolver.resolve_argument(argument, request, response_headers)
-
-    # Assert
-    resolve_argument_mock.assert_called_once_with(argument, request, response_headers)
+from winter.web.argument_resolver import ArgumentNotSupported
 
 
 def test_resolve_arguments_returns_empty_dict_for_empty_arguments():

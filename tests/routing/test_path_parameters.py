@@ -1,8 +1,8 @@
 import uuid
 
 import pytest
+from django.http import HttpRequest
 from mock import Mock
-from rest_framework.request import Request
 
 from tests.api.api_with_path_parameters import APIWithPathParameters
 from tests.api.api_with_path_parameters import OneTwoEnum
@@ -27,7 +27,7 @@ def test_resolve_path_parameter(path, arg_name, expected_value):
     component = Component.get_by_cls(APIWithPathParameters)
     argument = component.get_method('test').get_argument(arg_name)
     resolver = PathParametersArgumentResolver()
-    request = Mock(spec=Request)
+    request = Mock(spec=HttpRequest)
     request.path_info = path
 
     # Act
@@ -62,7 +62,7 @@ def test_with_raises_argument_not_supported():
     component = Component.get_by_cls(APIWithPathParameters)
     argument = component.get_method('test').get_argument('param6')
     resolver = PathParametersArgumentResolver()
-    request = Mock(spec=Request)
+    request = Mock(spec=HttpRequest)
     request.path_info = f'/with-path-parameters/123/456/one/{uuid_}/2/'
 
     with pytest.raises(ArgumentNotSupported) as exception:

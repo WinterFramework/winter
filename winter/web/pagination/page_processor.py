@@ -1,7 +1,7 @@
+import dataclasses
 from typing import Dict
 
-import dataclasses
-from rest_framework.request import Request as DRFRequest
+import django.http
 
 from winter.data.pagination import Page
 from winter.web.output_processor import IOutputProcessor
@@ -11,7 +11,7 @@ from .utils import get_previous_page_url
 
 class PageProcessor(IOutputProcessor):
 
-    def process_output(self, output: Page, request: DRFRequest) -> Dict:
+    def process_output(self, output: Page, request: django.http.HttpRequest) -> Dict:
         extra_fields = set(dataclasses.fields(output)) - set(dataclasses.fields(Page))
         return {
             'meta': {

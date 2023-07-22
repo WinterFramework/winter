@@ -1,9 +1,12 @@
+import json
+from json import JSONDecodeError
 from typing import MutableMapping
 
-from rest_framework.request import Request
+import django.http
 
 from .argument_resolver import ArgumentResolver
-from .exceptions.exceptions import RequestDataDecodeException
+from .exceptions import UnsupportedMediaTypeException
+from .exceptions import RequestDataDecodeException
 from .request_body_annotation import RequestBodyAnnotation
 from ..core import ComponentMethodArgument
 from ..core.json import JSONDecodeException
@@ -21,10 +24,14 @@ class RequestBodyArgumentResolver(ArgumentResolver):
     def resolve_argument(
         self,
         argument: ComponentMethodArgument,
-        request: Request,
+        request: django.http.HttpRequest,
         response_headers: MutableMapping[str, str],
     ):
+        if 'CONTENT_TYPE' in request.META and request.META['CONTENT_TYPE'] != 'application/json':
+            raise UnsupportedMediaTypeException()
         try:
-            return json_decode(request.data, argument.type_)
+            return json_decode(json.loads(request.body), argument.type_)
         except JSONDecodeException as e:
             raise RequestDataDecodeException(e.errors)
+        except JSONDecodeError as e:
+            raise RequestDataDecodeException(f'Invalid JSON: {e}')

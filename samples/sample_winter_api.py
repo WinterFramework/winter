@@ -1,7 +1,7 @@
+from http import HTTPStatus
 from typing import List
 
 from dataclasses import dataclass
-from rest_framework import status
 
 import winter
 
@@ -40,7 +40,7 @@ class SampleWinterAPI:
         :param name: Just a name
         :param number: Just a number
         """
-        return winter.ResponseEntity[str](f'Hello, {name}! {number}', status.HTTP_201_CREATED)
+        return winter.ResponseEntity[str](f'Hello, {name}! {number}', HTTPStatus.CREATED)
 
     @winter.route_get('example{?name}')
     def second_hello(self, name: str) -> Greeting:

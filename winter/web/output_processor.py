@@ -1,11 +1,11 @@
 import abc
+import dataclasses
 from typing import Any
 from typing import Callable
 from typing import List
 from typing import Optional
 
-import dataclasses
-from rest_framework.request import Request as DRFRequest
+import django.http
 
 from winter.core import ComponentMethod
 from winter.core import annotate
@@ -16,7 +16,7 @@ class IOutputProcessor(abc.ABC):
     Common usage is to serializer some DTO to dict."""
 
     @abc.abstractmethod
-    def process_output(self, output, request: DRFRequest):  # pragma: no cover
+    def process_output(self, output, request: django.http.HttpRequest):  # pragma: no cover
         return output
 
 

@@ -6,12 +6,9 @@ from uuid import UUID
 from uuid import uuid4
 
 import pytest
-from dateutil import parser
-from rest_framework.test import APIClient
 from uritemplate import URITemplate
 
 import winter
-from tests.entities import AuthorizedUser
 from tests.utils import get_request
 from winter.core.annotations import AlreadyAnnotated
 from winter.web.argument_resolver import ArgumentNotSupported
@@ -175,18 +172,15 @@ def test_orphan_map_query_parameter_fails():
 
 @pytest.mark.parametrize(
     ('date', 'date_time', 'boolean', 'optional_boolean', 'array', 'string', 'uid'), (
-        ('2019-05-02', '2019-05-02 22:28:31', 'false', None, [10, 20], 'xyz', uuid4()),
+        ('2019-05-02', '2019-05-01 22:28:31', 'false', None, [10, 20], 'xyz', uuid4()),
         ('2019-05-01', '2019-05-01 22:28:31', 'true', 'true', [10, 20], 'xyz', uuid4()),
         ('2019-05-01', '2019-05-01 22:28:31', 'true', 'false', [10, 20], 'xyz', uuid4()),
     ),
 )
-def test_query_parameter(date, date_time, boolean, optional_boolean, array, string, uid):
-    client = APIClient()
-    user = AuthorizedUser()
-    client.force_authenticate(user)
+def test_query_parameter(api_client, date, date_time, boolean, optional_boolean, array, string, uid):
     expected_data = {
-        'date': parser.parse(date).date(),
-        'date_time': parser.parse(date_time),
+        'date': date,
+        'date_time': '2019-05-01T22:28:31',
         'boolean': boolean == 'true',
         'optional_boolean': optional_boolean == 'true' if optional_boolean is not None else None,
         'array': array,
@@ -214,14 +208,11 @@ def test_query_parameter(date, date_time, boolean, optional_boolean, array, stri
     base_uri = base_uri.expand(**query_params)
 
     # Act
-    http_response = client.get(base_uri)
-    assert http_response.data == expected_data
+    http_response = api_client.get(base_uri)
+    assert http_response.json() == expected_data
 
 
-def test_invalid_uuid_query_parameter_triggers_400():
-    client = APIClient()
-    user = AuthorizedUser()
-    client.force_authenticate(user)
+def test_invalid_uuid_query_parameter_triggers_400(api_client):
     base_uri = URITemplate(
         '/with-query-parameter/'
         '{?date,date_time,boolean,optional_boolean,array,expanded_array*,string,uid}',
@@ -239,5 +230,5 @@ def test_invalid_uuid_query_parameter_triggers_400():
     base_uri = base_uri.expand(**query_params)
 
     # Act
-    http_response = client.get(base_uri)
+    http_response = api_client.get(base_uri)
     assert http_response.status_code == HTTPStatus.BAD_REQUEST

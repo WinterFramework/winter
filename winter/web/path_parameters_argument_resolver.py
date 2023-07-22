@@ -1,7 +1,7 @@
 from typing import MutableMapping
 
+import django.http
 from django.urls import get_resolver
-from rest_framework.request import Request
 
 from winter.core import ComponentMethodArgument
 from .argument_resolver import ArgumentNotSupported
@@ -31,7 +31,7 @@ class PathParametersArgumentResolver(ArgumentResolver):
     def resolve_argument(
         self,
         argument: ComponentMethodArgument,
-        request: Request,
+        request: django.http.HttpRequest,
         response_headers: MutableMapping[str, str],
     ):
         resolver_match = self._url_resolver.resolve(request.path_info)

@@ -37,10 +37,12 @@ class HelloWorld:
 
 To use it with Django:
 ```python
+from winter.web.autodiscovery import find_package_routes
 import winter_django
 
+routes = find_package_routes('some_package.sub_package')
 urlpatterns = [
-    *winter_django.create_django_urls(HelloWorld),
+    *winter_django.create_django_urls_from_routes(routes),
 ]
 ```
 
@@ -166,8 +168,8 @@ from dataclasses import dataclass
 from http import HTTPStatus
 from typing import List
 
-from rest_framework.request import Request
-import winter
+from django.http import HttpRequest
+
 import winter.web
 
 
@@ -198,7 +200,7 @@ class ErrorDTO:
 
 class TodoNotFoundExceptionCustomHandler(winter.web.ExceptionHandler):
     @winter.response_status(HTTPStatus.NOT_FOUND)
-    def handle(self, request: Request, exception: TodoNotFoundException) -> ErrorDTO:
+    def handle(self, request: HttpRequest, exception: TodoNotFoundException) -> ErrorDTO:
         return ErrorDTO(index=exception.invalid_index, message='Access denied')
 
 
@@ -224,7 +226,8 @@ The pre_handle method arguments will be injected the same way as it's done in me
 It's not supported to return any response from interceptors.
 However, the exceptions thrown from within an interceptor will be handled automatically.
 ```python
-from rest_framework.request import Request
+from django.http import HttpRequest
+
 import winter
 from winter.core import ComponentMethod
 from winter.web import Interceptor
@@ -233,9 +236,9 @@ from winter.web import ResponseHeader
 
 class HelloWorldInterceptor(Interceptor):
     @winter.response_header('x-hello-world', 'hello_world_header')
-    def pre_handle(self, method: ComponentMethod, request: Request, hello_world_header: ResponseHeader[str]):
+    def pre_handle(self, method: ComponentMethod, request: HttpRequest, hello_world_header: ResponseHeader[str]):
         print(f'Method: {method.name}')
-        if 'hello_world' in request.query_params:
+        if 'hello_world' in request.GET:
             hello_world_header.set('Hello, World!')
 
 ```

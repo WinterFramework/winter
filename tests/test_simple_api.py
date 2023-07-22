@@ -1,45 +1,21 @@
 from http import HTTPStatus
 
 import pytest
-from rest_framework.test import APIClient
-
-from .entities import AuthorizedUser
-from .entities import User
 
 
-@pytest.mark.parametrize(['data', 'expected_body'], (
+@pytest.mark.parametrize(['params', 'expected_body'], (
     ({'name': 'Winter'}, 'Hello, Winter!'),
     ({'name': 'Stranger'}, 'Hello, Stranger!'),
     ({}, 'Hello, stranger!'),
 ))
-def test_simple_api(data, expected_body):
-    client = APIClient()
-    user = AuthorizedUser()
-    client.force_authenticate(user)
-    response = client.get('/winter-simple/', data=data)
+def test_simple_api(api_client, params, expected_body):
+    response = api_client.get('/winter-simple/', params=params)
     assert response.status_code == HTTPStatus.OK
     assert response.json() == expected_body
 
 
-def test_401_not_authenticated():
-    client = APIClient()
-    response = client.get('/winter-simple/')
-    assert response.status_code == HTTPStatus.UNAUTHORIZED
-
-
-def test_403_forbidden():
-    client = APIClient()
-    user = User()
-    client.force_authenticate(user)
-    response = client.get('/winter-simple/')
-    assert response.status_code == HTTPStatus.FORBIDDEN
-
-
-def test_get_response_entity():
-    client = APIClient()
-    user = AuthorizedUser()
-    client.force_authenticate(user)
-    response = client.get('/winter-simple/get-response-entity/')
+def test_get_response_entity(api_client):
+    response = api_client.get('/winter-simple/get-response-entity/')
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {
         'number': 123,
@@ -52,15 +28,14 @@ def test_get_response_entity():
     (2, 3, 'http://testserver/winter-simple/page-response/?limit=2&offset=1', 'http://testserver/winter-simple/page-response/?limit=2&offset=5'),
     (9, 3, 'http://testserver/winter-simple/page-response/?limit=9', None),
 ))
-def test_page_response(limit, offset, expected_previous, expected_next):
-    client = APIClient()
-    user = AuthorizedUser()
-    client.force_authenticate(user)
+def test_page_response(api_client, limit, offset, expected_previous, expected_next):
     url = f'/winter-simple/page-response/?'
+    query_params = []
     if limit is not None:
-        url += f'&limit={limit}'
+        query_params.append(f'limit={limit}')
     if offset is not None:
-        url += f'&offset={offset}'
+        query_params.append(f'offset={offset}')
+    url += '&'.join(query_params)
 
     expected_body = {
         'objects': [{'number': 1}],
@@ -74,17 +49,14 @@ def test_page_response(limit, offset, expected_previous, expected_next):
     }
 
     # Act
-    response = client.get(url)
+    response = api_client.get(url)
 
     # Assert
     assert response.status_code == HTTPStatus.OK, response.content
     assert response.json() == expected_body
 
 
-def test_custom_page_response():
-    client = APIClient()
-    user = AuthorizedUser()
-    client.force_authenticate(user)
+def test_custom_page_response(api_client):
     expected_body = {
         'objects': [1, 2],
         'meta': {
@@ -102,27 +74,17 @@ def test_custom_page_response():
     }
 
     # Act
-    response = client.get('/winter-simple/custom-page-response/', data=request_data)
+    response = api_client.get('/winter-simple/custom-page-response/', params=request_data)
 
     # Assert
     assert response.status_code == HTTPStatus.OK, response.content
     assert response.json() == expected_body
 
 
-def test_no_authentication_api():
-    client = APIClient()
-    response = client.get('/winter-no-auth/')
+def test_return_response(api_client):
+    response = api_client.get('/winter-simple/return-response/')
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == 'Hello, World!'
-
-
-def test_return_response():
-    client = APIClient()
-    user = AuthorizedUser()
-    client.force_authenticate(user)
-    response = client.get('/winter-simple/return-response/')
-    assert response.status_code == HTTPStatus.OK
-    assert response.json() == {'logged_in': True}
+    assert response.content == b'hi'
 
 
 @pytest.mark.parametrize(('method', 'http_response_status'), (
@@ -132,11 +94,7 @@ def test_return_response():
     ('delete', HTTPStatus.NO_CONTENT),
     ('put', HTTPStatus.OK),
 ))
-def test_methods(method, http_response_status):
-    client = APIClient()
-    user = AuthorizedUser()
-    client.force_authenticate(user)
+def test_methods(api_client, method, http_response_status):
     url = f'/winter-simple/{method}/'
-    response = getattr(client, method)(url)
+    response = getattr(api_client, method)(url)
     assert response.status_code == http_response_status
-    assert response.content == b''

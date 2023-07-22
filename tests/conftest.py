@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import django
+import pytest
 from injector import CallableProvider
 from injector import Injector
 from injector import Module
@@ -9,7 +10,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 
 from winter.core import set_injector
-from .entities import Guest
 
 
 def pytest_configure():
@@ -17,10 +17,6 @@ def pytest_configure():
     app_dir = Path(__file__)
     settings.configure(
         ROOT_URLCONF='tests.urls',
-        REST_FRAMEWORK={
-            'DEFAULT_RENDERER_CLASSES': ('winter_django.renderers.JSONRenderer',),
-            'UNAUTHENTICATED_USER': Guest,
-        },
         TEMPLATES=[
             {
                 'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -55,3 +51,15 @@ class Configuration(Module):
 
 def make_engine():
     return create_engine('sqlite://')
+
+
+@pytest.fixture(scope='session')
+def wsgi():
+    from django.core.wsgi import get_wsgi_application
+    return get_wsgi_application()
+
+
+@pytest.fixture()
+def api_client(wsgi):
+    import httpx
+    return httpx.Client(app=wsgi, base_url='http://testserver')

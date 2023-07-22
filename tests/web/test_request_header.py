@@ -1,9 +1,7 @@
 from http import HTTPStatus
 
 import pytest
-from rest_framework.test import APIClient
 
-from tests.entities import AuthorizedUser
 from winter.web.request_header_annotation import request_header
 
 
@@ -18,42 +16,38 @@ def test_without_arguments():
     assert exception.value.args == ('Not found argument "invalid_header" in "method"',)
 
 
-def test_request_header():
-    client = APIClient()
-    user = AuthorizedUser()
-    client.force_authenticate(user)
-
+def test_request_header(api_client):
     # Act
-    response = client.post('/with-request-header/', content_type='application/json', HTTP_X_HEADER=314)
+    response = api_client.post('/with-request-header/', headers={
+        'x-header': '314',
+    })
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == 314
 
 
-def test_request_several_headers():
-    client = APIClient()
-    user = AuthorizedUser()
-    client.force_authenticate(user)
-
+def test_request_several_headers(api_client):
     # Act
-    response = client.post(
+    response = api_client.post(
         '/with-request-several-headers/',
-        content_type='application/json',
-        HTTP_X_HEADER=314,
-        HTTP_Y_HEADER='314',
+        headers={
+            'x-header': '314',
+            'y-header': '315',
+        },
     )
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json() == [314, '314']
+    assert response.json() == [314, '315']
 
 
-def test_request_header_invalid_type():
-    client = APIClient()
-    user = AuthorizedUser()
-    client.force_authenticate(user)
-
+def test_request_header_invalid_type(api_client):
     # Act
-    response = client.post('/with-request-header/', content_type='application/json', HTTP_X_HEADER='abracadabra')
+    response = api_client.post(
+        '/with-request-header/',
+        headers={
+            'x-header': 'abracadabra',
+        },
+    )
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.json() == {
@@ -67,13 +61,9 @@ def test_request_header_invalid_type():
     }
 
 
-def test_request_header_without_header():
-    client = APIClient()
-    user = AuthorizedUser()
-    client.force_authenticate(user)
-
+def test_request_header_without_header(api_client):
     # Act
-    response = client.post('/with-request-header/', content_type='application/json')
+    response = api_client.post('/with-request-header/')
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.json() == {

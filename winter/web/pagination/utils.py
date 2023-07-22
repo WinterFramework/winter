@@ -1,31 +1,32 @@
 from typing import Optional
 
-from rest_framework.request import Request as DRFRequest
-from rest_framework.utils.urls import remove_query_param
-from rest_framework.utils.urls import replace_query_param
+import django.http
+from furl import furl
 
 from winter.data.pagination import Page
 
 
-def get_previous_page_url(page: Page, request: DRFRequest) -> Optional[str]:
+def get_previous_page_url(page: Page, request: django.http.HttpRequest) -> Optional[str]:
     offset = page.position.offset
     limit = page.position.limit
 
     if not offset or limit is None:
         return None
 
-    url = request.build_absolute_uri()
-    url = replace_query_param(url, 'limit', limit)
+    url = furl(request.build_absolute_uri())
+    url.query.set([('limit', limit)])
 
     previous_offset = offset - limit
 
     if previous_offset <= 0:
-        return remove_query_param(url, 'offset')
+        url.query.remove('offset')
+    else:
+        url.query.set([('offset', previous_offset)])
 
-    return replace_query_param(url, 'offset', previous_offset)
+    return url.tostr()
 
 
-def get_next_page_url(page: Page, request: DRFRequest) -> Optional[str]:
+def get_next_page_url(page: Page, request: django.http.HttpRequest) -> Optional[str]:
     offset = page.position.offset or 0
     limit = page.position.limit
     total = page.total_count
@@ -38,7 +39,9 @@ def get_next_page_url(page: Page, request: DRFRequest) -> Optional[str]:
     if next_offset >= total:
         return None
 
-    url = request.build_absolute_uri()
-    url = replace_query_param(url, 'limit', limit)
-
-    return replace_query_param(url, 'offset', next_offset)
+    url = furl(request.build_absolute_uri())
+    url.query.set([
+        ('limit', limit),
+        ('offset', next_offset),
+    ])
+    return url.tostr()

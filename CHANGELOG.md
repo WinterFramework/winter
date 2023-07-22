@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [19.0.0] - 2023-07-21
+### Changed
+- DRF request and response are replaced with Django HttpRequest and HttpResponse
+- Default Authorization and CSRF protection are removed from the framework
+- Always encode decimals as strings despite COERCE_DECIMAL_TO_STRING setting
+- Removed: JSONRenderer, create_django_urls_for_package, create_django_urls, @no_authentication, @csrf_exempt
+- Removed djangorestframework from dependencies
+
 ## [18.0.0] - 2023-06-25
 ### Changed
 - OpenAPI updated to version 3.0.3
