@@ -15,9 +15,10 @@ from winter.core import ComponentMethod
 from winter.core import get_injector
 from winter.core.json import JSONEncoder
 from winter.web import ResponseEntity
+from winter.web import exception_handlers_registry
 from winter.web import response_headers_serializer
 from winter.web.argument_resolver import arguments_resolver
-from winter.web.default_response_status import get_default_response_status
+from winter.web.default_response_status import get_response_status
 from winter.web.exceptions import MethodExceptionsManager
 from winter.web.exceptions import ThrottleException
 from winter.web.interceptor import interceptor_registry
@@ -99,19 +100,27 @@ def _call_api(api_class_instance, route: Route, request: django.http.HttpRequest
 
         arguments = arguments_resolver.resolve_arguments(method, request, response_headers)
         result = method(api_class_instance, **arguments)
-    except method_exceptions_manager.exception_classes as exception:
+    except Exception as exception:
         handler = method_exceptions_manager.get_handler(exception)
-        if handler is None:
-            raise
-
         method = ComponentMethod.get_or_create(handler.__class__.handle)
-        arguments = arguments_resolver.resolve_arguments(
-            method, request, response_headers, {
-                'exception': exception,
-                'response_headers': response_headers,
-            },
-        )
-        result = method(handler, **arguments)
+        try:
+            arguments = arguments_resolver.resolve_arguments(
+                method, request, response_headers, {
+                    'exception': exception,
+                    'response_headers': response_headers,
+                },
+            )
+            result = method(handler, **arguments)
+        except Exception as inner_exception:
+            handler = exception_handlers_registry.get_default_handler()
+            method = ComponentMethod.get_or_create(handler.__class__.handle)
+            arguments = arguments_resolver.resolve_arguments(
+                method, request, response_headers, {
+                    'exception': inner_exception,
+                    'response_headers': response_headers,
+                },
+            )
+            result = method(handler, **arguments)
 
     response = _convert_result_to_http_response(request, result, method)
     _fill_response_headers(response, response_headers)
@@ -132,7 +141,7 @@ def _convert_result_to_http_response(request: django.http.HttpRequest, result: A
         status_code = result.status_code
     else:
         body = result
-        status_code = get_default_response_status(request.method, method)
+        status_code = get_response_status(request.method, method)
     output_processor = get_output_processor(method, body)
     if output_processor is not None:
         body = output_processor.process_output(body, request)

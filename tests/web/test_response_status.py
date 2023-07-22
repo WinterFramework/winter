@@ -3,7 +3,7 @@ from http import HTTPStatus
 import pytest
 
 import winter
-from winter.web.default_response_status import get_default_response_status
+from winter.web.default_response_status import get_response_status
 
 
 @pytest.mark.parametrize('as_int', [True, False])
@@ -17,7 +17,7 @@ def test_response_status(response_status, as_int):
         def handler(self):  # pragma: no cover
             pass
 
-    status = get_default_response_status('post', TestClass.handler)
+    status = get_response_status('post', TestClass.handler)
 
     assert status == response_status
 

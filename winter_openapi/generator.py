@@ -27,7 +27,7 @@ from openapi_spec_validator import validate_spec
 
 from winter.core import ComponentMethod
 from winter.web import MediaType
-from winter.web.default_response_status import get_default_response_status
+from winter.web.default_response_status import get_response_status
 from winter.web.exceptions import MethodExceptionsManager
 from winter.web.exceptions import exception_handlers_registry
 from winter.web.request_body_annotation import RequestBodyAnnotation
@@ -193,7 +193,7 @@ def get_request_body_parameters(route: Route) -> Optional[RequestBody]:
 def get_responses_schemas(route: Route) -> Responses:
     responses: Responses = {}
     http_method = route.http_method
-    response_status = str(get_default_response_status(http_method, route.method))
+    response_status = str(get_response_status(http_method, route.method))
 
     responses[response_status] = _build_response_schema(route.method)
     method_exceptions_manager = MethodExceptionsManager(route.method)
@@ -205,7 +205,7 @@ def get_responses_schemas(route: Route) -> Responses:
         if handler is None:
             continue
         handle_method = ComponentMethod.get_or_create(handler.__class__.handle)
-        response_status = str(get_default_response_status(http_method, handle_method))
+        response_status = str(get_response_status(http_method, handle_method))
         responses[response_status] = _build_response_exception_handler_schema(handle_method)
     return responses
 

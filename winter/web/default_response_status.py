@@ -12,7 +12,7 @@ _default_http_method_statuses = {
 }
 
 
-def get_default_response_status(http_method: str, method: ComponentMethod) -> int:
+def get_response_status(http_method: str, method: ComponentMethod) -> int:
     response_status_annotation = method.annotations.get_one_or_none(ResponseStatusAnnotation)
     if response_status_annotation is not None:
         return response_status_annotation.status_code.value
