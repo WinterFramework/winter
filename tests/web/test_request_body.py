@@ -78,10 +78,9 @@ def test_request_body_with_errors(api_client):
             'non_field_error': 'Missing fields: "name"',
         }
     }
-    data = json.dumps(data)
 
     # Act
-    response = api_client.post('/with-request-data/', data=data)
+    response = api_client.post('/with-request-data/', json=data)
 
     assert response.status_code == HTTPStatus.BAD_REQUEST
     assert response.json() == expected_data
@@ -96,3 +95,28 @@ def test_without_argument():
     with pytest.raises(AssertionError) as exception:
         annotation_decorator(method)
     assert exception.value.args == ('Not found argument "invalid_argument" in "method"',)
+
+
+def test_unacceptible_content_type(api_client):
+    response = api_client.post('/with-request-data/', content=b'hi', headers={'content-type': 'some/unknown'})
+
+    assert response.status_code == HTTPStatus.UNSUPPORTED_MEDIA_TYPE
+    assert response.json() == {
+        'status': 415,
+        'type': 'urn:problem-type:unsupported-media-type',
+        'title': 'Unsupported media type',
+        'detail': '',
+    }
+
+
+def test_invalid_json(api_client):
+    response = api_client.post('/with-request-data/', content=b'hi', headers={'content-type': 'application/json'})
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json() == {
+        'status': 400,
+        'type': 'urn:problem-type:request-data-decode',
+        'title': 'Request data decode',
+        'detail': 'Failed to decode request data',
+        'errors': {'error': 'Invalid JSON: Expecting value: line 1 column 1 (char 0)'},
+    }

@@ -1,6 +1,7 @@
 from winter.data.pagination import Page
 from winter.web.exceptions import RequestDataDecodeException
 from winter.web.exceptions import ThrottleException
+from winter.web.exceptions import UnsupportedMediaTypeException
 from winter.web.pagination import PagePositionArgumentResolver
 from winter.web.pagination.limits import MaximumLimitValueExceeded
 from .annotations import global_exception
@@ -23,6 +24,7 @@ def setup(allow_missing_raises_annotation: bool = False):
     register_global_exception(MaximumLimitValueExceeded)
     register_global_exception(ThrottleException)
     register_global_exception(RequestDataDecodeException)
+    register_global_exception(UnsupportedMediaTypeException)
     register_type_inspector(Page, func=inspect_page)
     register_route_parameters_inspector(PathParametersInspector())
     register_route_parameters_inspector(QueryParametersInspector())

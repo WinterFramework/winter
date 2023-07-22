@@ -29,3 +29,8 @@ class RequestDataDecodeException(Exception):
             self.errors = errors
         else:
             self.errors = {'error': errors}
+
+
+@problem(status=HTTPStatus.UNSUPPORTED_MEDIA_TYPE)
+class UnsupportedMediaTypeException(Exception):
+    pass
