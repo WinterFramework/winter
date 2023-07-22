@@ -37,6 +37,7 @@ def test_api_with_exceptions_throws_500(api_client, url_path):
     response = api_client.get(url_path)
 
     assert response.status_code == 500
+    assert response.content == b'Server Error (500)'
 
 
 @pytest.mark.parametrize(
