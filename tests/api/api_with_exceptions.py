@@ -81,6 +81,7 @@ class APIWithExceptions:
         raise CustomException('message')
 
     @winter.raises(WithUnknownArgumentException)
+    @winter.raises(CustomException)  # second "raises" just for 100% test coverage
     @winter.route_get('with_unknown_argument_exception/')
     def with_unknown_argument_handler(self) -> str:
         raise WithUnknownArgumentException()
