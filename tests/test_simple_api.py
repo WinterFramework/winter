@@ -98,3 +98,9 @@ def test_methods(api_client, method, http_response_status):
     url = f'/winter-simple/{method}/'
     response = getattr(api_client, method)(url)
     assert response.status_code == http_response_status
+
+
+def test_none_response(api_client):
+    url = f'/winter-simple/get/'
+    response = api_client.get(url)
+    assert response.content == b''
