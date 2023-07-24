@@ -24,7 +24,7 @@ class PublishProcessor:
         self._rabbitmq_client = rabbitmq_client
         self._outbox_message_doa = outbox_message_doa
         self._topology_configurator = configurator
-        self._publish_interval =publish_interval
+        self._publish_interval = publish_interval
 
     def run(self):
         log.info('Publishing processor started with sleep time: %s', self._publish_interval)

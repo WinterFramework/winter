@@ -6,6 +6,7 @@ from uuid import UUID
 from injector import inject
 from sqlalchemy import delete, and_
 from sqlalchemy import func
+from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy import update
 from sqlalchemy.engine import Engine

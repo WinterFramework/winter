@@ -1,7 +1,6 @@
 import argparse
 import sys
 
-import django
 
 from winter.core import get_injector
 from .consumer import ConsumerWorker
@@ -29,7 +28,6 @@ if __name__ == '__main__':
     args = parse_args(parser)
     consumer_id = args.consumer
 
-    django.setup()
     setup()
 
     injector = get_injector()

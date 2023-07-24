@@ -15,11 +15,12 @@ from winter_messaging_transactional.consumer.event_processing_logger import Even
 from winter_messaging_transactional.consumer.inbox.inbox_message import InboxMessage
 from winter_messaging_transactional.consumer.inbox.inbox_message_dao import InboxMessageDAO
 from winter_messaging_transactional.consumer.middleware_registry import MiddlewareRegistry
+from winter_messaging_transactional.consumer.timeout_handler import TimeoutException
 from winter_messaging_transactional.consumer.timeout_handler import TimeoutHandler
 
 logger = logging.getLogger(__name__)
 
-EVENT_HANDLING_TIMEOUT = 15
+EVENT_HANDLING_TIMEOUT = 150
 RETRIES_ON_TIMEOUT = 1
 
 
@@ -74,7 +75,9 @@ class MessageListener:
             event = json_decode(event_dict, hint_class=event_type)
             self._dispatch_event(event=event, message_id=message_id)
             channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-        except Exception:
+        except TimeoutException:
+            channel.basic_nack(delivery_tag=method_frame.delivery_tag, requeue=False)
+        except Exception as e:
             if result.counter < self.MAX_RETRIES:
                 channel.basic_nack(delivery_tag=method_frame.delivery_tag, requeue=True)
             else:
