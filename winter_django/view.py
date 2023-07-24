@@ -147,5 +147,8 @@ def _convert_result_to_http_response(request: django.http.HttpRequest, result: A
         body = output_processor.process_output(body, request)
     if isinstance(body, django.http.response.HttpResponseBase):
         return body
-    content = json.dumps(body, cls=JSONEncoder).encode()
+    if body is None:
+        content = b''
+    else:
+        content = json.dumps(body, cls=JSONEncoder).encode()
     return django.http.HttpResponse(content, status=status_code, content_type='application/json')
