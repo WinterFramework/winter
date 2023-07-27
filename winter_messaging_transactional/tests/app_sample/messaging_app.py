@@ -10,7 +10,7 @@ from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import Session
 
-from e2e.winter_messaging.app_sample.dao.consumer_dao import messaging_app_metadata
+from winter_messaging_transactional.tests.app_sample.dao.consumer_dao import messaging_app_metadata
 from winter.messaging import EventPublisher
 from winter.messaging import MessagingConfig
 from winter_messaging_transactional.messaging_app import MessagingApp
@@ -24,9 +24,9 @@ class WinterMessagingApp(MessagingApp):
         config = MessagingConfig(
             topics={'sample-topic'},
             consumers={
-                'consumer_correct': {'e2e.winter_messaging.app_sample.consumer_correct'},
-                'consumer_timeout': {'e2e.winter_messaging.app_sample.consumer_timeout'},
-                'consumer_with_error': {'e2e.winter_messaging.app_sample.consumer_with_error'},
+                'consumer_correct': {'winter_messaging_transactional.tests.app_sample.consumer_correct'},
+                'consumer_timeout': {'winter_messaging_transactional.tests.app_sample.consumer_timeout'},
+                'consumer_with_error': {'winter_messaging_transactional.tests.app_sample.consumer_with_error'},
             }
         )
         injector.binder.bind(MessagingConfig, to=InstanceProvider(config), scope=singleton)

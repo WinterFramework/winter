@@ -1,7 +1,7 @@
 from injector import inject
 
-from e2e.winter_messaging.app_sample.dao import ConsumerDAO
-from e2e.winter_messaging.app_sample.events import SampleEvent
+from winter_messaging_transactional.tests.app_sample.dao import ConsumerDAO
+from winter_messaging_transactional.tests.app_sample.events import SampleEvent
 from winter.messaging import event_handler
 
 ATTEMPTS_COUNT = 0

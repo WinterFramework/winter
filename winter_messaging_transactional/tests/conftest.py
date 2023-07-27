@@ -10,9 +10,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm import sessionmaker
 from testcontainers.rabbitmq import RabbitMqContainer
 
-from e2e.winter_messaging.database_container import database_container
-from e2e.winter_messaging.helpers import run_consumer
-from e2e.winter_messaging.helpers import run_processor
+from winter_messaging_transactional.tests.database_container import database_container
+from winter_messaging_transactional.tests.helpers import run_consumer
+from winter_messaging_transactional.tests.helpers import run_processor
 from winter_messaging_transactional.injection_modules import TransactionalMessagingModule
 from winter_messaging_transactional.table_metadata import messaging_metadata
 

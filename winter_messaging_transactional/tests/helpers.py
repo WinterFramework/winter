@@ -8,7 +8,7 @@ from winter_messaging_transactional.producer.outbox import outbox_message_table
 
 
 def run_processor(database_url: str, rabbit_url: str):
-    settings_path = 'e2e.winter_messaging.app_sample.messaging_app'
+    settings_path = 'winter_messaging_transactional.tests.app_sample.messaging_app'
 
     env = dict(
         **os.environ,
@@ -25,7 +25,7 @@ def run_processor(database_url: str, rabbit_url: str):
 
 
 def run_consumer(database_url: str, rabbit_url: str, consumer_id: str):
-    settings_path = 'e2e.winter_messaging.app_sample.messaging_app'
+    settings_path = 'winter_messaging_transactional.tests.app_sample.messaging_app'
 
     env = dict(
         **os.environ,

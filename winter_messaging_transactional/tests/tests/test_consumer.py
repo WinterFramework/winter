@@ -3,13 +3,12 @@ import time
 from uuid import uuid4
 
 import pytest
-from sqlalchemy.engine import Engine
 from winter.core.json import JSONEncoder
 
-from e2e.winter_messaging.conftest import event_consumer
-from e2e.winter_messaging.helpers import read_all_inbox_messages
-from e2e.winter_messaging.app_sample.dao import ConsumerDAO
-from e2e.winter_messaging.app_sample.events import SampleEvent
+from winter_messaging_transactional.tests.conftest import event_consumer
+from winter_messaging_transactional.tests.helpers import read_all_inbox_messages
+from winter_messaging_transactional.tests.app_sample.dao import ConsumerDAO
+from winter_messaging_transactional.tests.app_sample.events import SampleEvent
 from winter_messaging_transactional.consumer.inbox.inbox_message import InboxMessage
 from winter_messaging_transactional.consumer.inbox.inbox_message_dao import InboxMessageDAO
 from winter_messaging_transactional.producer.outbox import OutboxEventPublisher
