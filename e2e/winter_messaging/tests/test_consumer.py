@@ -10,7 +10,6 @@ from e2e.winter_messaging.conftest import event_consumer
 from e2e.winter_messaging.helpers import read_all_inbox_messages
 from e2e.winter_messaging.app_sample.dao import ConsumerDAO
 from e2e.winter_messaging.app_sample.events import SampleEvent
-from e2e.winter_messaging.helpers import read_all_outbox_messages
 from winter_messaging_transactional.consumer.inbox.inbox_message import InboxMessage
 from winter_messaging_transactional.consumer.inbox.inbox_message_dao import InboxMessageDAO
 from winter_messaging_transactional.producer.outbox import OutboxEventPublisher
@@ -18,7 +17,7 @@ from winter_messaging_transactional.producer.outbox import OutboxMessage
 from winter_messaging_transactional.producer.outbox import OutboxMessageDAO
 
 
-def test_consume_without_error(database_url, rabbit_url, event_processor, injector):
+def test_consume_without_error(database_url, rabbit_url, event_processor, injector, session):
     event_publisher = injector.get(OutboxEventPublisher)
     payload_id = 1
     payload = 'consume_without_error'
@@ -27,7 +26,8 @@ def test_consume_without_error(database_url, rabbit_url, event_processor, inject
     with event_consumer(database_url, rabbit_url, consumber_id='consumer_correct'):
         event = SampleEvent(id=payload_id, payload=payload)
         event_publisher.emit(event)
-        time.sleep(5)
+        session.commit()
+        time.sleep(15)
 
     # Assert
     consumer_dao = injector.get(ConsumerDAO)
@@ -36,8 +36,7 @@ def test_consume_without_error(database_url, rabbit_url, event_processor, inject
     assert consumed_event['id'] == payload_id
     assert consumed_event['payload'] == payload
 
-    engine = injector.get(Engine)
-    inbox_messages = read_all_inbox_messages(engine)
+    inbox_messages = read_all_inbox_messages(session)
     assert len(inbox_messages) == 1
     event_message = inbox_messages[0]
     assert event_message['consumer_id'] == 'consumer_correct'
@@ -48,7 +47,7 @@ def test_consume_without_error(database_url, rabbit_url, event_processor, inject
 
 
 @pytest.mark.parametrize('can_be_handled_on_retry', (True, False))
-def test_consume_with_timeout(database_url, rabbit_url, event_processor, injector, can_be_handled_on_retry):
+def test_consume_with_timeout(database_url, rabbit_url, event_processor, injector, session, can_be_handled_on_retry):
     event_publisher = injector.get(OutboxEventPublisher)
     payload_id = 1
     payload = 'consumer_timeout'
@@ -57,11 +56,11 @@ def test_consume_with_timeout(database_url, rabbit_url, event_processor, injecto
     with event_consumer(database_url, rabbit_url, consumber_id='consumer_timeout'):
         event = SampleEvent(id=payload_id, payload=payload, can_be_handled_on_retry=can_be_handled_on_retry)
         event_publisher.emit(event)
+        session.commit()
         time.sleep(60)
 
     # Assert
-    engine = injector.get(Engine)
-    inbox_messages = read_all_inbox_messages(engine)
+    inbox_messages = read_all_inbox_messages(session)
     assert len(inbox_messages) == 1
 
     event_message = inbox_messages[0]
@@ -85,8 +84,8 @@ def test_consume_with_timeout(database_url, rabbit_url, event_processor, injecto
         assert consumed_event is None
 
 
-@pytest.mark.parametrize('can_be_handled_on_retry', (True,))
-def test_consume_with_error(database_url, rabbit_url, event_processor, injector, can_be_handled_on_retry):
+@pytest.mark.parametrize('can_be_handled_on_retry', (True, False))
+def test_consume_with_error(database_url, rabbit_url, event_processor, injector, session, can_be_handled_on_retry):
     event_publisher = injector.get(OutboxEventPublisher)
     payload_id = 1
     payload = 'consume_with_error'
@@ -95,11 +94,11 @@ def test_consume_with_error(database_url, rabbit_url, event_processor, injector,
     with event_consumer(database_url, rabbit_url, consumber_id='consumer_with_error'):
         event = SampleEvent(id=payload_id, payload=payload, can_be_handled_on_retry=can_be_handled_on_retry)
         event_publisher.emit(event)
+        session.commit()
         time.sleep(10)
 
     # Assert
-    engine = injector.get(Engine)
-    inbox_messages = read_all_inbox_messages(engine)
+    inbox_messages = read_all_inbox_messages(session)
     assert len(inbox_messages) == 1
 
     event_message = inbox_messages[0]
@@ -126,7 +125,7 @@ def test_consume_with_error(database_url, rabbit_url, event_processor, injector,
         assert consumed_event_2 is None
 
 
-def test_consumer_already_processed_event(database_url, rabbit_url, event_processor, injector):
+def test_consumer_already_processed_event(database_url, rabbit_url, event_processor, injector, session):
     payload_id = 1
     consumber_id = 'consumer_correct'
     message_id = uuid4()
@@ -149,6 +148,7 @@ def test_consumer_already_processed_event(database_url, rabbit_url, event_proces
     )
     inbox_message_dao.upsert(inbox_message)
     inbox_message_dao.mark_as_processed(message_id, consumber_id)
+    session.commit()
 
     # Act
     with event_consumer(database_url, rabbit_url, consumber_id=consumber_id):
@@ -158,8 +158,7 @@ def test_consumer_already_processed_event(database_url, rabbit_url, event_proces
     consumed_event = consumer_dao.find_by_id(payload_id)
     assert consumed_event is None
 
-    engine = injector.get(Engine)
-    inbox_messages = read_all_inbox_messages(engine)
+    inbox_messages = read_all_inbox_messages(session)
     assert len(inbox_messages) == 1
     inbox_message = inbox_messages[0]
     assert inbox_message['id'] == message_id

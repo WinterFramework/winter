@@ -1,9 +1,14 @@
 import os
+
+from injector import CallableProvider
 from injector import ClassProvider, Injector
 from injector import InstanceProvider
 from injector import singleton
 from sqlalchemy.engine import Engine
 from sqlalchemy import create_engine
+from sqlalchemy.orm import scoped_session
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session
 
 from e2e.winter_messaging.app_sample.dao.consumer_dao import messaging_app_metadata
 from winter.messaging import EventPublisher
@@ -26,10 +31,19 @@ class WinterMessagingApp(MessagingApp):
         )
         injector.binder.bind(MessagingConfig, to=InstanceProvider(config), scope=singleton)
         engine = make_engine()
-        injector.binder.bind(Engine, to=engine, scope=singleton)
         messaging_app_metadata.create_all(engine)
+
+        session_factory = sessionmaker(bind=engine, autoflush=False, autocommit=True)
+        ScopedSession = scoped_session(session_factory)
+
+        injector.binder.bind(Engine, to=engine, scope=singleton)
+        injector.binder.bind(Session, to=CallableProvider(ScopedSession))
 
 
 def make_engine():
     database_url = os.getenv('WINTER_DATABASE_URL')
     return create_engine(database_url)
+
+
+
+

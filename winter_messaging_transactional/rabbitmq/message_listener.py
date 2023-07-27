@@ -6,7 +6,8 @@ from injector import inject
 from pika import BasicProperties
 from pika.adapters.blocking_connection import BlockingChannel
 from pika.spec import Basic
-from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
+
 from winter.core.json import json_decode
 from winter.messaging import Event
 from winter.messaging import EventHandlerRegistry
@@ -20,7 +21,7 @@ from winter_messaging_transactional.consumer.timeout_handler import TimeoutHandl
 
 logger = logging.getLogger(__name__)
 
-EVENT_HANDLING_TIMEOUT = 150
+EVENT_HANDLING_TIMEOUT = 15
 RETRIES_ON_TIMEOUT = 1
 
 
@@ -34,13 +35,13 @@ class MessageListener:
         event_dispatcher: EventDispatcher,
         inbox_message_dao: InboxMessageDAO,
         middleware_registry: MiddlewareRegistry,
-        engine: Engine,
+        session: Session,
     ) -> None:
         self._handler_registry = handler_registry
         self._event_dispatcher = event_dispatcher
         self._inbox_message_dao = inbox_message_dao
         self._middleware_registry = middleware_registry
-        self._engine = engine
+        self._session = session
         self._timeout_handler = TimeoutHandler()
         timeout_decorator = self._timeout_handler.timeout(seconds=EVENT_HANDLING_TIMEOUT, retries=RETRIES_ON_TIMEOUT)
         self._dispatch_event = timeout_decorator(self._dispatch_event)
@@ -86,7 +87,7 @@ class MessageListener:
 
     def _dispatch_event(self, event: Event, message_id: UUID):
         with EventProcessingLogger(message_id=message_id, event_type_name=event.__class__.__name__):
-            with self._engine.begin():
+            with self._session.begin():
                 self._middleware_registry.run_with_middlewares(lambda: self._event_dispatcher.dispatch(event))
                 self._inbox_message_dao.mark_as_processed(message_id, self._consumer_id)
 

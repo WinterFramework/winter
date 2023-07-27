@@ -10,6 +10,7 @@ from sqlalchemy import insert
 from sqlalchemy import select
 from sqlalchemy import update
 from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
 
 from .outbox_message import OutboxMessage
 from .outbox_message import outbox_message_table
@@ -17,8 +18,8 @@ from .outbox_message import outbox_message_table
 
 class OutboxMessageDAO:
     @inject
-    def __init__(self, engine: Engine):
-        self._engine = engine
+    def __init__(self, session: Session):
+        self._session = session
 
     def select_unsent(self) -> Iterable[OutboxMessage]:
         query = select([
@@ -29,26 +30,25 @@ class OutboxMessageDAO:
         ]).where(
             outbox_message_table.c.published_at.is_(None)
         ).order_by(outbox_message_table.c.id)
-        with self._engine.connect() as connection:
-            records = connection.execute(query)
-            return (OutboxMessage(*record) for record in records)
+        records = self._session.execute(query)
+        return (OutboxMessage(*record) for record in records)
 
     def save(self, event: OutboxMessage):
         event_dict = dataclasses.asdict(event)
         statement = insert(outbox_message_table).values(**event_dict)
-        with self._engine.connect() as connection:
-            connection.execute(statement)
+        self._session.execute(statement)
+        self._session.flush()
 
     def mark_as_sent(self, events: Iterable[OutboxMessage]):
         ids = [event.message_id for event in events]
         statement = update(outbox_message_table).where(
             outbox_message_table.c.message_id.in_(ids)
         ).values({outbox_message_table.c.published_at: func.now()})
-        with self._engine.connect() as connection:
-            connection.execute(statement)
+        self._session.execute(statement)
+        self._session.flush()
 
     def remove_published(self):
         day_before = datetime.utcnow() - timedelta(days=1)
         statement = delete(outbox_message_table).where(outbox_message_table.c.published_at <= day_before)
-        with self._engine.connect() as connection:
-            connection.execute(statement)
+        self._session.execute(statement)
+        self._session.flush()

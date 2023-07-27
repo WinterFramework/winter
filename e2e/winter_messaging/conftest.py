@@ -6,6 +6,8 @@ from injector import Injector
 from injector import singleton
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
+from sqlalchemy.orm import sessionmaker
 from testcontainers.rabbitmq import RabbitMqContainer
 
 from e2e.winter_messaging.database_container import database_container
@@ -16,10 +18,17 @@ from winter_messaging_transactional.table_metadata import messaging_metadata
 
 
 @pytest.fixture
-def injector(db_engine):
+def injector(session):
     injector = Injector([TransactionalMessagingModule()])
     injector.binder.bind(Engine, to=db_engine, scope=singleton)
+    injector.binder.bind(Session, to=session, scope=singleton)
     return injector
+
+
+@pytest.fixture
+def session(db_engine):
+    session_factory = sessionmaker(bind=db_engine, autoflush=False)
+    return session_factory()
 
 
 @pytest.fixture

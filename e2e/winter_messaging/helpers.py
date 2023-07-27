@@ -41,7 +41,7 @@ def run_consumer(database_url: str, rabbit_url: str, consumer_id: str):
     )
 
 
-def read_all_inbox_messages(engine):
+def read_all_inbox_messages(session):
     query = select([
         inbox_message_table.c.id,
         inbox_message_table.c.consumer_id,
@@ -50,12 +50,11 @@ def read_all_inbox_messages(engine):
         inbox_message_table.c.received_at,
         inbox_message_table.c.processed_at,
     ])
-    with engine.connect() as connection:
-        rows = connection.execute(query)
-        return [dict(**row) for row in rows]
+    rows = session.execute(query)
+    return [dict(**row) for row in rows]
 
 
-def read_all_outbox_messages(engine):
+def read_all_outbox_messages(session):
     query = select([
         outbox_message_table.c.id,
         outbox_message_table.c.message_id,
@@ -65,7 +64,6 @@ def read_all_outbox_messages(engine):
         outbox_message_table.c.created_at,
         outbox_message_table.c.published_at,
     ])
-    with engine.connect() as connection:
-        rows = connection.execute(query)
-        return [dict(**row) for row in rows]
+    rows = session.execute(query)
+    return [dict(**row) for row in rows]
 
