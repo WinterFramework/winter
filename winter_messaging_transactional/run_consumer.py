@@ -3,6 +3,7 @@ import sys
 
 
 from winter.core import get_injector
+from winter_messaging_transactional.tests.coverage import get_coverage
 from .consumer import ConsumerWorker
 from .setup import setup
 
@@ -28,8 +29,14 @@ if __name__ == '__main__':
     args = parse_args(parser)
     consumer_id = args.consumer
 
+    cov = get_coverage('consumer')
+    cov.start()
+
     setup()
 
     injector = get_injector()
     worker = injector.get(ConsumerWorker)
     worker.start(consumer_id=consumer_id)
+
+    cov.stop()
+    cov.save()

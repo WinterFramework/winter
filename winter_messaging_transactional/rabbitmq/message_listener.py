@@ -21,7 +21,7 @@ from winter_messaging_transactional.consumer.timeout_handler import TimeoutHandl
 
 logger = logging.getLogger(__name__)
 
-EVENT_HANDLING_TIMEOUT = 15
+EVENT_HANDLING_TIMEOUT = 150
 RETRIES_ON_TIMEOUT = 1
 
 
@@ -78,7 +78,7 @@ class MessageListener:
             channel.basic_ack(delivery_tag=method_frame.delivery_tag)
         except TimeoutException:
             channel.basic_nack(delivery_tag=method_frame.delivery_tag, requeue=False)
-        except Exception as e:
+        except Exception:
             if result.counter < self.MAX_RETRIES:
                 channel.basic_nack(delivery_tag=method_frame.delivery_tag, requeue=True)
             else:

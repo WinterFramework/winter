@@ -28,7 +28,9 @@ def injector(session):
 @pytest.fixture
 def session(db_engine):
     session_factory = sessionmaker(bind=db_engine, autoflush=False)
-    return session_factory()
+    session = session_factory()
+    yield session
+    session.close()
 
 
 @pytest.fixture
@@ -68,6 +70,7 @@ def event_consumer(database_url: str, rabbit_url: str, consumber_id: str):
     process = run_consumer(database_url=database_url, rabbit_url=rabbit_url, consumer_id=consumber_id)
     yield process
     process.terminate()
+    time.sleep(40)
     print(process.stderr.read1().decode('utf-8'))
     print(process.stdout.read1().decode('utf-8'))
 
