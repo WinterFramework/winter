@@ -44,6 +44,7 @@ def pytest_configure():
         MIDDLEWARE=[
             'tests.middleware.AuthenticationMiddleware',
         ],
+        ALLOWED_HOSTS=['testserver'],
     )
     injector = Injector([TestConfiguration])
     set_injector(injector)
