@@ -21,7 +21,7 @@ from winter_messaging_transactional.consumer.timeout_handler import TimeoutHandl
 
 logger = logging.getLogger(__name__)
 
-EVENT_HANDLING_TIMEOUT = 150
+EVENT_HANDLING_TIMEOUT = 15
 RETRIES_ON_TIMEOUT = 1
 
 
