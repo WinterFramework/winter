@@ -45,7 +45,6 @@ def test_consume_without_error(database_url, rabbit_url, event_processor, inject
     assert event_message['processed_at']
 
 
-
 @pytest.mark.parametrize('can_be_handled_on_retry', (True, False))
 def test_consume_with_timeout(database_url, rabbit_url, event_processor, injector, session, can_be_handled_on_retry):
     event_publisher = injector.get(OutboxEventPublisher)
@@ -57,7 +56,7 @@ def test_consume_with_timeout(database_url, rabbit_url, event_processor, injecto
         event = SampleEvent(id=payload_id, payload=payload, can_be_handled_on_retry=can_be_handled_on_retry)
         event_publisher.emit(event)
         session.commit()
-        time.sleep(60)
+        time.sleep(40)
 
     # Assert
     inbox_messages = read_all_inbox_messages(session)

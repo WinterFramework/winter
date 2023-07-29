@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm import sessionmaker
 from testcontainers.rabbitmq import RabbitMqContainer
 
-from winter_messaging_transactional.tests.database_container import database_container
+from winter_messaging_transactional.tests.database_container import DatabaseContainer
 from winter_messaging_transactional.tests.helpers import run_consumer
 from winter_messaging_transactional.tests.helpers import run_processor
 from winter_messaging_transactional.injection_modules import TransactionalMessagingModule
@@ -42,9 +42,18 @@ def db_engine(database_url):
 
 
 @pytest.fixture
-def database_url(request):
+def database_url(request, database_container):
     database_name = request.node.name.replace('[', '').replace(']', '').lower()
     return database_container.create_database(database_name)
+
+
+@pytest.fixture(scope='session')
+def database_container():
+    container = DatabaseContainer()
+    container.start()
+    yield container
+    time.sleep(5)
+    container.stop()
 
 
 @pytest.fixture
@@ -70,7 +79,6 @@ def event_consumer(database_url: str, rabbit_url: str, consumber_id: str):
     process = run_consumer(database_url=database_url, rabbit_url=rabbit_url, consumer_id=consumber_id)
     yield process
     process.terminate()
-    time.sleep(40)
     print(process.stderr.read1().decode('utf-8'))
     print(process.stdout.read1().decode('utf-8'))
 

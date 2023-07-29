@@ -15,6 +15,7 @@ def run_processor(database_url: str, rabbit_url: str):
         WINTER_SETTINGS_MODULE=settings_path,
         WINTER_DATABASE_URL=database_url,
         WINTER_RABBIT_URL=rabbit_url,
+        USE_COVERAGE='true',
     )
     return subprocess.Popen(
         ['python', '-m', 'winter_messaging_transactional.run_processor'],
@@ -32,6 +33,7 @@ def run_consumer(database_url: str, rabbit_url: str, consumer_id: str):
         WINTER_SETTINGS_MODULE=settings_path,
         WINTER_DATABASE_URL=database_url,
         WINTER_RABBIT_URL=rabbit_url,
+        USE_COVERAGE='true',
     )
     return subprocess.Popen(
         ['python', '-m', 'winter_messaging_transactional.run_consumer', consumer_id],

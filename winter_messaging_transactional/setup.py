@@ -4,7 +4,6 @@ import os
 
 from injector import Injector
 from sqlalchemy.engine import Engine
-from sqlalchemy.orm import Session
 
 from winter.core import set_injector
 from .injection_modules import TransactionalMessagingModule
