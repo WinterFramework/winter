@@ -14,6 +14,7 @@ from winter_messaging_transactional.consumer.inbox.inbox_message_dao import Inbo
 from winter_messaging_transactional.producer.outbox import OutboxEventPublisher
 from winter_messaging_transactional.producer.outbox import OutboxMessage
 from winter_messaging_transactional.producer.outbox import OutboxMessageDAO
+from winter_messaging_transactional.tests.helpers import run_consumer
 
 
 def test_consume_without_error(database_url, rabbit_url, event_processor, injector, session):
@@ -81,6 +82,45 @@ def test_consume_with_timeout(database_url, rabbit_url, event_processor, injecto
         assert consumed_event['payload'] == payload
     else:
         assert consumed_event is None
+
+
+def test_consume_interrupt_during_timeout(database_url, rabbit_url, event_processor, injector, session):
+    event_publisher = injector.get(OutboxEventPublisher)
+    payload_id = 1
+    payload = 'consumer_timeout'
+
+    # Act
+    process = run_consumer(database_url=database_url, rabbit_url=rabbit_url, consumer_id='consumer_timeout')
+    event = SampleEvent(id=payload_id, payload=payload)
+    event_publisher.emit(event)
+    session.commit()
+    time.sleep(8)
+
+    # Worker should not attempt to handle the event again after the TimeoutException if it has received the INT signal.
+    process.terminate()
+    time.sleep(15)
+
+    # Assert
+    consumer_logs = process.stdout.read1().decode('utf-8')
+    timeout_error_message = "WARNING:event_handling:Timeout is raised during execution _dispatch_event with args: ()," \
+                            " kwargs: {'event': SampleEvent(id=1, payload='consumer_timeout'"
+
+    # Because there should not be a second attempt to handle the event, we expect only one timeout message in the logs
+    assert consumer_logs.count(timeout_error_message) == 1
+
+    inbox_messages = read_all_inbox_messages(session)
+    assert len(inbox_messages) == 1
+
+    event_message = inbox_messages[0]
+    assert event_message['consumer_id'] == 'consumer_timeout'
+    assert event_message['name'] == 'SampleEvent'
+    assert event_message['counter'] == 0
+    assert event_message['received_at']
+    assert event_message['processed_at'] is None
+
+    consumer_dao = injector.get(ConsumerDAO)
+    consumed_event = consumer_dao.find_by_id(payload_id)
+    assert consumed_event is None
 
 
 @pytest.mark.parametrize('can_be_handled_on_retry', (True, False))

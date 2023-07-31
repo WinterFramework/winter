@@ -1,9 +1,7 @@
-from injector import CallableProvider
 from injector import ClassProvider
 from injector import InstanceProvider
 from injector import Module
 from injector import singleton
-from pika import BlockingConnection
 
 from winter.messaging import EventHandlerRegistry
 from winter.messaging.event_dispacher import EventDispatcher
@@ -16,7 +14,6 @@ from winter_messaging_transactional.producer.outbox import OutboxMessageDAO
 from winter_messaging_transactional.producer.outbox.outbox_cleanup_processor import OutboxCleanupProcessor
 from winter_messaging_transactional.producer.publish_processor import PublishProcessor
 from winter_messaging_transactional.rabbitmq import TopologyConfigurator
-from winter_messaging_transactional.rabbitmq import create_connection
 
 
 class TransactionalMessagingModule(Module):

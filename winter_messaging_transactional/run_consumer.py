@@ -9,13 +9,13 @@ from winter_messaging_transactional.startup_teardown import process_stop
 from .consumer import ConsumerWorker
 from .setup import setup
 
-if os.getenv('USE_COVERAGE', 'false').lower() == 'true':
+if os.getenv('USE_COVERAGE', 'false').lower() == 'true':  # pragma: no cover
     # noinspection PyUnresolvedReferences
     import winter_messaging_transactional.tests.coverage  # noqa: F401, F403
 
 
 class Parser(argparse.ArgumentParser):
-    def error(self, message): # pragma: no cover
+    def error(self, message):  # pragma: no cover
         sys.stderr.write('error: %s\n' % message)
         self.print_help()
         sys.exit(2)

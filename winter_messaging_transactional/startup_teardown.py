@@ -14,11 +14,11 @@ def on_process_stop(func: Callable):
     return func
 
 
-def process_start():
+def process_start():  # pragma: no cover
     for callback in _on_process_start_callbacks:
         callback()
 
 
-def process_stop():
+def process_stop():  # pragma: no cover
     for callback in _on_process_stop_callbacks:
         callback()

@@ -78,4 +78,4 @@ jobs:
       - name: Combine reports
         run: |
           coverage combine coverage-reports
-          coverage report --fail-under=10000
+          coverage report --fail-under=100

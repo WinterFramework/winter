@@ -1,4 +1,6 @@
+import logging
 import os
+import sys
 
 from injector import CallableProvider
 from injector import ClassProvider, Injector
@@ -38,6 +40,8 @@ class WinterMessagingApp(MessagingApp):
 
         injector.binder.bind(Engine, to=engine, scope=singleton)
         injector.binder.bind(Session, to=CallableProvider(ScopedSession))
+
+        logging.basicConfig(stream=sys.stdout, level=logging.WARNING)
 
 
 def make_engine():
