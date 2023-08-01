@@ -9,6 +9,7 @@ from winter_messaging_transactional.tests.conftest import event_consumer
 from winter_messaging_transactional.tests.helpers import read_all_inbox_messages
 from winter_messaging_transactional.tests.app_sample.dao import ConsumerDAO
 from winter_messaging_transactional.tests.app_sample.events import SampleEvent
+from winter_messaging_transactional.tests.app_sample.events import RetryableEvent
 from winter_messaging_transactional.consumer.inbox.inbox_message import InboxMessage
 from winter_messaging_transactional.consumer.inbox.inbox_message_dao import InboxMessageDAO
 from winter_messaging_transactional.producer.outbox import OutboxEventPublisher
@@ -54,7 +55,7 @@ def test_consume_with_timeout(database_url, rabbit_url, event_processor, injecto
 
     # Act
     with event_consumer(database_url, rabbit_url, consumber_id='consumer_timeout'):
-        event = SampleEvent(id=payload_id, payload=payload, can_be_handled_on_retry=can_be_handled_on_retry)
+        event = RetryableEvent(id=payload_id, payload=payload, can_be_handled_on_retry=can_be_handled_on_retry)
         event_publisher.emit(event)
         session.commit()
         time.sleep(40)
@@ -65,7 +66,7 @@ def test_consume_with_timeout(database_url, rabbit_url, event_processor, injecto
 
     event_message = inbox_messages[0]
     assert event_message['consumer_id'] == 'consumer_timeout'
-    assert event_message['name'] == 'SampleEvent'
+    assert event_message['name'] == 'RetryableEvent'
     assert event_message['counter'] == 0
     assert event_message['received_at']
     if can_be_handled_on_retry:
@@ -91,7 +92,7 @@ def test_consume_interrupt_during_timeout(database_url, rabbit_url, event_proces
 
     # Act
     process = run_consumer(database_url=database_url, rabbit_url=rabbit_url, consumer_id='consumer_timeout')
-    event = SampleEvent(id=payload_id, payload=payload)
+    event = RetryableEvent(id=payload_id, payload=payload)
     event_publisher.emit(event)
     session.commit()
     time.sleep(8)
@@ -113,7 +114,7 @@ def test_consume_interrupt_during_timeout(database_url, rabbit_url, event_proces
 
     event_message = inbox_messages[0]
     assert event_message['consumer_id'] == 'consumer_timeout'
-    assert event_message['name'] == 'SampleEvent'
+    assert event_message['name'] == 'RetryableEvent'
     assert event_message['counter'] == 0
     assert event_message['received_at']
     assert event_message['processed_at'] is None
@@ -131,7 +132,7 @@ def test_consume_with_error(database_url, rabbit_url, event_processor, injector,
 
     # Act
     with event_consumer(database_url, rabbit_url, consumber_id='consumer_with_error'):
-        event = SampleEvent(id=payload_id, payload=payload, can_be_handled_on_retry=can_be_handled_on_retry)
+        event = RetryableEvent(id=payload_id, payload=payload, can_be_handled_on_retry=can_be_handled_on_retry)
         event_publisher.emit(event)
         session.commit()
         time.sleep(10)
@@ -142,7 +143,7 @@ def test_consume_with_error(database_url, rabbit_url, event_processor, injector,
 
     event_message = inbox_messages[0]
     assert event_message['consumer_id'] == 'consumer_with_error'
-    assert event_message['name'] == 'SampleEvent'
+    assert event_message['name'] == 'RetryableEvent'
     assert event_message['counter'] == (1 if can_be_handled_on_retry else 3)
     assert event_message['received_at']
     if can_be_handled_on_retry:

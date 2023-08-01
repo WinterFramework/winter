@@ -2,6 +2,7 @@ import time
 from contextlib import contextmanager
 
 import pytest
+from _pytest.fixtures import FixtureRequest
 from injector import Injector
 from injector import singleton
 from sqlalchemy import create_engine
@@ -18,7 +19,7 @@ from winter_messaging_transactional.table_metadata import messaging_metadata
 
 
 @pytest.fixture
-def injector(session):
+def injector(session: Session):
     injector = Injector([TransactionalMessagingModule()])
     injector.binder.bind(Engine, to=db_engine, scope=singleton)
     injector.binder.bind(Session, to=session, scope=singleton)
@@ -26,7 +27,7 @@ def injector(session):
 
 
 @pytest.fixture
-def session(db_engine):
+def session(db_engine: Engine):
     session_factory = sessionmaker(bind=db_engine, autoflush=False)
     session = session_factory()
     yield session
@@ -34,7 +35,7 @@ def session(db_engine):
 
 
 @pytest.fixture
-def db_engine(database_url):
+def db_engine(database_url: str):
     engine = create_engine(database_url)
     messaging_metadata.drop_all(engine)
     messaging_metadata.create_all(engine)
@@ -42,7 +43,7 @@ def db_engine(database_url):
 
 
 @pytest.fixture
-def database_url(request, database_container):
+def database_url(request: FixtureRequest, database_container: DatabaseContainer):
     database_name = request.node.name.replace('[', '').replace(']', '').lower()
     return database_container.create_database(database_name)
 
@@ -65,7 +66,7 @@ def rabbit_url():
 
 
 @pytest.fixture
-def event_processor(database_url: str, rabbit_url: str, db_engine):
+def event_processor(database_url: str, rabbit_url: str, db_engine: Engine):
     process = run_processor(database_url, rabbit_url)
     time.sleep(2)
     yield process

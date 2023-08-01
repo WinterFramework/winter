@@ -17,7 +17,11 @@ from winter_messaging_transactional.naming_convention import get_routing_key
 logger = logging.getLogger(__name__)
 
 
-class MessageNotPublishedException(Exception):
+class MessageNackedException(Exception):
+    pass
+
+
+class MessageNotRoutedException(Exception):
     pass
 
 
@@ -39,7 +43,7 @@ class RabbitMQClient:
         result_queue = self._channel.queue_declare(self.DLQ, durable=True, arguments={"x-queue-type": "quorum"})
         self._channel.queue_bind(result_queue.method.queue, self.DLX, "*")
 
-    @retry(AMQPConnectionError, delay=1, backoff=2)
+    # @retry(AMQPConnectionError, delay=1, backoff=2, tries=10)
     def publish(self, message: OutboxMessage, exchange: str):
         if self._connection.is_closed or self._channel.is_closed:
             self._init_channel()
@@ -63,11 +67,15 @@ class RabbitMQClient:
         except UnroutableError:
             warn_message = 'The message was not routed to any queue. Message id: %s; routing key: %s; exchange: %s'
             logger.warning(warn_message, message.message_id, routing_key, exchange)
+            raise MessageNotRoutedException(warn_message)
         except NackError:
+            # Can be raised, for example, if queue is overflowed. Anyway, we don't set any limits.
+            # With the current configuration in the TopologyConfiguration, we don't expect this error.
+            # Therefore, if this happened, then something is wrong with Broker settings, so we stop publishing events.
             err_message = f'Published failed. Message id: {message.message_id}; ' \
                           f'routing key: {routing_key}; exchange: {exchange}. ' \
                           f'Check configuration settings for confirmation'
-            raise MessageNotPublishedException(err_message)
+            raise MessageNackedException(err_message)
 
     def declare_exchange(self, exchange_name):
         self._channel.exchange_declare(

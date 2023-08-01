@@ -6,6 +6,7 @@ from winter.messaging import topic
 
 @topic('sample-topic')
 @dataclass(frozen=True)
-class SampleEvent(Event):
+class RetryableEvent(Event):
     id: int
     payload: str
+    can_be_handled_on_retry: bool = False
