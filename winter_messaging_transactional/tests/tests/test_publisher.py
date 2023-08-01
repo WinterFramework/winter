@@ -33,7 +33,7 @@ def test_publish_events(database_url, rabbit_url, injector, session):
 
     outbox_message = outbox_messages[0]
     assert outbox_message['message_id'] is not None
-    assert outbox_message['body'] == '{"id": 1, "payload": "consume_without_error"}'
+    assert outbox_message['body'] == '{"id": 1, "payload": "payload"}'
     assert outbox_message['topic'] == 'sample-topic'
     assert outbox_message['type'] == 'SampleEvent'
     assert outbox_message['created_at'] is not None
@@ -96,14 +96,13 @@ def test_publish_event_to_get_nack_from_broker(database_url, injector, session, 
     event_publisher.emit(event)
     event_publisher.emit(event)
     event_publisher.emit(event)
-    event_publisher.emit(event)
 
     rabbitmq_container = RabbitMqContainer("rabbitmq:3.11.5")
     rabbitmq_container.start()
 
     # Act
     process = run_processor(database_url, rabbit_url)
-    time.sleep(5)
+    time.sleep(10)
 
     connection = _create_rabbitmq_connection(rabbit_url)
     channel = connection.channel()
@@ -121,7 +120,7 @@ def test_publish_event_to_get_nack_from_broker(database_url, injector, session, 
 
     assert output.find("pika.exceptions.NackError: 0 message(s) NACKed") != -1
     assert output.find('Publishing processor error. Message not published:') != -1
-    assert output.find("rabbitmq_client.MessageNotPublishedException: Published failed.") != -1
+    assert output.find("rabbitmq_client.MessageNackedException: Published failed.") != -1
     assert output.find("routing key: sample-topic.SampleEvent; exchange: winter.sample-topic_events_topic. Check configuration settings for confirmation") != -1
     assert output.find("Publishing processor aborted due to an error") != -1
 

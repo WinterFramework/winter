@@ -102,12 +102,12 @@ def test_consume_interrupt_during_timeout(database_url, rabbit_url, event_proces
     time.sleep(15)
 
     # Assert
-    consumer_logs = process.stdout.read1().decode('utf-8')
+    output = process.stdout.read1().decode('utf-8')
     timeout_error_message = "WARNING:event_handling:Timeout is raised during execution _dispatch_event with args: ()," \
-                            " kwargs: {'event': SampleEvent(id=1, payload='consumer_timeout'"
+                            " kwargs: {'event': RetryableEvent(id=1, payload='consumer_timeout'"
 
     # Because there should not be a second attempt to handle the event, we expect only one timeout message in the logs
-    assert consumer_logs.count(timeout_error_message) == 1
+    assert output.count(timeout_error_message) == 1
 
     inbox_messages = read_all_inbox_messages(session)
     assert len(inbox_messages) == 1
