@@ -9,7 +9,7 @@ class Middleware:
     def __init__(self, _next: Callable[[], None]):
         self._next = _next
 
-    def __call__(self):
+    def __call__(self):  # pragma: no cover
         self._next()
 
 

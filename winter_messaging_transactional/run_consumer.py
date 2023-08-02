@@ -32,6 +32,7 @@ def parse_args(parser_object):
 
 if __name__ == '__main__':
     process_start()
+
     parser = Parser(description='Run consumer worker')
     args = parse_args(parser)
     consumer_id = args.consumer

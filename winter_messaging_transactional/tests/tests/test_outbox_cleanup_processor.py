@@ -37,8 +37,8 @@ def test_cleanup_published_events(database_url, rabbit_url, injector, session):
     session.commit()
 
     # Act
-    process = _run_cleanup_processor(database_url, rabbit_url)
-    time.sleep(20)
+    process = _run_outbox_cleanup_processor(database_url, rabbit_url)
+    time.sleep(5)
     process.terminate()
 
     # Assert
@@ -50,7 +50,7 @@ def test_cleanup_published_events(database_url, rabbit_url, injector, session):
     assert outbox_message['published_at'] == now
 
 
-def _run_cleanup_processor(database_url: str, rabbit_url: str):
+def _run_outbox_cleanup_processor(database_url: str, rabbit_url: str):
     settings_path = 'winter_messaging_transactional.tests.app_sample.messaging_app'
 
     env = dict(
@@ -58,10 +58,10 @@ def _run_cleanup_processor(database_url: str, rabbit_url: str):
         WINTER_SETTINGS_MODULE=settings_path,
         WINTER_DATABASE_URL=database_url,
         WINTER_RABBIT_URL=rabbit_url,
-        USE_COVERAGE='false',
+        USE_COVERAGE='true',
     )
     return subprocess.Popen(
-        ['python', '-m', 'winter_messaging_transactional.run_outbox_cleanup_processor'],
+        ['python', '-m', 'winter_messaging_transactional.run_outbox_cleanup_processor', '--interval', '3'],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         env=env,

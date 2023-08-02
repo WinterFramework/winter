@@ -67,7 +67,7 @@ def test_run_consumer_with_handler_for_event_without_topic(database_url, rabbit_
     env = dict(
         **os.environ,
         WINTER_SETTINGS_MODULE='winter_messaging_transactional.tests.incorrect_app_sample.messaging_app_1',
-        USE_COVERAGE='false',
+        USE_COVERAGE='true',
         WINTER_DATABASE_URL=database_url,
         WINTER_RABBIT_URL=rabbit_url,
     )
@@ -90,7 +90,7 @@ def test_run_consumer_with_handler_for_event_with_not_declared_topic(database_ur
     env = dict(
         **os.environ,
         WINTER_SETTINGS_MODULE='winter_messaging_transactional.tests.incorrect_app_sample.messaging_app_2',
-        USE_COVERAGE='false',
+        USE_COVERAGE='true',
         WINTER_DATABASE_URL=database_url,
         WINTER_RABBIT_URL=rabbit_url,
     )
@@ -113,7 +113,7 @@ def test_run_consumer_without_rabbit_settings(database_url):
     env = dict(
         **os.environ,
         WINTER_SETTINGS_MODULE='winter_messaging_transactional.tests.incorrect_app_sample.messaging_app_2',
-        USE_COVERAGE='false',
+        USE_COVERAGE='true',
         WINTER_DATABASE_URL=database_url,
     )
     with pytest.raises(subprocess.CalledProcessError) as exc_info:

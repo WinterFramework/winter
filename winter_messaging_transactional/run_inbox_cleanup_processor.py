@@ -2,7 +2,7 @@ import argparse
 import os
 import sys
 
-from winter_messaging_transactional.producer.outbox_cleanup_processor import OutboxCleanupProcessor
+from winter_messaging_transactional.consumer.inbox_cleanup_processor import InboxCleanupProcessor
 from winter_messaging_transactional.startup_teardown import process_start
 from winter_messaging_transactional.startup_teardown import process_stop
 from winter.core import get_injector
@@ -24,7 +24,7 @@ def parse_args(parser_object):
     parser_object.add_argument(
         '--interval',
         dest='interval',
-        default=15,
+        default=35,
         type=int,
         help='Cleanup interval',
     )
@@ -34,14 +34,14 @@ def parse_args(parser_object):
 if __name__ == '__main__':
     process_start()
 
-    parser = Parser(description='Run outbox cleanup processor')
+    parser = Parser(description='Run inbox cleanup processor')
     args = parse_args(parser)
     cleanup_interval = float(args.interval)
 
     try:
         setup()
         injector = get_injector()
-        processor = injector.get(OutboxCleanupProcessor)
+        processor = injector.get(InboxCleanupProcessor)
         processor.run(cleanup_interval=cleanup_interval)
     finally:
         process_stop()

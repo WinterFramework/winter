@@ -121,7 +121,8 @@ def test_publish_event_to_get_nack_from_broker(database_url, injector, session, 
     assert output.find("pika.exceptions.NackError: 0 message(s) NACKed") != -1
     assert output.find('Publishing processor error. Message not published:') != -1
     assert output.find("rabbitmq_client.MessageNackedException: Published failed.") != -1
-    assert output.find("routing key: sample-topic.SampleEvent; exchange: winter.sample-topic_events_topic. Check configuration settings for confirmation") != -1
+    assert output.find("routing key: sample-topic.SampleEvent; exchange: winter.sample-topic_events_topic. "
+                       "Check configuration settings for confirmation") != -1
     assert output.find("Publishing processor aborted due to an error") != -1
 
 

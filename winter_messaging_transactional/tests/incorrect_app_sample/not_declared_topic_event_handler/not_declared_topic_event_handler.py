@@ -16,5 +16,5 @@ class TopicEvent(Event):
 class SimpleEventHandler:
 
     @event_handler
-    def handle_topic_event(self, event: TopicEvent):
+    def handle_topic_event(self, event: TopicEvent):  # pragma: no cover
         pass
