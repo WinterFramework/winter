@@ -1,6 +1,5 @@
 import time
 
-from testcontainers.rabbitmq import RabbitMqContainer
 from urllib.parse import urlparse
 
 from pika import BlockingConnection
@@ -45,9 +44,6 @@ def test_publish_event_to_not_existed_exchange(database_url, injector, session, 
     event = SampleEvent(id=1, payload='payload')
     event_publisher.emit(event)
 
-    rabbitmq_container = RabbitMqContainer("rabbitmq:3.11.5")
-    rabbitmq_container.start()
-
     # Act
     process = run_processor(database_url, rabbit_url)
     time.sleep(5)
@@ -68,9 +64,6 @@ def test_publish_event_to_not_existed_queue(database_url, injector, session, rab
     event_publisher = injector.get(OutboxEventPublisher)
     event = SampleEvent(id=1, payload='payload')
     event_publisher.emit(event)
-
-    rabbitmq_container = RabbitMqContainer("rabbitmq:3.11.5")
-    rabbitmq_container.start()
 
     # Act
     process = run_processor(database_url, rabbit_url)
@@ -95,10 +88,6 @@ def test_publish_event_to_get_nack_from_broker(database_url, injector, session, 
     event = SampleEvent(id=1, payload='payload')
     event_publisher.emit(event)
     event_publisher.emit(event)
-    event_publisher.emit(event)
-
-    rabbitmq_container = RabbitMqContainer("rabbitmq:3.11.5")
-    rabbitmq_container.start()
 
     # Act
     process = run_processor(database_url, rabbit_url)

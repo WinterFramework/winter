@@ -36,7 +36,7 @@ class WinterMessagingApp(MessagingApp):
             }
         )
         injector.binder.bind(MessagingConfig, to=InstanceProvider(config), scope=singleton)
-        injector.binder.bind(MiddlewareCollection, to=InstanceProvider([]))
+        injector.binder.bind(MiddlewareCollection, to=InstanceProvider([AppMiddleware]))
 
         engine = make_engine()
         messaging_app_metadata.create_all(engine)

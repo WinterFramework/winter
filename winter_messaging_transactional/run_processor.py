@@ -6,7 +6,7 @@ from .producer.publish_processor import PublishProcessor
 from winter.core import get_injector
 from .setup import setup
 
-if os.getenv('USE_COVERAGE', 'false').lower() == 'true':
+if os.getenv('USE_COVERAGE', 'false').lower() == 'true':  # pragma: no cover
     # noinspection PyUnresolvedReferences
     import winter_messaging_transactional.tests.coverage  # noqa: F401, F403
 

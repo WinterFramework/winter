@@ -1,4 +1,5 @@
 import logging
+import os
 
 from injector import inject
 from pika import BasicProperties
@@ -13,6 +14,8 @@ from winter.web import MediaType
 from winter_messaging_transactional.producer.outbox import OutboxMessage
 from winter_messaging_transactional.rabbitmq import create_connection
 from winter_messaging_transactional.naming_convention import get_routing_key
+
+CONNECTION_ERROR_RETRIES_СOUNT = int(os.getenv('CONNECTION_ERROR_RETRIES_СOUNT', 10))
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +46,7 @@ class RabbitMQClient:
         result_queue = self._channel.queue_declare(self.DLQ, durable=True, arguments={"x-queue-type": "quorum"})
         self._channel.queue_bind(result_queue.method.queue, self.DLX, "*")
 
-    # @retry(AMQPConnectionError, delay=1, backoff=2, tries=10)
+    @retry(AMQPConnectionError, delay=1, backoff=2, tries=CONNECTION_ERROR_RETRIES_СOUNT)
     def publish(self, message: OutboxMessage, exchange: str):
         if self._connection.is_closed or self._channel.is_closed:
             self._init_channel()
@@ -100,7 +103,7 @@ class RabbitMQClient:
             routing_key=routing_key,
         )
 
-    @retry(AMQPConnectionError, delay=1, backoff=2)
+    @retry(AMQPConnectionError, delay=1, backoff=2, tries=CONNECTION_ERROR_RETRIES_СOUNT)
     def start_consuming(self, queue, callback):
         if self._connection.is_closed or self._channel.is_closed:
             self._init_channel()
