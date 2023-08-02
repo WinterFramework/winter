@@ -101,7 +101,7 @@ def test_publish_event_to_get_nack_from_broker(database_url, injector, session, 
         exchange=get_exchange_name('sample-topic'),
         routing_key=get_routing_key('sample-topic', 'SampleEvent')
     )
-    session.commit()
+    session.commit()  # commit publihed events to db
     time.sleep(10)
 
     output = process.stdout.read1().decode('utf-8')

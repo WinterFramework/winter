@@ -1,10 +1,27 @@
 import os
 import subprocess
+from time import sleep
+from typing import Any
+from typing import Callable
 
 from sqlalchemy import select
 
 from winter_messaging_transactional.consumer.inbox.inbox_message import inbox_message_table
 from winter_messaging_transactional.producer.outbox import outbox_message_table
+
+
+class WaitingForResultException(Exception):
+    pass
+
+
+def wait_for_result(func: Callable, seconds: int) -> Any:  # pragma: no cover
+    for _ in range(seconds):
+        result = func()
+        if result:
+            return result
+        sleep(1)
+
+    raise WaitingForResultException(f'No result found after {seconds} seconds')
 
 
 def run_processor(database_url: str, rabbit_url: str):

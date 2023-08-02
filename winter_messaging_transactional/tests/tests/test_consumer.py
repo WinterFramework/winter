@@ -16,6 +16,7 @@ from winter_messaging_transactional.producer.outbox import OutboxEventPublisher
 from winter_messaging_transactional.producer.outbox import OutboxMessage
 from winter_messaging_transactional.producer.outbox import OutboxMessageDAO
 from winter_messaging_transactional.tests.helpers import run_consumer
+from winter_messaging_transactional.tests.helpers import wait_for_result
 
 
 def test_consume_without_error(database_url, rabbit_url, event_processor, injector, session):
@@ -23,17 +24,16 @@ def test_consume_without_error(database_url, rabbit_url, event_processor, inject
     payload_id = 1
     payload = 'consume_without_error'
 
+    consumer_dao = injector.get(ConsumerDAO)
+
     # Act
     with event_consumer(database_url, rabbit_url, consumber_id='consumer_correct'):
         event = SampleEvent(id=payload_id, payload=payload)
         event_publisher.emit(event)
         session.commit()
-        time.sleep(15)
+        consumed_event = wait_for_result(seconds=15, func=lambda: consumer_dao.find_by_id(payload_id))
 
     # Assert
-    consumer_dao = injector.get(ConsumerDAO)
-    consumed_event = consumer_dao.find_by_id(payload_id)
-    assert consumed_event
     assert consumed_event['id'] == payload_id
     assert consumed_event['payload'] == payload
 
@@ -95,11 +95,12 @@ def test_consume_interrupt_during_timeout(database_url, rabbit_url, event_proces
     event = RetryableEvent(id=payload_id, payload=payload)
     event_publisher.emit(event)
     session.commit()
-    time.sleep(8)
+    default_timeout = 15
+    time.sleep(default_timeout // 2)
 
     # Worker should not attempt to handle the event again after the TimeoutException if it has received the INT signal.
     process.terminate()
-    time.sleep(15)
+    time.sleep(default_timeout)
 
     # Assert
     output = process.stdout.read1().decode('utf-8')
