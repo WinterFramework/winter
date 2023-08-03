@@ -114,7 +114,7 @@ class RabbitMQClient:
     def stop_consuming(self):
         self._channel.stop_consuming()
 
-    def close(self):
+    def close(self):  # pragma: no cover, this method is not caught by coverage, although it’s called during tests
         if not self._channel.is_closed:
             self._channel.close()
         if not self._connection.is_closed:

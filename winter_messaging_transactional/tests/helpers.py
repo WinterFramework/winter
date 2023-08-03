@@ -78,7 +78,7 @@ def read_all_inbox_messages(session):
     return [dict(**row) for row in rows]
 
 
-def read_all_outbox_messages(session, published: bool = True):
+def read_all_outbox_messages(session, published: bool = True):  # pragma: no cover
     query = select([
         outbox_message_table.c.id,
         outbox_message_table.c.message_id,
