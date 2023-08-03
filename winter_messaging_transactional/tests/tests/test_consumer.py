@@ -3,9 +3,12 @@ import time
 from uuid import uuid4
 
 import pytest
+from testcontainers.rabbitmq import RabbitMqContainer
+
 from winter.core.json import JSONEncoder
 
 from winter_messaging_transactional.tests.conftest import event_consumer
+from winter_messaging_transactional.tests.helpers import get_rabbitmq_url
 from winter_messaging_transactional.tests.helpers import read_all_inbox_messages
 from winter_messaging_transactional.tests.app_sample.dao import ConsumerDAO
 from winter_messaging_transactional.tests.app_sample.events import SampleEvent
@@ -16,6 +19,7 @@ from winter_messaging_transactional.producer.outbox import OutboxEventPublisher
 from winter_messaging_transactional.producer.outbox import OutboxMessage
 from winter_messaging_transactional.producer.outbox import OutboxMessageDAO
 from winter_messaging_transactional.tests.helpers import run_consumer
+from winter_messaging_transactional.tests.helpers import run_processor
 from winter_messaging_transactional.tests.helpers import wait_for_result
 
 
@@ -31,7 +35,7 @@ def test_consume_without_error(database_url, rabbit_url, event_processor, inject
         event = SampleEvent(id=payload_id, payload=payload)
         event_publisher.emit(event)
         session.commit()
-        consumed_event = wait_for_result(seconds=15, func=lambda: consumer_dao.find_by_id(payload_id))
+        consumed_event = wait_for_result(seconds=10, func=lambda: consumer_dao.find_by_id(payload_id))
 
     # Assert
     assert consumed_event['id'] == payload_id
@@ -206,3 +210,31 @@ def test_consumer_already_processed_event(database_url, rabbit_url, event_proces
     assert inbox_message['counter'] == 1
     assert inbox_message['processed_at']
 
+
+def test_consumer_with_recreate_connection(database_url, injector, session):
+    event_publisher = injector.get(OutboxEventPublisher)
+    event_1 = SampleEvent(id=1, payload='payload')
+    event_2 = SampleEvent(id=2, payload='payload')
+    consumer_dao = injector.get(ConsumerDAO)
+
+    with RabbitMqContainer("rabbitmq:3.11.5") as rabbitmq_container:
+        params = rabbitmq_container.get_connection_params()
+        rabbit_url = get_rabbitmq_url(params)
+
+        processor = run_processor(database_url, rabbit_url)
+        time.sleep(2)
+        consumer = run_consumer(database_url, rabbit_url, consumer_id='consumer_correct')
+        time.sleep(2)
+
+        event_publisher.emit(event_1)
+        session.commit()
+        wait_for_result(seconds=10, func=lambda: consumer_dao.find_by_id(event_1.id))
+
+        # Act
+        rabbitmq_container.exec('rabbitmqctl close_all_user_connections guest test_reason')
+        event_publisher.emit(event_2)
+        session.commit()
+
+        wait_for_result(func=lambda: consumer_dao.find_by_id(event_2.id), seconds=10)
+        processor.terminate()
+        consumer.terminate()

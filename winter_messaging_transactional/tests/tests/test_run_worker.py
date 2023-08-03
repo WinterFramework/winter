@@ -5,6 +5,8 @@ from threading import Timer
 import pytest
 from testcontainers.rabbitmq import RabbitMqContainer
 
+from winter_messaging_transactional.tests.helpers import get_rabbitmq_url
+
 
 def test_run_consumer_without_winter_settings_module_error():
     env = dict(
@@ -143,7 +145,7 @@ def test_stop_consumer_after_exception(database_url):
     rabbitmq_container = RabbitMqContainer("rabbitmq:3.11.5")
     rabbitmq_container.start()
     params = rabbitmq_container.get_connection_params()
-    rabbit_url = f'amqp://{params.credentials.username}:{params.credentials.username}@{params.host}:{params.port}/'
+    rabbit_url = get_rabbitmq_url(params)
 
     env = dict(
         **os.environ,
@@ -151,13 +153,12 @@ def test_stop_consumer_after_exception(database_url):
         USE_COVERAGE='true',
         WINTER_DATABASE_URL=database_url,
         WINTER_RABBIT_URL=rabbit_url,
-        WINTER_RABBIT_HEARTBEAT='2',
-        CONNECTION_ERROR_RETRIES_СOUNT='1'
+        CONNECTION_ERROR_RETRIES_СOUNT='2'
     )
 
     def stop_rabbitmq():
         rabbitmq_container.stop()
-    timer = Timer(interval=10, function=stop_rabbitmq)
+    timer = Timer(interval=5, function=stop_rabbitmq)
     timer.start()
 
     with pytest.raises(subprocess.CalledProcessError) as exc_info:
@@ -166,13 +167,11 @@ def test_stop_consumer_after_exception(database_url):
             capture_output=True,
             env=env,
             check=True,
-            timeout=20,
+            timeout=15,
         )
 
     called_process_error = exc_info.value
     assert called_process_error.returncode == 1
     output = called_process_error.stdout.decode('utf-8')
     assert output.find('Consumer worker consumer_correct stopping by error') != -1
-    assert output.find('pika.exceptions.StreamLostError: Transport indicated EOF') != -1
-
-
+    assert output.find('pika.exceptions.AMQPConnectionError') != -1

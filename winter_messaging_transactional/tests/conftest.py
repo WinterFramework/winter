@@ -12,6 +12,7 @@ from sqlalchemy.orm import sessionmaker
 from testcontainers.rabbitmq import RabbitMqContainer
 
 from winter_messaging_transactional.tests.database_container import DatabaseContainer
+from winter_messaging_transactional.tests.helpers import get_rabbitmq_url
 from winter_messaging_transactional.tests.helpers import run_consumer
 from winter_messaging_transactional.tests.helpers import run_processor
 from winter_messaging_transactional.injection_modules import TransactionalMessagingModule
@@ -61,7 +62,7 @@ def database_container():
 def rabbit_url():
     with RabbitMqContainer("rabbitmq:3.11.5") as rabbitmq:
         params = rabbitmq.get_connection_params()
-        rabbit_url = f'amqp://{params.credentials.username}:{params.credentials.username}@{params.host}:{params.port}/'
+        rabbit_url = get_rabbitmq_url(params)
         yield rabbit_url
 
 

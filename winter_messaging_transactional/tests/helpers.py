@@ -4,6 +4,7 @@ from time import sleep
 from typing import Any
 from typing import Callable
 
+from pika import ConnectionParameters
 from sqlalchemy import select
 
 from winter_messaging_transactional.consumer.inbox.inbox_message import inbox_message_table
@@ -22,6 +23,10 @@ def wait_for_result(func: Callable, seconds: int) -> Any:  # pragma: no cover
         sleep(1)
 
     raise WaitingForResultException(f'No result found after {seconds} seconds')
+
+
+def get_rabbitmq_url(params: ConnectionParameters) -> str:
+    return f'amqp://{params.credentials.username}:{params.credentials.username}@{params.host}:{params.port}/'
 
 
 def run_processor(database_url: str, rabbit_url: str):
@@ -73,7 +78,7 @@ def read_all_inbox_messages(session):
     return [dict(**row) for row in rows]
 
 
-def read_all_outbox_messages(session):
+def read_all_outbox_messages(session, published: bool = True):
     query = select([
         outbox_message_table.c.id,
         outbox_message_table.c.message_id,
@@ -83,6 +88,10 @@ def read_all_outbox_messages(session):
         outbox_message_table.c.created_at,
         outbox_message_table.c.published_at,
     ])
+
+    if published:
+        query = query.where(outbox_message_table.c.published_at.isnot(None))
+
     rows = session.execute(query)
     return [dict(**row) for row in rows]
 
