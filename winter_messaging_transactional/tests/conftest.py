@@ -54,7 +54,6 @@ def database_container():
     container = DatabaseContainer()
     container.start()
     yield container
-    time.sleep(5)
     container.stop()
 
 
@@ -69,7 +68,11 @@ def rabbit_url():
 @pytest.fixture
 def event_processor(database_url: str, rabbit_url: str, db_engine: Engine):
     process = run_processor(database_url, rabbit_url)
+
+    # We need to wait a little to avoid case when pocessor and consumer start at the same time
+    # and they both try to create a table in one database
     time.sleep(2)
+
     yield process
     process.terminate()
     print(process.stderr.read1().decode('utf-8'))

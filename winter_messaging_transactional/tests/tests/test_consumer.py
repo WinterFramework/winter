@@ -1,5 +1,5 @@
 import json
-import time
+from time import sleep
 from uuid import uuid4
 
 import pytest
@@ -8,6 +8,8 @@ from testcontainers.rabbitmq import RabbitMqContainer
 from winter.core.json import JSONEncoder
 
 from winter_messaging_transactional.tests.conftest import event_consumer
+from winter_messaging_transactional.tests.helpers import EVENT_HANDLING_TIMEOUT
+from winter_messaging_transactional.tests.helpers import create_rabbitmq_connection
 from winter_messaging_transactional.tests.helpers import get_rabbitmq_url
 from winter_messaging_transactional.tests.helpers import read_all_inbox_messages
 from winter_messaging_transactional.tests.app_sample.dao import ConsumerDAO
@@ -25,20 +27,20 @@ from winter_messaging_transactional.tests.helpers import wait_for_result
 
 def test_consume_without_error(database_url, rabbit_url, event_processor, injector, session):
     event_publisher = injector.get(OutboxEventPublisher)
-    payload_id = 1
+    event_id = 1
     payload = 'consume_without_error'
 
     consumer_dao = injector.get(ConsumerDAO)
 
     # Act
     with event_consumer(database_url, rabbit_url, consumber_id='consumer_correct'):
-        event = SampleEvent(id=payload_id, payload=payload)
+        event = SampleEvent(id=event_id, payload=payload)
         event_publisher.emit(event)
         session.commit()
-        consumed_event = wait_for_result(seconds=10, func=lambda: consumer_dao.find_by_id(payload_id))
+        consumed_event = wait_for_result(seconds=10, func=lambda: consumer_dao.find_by_id(event_id))
 
     # Assert
-    assert consumed_event['id'] == payload_id
+    assert consumed_event['id'] == event_id
     assert consumed_event['payload'] == payload
 
     inbox_messages = read_all_inbox_messages(session)
@@ -54,15 +56,15 @@ def test_consume_without_error(database_url, rabbit_url, event_processor, inject
 @pytest.mark.parametrize('can_be_handled_on_retry', (True, False))
 def test_consume_with_timeout(database_url, rabbit_url, event_processor, injector, session, can_be_handled_on_retry):
     event_publisher = injector.get(OutboxEventPublisher)
-    payload_id = 1
+    event_id = 1
     payload = 'consumer_timeout'
 
     # Act
     with event_consumer(database_url, rabbit_url, consumber_id='consumer_timeout'):
-        event = RetryableEvent(id=payload_id, payload=payload, can_be_handled_on_retry=can_be_handled_on_retry)
+        event = RetryableEvent(id=event_id, payload=payload, can_be_handled_on_retry=can_be_handled_on_retry)
         event_publisher.emit(event)
         session.commit()
-        time.sleep(40)
+        sleep(EVENT_HANDLING_TIMEOUT * 2)
 
     # Assert
     inbox_messages = read_all_inbox_messages(session)
@@ -79,11 +81,11 @@ def test_consume_with_timeout(database_url, rabbit_url, event_processor, injecto
         assert event_message['processed_at'] is None
 
     consumer_dao = injector.get(ConsumerDAO)
-    consumed_event = consumer_dao.find_by_id(payload_id)
+    consumed_event = consumer_dao.find_by_id(event_id)
 
     if can_be_handled_on_retry:
         assert consumed_event
-        assert consumed_event['id'] == payload_id
+        assert consumed_event['id'] == event_id
         assert consumed_event['payload'] == payload
     else:
         assert consumed_event is None
@@ -91,20 +93,19 @@ def test_consume_with_timeout(database_url, rabbit_url, event_processor, injecto
 
 def test_consume_interrupt_during_timeout(database_url, rabbit_url, event_processor, injector, session):
     event_publisher = injector.get(OutboxEventPublisher)
-    payload_id = 1
+    event_id = 1
     payload = 'consumer_timeout'
 
     # Act
     process = run_consumer(database_url=database_url, rabbit_url=rabbit_url, consumer_id='consumer_timeout')
-    event = RetryableEvent(id=payload_id, payload=payload)
+    event = RetryableEvent(id=event_id, payload=payload)
     event_publisher.emit(event)
     session.commit()
-    default_timeout = 15
-    time.sleep(default_timeout // 2)
+    sleep(EVENT_HANDLING_TIMEOUT // 2)
 
     # Worker should not attempt to handle the event again after the TimeoutException if it has received the INT signal.
     process.terminate()
-    time.sleep(default_timeout)
+    sleep(EVENT_HANDLING_TIMEOUT)
 
     # Assert
     output = process.stdout.read1().decode('utf-8')
@@ -125,22 +126,22 @@ def test_consume_interrupt_during_timeout(database_url, rabbit_url, event_proces
     assert event_message['processed_at'] is None
 
     consumer_dao = injector.get(ConsumerDAO)
-    consumed_event = consumer_dao.find_by_id(payload_id)
+    consumed_event = consumer_dao.find_by_id(event_id)
     assert consumed_event is None
 
 
 @pytest.mark.parametrize('can_be_handled_on_retry', (True, False))
 def test_consume_with_error(database_url, rabbit_url, event_processor, injector, session, can_be_handled_on_retry):
     event_publisher = injector.get(OutboxEventPublisher)
-    payload_id = 1
+    event_id = 1
     payload = 'consume_with_error'
 
     # Act
     with event_consumer(database_url, rabbit_url, consumber_id='consumer_with_error'):
-        event = RetryableEvent(id=payload_id, payload=payload, can_be_handled_on_retry=can_be_handled_on_retry)
+        event = RetryableEvent(id=event_id, payload=payload, can_be_handled_on_retry=can_be_handled_on_retry)
         event_publisher.emit(event)
         session.commit()
-        time.sleep(10)
+        sleep(10)  # By default, there are 3 attempts to handle the event
 
     # Assert
     inbox_messages = read_all_inbox_messages(session)
@@ -157,10 +158,15 @@ def test_consume_with_error(database_url, rabbit_url, event_processor, injector,
         assert event_message['processed_at'] is None
 
     consumer_dao = injector.get(ConsumerDAO)
-    consumed_event_1 = consumer_dao.find_by_id(payload_id)
-    consumed_event_2 = consumer_dao.find_by_id(payload_id + 1)
+    consumed_event_1 = consumer_dao.find_by_id(event_id)
+    consumed_event_2 = consumer_dao.find_by_id(event_id + 1)
+
+    connection = create_rabbitmq_connection(rabbit_url)
+    channel = connection.channel()
+    ack, properties, message_payload = channel.basic_get(queue='winter.dead_letter_queue', auto_ack=True)
 
     if can_be_handled_on_retry:
+        assert ack is None
         assert consumed_event_1
         assert consumed_event_2
         assert consumed_event_1['payload'] == payload
@@ -169,9 +175,15 @@ def test_consume_with_error(database_url, rabbit_url, event_processor, injector,
         assert consumed_event_1 is None
         assert consumed_event_2 is None
 
+        assert ack
+        assert ack.exchange == 'winter.dead_letter_exchange'
+        assert ack.routing_key == 'sample-topic.RetryableEvent'
+        assert properties.type == 'RetryableEvent'
+        assert message_payload == b'{"id": 1, "payload": "consume_with_error", "can_be_handled_on_retry": false}'
+
 
 def test_consumer_already_processed_event(database_url, rabbit_url, event_processor, injector, session):
-    payload_id = 1
+    event_id = 1
     consumber_id = 'consumer_correct'
     message_id = uuid4()
 
@@ -197,10 +209,10 @@ def test_consumer_already_processed_event(database_url, rabbit_url, event_proces
 
     # Act
     with event_consumer(database_url, rabbit_url, consumber_id=consumber_id):
-        time.sleep(5)
+        sleep(5)
 
     consumer_dao = injector.get(ConsumerDAO)
-    consumed_event = consumer_dao.find_by_id(payload_id)
+    consumed_event = consumer_dao.find_by_id(event_id)
     assert consumed_event is None
 
     inbox_messages = read_all_inbox_messages(session)
@@ -222,9 +234,12 @@ def test_consumer_with_recreate_connection(database_url, injector, session):
         rabbit_url = get_rabbitmq_url(params)
 
         processor = run_processor(database_url, rabbit_url)
-        time.sleep(2)
+
+        # We need to wait a little to avoid case when pocessor and consumer start at the same time
+        # and they both try to create a table in one database
+        sleep(2)
+
         consumer = run_consumer(database_url, rabbit_url, consumer_id='consumer_correct')
-        time.sleep(2)
 
         event_publisher.emit(event_1)
         session.commit()

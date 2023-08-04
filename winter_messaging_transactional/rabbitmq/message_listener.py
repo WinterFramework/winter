@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from uuid import UUID
 
 from injector import inject
@@ -21,13 +22,12 @@ from winter_messaging_transactional.consumer.timeout_handler import TimeoutHandl
 
 logger = logging.getLogger(__name__)
 
-EVENT_HANDLING_TIMEOUT = 15
-RETRIES_ON_TIMEOUT = 1
+EVENT_HANDLING_TIMEOUT = int(os.getenv('EVENT_HANDLING_TIMEOUT', 15))
+RETRIES_ON_TIMEOUT = int(os.getenv('RETRIES_ON_TIMEOUT', 1))
+MAX_RETRIES_ON_ERROR = int(os.getenv('MAX_RETRIES', 3))
 
 
 class MessageListener:
-    MAX_RETRIES = 3
-
     @inject
     def __init__(
         self,
@@ -79,7 +79,7 @@ class MessageListener:
         except TimeoutException:
             channel.basic_nack(delivery_tag=method_frame.delivery_tag, requeue=False)
         except Exception:
-            if result.counter < self.MAX_RETRIES:
+            if result.counter < MAX_RETRIES_ON_ERROR:
                 channel.basic_nack(delivery_tag=method_frame.delivery_tag, requeue=True)
             else:
                 logger.exception('Exception is raised during handling Message(%s)', message_id)
