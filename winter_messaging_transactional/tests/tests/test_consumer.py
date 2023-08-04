@@ -58,13 +58,17 @@ def test_consume_with_timeout(database_url, rabbit_url, event_processor, injecto
     event_publisher = injector.get(OutboxEventPublisher)
     event_id = 1
     payload = 'consumer_timeout'
+    timeout_error_message = "WARNING:event_handling:Timeout is raised during execution _dispatch_event with args:"
 
     # Act
-    with event_consumer(database_url, rabbit_url, consumber_id='consumer_timeout'):
+    with event_consumer(database_url, rabbit_url, consumber_id='consumer_timeout') as consumer:
         event = RetryableEvent(id=event_id, payload=payload, can_be_handled_on_retry=can_be_handled_on_retry)
         event_publisher.emit(event)
         session.commit()
-        sleep(EVENT_HANDLING_TIMEOUT * 2)
+        sleep(EVENT_HANDLING_TIMEOUT * 3)
+
+        output = consumer.stdout.read1().decode('utf-8')
+        timeout_logs_count = output.count(timeout_error_message)
 
     # Assert
     inbox_messages = read_all_inbox_messages(session)
@@ -77,8 +81,10 @@ def test_consume_with_timeout(database_url, rabbit_url, event_processor, injecto
     assert event_message['received_at']
     if can_be_handled_on_retry:
         assert event_message['processed_at']
+        assert timeout_logs_count == 1
     else:
         assert event_message['processed_at'] is None
+        assert timeout_logs_count == 2
 
     consumer_dao = injector.get(ConsumerDAO)
     consumed_event = consumer_dao.find_by_id(event_id)
