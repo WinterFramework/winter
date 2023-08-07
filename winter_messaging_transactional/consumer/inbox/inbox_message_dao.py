@@ -40,7 +40,6 @@ class InboxMessageDAO:
             inbox_message_table.c.processed_at,
         )
         result = self._session.execute(statement)
-        self._session.flush()
         inserted_record = result.fetchone()
         return InboxResult(*inserted_record)
 
@@ -54,10 +53,8 @@ class InboxMessageDAO:
             {inbox_message_table.c.processed_at: func.now()}
         )
         self._session.execute(statement)
-        self._session.flush()
 
     def remove_handled(self):
         day_before = datetime.utcnow() - timedelta(days=1)
         statement = delete(inbox_message_table).where(inbox_message_table.c.processed_at <= day_before)
         self._session.execute(statement)
-        self._session.flush()

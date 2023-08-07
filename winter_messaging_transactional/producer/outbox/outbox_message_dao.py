@@ -37,7 +37,6 @@ class OutboxMessageDAO:
         event_dict = dataclasses.asdict(event)
         statement = insert(outbox_message_table).values(**event_dict)
         self._session.execute(statement)
-        self._session.flush()
 
     def mark_as_sent(self, events: Iterable[OutboxMessage]):
         ids = [event.message_id for event in events]
@@ -45,10 +44,8 @@ class OutboxMessageDAO:
             outbox_message_table.c.message_id.in_(ids)
         ).values({outbox_message_table.c.published_at: func.now()})
         self._session.execute(statement)
-        self._session.flush()
 
     def remove_published(self):
         day_before = datetime.utcnow() - timedelta(days=1)
         statement = delete(outbox_message_table).where(outbox_message_table.c.published_at <= day_before)
         self._session.execute(statement)
-        self._session.flush()

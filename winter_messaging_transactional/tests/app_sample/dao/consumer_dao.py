@@ -36,4 +36,3 @@ class ConsumerDAO:
     def save(self, id_: int, payload: str):
         statement = insert(consumer_table).values(dict(id=id_, payload=payload))
         self._session.execute(statement)
-        self._session.flush()
