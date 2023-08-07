@@ -159,7 +159,7 @@ def test_stop_consumer_after_exception(database_url):
         WINTER_USE_COVERAGE='true',
         WINTER_DATABASE_URL=database_url,
         WINTER_RABBIT_URL=rabbit_url,
-        CONNECTION_ERROR_RETRIES_СOUNT='2'
+        WINTER_CONNECTION_ERROR_RETRIES_СOUNT='2'
     )
 
     def stop_rabbitmq():
