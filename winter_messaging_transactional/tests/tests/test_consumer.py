@@ -6,8 +6,7 @@ import pytest
 from testcontainers.rabbitmq import RabbitMqContainer
 
 from winter.core.json import JSONEncoder
-
-from winter_messaging_transactional.tests.conftest import event_consumer
+from winter_messaging_transactional.naming_convention import get_exchange_name
 from winter_messaging_transactional.tests.helpers import WINTER_EVENT_HANDLING_TIMEOUT
 from winter_messaging_transactional.tests.helpers import create_rabbitmq_connection
 from winter_messaging_transactional.tests.helpers import get_rabbitmq_url
@@ -17,7 +16,6 @@ from winter_messaging_transactional.tests.app_sample.events import RetryableEven
 from winter_messaging_transactional.consumer.inbox.inbox_message import InboxMessage
 from winter_messaging_transactional.consumer.inbox.inbox_message_dao import InboxMessageDAO
 from winter_messaging_transactional.producer.outbox import OutboxMessage
-from winter_messaging_transactional.producer.outbox import OutboxMessageDAO
 from winter_messaging_transactional.tests.helpers import run_consumer
 from winter_messaging_transactional.tests.helpers import run_processor
 from winter_messaging_transactional.tests.helpers import wait_for_result
@@ -180,19 +178,11 @@ def test_consume_with_error(event_consumer, rabbit_url, event_processor, event_p
         assert message_payload == b'{"id": 1, "payload": "consume_with_error", "can_be_handled_on_retry": false}'
 
 
-def test_consumer_already_processed_event(event_consumer, event_processor, injector, consumer_dao, session):
+def test_deduplication_on_consumer_side(event_consumer, event_processor, injector, consumer_dao, session, rabbitmq_client):
     event_id = 1
     consumber_id = 'consumer_correct'
+    topic = 'sample-topic'
     message_id = uuid4()
-
-    outbox_message_dao = injector.get(OutboxMessageDAO)
-
-    outbox_message = OutboxMessage(
-        message_id=message_id,
-        topic='sample-topic',
-        type='SampleEvent',
-        body=json.dumps(dict(payload='payload'), ensure_ascii=False, cls=JSONEncoder),
-    )
 
     inbox_message_dao = injector.get(InboxMessageDAO)
     inbox_message = InboxMessage(
@@ -204,11 +194,16 @@ def test_consumer_already_processed_event(event_consumer, event_processor, injec
     inbox_message_dao.mark_as_processed(message_id, consumber_id)
     session.commit()
 
+    duplicated_message = OutboxMessage(
+        message_id=message_id,
+        topic=topic,
+        type='SampleEvent',
+        body=json.dumps(dict(payload='payload'), ensure_ascii=False, cls=JSONEncoder),
+    )
+
     # Act
     with event_consumer(consumber_id):
-        outbox_message_dao.save(outbox_message)
-        session.commit()
-
+        rabbitmq_client.publish(duplicated_message, get_exchange_name(topic))
         sleep(5)
 
     # Assert

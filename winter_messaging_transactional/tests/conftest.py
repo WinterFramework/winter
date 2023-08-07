@@ -1,3 +1,4 @@
+import os
 import time
 from contextlib import contextmanager
 
@@ -12,6 +13,7 @@ from sqlalchemy.orm import sessionmaker
 from testcontainers.rabbitmq import RabbitMqContainer
 
 from winter_messaging_transactional.producer.outbox import OutboxEventPublisher
+from winter_messaging_transactional.rabbitmq.rabbitmq_client import RabbitMQClient
 from winter_messaging_transactional.tests.app_sample.dao import ConsumerDAO
 from winter_messaging_transactional.tests.database_container import DatabaseContainer
 from winter_messaging_transactional.tests.helpers import get_rabbitmq_url
@@ -103,3 +105,12 @@ def event_publisher(injector: Injector):
 @pytest.fixture
 def consumer_dao(injector: Injector):
     return injector.get(ConsumerDAO)
+
+
+@pytest.fixture
+def rabbitmq_client(rabbit_url: str):
+    os.environ["WINTER_RABBIT_URL"] = rabbit_url
+    rabbitmq_client = RabbitMQClient()
+    del os.environ["WINTER_RABBIT_URL"]
+    return rabbitmq_client
+
