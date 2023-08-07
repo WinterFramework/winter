@@ -38,9 +38,9 @@ class PublishProcessor:
 
         is_error_occurred = False
         while not cancel_token.wait(publish_interval):
-            with self._session.begin():
-                outbox_messages = self._outbox_message_doa.select_unsent()
-                for outbox_message in outbox_messages:
+            outbox_messages = self._outbox_message_doa.select_unsent()
+            for outbox_message in outbox_messages:
+                with self._session.begin():
                     exchange = self._topology_configurator.get_exchange_key(outbox_message.topic)
                     try:
                         self._rabbitmq_client.publish(outbox_message, exchange)
@@ -50,6 +50,6 @@ class PublishProcessor:
                         is_error_occurred = True
                         break
 
-                if is_error_occurred:
-                    log.error('Publishing processor aborted due to an error')
-                    break
+            if is_error_occurred:
+                log.error('Publishing processor aborted due to an error')
+                break
