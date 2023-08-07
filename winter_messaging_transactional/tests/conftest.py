@@ -81,13 +81,18 @@ def event_processor(database_url: str, rabbit_url: str, db_engine: Engine):
     print(process.stdout.read1().decode('utf-8'))
 
 
-@contextmanager
-def event_consumer(database_url: str, rabbit_url: str, consumber_id: str):
-    process = run_consumer(database_url=database_url, rabbit_url=rabbit_url, consumer_id=consumber_id)
-    yield process
-    process.terminate()
-    print(process.stderr.read1().decode('utf-8'))
-    print(process.stdout.read1().decode('utf-8'))
+@pytest.fixture
+def event_consumer(database_url: str, rabbit_url: str):
+
+    @contextmanager
+    def event_consumer_context_manager(consumber_id: str):
+        process = run_consumer(database_url=database_url, rabbit_url=rabbit_url, consumer_id=consumber_id)
+        yield process
+        process.terminate()
+        print(process.stderr.read1().decode('utf-8'))
+        print(process.stdout.read1().decode('utf-8'))
+
+    return event_consumer_context_manager
 
 
 @pytest.fixture

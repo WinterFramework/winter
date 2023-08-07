@@ -23,13 +23,13 @@ from winter_messaging_transactional.tests.helpers import run_processor
 from winter_messaging_transactional.tests.helpers import wait_for_result
 
 
-def test_consume_without_error(database_url, rabbit_url, event_processor, event_publisher, consumer_dao, session):
+def test_consume_without_error(event_consumer, event_processor, event_publisher, consumer_dao, session):
     event_id = 1
     payload = 'consume_without_error'
     event = SampleEvent(id=event_id, payload=payload)
 
     # Act
-    with event_consumer(database_url, rabbit_url, consumber_id='consumer_correct'):
+    with event_consumer('consumer_correct'):
         event_publisher.emit(event)
         session.commit()
 
@@ -50,14 +50,14 @@ def test_consume_without_error(database_url, rabbit_url, event_processor, event_
 
 
 @pytest.mark.parametrize('can_be_handled_on_retry', (True, False))
-def test_consume_with_timeout(database_url, rabbit_url, event_processor, event_publisher, session, consumer_dao, can_be_handled_on_retry):
+def test_consume_with_timeout(event_consumer, event_processor, event_publisher, session, consumer_dao, can_be_handled_on_retry):
     event_id = 1
     payload = 'consumer_timeout'
     timeout_error_message = "WARNING:event_handling:Timeout is raised during execution _dispatch_event with args:"
     event = RetryableEvent(id=event_id, payload=payload, can_be_handled_on_retry=can_be_handled_on_retry)
 
     # Act
-    with event_consumer(database_url, rabbit_url, consumber_id='consumer_timeout') as consumer:
+    with event_consumer('consumer_timeout') as consumer:
         event_publisher.emit(event)
         session.commit()
         sleep(WINTER_EVENT_HANDLING_TIMEOUT * 3)
@@ -131,13 +131,13 @@ def test_consume_interrupt_during_timeout(database_url, rabbit_url, event_proces
 
 
 @pytest.mark.parametrize('can_be_handled_on_retry', (True, False))
-def test_consume_with_error(database_url, rabbit_url, event_processor, event_publisher, consumer_dao, session, can_be_handled_on_retry):
+def test_consume_with_error(event_consumer, rabbit_url, event_processor, event_publisher, consumer_dao, session, can_be_handled_on_retry):
     event_id = 1
     payload = 'consume_with_error'
     event = RetryableEvent(id=event_id, payload=payload, can_be_handled_on_retry=can_be_handled_on_retry)
 
     # Act
-    with event_consumer(database_url, rabbit_url, consumber_id='consumer_with_error'):
+    with event_consumer('consumer_with_error'):
         event_publisher.emit(event)
         session.commit()
         sleep(10)  # By default, there are 3 attempts to handle the event
@@ -180,7 +180,7 @@ def test_consume_with_error(database_url, rabbit_url, event_processor, event_pub
         assert message_payload == b'{"id": 1, "payload": "consume_with_error", "can_be_handled_on_retry": false}'
 
 
-def test_consumer_already_processed_event(database_url, rabbit_url, event_processor, injector, consumer_dao, session):
+def test_consumer_already_processed_event(event_consumer, event_processor, injector, consumer_dao, session):
     event_id = 1
     consumber_id = 'consumer_correct'
     message_id = uuid4()
@@ -206,7 +206,7 @@ def test_consumer_already_processed_event(database_url, rabbit_url, event_proces
     session.commit()
 
     # Act
-    with event_consumer(database_url, rabbit_url, consumber_id=consumber_id):
+    with event_consumer(consumber_id):
         sleep(5)
 
     # Assert
