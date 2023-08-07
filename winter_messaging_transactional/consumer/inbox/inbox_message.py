@@ -21,7 +21,7 @@ inbox_message_table = sa.Table(
     sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False, primary_key=True),
     sa.Column('consumer_id', postgresql.TEXT, nullable=False, primary_key=True),
     sa.Column('name', postgresql.TEXT, nullable=False),
-    sa.Column('counter', postgresql.INTEGER, nullable=False, server_default='0'),
+    sa.Column('counter', postgresql.INTEGER, nullable=False, server_default='1'),
     sa.Column('received_at', sa.TIMESTAMP, nullable=False, server_default=func.now()),
     sa.Column('processed_at', sa.TIMESTAMP, nullable=True, index=True),
 )

@@ -6,9 +6,11 @@ from uuid import UUID
 from injector import inject
 from sqlalchemy import delete, and_
 from sqlalchemy import func
+from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy import update
 from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
 
 from .inbox_message import InboxMessage
 from .inbox_message import inbox_message_table
@@ -24,8 +26,8 @@ class InboxResult:
 class InboxMessageDAO:
 
     @inject
-    def __init__(self, engine: Engine):
-        self._engine = engine
+    def __init__(self, session: Session):
+        self._session = session
 
     def upsert(self, event: InboxMessage) -> InboxResult:
         inbox_event_dict = dataclasses.asdict(event)
@@ -37,10 +39,9 @@ class InboxMessageDAO:
             inbox_message_table.c.counter,
             inbox_message_table.c.processed_at,
         )
-        with self._engine.connect() as connection:
-            result = connection.execute(statement)
-            inserted_record = result.fetchone()
-            return InboxResult(*inserted_record)
+        result = self._session.execute(statement)
+        inserted_record = result.fetchone()
+        return InboxResult(*inserted_record)
 
     def mark_as_processed(self, id_: UUID, consumer_id: str):
         statement = update(inbox_message_table).where(
@@ -51,11 +52,9 @@ class InboxMessageDAO:
         ).values(
             {inbox_message_table.c.processed_at: func.now()}
         )
-        with self._engine.connect() as connection:
-            connection.execute(statement)
+        self._session.execute(statement)
 
     def remove_handled(self):
         day_before = datetime.utcnow() - timedelta(days=1)
         statement = delete(inbox_message_table).where(inbox_message_table.c.processed_at <= day_before)
-        with self._engine.connect() as connection:
-            connection.execute(statement)
+        self._session.execute(statement)

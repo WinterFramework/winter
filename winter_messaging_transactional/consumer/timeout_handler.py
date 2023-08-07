@@ -30,14 +30,14 @@ class TimeoutHandler:
                         return func(*args, **kwargs)
                     except TimeoutException as e:
                         timeout_exception = e
-                        if not self.can_retry:
-                            raise timeout_exception
                         logger.warning(
                             'Timeout is raised during execution %s with args: %s, kwargs: %s',
                             func.__name__,
                             args,
                             kwargs,
                         )
+                        if not self.can_retry:
+                            raise timeout_exception
                     finally:
                         signal.setitimer(signal.ITIMER_REAL, 0)
                         signal.signal(signal.SIGALRM, signal.SIG_DFL)

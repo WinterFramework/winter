@@ -1,8 +1,15 @@
 [run]
 source = .
 branch = True
-disable_warnings = module-not-measured
+disable_warnings =
+    module-not-measured
+    no-data-collected
 omit = samples/*
+parallel = True
+relative_files = True
+concurrency=
+    thread
+    multiprocessing
 
 [report]
 # Regexes for lines to exclude from consideration

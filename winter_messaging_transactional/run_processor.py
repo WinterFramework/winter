@@ -1,29 +1,23 @@
-import argparse
-import sys
+import os
 
-import django
-
-from winter.core import get_injector
+from winter_messaging_transactional.startup_teardown import process_start
+from winter_messaging_transactional.startup_teardown import process_stop
 from .producer.publish_processor import PublishProcessor
+from winter.core import get_injector
 from .setup import setup
 
-
-class Parser(argparse.ArgumentParser):
-    def error(self, message):
-        sys.stderr.write('error: %s\n' % message)
-        self.print_help()
-        sys.exit(2)
+if os.getenv('WINTER_USE_COVERAGE', 'false').lower() == 'true':  # pragma: no cover
+    # noinspection PyUnresolvedReferences
+    import winter_messaging_transactional.tests.coverage  # noqa: F401, F403
 
 
 if __name__ == '__main__':
-    parser = Parser(description='Run processor')
-    parser.add_argument('processor', type=str, help='Processor ID')
-    args = parser.parse_args()
-    processor_id = args.processor
+    process_start()
+    try:
+        setup()
+        injector = get_injector()
+        processor = injector.get(PublishProcessor)
+        processor.run()
+    finally:
+        process_stop()
 
-    django.setup()
-    setup()
-
-    injector = get_injector()
-    processor = injector.get(PublishProcessor)
-    processor.run()

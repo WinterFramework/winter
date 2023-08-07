@@ -1,4 +1,5 @@
 import logging
+import os
 
 from injector import inject
 from pika import BasicProperties
@@ -14,10 +15,13 @@ from winter_messaging_transactional.producer.outbox import OutboxMessage
 from winter_messaging_transactional.rabbitmq import create_connection
 from winter_messaging_transactional.naming_convention import get_routing_key
 
+# We need to add 1, because the tries argument of @retry counts first function call as first try
+CONNECTION_ERROR_RETRIES_СOUNT = int(os.getenv('WINTER_CONNECTION_ERROR_RETRIES_СOUNT', 10)) + 1
+
 logger = logging.getLogger(__name__)
 
 
-class MessageNotPublishedException(Exception):
+class MessageNackedException(Exception):
     pass
 
 
@@ -39,7 +43,7 @@ class RabbitMQClient:
         result_queue = self._channel.queue_declare(self.DLQ, durable=True, arguments={"x-queue-type": "quorum"})
         self._channel.queue_bind(result_queue.method.queue, self.DLX, "*")
 
-    @retry(AMQPConnectionError, delay=1, backoff=2)
+    @retry(AMQPConnectionError, delay=1, backoff=2, tries=CONNECTION_ERROR_RETRIES_СOUNT)
     def publish(self, message: OutboxMessage, exchange: str):
         if self._connection.is_closed or self._channel.is_closed:
             self._init_channel()
@@ -64,10 +68,13 @@ class RabbitMQClient:
             warn_message = 'The message was not routed to any queue. Message id: %s; routing key: %s; exchange: %s'
             logger.warning(warn_message, message.message_id, routing_key, exchange)
         except NackError:
+            # Can be raised, for example, if queue is overflowed. Anyway, we don't set any limits.
+            # With the current configuration in the TopologyConfiguration, we don't expect this error.
+            # Therefore, if this happened, then something is wrong with Broker settings, so we stop publishing events.
             err_message = f'Published failed. Message id: {message.message_id}; ' \
                           f'routing key: {routing_key}; exchange: {exchange}. ' \
                           f'Check configuration settings for confirmation'
-            raise MessageNotPublishedException(err_message)
+            raise MessageNackedException(err_message)
 
     def declare_exchange(self, exchange_name):
         self._channel.exchange_declare(
@@ -92,7 +99,7 @@ class RabbitMQClient:
             routing_key=routing_key,
         )
 
-    @retry(AMQPConnectionError, delay=1, backoff=2)
+    @retry(AMQPConnectionError, delay=1, backoff=2, tries=CONNECTION_ERROR_RETRIES_СOUNT)
     def start_consuming(self, queue, callback):
         if self._connection.is_closed or self._channel.is_closed:
             self._init_channel()
@@ -103,7 +110,7 @@ class RabbitMQClient:
     def stop_consuming(self):
         self._channel.stop_consuming()
 
-    def close(self):
+    def close(self):  # pragma: no cover, this method is not caught by coverage, although it’s called during tests
         if not self._channel.is_closed:
             self._channel.close()
         if not self._connection.is_closed:

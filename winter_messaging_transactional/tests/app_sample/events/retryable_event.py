@@ -4,8 +4,9 @@ from winter.messaging import Event
 from winter.messaging import topic
 
 
-@topic('sample-producer-topic')
+@topic('sample-topic')
 @dataclass(frozen=True)
-class SampleProducerNotifyEvent(Event):
+class RetryableEvent(Event):
     id: int
-    name: str
+    payload: str
+    can_be_handled_on_retry: bool = False

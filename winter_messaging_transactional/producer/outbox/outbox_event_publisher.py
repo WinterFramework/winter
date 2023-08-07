@@ -1,9 +1,9 @@
 import dataclasses
 import json
-from datetime import datetime
 from uuid import uuid4
 
 from injector import inject
+from sqlalchemy.orm import Session
 
 from winter.core.json import JSONEncoder
 from winter.messaging import Event
@@ -15,7 +15,10 @@ from .outbox_message_dao import OutboxMessageDAO
 
 class OutboxEventPublisher(EventPublisher):
     @inject
-    def __init__(self, outbox_message_doa: OutboxMessageDAO):
+    def __init__(
+        self,
+        outbox_message_doa: OutboxMessageDAO,
+    ):
         self._outbox_message_dao = outbox_message_doa
 
     def emit(self, event: Event):

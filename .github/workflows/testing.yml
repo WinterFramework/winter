@@ -28,12 +28,12 @@ jobs:
     - name: Test with pytest
       run: |
         poetry run pytest -rfs --cov --cov-config=.coveragerc --cov-report="" --disable-warnings
-        cp .coverage ".coverage.${{ matrix.python-version }}"
+        cp .coverage "./test_coverage/.coverage.${{ matrix.python-version }}"
     - name: Upload coverage report
       uses: actions/upload-artifact@v3
       with:
         name: coverage-reports
-        path: ".coverage.${{ matrix.python-version }}"
+        path: "test_coverage/"
 
   coverage-check:
     name: Coverage check

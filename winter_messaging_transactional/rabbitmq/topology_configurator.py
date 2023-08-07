@@ -27,15 +27,14 @@ class TopologyConfigurator:
     def __init__(
         self,
         rabbit_client: RabbitMQClient,
-        handler_registry: EventHandlerRegistry,
         config: MessagingConfig
     ) -> None:
         self._rabbit_client = rabbit_client
-        self._handler_registry = handler_registry
         self._config = config
         self._topic_to_exchange_map: Dict[str, str] = {}
         self._consumer_id_to_queue = {}
         self._consumer_to_events_map = defaultdict(set)
+        self._handler_registry = EventHandlerRegistry()
         self._configure()
 
     def _configure(self):

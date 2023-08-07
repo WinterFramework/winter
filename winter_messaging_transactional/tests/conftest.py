@@ -1,0 +1,116 @@
+import os
+import time
+from contextlib import contextmanager
+
+import pytest
+from _pytest.fixtures import FixtureRequest
+from injector import Injector
+from injector import singleton
+from sqlalchemy import create_engine
+from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
+from sqlalchemy.orm import sessionmaker
+from testcontainers.rabbitmq import RabbitMqContainer
+
+from winter_messaging_transactional.producer.outbox import OutboxEventPublisher
+from winter_messaging_transactional.rabbitmq.rabbitmq_client import RabbitMQClient
+from winter_messaging_transactional.tests.app_sample.dao import ConsumerDAO
+from winter_messaging_transactional.tests.database_container import DatabaseContainer
+from winter_messaging_transactional.tests.helpers import get_rabbitmq_url
+from winter_messaging_transactional.tests.helpers import run_consumer
+from winter_messaging_transactional.tests.helpers import run_processor
+from winter_messaging_transactional.injection_modules import TransactionalMessagingModule
+from winter_messaging_transactional.table_metadata import messaging_metadata
+
+
+@pytest.fixture
+def injector(session: Session):
+    injector = Injector([TransactionalMessagingModule()])
+    injector.binder.bind(Engine, to=db_engine, scope=singleton)
+    injector.binder.bind(Session, to=session, scope=singleton)
+    return injector
+
+
+@pytest.fixture
+def session(db_engine: Engine):
+    session_factory = sessionmaker(bind=db_engine, autoflush=False)
+    session = session_factory()
+    yield session
+    session.close()
+
+
+@pytest.fixture
+def db_engine(database_url: str):
+    engine = create_engine(database_url)
+    messaging_metadata.drop_all(engine)
+    messaging_metadata.create_all(engine)
+    return engine
+
+
+@pytest.fixture
+def database_url(request: FixtureRequest, database_container: DatabaseContainer):
+    database_name = request.node.name.replace('[', '').replace(']', '').lower()
+    return database_container.create_database(database_name)
+
+
+@pytest.fixture(scope='session')
+def database_container():
+    container = DatabaseContainer()
+    container.start()
+    yield container
+    container.stop()
+
+
+@pytest.fixture
+def rabbit_url():
+    with RabbitMqContainer("rabbitmq:3.11.5") as rabbitmq:
+        params = rabbitmq.get_connection_params()
+        rabbit_url = get_rabbitmq_url(params)
+        yield rabbit_url
+
+
+@pytest.fixture
+def event_processor(database_url: str, rabbit_url: str, db_engine: Engine):
+    process = run_processor(database_url, rabbit_url)
+
+    # We need to wait a little to avoid case when pocessor and consumer start at the same time
+    # and they both try to create a table in one database
+    time.sleep(2)
+
+    yield process
+    process.terminate()
+    print(process.stderr.read1().decode('utf-8'))
+    print(process.stdout.read1().decode('utf-8'))
+
+
+@pytest.fixture
+def event_consumer(database_url: str, rabbit_url: str):
+
+    @contextmanager
+    def event_consumer_context_manager(consumber_id: str):
+        process = run_consumer(database_url=database_url, rabbit_url=rabbit_url, consumer_id=consumber_id)
+        yield process
+        process.terminate()
+        print(process.stderr.read1().decode('utf-8'))
+        print(process.stdout.read1().decode('utf-8'))
+
+    return event_consumer_context_manager
+
+
+@pytest.fixture
+def event_publisher(injector: Injector):
+    return injector.get(OutboxEventPublisher)
+
+
+@pytest.fixture
+def consumer_dao(injector: Injector):
+    return injector.get(ConsumerDAO)
+
+
+@pytest.fixture
+def rabbitmq_client(rabbit_url: str):
+    os.environ["WINTER_RABBIT_URL"] = rabbit_url
+    rabbitmq_client = RabbitMQClient()
+    del os.environ["WINTER_RABBIT_URL"]
+    return rabbitmq_client
+

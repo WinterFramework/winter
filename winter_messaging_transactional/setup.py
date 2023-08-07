@@ -2,9 +2,10 @@ import importlib
 import inspect
 import os
 
+from injector import Injector
 from sqlalchemy.engine import Engine
 
-from winter.core import get_injector
+from winter.core import set_injector
 from .injection_modules import TransactionalMessagingModule
 from .messaging_app import MessagingApp
 from .table_metadata import messaging_metadata
@@ -15,10 +16,11 @@ class InvalidConfiguration(Exception):
 
 
 def setup():
-    injector = get_injector()
+    injector = Injector([])
+    set_injector(injector)
     messaging_app = _create_messaging_app()
-    messaging_app.setup(injector)
     injector.binder.install(TransactionalMessagingModule)
+    messaging_app.setup(injector)
     engine = injector.get(Engine)
     messaging_metadata.create_all(engine)
 
