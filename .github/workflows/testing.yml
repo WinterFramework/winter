@@ -27,7 +27,7 @@ jobs:
       run: poetry install
     - name: Test with pytest
       run: |
-        poetry run pytest -rfs --cov --cov-config=.coveragerc --cov-report="" --disable-warnings
+        poetry run pytest ./tests -rfs --cov --cov-config=.coveragerc --cov-report="" --disable-warnings
         cp .coverage ".coverage.${{ matrix.python-version }}"
     - name: Upload coverage report
       uses: actions/upload-artifact@v3
