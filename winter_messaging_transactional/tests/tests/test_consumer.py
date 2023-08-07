@@ -44,7 +44,7 @@ def test_consume_without_error(event_consumer, event_processor, event_publisher,
     event_message = inbox_messages[0]
     assert event_message['consumer_id'] == 'consumer_correct'
     assert event_message['name'] == 'SampleEvent'
-    assert event_message['counter'] == 0
+    assert event_message['counter'] == 1
     assert event_message['received_at']
     assert event_message['processed_at']
 
@@ -72,7 +72,7 @@ def test_consume_with_timeout(event_consumer, event_processor, event_publisher, 
     event_message = inbox_messages[0]
     assert event_message['consumer_id'] == 'consumer_timeout'
     assert event_message['name'] == 'RetryableEvent'
-    assert event_message['counter'] == 0
+    assert event_message['counter'] == 1
     assert event_message['received_at']
     if can_be_handled_on_retry:
         assert event_message['processed_at']
@@ -122,7 +122,7 @@ def test_consume_interrupt_during_timeout(database_url, rabbit_url, event_proces
     event_message = inbox_messages[0]
     assert event_message['consumer_id'] == 'consumer_timeout'
     assert event_message['name'] == 'RetryableEvent'
-    assert event_message['counter'] == 0
+    assert event_message['counter'] == 1
     assert event_message['received_at']
     assert event_message['processed_at'] is None
 
@@ -149,7 +149,7 @@ def test_consume_with_error(event_consumer, rabbit_url, event_processor, event_p
     event_message = inbox_messages[0]
     assert event_message['consumer_id'] == 'consumer_with_error'
     assert event_message['name'] == 'RetryableEvent'
-    assert event_message['counter'] == (1 if can_be_handled_on_retry else 3)
+    assert event_message['counter'] == (2 if can_be_handled_on_retry else 3)
     assert event_message['received_at']
     if can_be_handled_on_retry:
         assert event_message['processed_at']
@@ -219,7 +219,7 @@ def test_consumer_already_processed_event(event_consumer, event_processor, injec
     assert len(inbox_messages) == 1
     inbox_message = inbox_messages[0]
     assert inbox_message['id'] == message_id
-    assert inbox_message['counter'] == 1
+    assert inbox_message['counter'] == 2
     assert inbox_message['processed_at']
 
 
