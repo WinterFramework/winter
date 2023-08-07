@@ -42,9 +42,9 @@ def test_cleanup_processed_events(database_url, rabbit_url, injector, session):
     # Act
     process = _run_inbox_cleanup_processor(database_url, rabbit_url)
     time.sleep(5)
-    process.terminate()
 
     # Assert
+    process.terminate()
     inbox_messages = read_all_inbox_messages(session)
     assert len(inbox_messages) == 1
 

@@ -37,9 +37,9 @@ def test_cleanup_published_events(database_url, rabbit_url, event_publisher, ses
     # Act
     process = _run_outbox_cleanup_processor(database_url, rabbit_url)
     time.sleep(5)
-    process.terminate()
 
     # Assert
+    process.terminate()
     outbox_messages = read_all_outbox_messages(session)
     assert len(outbox_messages) == 1
 

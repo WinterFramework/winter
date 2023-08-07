@@ -5,7 +5,6 @@ from testcontainers.rabbitmq import RabbitMqContainer
 from winter_messaging_transactional.naming_convention import get_consumer_queue
 from winter_messaging_transactional.naming_convention import get_exchange_name
 from winter_messaging_transactional.naming_convention import get_routing_key
-from winter_messaging_transactional.producer.outbox import OutboxEventPublisher
 from winter_messaging_transactional.tests.app_sample.events import SampleEvent
 from winter_messaging_transactional.tests.helpers import create_rabbitmq_connection
 from winter_messaging_transactional.tests.helpers import get_rabbitmq_url
@@ -22,9 +21,9 @@ def test_publish_events(database_url, rabbit_url, event_publisher, session):
     # Act
     process = run_processor(database_url, rabbit_url)
     time.sleep(5)
-    process.terminate()
 
     # Assert
+    process.terminate()
     outbox_messages = read_all_outbox_messages(session)
     assert len(outbox_messages) == 1
 
@@ -39,17 +38,20 @@ def test_publish_events(database_url, rabbit_url, event_publisher, session):
 
 def test_publish_event_to_not_existed_exchange(database_url, session, event_publisher, rabbit_url):
     event = SampleEvent(id=1, payload='payload')
-    event_publisher.emit(event)
 
-    # Act
     process = run_processor(database_url, rabbit_url)
     time.sleep(2)
 
     connection = create_rabbitmq_connection(rabbit_url)
     channel = connection.channel()
     channel.exchange_delete(get_exchange_name('sample-topic'))
+
+    # Act
+    event_publisher.emit(event)
     session.commit()
     time.sleep(2)
+
+    # Assert
     output = process.stdout.read1().decode('utf-8')
     process.terminate()
 
@@ -59,9 +61,7 @@ def test_publish_event_to_not_existed_exchange(database_url, session, event_publ
 
 def test_publish_event_to_not_existed_queue(database_url, event_publisher, session, rabbit_url):
     event = SampleEvent(id=1, payload='payload')
-    event_publisher.emit(event)
 
-    # Act
     process = run_processor(database_url, rabbit_url)
     time.sleep(2)
 
@@ -71,7 +71,11 @@ def test_publish_event_to_not_existed_queue(database_url, event_publisher, sessi
     for consumer_id in ['consumer_correct', 'consumer_timeout', 'consumer_with_error']:
         channel.queue_delete(get_consumer_queue(consumer_id))
 
+    # Act
+    event_publisher.emit(event)
     session.commit()
+
+    # Assert
     wait_for_result(func=lambda: read_all_outbox_messages(session, published=True))
     output = process.stdout.read1().decode('utf-8')
     process.terminate()
@@ -81,7 +85,6 @@ def test_publish_event_to_not_existed_queue(database_url, event_publisher, sessi
 def test_publish_event_to_get_nack_from_broker(database_url, event_publisher, session, rabbit_url):
     event = SampleEvent(id=1, payload='payload')
 
-    # Act
     process = run_processor(database_url, rabbit_url)
     time.sleep(2)
 
@@ -95,11 +98,13 @@ def test_publish_event_to_get_nack_from_broker(database_url, event_publisher, se
         routing_key=get_routing_key('sample-topic', 'SampleEvent')
     )
 
+    # Act
     event_publisher.emit(event)
     event_publisher.emit(event)
     session.commit()
     time.sleep(5)
 
+    # Assert
     output = process.stdout.read1().decode('utf-8')
     process.terminate()
 
@@ -118,12 +123,16 @@ def test_publish_with_recreate_connection(database_url, event_publisher, session
         params = rabbitmq_container.get_connection_params()
         rabbit_url = get_rabbitmq_url(params)
 
-        # Act
         process = run_processor(database_url, rabbit_url)
         time.sleep(5)
+
         rabbitmq_container.exec('rabbitmqctl close_all_user_connections guest test_reason')
+
+        # Act
         event_publisher.emit(event)
         session.commit()
+
+        # Assert
         outbox_messages = wait_for_result(func=lambda: read_all_outbox_messages(session, published=True))
 
     output = process.stdout.read1().decode('utf-8')

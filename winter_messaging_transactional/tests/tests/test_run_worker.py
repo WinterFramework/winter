@@ -22,6 +22,7 @@ def test_run_consumer_without_winter_settings_module_error():
             timeout=10,
         )
 
+    # Assert
     called_process_error = exc_info.value
     assert called_process_error.returncode == 1
     output = called_process_error.stderr.decode('utf-8')
@@ -43,6 +44,7 @@ def test_run_consumer_with_wrong_path_to_messaging_app_config():
             timeout=10,
         )
 
+    # Assert
     called_process_error = exc_info.value
     assert called_process_error.returncode == 1
     output = called_process_error.stderr.decode('utf-8')
@@ -64,6 +66,7 @@ def test_run_consumer_with_wrong_messaging_app_config():
             timeout=10,
         )
 
+    # Assert
     called_process_error = exc_info.value
     assert called_process_error.returncode == 1
     output = called_process_error.stderr.decode('utf-8')
@@ -87,6 +90,7 @@ def test_run_consumer_with_handler_for_event_without_topic(database_url, rabbit_
             timeout=10,
         )
 
+    # Assert
     called_process_error = exc_info.value
     assert called_process_error.returncode == 1
     output = called_process_error.stderr.decode('utf-8')
@@ -111,6 +115,7 @@ def test_run_consumer_with_handler_for_event_with_not_declared_topic(database_ur
             timeout=10,
         )
 
+    # Assert
     called_process_error = exc_info.value
     assert called_process_error.returncode == 1
     output = called_process_error.stderr.decode('utf-8')
@@ -134,6 +139,7 @@ def test_run_consumer_without_rabbit_settings(database_url):
             timeout=10,
         )
 
+    # Assert
     called_process_error = exc_info.value
     assert called_process_error.returncode == 1
     output = called_process_error.stderr.decode('utf-8')
@@ -170,6 +176,7 @@ def test_stop_consumer_after_exception(database_url):
             timeout=15,
         )
 
+    # Assert
     called_process_error = exc_info.value
     assert called_process_error.returncode == 1
     output = called_process_error.stdout.decode('utf-8')
