@@ -193,7 +193,6 @@ def test_consumer_already_processed_event(event_consumer, event_processor, injec
         type='SampleEvent',
         body=json.dumps(dict(payload='payload'), ensure_ascii=False, cls=JSONEncoder),
     )
-    outbox_message_dao.save(outbox_message)
 
     inbox_message_dao = injector.get(InboxMessageDAO)
     inbox_message = InboxMessage(
@@ -207,6 +206,9 @@ def test_consumer_already_processed_event(event_consumer, event_processor, injec
 
     # Act
     with event_consumer(consumber_id):
+        outbox_message_dao.save(outbox_message)
+        session.commit()
+
         sleep(5)
 
     # Assert
