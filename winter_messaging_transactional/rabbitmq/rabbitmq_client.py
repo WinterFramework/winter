@@ -24,10 +24,6 @@ class MessageNackedException(Exception):
     pass
 
 
-class MessageNotRoutedException(Exception):
-    pass
-
-
 class RabbitMQClient:
     DLX = "winter.dead_letter_exchange"
     DLQ = "winter.dead_letter_queue"
@@ -70,7 +66,6 @@ class RabbitMQClient:
         except UnroutableError:
             warn_message = 'The message was not routed to any queue. Message id: %s; routing key: %s; exchange: %s'
             logger.warning(warn_message, message.message_id, routing_key, exchange)
-            raise MessageNotRoutedException(warn_message)
         except NackError:
             # Can be raised, for example, if queue is overflowed. Anyway, we don't set any limits.
             # With the current configuration in the TopologyConfiguration, we don't expect this error.

@@ -6,7 +6,6 @@ from injector import inject
 from sqlalchemy.orm import Session
 
 from winter_messaging_transactional.rabbitmq import TopologyConfigurator
-from winter_messaging_transactional.rabbitmq.rabbitmq_client import MessageNotRoutedException
 from winter_messaging_transactional.rabbitmq.rabbitmq_client import RabbitMQClient
 from winter_messaging_transactional.producer.outbox.outbox_message_dao import OutboxMessageDAO
 
@@ -45,8 +44,6 @@ class PublishProcessor:
                     exchange = self._topology_configurator.get_exchange_key(outbox_message.topic)
                     try:
                         self._rabbitmq_client.publish(outbox_message, exchange)
-                        self._outbox_message_doa.mark_as_sent([outbox_message])
-                    except MessageNotRoutedException:
                         self._outbox_message_doa.mark_as_sent([outbox_message])
                     except Exception:
                         log.exception('Publishing processor error. Message not published: %s', outbox_message.message_id)
