@@ -51,7 +51,7 @@ jobs:
       - name: Install dependencies
         run: poetry install
       - name: Test with pytest
-        run: poetry run pytest ./winter_messaging_transactional/tests -rfs --disable-warnings
+        run: poetry run pytest ./winter_messaging_transactional/tests -rfs --cov --cov-config=.coveragerc --disable-warnings
       - name: Upload coverage report
         uses: actions/upload-artifact@v3
         with:
