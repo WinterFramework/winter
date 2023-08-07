@@ -7,7 +7,7 @@ on:
       - master
 
 jobs:
-  component-tests:
+  build:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
@@ -27,41 +27,18 @@ jobs:
       run: poetry install
     - name: Test with pytest
       run: |
-        poetry run pytest ./tests -rfs --cov --cov-config=.coveragerc --cov-report="" --disable-warnings
-        cp .coverage ".coverage.${{ matrix.python-version }}"
+        poetry run pytest -rfs --cov --cov-config=.coveragerc --cov-report="" --disable-warnings
+        cp .coverage "./test_coverage/.coverage.${{ matrix.python-version }}"
     - name: Upload coverage report
       uses: actions/upload-artifact@v3
       with:
         name: coverage-reports
-        path: ".coverage.${{ matrix.python-version }}"
-
-  messaging-transactional-tests:
-    runs-on: ubuntu-20.04
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.8
-      - name: Install and configure Poetry
-        uses: snok/install-poetry@v1
-        with:
-          version: 1.3.2
-      - name: Install dependencies
-        run: poetry install
-      - name: Test with pytest
-        run: poetry run pytest ./winter_messaging_transactional/tests
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v3
-        with:
-          name: coverage-reports
-          path: "test_coverage/"
+        path: "test_coverage/"
 
   coverage-check:
     name: Coverage check
     runs-on: ubuntu-20.04
-    needs: [component-tests, messaging-transactional-tests]
+    needs: [build]
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.9
