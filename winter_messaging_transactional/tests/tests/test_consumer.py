@@ -8,7 +8,7 @@ from testcontainers.rabbitmq import RabbitMqContainer
 from winter.core.json import JSONEncoder
 
 from winter_messaging_transactional.tests.conftest import event_consumer
-from winter_messaging_transactional.tests.helpers import EVENT_HANDLING_TIMEOUT
+from winter_messaging_transactional.tests.helpers import WINTER_EVENT_HANDLING_TIMEOUT
 from winter_messaging_transactional.tests.helpers import create_rabbitmq_connection
 from winter_messaging_transactional.tests.helpers import get_rabbitmq_url
 from winter_messaging_transactional.tests.helpers import read_all_inbox_messages
@@ -65,7 +65,7 @@ def test_consume_with_timeout(database_url, rabbit_url, event_processor, injecto
         event = RetryableEvent(id=event_id, payload=payload, can_be_handled_on_retry=can_be_handled_on_retry)
         event_publisher.emit(event)
         session.commit()
-        sleep(EVENT_HANDLING_TIMEOUT * 3)
+        sleep(WINTER_EVENT_HANDLING_TIMEOUT * 3)
 
         output = consumer.stdout.read1().decode('utf-8')
         timeout_logs_count = output.count(timeout_error_message)
@@ -107,11 +107,11 @@ def test_consume_interrupt_during_timeout(database_url, rabbit_url, event_proces
     event = RetryableEvent(id=event_id, payload=payload)
     event_publisher.emit(event)
     session.commit()
-    sleep(EVENT_HANDLING_TIMEOUT // 2)
+    sleep(WINTER_EVENT_HANDLING_TIMEOUT // 2)
 
     # Worker should not attempt to handle the event again after the TimeoutException if it has received the INT signal.
     process.terminate()
-    sleep(EVENT_HANDLING_TIMEOUT)
+    sleep(WINTER_EVENT_HANDLING_TIMEOUT)
 
     # Assert
     output = process.stdout.read1().decode('utf-8')

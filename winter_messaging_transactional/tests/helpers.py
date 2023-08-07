@@ -13,7 +13,7 @@ from sqlalchemy import select
 from winter_messaging_transactional.consumer.inbox.inbox_message import inbox_message_table
 from winter_messaging_transactional.producer.outbox import outbox_message_table
 
-EVENT_HANDLING_TIMEOUT = 5
+WINTER_EVENT_HANDLING_TIMEOUT = 5
 
 
 class WaitingForResultException(Exception):
@@ -42,7 +42,7 @@ def run_processor(database_url: str, rabbit_url: str):
         WINTER_SETTINGS_MODULE=settings_path,
         WINTER_DATABASE_URL=database_url,
         WINTER_RABBIT_URL=rabbit_url,
-        USE_COVERAGE='true',
+        WINTER_USE_COVERAGE='true',
     )
     return subprocess.Popen(
         ['python', '-m', 'winter_messaging_transactional.run_processor'],
@@ -60,8 +60,8 @@ def run_consumer(database_url: str, rabbit_url: str, consumer_id: str):
         WINTER_SETTINGS_MODULE=settings_path,
         WINTER_DATABASE_URL=database_url,
         WINTER_RABBIT_URL=rabbit_url,
-        USE_COVERAGE='true',
-        EVENT_HANDLING_TIMEOUT=str(EVENT_HANDLING_TIMEOUT),
+        WINTER_USE_COVERAGE='true',
+        WINTER_EVENT_HANDLING_TIMEOUT=str(WINTER_EVENT_HANDLING_TIMEOUT),
     )
     return subprocess.Popen(
         ['python', '-m', 'winter_messaging_transactional.run_consumer', consumer_id],

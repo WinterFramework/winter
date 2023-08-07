@@ -15,6 +15,7 @@ from winter_messaging_transactional.producer.outbox import OutboxMessage
 from winter_messaging_transactional.rabbitmq import create_connection
 from winter_messaging_transactional.naming_convention import get_routing_key
 
+# We need to add 1, because the tries argument of @retry counts first function call as first try
 CONNECTION_ERROR_RETRIES_СOUNT = int(os.getenv('CONNECTION_ERROR_RETRIES_СOUNT', 10)) + 1
 
 logger = logging.getLogger(__name__)

@@ -58,7 +58,7 @@ def _run_outbox_cleanup_processor(database_url: str, rabbit_url: str):
         WINTER_SETTINGS_MODULE=settings_path,
         WINTER_DATABASE_URL=database_url,
         WINTER_RABBIT_URL=rabbit_url,
-        USE_COVERAGE='true',
+        WINTER_USE_COVERAGE='true',
     )
     return subprocess.Popen(
         ['python', '-m', 'winter_messaging_transactional.run_outbox_cleanup_processor', '--interval', '3'],
