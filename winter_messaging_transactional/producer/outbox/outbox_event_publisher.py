@@ -18,10 +18,8 @@ class OutboxEventPublisher(EventPublisher):
     def __init__(
         self,
         outbox_message_doa: OutboxMessageDAO,
-        session: Session,
     ):
         self._outbox_message_dao = outbox_message_doa
-        self._session = session
 
     def emit(self, event: Event):
         event_type = type(event)

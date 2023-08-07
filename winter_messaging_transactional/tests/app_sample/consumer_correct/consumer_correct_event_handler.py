@@ -11,10 +11,8 @@ class ConsumerCorrectEventHandler:
     def __init__(
         self,
         consumer_dao: ConsumerDAO,
-        session: Session,
     ) -> None:
         self._consumer_dao = consumer_dao
-        self._session = session
 
     @event_handler
     def handle_event(self, event: SampleEvent):
