@@ -11,6 +11,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm import sessionmaker
 from testcontainers.rabbitmq import RabbitMqContainer
 
+from winter_messaging_transactional.producer.outbox import OutboxEventPublisher
+from winter_messaging_transactional.tests.app_sample.dao import ConsumerDAO
 from winter_messaging_transactional.tests.database_container import DatabaseContainer
 from winter_messaging_transactional.tests.helpers import get_rabbitmq_url
 from winter_messaging_transactional.tests.helpers import run_consumer
@@ -88,3 +90,11 @@ def event_consumer(database_url: str, rabbit_url: str, consumber_id: str):
     print(process.stdout.read1().decode('utf-8'))
 
 
+@pytest.fixture
+def event_publisher(injector: Injector):
+    return injector.get(OutboxEventPublisher)
+
+
+@pytest.fixture
+def consumer_dao(injector: Injector):
+    return injector.get(ConsumerDAO)

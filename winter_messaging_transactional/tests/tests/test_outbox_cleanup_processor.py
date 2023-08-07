@@ -6,14 +6,12 @@ from datetime import timedelta
 
 from sqlalchemy import update
 
-from winter_messaging_transactional.producer.outbox import OutboxEventPublisher
 from winter_messaging_transactional.producer.outbox import outbox_message_table
 from winter_messaging_transactional.tests.app_sample.events import SampleEvent
 from winter_messaging_transactional.tests.helpers import read_all_outbox_messages
 
 
-def test_cleanup_published_events(database_url, rabbit_url, injector, session):
-    event_publisher = injector.get(OutboxEventPublisher)
+def test_cleanup_published_events(database_url, rabbit_url, event_publisher, session):
     event_1 = SampleEvent(id=1, payload='payload 1')
     event_2 = SampleEvent(id=2, payload='payload 2')
     event_publisher.emit(event_1)

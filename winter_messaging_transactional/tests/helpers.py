@@ -20,7 +20,7 @@ class WaitingForResultException(Exception):
     pass
 
 
-def wait_for_result(func: Callable, seconds: int) -> Any:  # pragma: no cover
+def wait_for_result(func: Callable, seconds: int = 10) -> Any:  # pragma: no cover
     for _ in range(seconds):
         result = func()
         if result:

@@ -25,19 +25,16 @@ from winter_messaging_transactional.tests.helpers import run_processor
 from winter_messaging_transactional.tests.helpers import wait_for_result
 
 
-def test_consume_without_error(database_url, rabbit_url, event_processor, injector, session):
-    event_publisher = injector.get(OutboxEventPublisher)
+def test_consume_without_error(database_url, rabbit_url, event_processor, event_publisher, consumer_dao, session):
     event_id = 1
     payload = 'consume_without_error'
-
-    consumer_dao = injector.get(ConsumerDAO)
 
     # Act
     with event_consumer(database_url, rabbit_url, consumber_id='consumer_correct'):
         event = SampleEvent(id=event_id, payload=payload)
         event_publisher.emit(event)
         session.commit()
-        consumed_event = wait_for_result(seconds=10, func=lambda: consumer_dao.find_by_id(event_id))
+        consumed_event = wait_for_result(func=lambda: consumer_dao.find_by_id(event_id))
 
     # Assert
     assert consumed_event['id'] == event_id
@@ -54,8 +51,7 @@ def test_consume_without_error(database_url, rabbit_url, event_processor, inject
 
 
 @pytest.mark.parametrize('can_be_handled_on_retry', (True, False))
-def test_consume_with_timeout(database_url, rabbit_url, event_processor, injector, session, can_be_handled_on_retry):
-    event_publisher = injector.get(OutboxEventPublisher)
+def test_consume_with_timeout(database_url, rabbit_url, event_processor, event_publisher, session, consumer_dao, can_be_handled_on_retry):
     event_id = 1
     payload = 'consumer_timeout'
     timeout_error_message = "WARNING:event_handling:Timeout is raised during execution _dispatch_event with args:"
@@ -86,7 +82,6 @@ def test_consume_with_timeout(database_url, rabbit_url, event_processor, injecto
         assert event_message['processed_at'] is None
         assert timeout_logs_count == 2
 
-    consumer_dao = injector.get(ConsumerDAO)
     consumed_event = consumer_dao.find_by_id(event_id)
 
     if can_be_handled_on_retry:
@@ -97,8 +92,7 @@ def test_consume_with_timeout(database_url, rabbit_url, event_processor, injecto
         assert consumed_event is None
 
 
-def test_consume_interrupt_during_timeout(database_url, rabbit_url, event_processor, injector, session):
-    event_publisher = injector.get(OutboxEventPublisher)
+def test_consume_interrupt_during_timeout(database_url, rabbit_url, event_processor, event_publisher, consumer_dao, session):
     event_id = 1
     payload = 'consumer_timeout'
 
@@ -131,14 +125,12 @@ def test_consume_interrupt_during_timeout(database_url, rabbit_url, event_proces
     assert event_message['received_at']
     assert event_message['processed_at'] is None
 
-    consumer_dao = injector.get(ConsumerDAO)
     consumed_event = consumer_dao.find_by_id(event_id)
     assert consumed_event is None
 
 
 @pytest.mark.parametrize('can_be_handled_on_retry', (True, False))
-def test_consume_with_error(database_url, rabbit_url, event_processor, injector, session, can_be_handled_on_retry):
-    event_publisher = injector.get(OutboxEventPublisher)
+def test_consume_with_error(database_url, rabbit_url, event_processor, event_publisher, consumer_dao, session, can_be_handled_on_retry):
     event_id = 1
     payload = 'consume_with_error'
 
@@ -163,7 +155,6 @@ def test_consume_with_error(database_url, rabbit_url, event_processor, injector,
     else:
         assert event_message['processed_at'] is None
 
-    consumer_dao = injector.get(ConsumerDAO)
     consumed_event_1 = consumer_dao.find_by_id(event_id)
     consumed_event_2 = consumer_dao.find_by_id(event_id + 1)
 
@@ -188,7 +179,7 @@ def test_consume_with_error(database_url, rabbit_url, event_processor, injector,
         assert message_payload == b'{"id": 1, "payload": "consume_with_error", "can_be_handled_on_retry": false}'
 
 
-def test_consumer_already_processed_event(database_url, rabbit_url, event_processor, injector, session):
+def test_consumer_already_processed_event(database_url, rabbit_url, event_processor, injector, consumer_dao, session):
     event_id = 1
     consumber_id = 'consumer_correct'
     message_id = uuid4()
@@ -217,7 +208,6 @@ def test_consumer_already_processed_event(database_url, rabbit_url, event_proces
     with event_consumer(database_url, rabbit_url, consumber_id=consumber_id):
         sleep(5)
 
-    consumer_dao = injector.get(ConsumerDAO)
     consumed_event = consumer_dao.find_by_id(event_id)
     assert consumed_event is None
 
@@ -229,11 +219,9 @@ def test_consumer_already_processed_event(database_url, rabbit_url, event_proces
     assert inbox_message['processed_at']
 
 
-def test_consumer_with_recreate_connection(database_url, injector, session):
-    event_publisher = injector.get(OutboxEventPublisher)
+def test_consumer_with_recreate_connection(database_url, event_publisher, consumer_dao, session):
     event_1 = SampleEvent(id=1, payload='payload')
     event_2 = SampleEvent(id=2, payload='payload')
-    consumer_dao = injector.get(ConsumerDAO)
 
     with RabbitMqContainer("rabbitmq:3.11.5") as rabbitmq_container:
         params = rabbitmq_container.get_connection_params()
@@ -249,13 +237,13 @@ def test_consumer_with_recreate_connection(database_url, injector, session):
 
         event_publisher.emit(event_1)
         session.commit()
-        wait_for_result(seconds=10, func=lambda: consumer_dao.find_by_id(event_1.id))
+        wait_for_result(func=lambda: consumer_dao.find_by_id(event_1.id))
 
         # Act
         rabbitmq_container.exec('rabbitmqctl close_all_user_connections guest test_reason')
         event_publisher.emit(event_2)
         session.commit()
 
-        wait_for_result(func=lambda: consumer_dao.find_by_id(event_2.id), seconds=10)
+        wait_for_result(func=lambda: consumer_dao.find_by_id(event_2.id))
         processor.terminate()
         consumer.terminate()

@@ -14,8 +14,7 @@ from winter_messaging_transactional.tests.helpers import run_processor
 from winter_messaging_transactional.tests.helpers import wait_for_result
 
 
-def test_publish_events(database_url, rabbit_url, injector, session):
-    event_publisher = injector.get(OutboxEventPublisher)
+def test_publish_events(database_url, rabbit_url, event_publisher, session):
     event = SampleEvent(id=1, payload='payload')
     event_publisher.emit(event)
     session.commit()
@@ -38,8 +37,7 @@ def test_publish_events(database_url, rabbit_url, injector, session):
     assert outbox_message['published_at'] is not None
 
 
-def test_publish_event_to_not_existed_exchange(database_url, injector, session, rabbit_url):
-    event_publisher = injector.get(OutboxEventPublisher)
+def test_publish_event_to_not_existed_exchange(database_url, session, event_publisher, rabbit_url):
     event = SampleEvent(id=1, payload='payload')
     event_publisher.emit(event)
 
@@ -59,8 +57,7 @@ def test_publish_event_to_not_existed_exchange(database_url, injector, session, 
     assert output.find("ChannelClosedByBroker: (404, \"NOT_FOUND - no exchange 'winter.sample-topic_events_topic' in vhost") != -1
 
 
-def test_publish_event_to_not_existed_queue(database_url, injector, session, rabbit_url):
-    event_publisher = injector.get(OutboxEventPublisher)
+def test_publish_event_to_not_existed_queue(database_url, event_publisher, session, rabbit_url):
     event = SampleEvent(id=1, payload='payload')
     event_publisher.emit(event)
 
@@ -75,14 +72,13 @@ def test_publish_event_to_not_existed_queue(database_url, injector, session, rab
         channel.queue_delete(get_consumer_queue(consumer_id))
 
     session.commit()
-    wait_for_result(func=lambda: read_all_outbox_messages(session, published=True), seconds=10)
+    wait_for_result(func=lambda: read_all_outbox_messages(session, published=True))
     output = process.stdout.read1().decode('utf-8')
     process.terminate()
     assert output.find('The message was not routed to any queue.') != -1
 
 
-def test_publish_event_to_get_nack_from_broker(database_url, injector, session, rabbit_url):
-    event_publisher = injector.get(OutboxEventPublisher)
+def test_publish_event_to_get_nack_from_broker(database_url, event_publisher, session, rabbit_url):
     event = SampleEvent(id=1, payload='payload')
 
     # Act
@@ -115,8 +111,7 @@ def test_publish_event_to_get_nack_from_broker(database_url, injector, session, 
     assert output.find("Publishing processor aborted due to an error") != -1
 
 
-def test_publish_with_recreate_connection(database_url, injector, session):
-    event_publisher = injector.get(OutboxEventPublisher)
+def test_publish_with_recreate_connection(database_url, event_publisher, session):
     event = SampleEvent(id=1, payload='payload')
 
     with RabbitMqContainer("rabbitmq:3.11.5") as rabbitmq_container:
@@ -129,7 +124,7 @@ def test_publish_with_recreate_connection(database_url, injector, session):
         rabbitmq_container.exec('rabbitmqctl close_all_user_connections guest test_reason')
         event_publisher.emit(event)
         session.commit()
-        outbox_messages = wait_for_result(func=lambda: read_all_outbox_messages(session, published=True), seconds=10)
+        outbox_messages = wait_for_result(func=lambda: read_all_outbox_messages(session, published=True))
 
     output = process.stdout.read1().decode('utf-8')
     process.terminate()
