@@ -16,7 +16,7 @@ expected_error_response = {
 @pytest.mark.parametrize('endpoint_url, auth, expected_response', [
     ('/with-throttling/', '', expected_error_response),
     ('/with-throttling/same/', '', expected_error_response),
-    ('/with-throttling/custom-handler/', '', 'custom throttle exception'),
+    ('/with-throttling/custom-handler/', 'user_none', 'custom throttle exception'),
     ('/with-throttling/', 'user', expected_error_response),
     ('/with-throttling/same/', 'user', expected_error_response),
     ('/with-throttling/custom-handler/', 'user', 'custom throttle exception'),
