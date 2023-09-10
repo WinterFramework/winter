@@ -70,7 +70,7 @@ def _get_cache_key(scope: str, ident: str) -> str:
 
 
 def _get_ident(request: django.http.HttpRequest) -> str:
-    if hasattr(request, 'user') and request.user.is_authenticated:
+    if hasattr(request, 'user') and request.user and request.user.is_authenticated:
         return str(request.user.pk)
 
     xff = request.META.get('HTTP_X_FORWARDED_FOR')

@@ -14,5 +14,7 @@ class AuthenticationMiddleware(DjangoAuthenticationMiddleware):
         authorize_as = request.META.get('HTTP_TEST_AUTHORIZE', '').lower()
         if authorize_as == 'user':
             request.user = self._user
+        elif authorize_as == 'user_none':
+            request.user = None
 
         return self._get_response(request)
