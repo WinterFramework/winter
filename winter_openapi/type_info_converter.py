@@ -33,9 +33,10 @@ def convert_type_info_to_openapi_schema(value: TypeInfo, *, output: bool) -> Sch
         data['enum'] = value.enum
 
     if value.properties:
+        sorted_keys = sorted(value.properties.keys())
         data['properties'] = {
-            key: convert_type_info_to_openapi_schema(value, output=output)
-            for key, value in value.properties.items()
+            key: convert_type_info_to_openapi_schema(value.properties[key], output=output)
+            for key in sorted_keys
         }
 
     if output:
