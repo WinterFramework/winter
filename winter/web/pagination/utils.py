@@ -13,7 +13,7 @@ def get_previous_page_url(page: Page, request: django.http.HttpRequest) -> Optio
     if not offset or limit is None:
         return None
 
-    url = furl(request.build_absolute_uri())
+    url = furl(request.path)
     url.query.set([('limit', limit)])
 
     previous_offset = offset - limit
