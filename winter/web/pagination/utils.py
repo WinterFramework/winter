@@ -39,7 +39,7 @@ def get_next_page_url(page: Page, request: django.http.HttpRequest) -> Optional[
     if next_offset >= total:
         return None
 
-    url = furl(request.build_absolute_uri())
+    url = furl(request.path)
     url.query.set([
         ('limit', limit),
         ('offset', next_offset),
