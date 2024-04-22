@@ -70,7 +70,7 @@ class EventHandlers:
             self.result['x'] += event.x
 
 
-def test_simple_event_publisher_emit():
+def test_simple_event_publisher():
     injector = get_injector()
     injector.binder.bind(EventHandlers, to=ClassProvider(EventHandlers), scope=singleton)
     injector.binder.bind(EventSubscriptionRegistry, to=ClassProvider(EventSubscriptionRegistry), scope=singleton)
@@ -78,13 +78,15 @@ def test_simple_event_publisher_emit():
     simple_event_publisher = injector.get(SimpleEventPublisher)
     registry = injector.get(EventSubscriptionRegistry)
     registry.autodiscover('tests.messaging')
+    event_handlers = injector.get(EventHandlers)
+    event_handlers.result = {'handlers': [], 'x': 0}
 
     # Act
     simple_event_publisher.emit(Event1(10))
 
     # Assert
     # emit event
-    result = injector.get(EventHandlers).result
+    result = event_handlers.result
     assert result == {'handlers': [1, 2, 7, 8], 'x': 40}
 
     # emit same event again
@@ -103,22 +105,12 @@ def test_simple_event_publisher_emit():
     simple_event_publisher.emit(Event4(1000))
     assert result == {'handlers': [1, 2, 7, 8, 1, 2, 7, 8, 3, 7, 8, 5, 6], 'x': 2720}
 
+    # Test emit_many
+    event_handlers.result = {'handlers': [], 'x': 0}
 
-def test_simple_event_publisher_emit_many():
-    injector = get_injector()
-    injector.binder.bind(EventHandlers, to=ClassProvider(EventHandlers), scope=singleton)
-    injector.binder.bind(EventSubscriptionRegistry, to=ClassProvider(EventSubscriptionRegistry), scope=singleton)
-
-    simple_event_publisher = injector.get(SimpleEventPublisher)
-    registry = injector.get(EventSubscriptionRegistry)
-    registry.autodiscover('tests.messaging')
-
-    # Act
-    simple_event_publisher.emit_many([Event1(10)])
-
-    # Assert
     # emit event
-    result = injector.get(EventHandlers).result
+    simple_event_publisher.emit_many([Event1(10)])
+    result = event_handlers.result
     assert result == {'handlers': [1, 2, 7, 8], 'x': 40}
 
     # emit same event twice
