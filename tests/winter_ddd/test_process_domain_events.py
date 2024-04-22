@@ -145,8 +145,8 @@ def test_order_process_domain_events():
         assert events == [
             'handle_one_1',
             'handle_list_one_1',
-            'handle_one_3',
             'handle_many_1',
             'handle_many_2',
             'handle_many_3',
+            'handle_one_3',
         ]
