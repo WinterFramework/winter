@@ -120,3 +120,28 @@ def test_invalid_json(api_client):
         'detail': 'Failed to decode request data',
         'errors': {'error': 'Invalid JSON: Expecting value: line 1 column 1 (char 0)'},
     }
+
+def test_request_body_from_form_data(api_client):
+    data = {
+        'id': 1,
+        'name': 'test name',
+        'is_god': True,
+        'status': 'active',
+        'items': [1, 2],
+    }
+    expected_data = {
+        'id': 1,
+        'with_default': 5,
+        'name': 'test name',
+        'is_god': True,
+        'status': 'active',
+        'optional_status': None,
+        'items': [1, 2],
+        'optional_items': None,
+    }
+
+    # Act
+    response = api_client.post('/with-request-data/', data=data)
+
+    assert response.status_code == HTTPStatus.OK, response.json()
+    assert response.json() == expected_data
