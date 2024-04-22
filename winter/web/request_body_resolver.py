@@ -27,11 +27,20 @@ class RequestBodyArgumentResolver(ArgumentResolver):
         request: django.http.HttpRequest,
         response_headers: MutableMapping[str, str],
     ):
-        if 'CONTENT_TYPE' in request.META and request.META['CONTENT_TYPE'] != 'application/json':
+        content_type = request.META.get('CONTENT_TYPE')
+        if content_type == 'application/json':
+            try:
+                return json_decode(json.loads(request.body), argument.type_)
+            except JSONDecodeException as e:
+                raise RequestDataDecodeException(e.errors)
+            except JSONDecodeError as e:
+                raise RequestDataDecodeException(f'Invalid JSON: {e}')
+        if content_type in ('application/x-www-form-urlencoded', 'multipart/form-data'):
+            try:
+                return json_decode(request.POST, argument.type_)
+            except JSONDecodeException as e:
+                raise RequestDataDecodeException(e.errors)
+            except JSONDecodeError as e:
+                raise RequestDataDecodeException(f'Invalid form data: {e}')
+        else:
             raise UnsupportedMediaTypeException()
-        try:
-            return json_decode(json.loads(request.body), argument.type_)
-        except JSONDecodeException as e:
-            raise RequestDataDecodeException(e.errors)
-        except JSONDecodeError as e:
-            raise RequestDataDecodeException(f'Invalid JSON: {e}')
