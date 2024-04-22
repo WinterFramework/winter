@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [19.0.0] - 2024-04-22
+### Changed
+- Add `SimpleEventPublisher.emit_many` method to emit multiple events at once
+- Refactor `EventDispatcher` to dispatch events as a list or as a single event depending on handler argument type
+- Refactor `DomainEventDispatcher` to use one map
+
 ## [18.0.0] - 2023-06-25
 ### Changed
 - OpenAPI updated to version 3.0.3
