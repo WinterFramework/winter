@@ -1,3 +1,5 @@
+from typing import List
+
 from injector import inject
 
 from .event import Event
@@ -12,3 +14,6 @@ class SimpleEventPublisher(EventPublisher):
 
     def emit(self, event: Event):
         self._event_dispatcher.dispatch(event)
+
+    def emit_many(self, events: List[Event]):
+        self._event_dispatcher.dispatch_many(events)

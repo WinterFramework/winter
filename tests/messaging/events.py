@@ -16,3 +16,8 @@ class Event2(Event):
 @dataclass(frozen=True)
 class Event3(Event):
     x: int
+
+
+@dataclass(frozen=True)
+class Event4(Event):
+    x: int
