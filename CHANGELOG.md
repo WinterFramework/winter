@@ -8,7 +8,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Add `SimpleEventPublisher.emit_many` method to emit multiple events at once
 - Refactor `EventDispatcher` to dispatch events as a list or as a single event depending on handler argument type
-- Refactor `DomainEventDispatcher` to use one map
 
 ## [20.0.1] - 2024-04-02
 ### Bugfixes
