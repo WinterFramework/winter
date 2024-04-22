@@ -4,9 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [21.0.1] - 2024-04-22
+### Added
+- Form data (application/x-www-form-urlencoded or multipart/form-data) is now supported for the request_body argument
+
 ## [21.0.0] - 2024-04-22
 ### Changed
-
 - Add `EventPublisher.emit_many` method to emit multiple events at once
 - Refactor `EventDispatcher` to dispatch events as a list or as a single event depending on handler argument type
 
