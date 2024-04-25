@@ -1,7 +1,7 @@
+from contextlib import contextmanager
 from typing import List
 from typing import Union
 
-from dataclasses import dataclass
 from injector import ClassProvider
 from injector import singleton
 
@@ -70,6 +70,26 @@ class EventHandlers:
             self.result['x'] += event.x
 
 
+class GroupingHandler:
+    handled_events = []
+
+    @event_handler
+    def handle_union(self, domain_events: Union[Event1, Event3]):
+        self.handled_events.append('handle_union')
+
+    @event_handler
+    def handle_list_of_union(self, domain_events: List[Union[Event1, Event3]]):
+        self.handled_events.append('handle_list_of_union')
+
+
+@contextmanager
+def manager_for_test(name: str):
+    try:
+        yield
+    finally:
+        return name
+
+
 def test_simple_event_publisher():
     injector = get_injector()
     injector.binder.bind(EventHandlers, to=ClassProvider(EventHandlers), scope=singleton)
@@ -121,3 +141,28 @@ def test_simple_event_publisher():
     simple_event_publisher.emit_many([Event1(10), Event2(100), Event3(200), Event4(1000)])
     assert result == {'handlers': [1, 2, 7, 8, 3, 3, 7, 7, 8, 8, 1, 2, 7, 7, 8, 8, 3, 5, 6],  'x': 3880}
 
+    # Test emit when events grouped by subscription with modified handler_method
+    handled_events = []
+    GroupingHandler.handled_domain_events = handled_events
+
+    for event_type, subscriptions in registry._event_type_to_subscription_map.items():
+        if event_type in [type(Event1), type(Event3)]:
+            decorated_subscriptions = []
+
+            for subscription in subscriptions:
+                manager = manager_for_test(subscription.handler_method.__name__)
+                subscription.handler_method.func = manager(subscription.handler_method.func)
+
+            registry._event_type_to_subscription_map[event_type] = decorated_subscriptions
+
+    simple_event_publisher.emit_many([Event1(10), Event3(200)])
+
+    # Assert
+    while handled_events:
+        events = handled_events[:5]
+        del handled_events[:5]
+        assert events == [
+            'handle_union',
+            'handle_union',
+            'handle_list_of_union',
+        ]

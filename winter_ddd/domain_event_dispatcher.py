@@ -17,17 +17,27 @@ class DomainEventDispatcher:
             self.event_type_to_subscription_map.setdefault(event_type, []).append(subscription)
 
     def dispatch(self, events: Iterable[DomainEvent]):
-        events_grouped_by_subscription: Dict[DomainEventSubscription, List[DomainEvent]] = {}
+        events_grouped_by_subscription_key: Dict[str, List[DomainEvent]] = {}
+        subscriptions_map: Dict[str, DomainEventSubscription] = {}
 
         for event in events:
             event_type = type(event)
             domain_event_subscriptions = self.event_type_to_subscription_map.get(event_type, [])
             for domain_event_subscription in domain_event_subscriptions:
-                events_grouped_by_subscription.setdefault(domain_event_subscription, []).append(event)
+                # subscription_key is used to group events by subscription
+                # in case when handler methods in event_type_to_subscription_map will be decorated
+                subscription_key = (
+                    f'{domain_event_subscription.handler_class.__module__}.'
+                    f'{domain_event_subscription.handler_class.__name__}.'
+                    f'{domain_event_subscription.handler_method.__name__}'
+                )
+                events_grouped_by_subscription_key.setdefault(subscription_key, []).append(event)
+                subscriptions_map[subscription_key] = domain_event_subscription
 
         injector = get_injector()
 
-        for domain_event_subscription, events in events_grouped_by_subscription.items():
+        for subscription_key, events in events_grouped_by_subscription_key.items():
+            domain_event_subscription = subscriptions_map[subscription_key]
             handler_instance = injector.get(domain_event_subscription.handler_class)
             if domain_event_subscription.collection:
                 domain_event_subscription.handler_method(handler_instance, events)

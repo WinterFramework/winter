@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from typing import List
 from typing import Union
 
@@ -6,6 +7,7 @@ import pytest
 from winter_ddd import DomainEvent
 from winter_ddd import domain_event_handler
 from winter_ddd import global_domain_event_dispatcher
+from winter_ddd.domain_event_subscription import DomainEventSubscription
 
 
 class CustomDomainEvent(DomainEvent):
@@ -149,4 +151,74 @@ def test_order_process_domain_events():
             'handle_many_2',
             'handle_many_3',
             'handle_one_3',
+        ]
+
+
+class DomainEventGrouping(DomainEvent):
+    pass
+
+
+class OtherDomainEventGrouping(DomainEvent):
+    pass
+
+
+class GroupingHandler:
+    handled_domain_events = []
+
+    @domain_event_handler
+    def handle_union(self, domain_events: Union[DomainEventGrouping, OtherDomainEventGrouping]):
+        self.handled_domain_events.append('handle_union')
+
+    @domain_event_handler
+    def handle_list_of_union(self, domain_events: List[Union[DomainEventGrouping, OtherDomainEventGrouping]]):
+        self.handled_domain_events.append('handle_list_of_union')
+
+
+@contextmanager
+def manager_for_test(name: str):
+    try:
+        yield
+    finally:
+        return name
+
+
+def test_dispatch_domain_events_grouped_by_subscription():
+    domain_event_grouping = DomainEventGrouping()
+    other_domain_event_grouping = OtherDomainEventGrouping()
+
+    handled_events = []
+    GroupingHandler.handled_domain_events = handled_events
+
+    for domain_event_type, subscriptions in global_domain_event_dispatcher.event_type_to_subscription_map.items():
+        if domain_event_type in [type(domain_event_grouping), type(other_domain_event_grouping)]:
+            decorated_subscriptions = []
+
+            for subscription in subscriptions:
+                manager = manager_for_test(subscription.handler_method.__name__)
+
+                decorated_subscriptions.append(
+                    DomainEventSubscription(
+                        event_filter=subscription.event_filter,
+                        collection=subscription.collection,
+                        handler_class=subscription.handler_class,
+                        handler_method=manager(subscription.handler_method)
+                    )
+                )
+
+            global_domain_event_dispatcher.event_type_to_subscription_map[domain_event_type] = decorated_subscriptions
+
+    # Act
+    global_domain_event_dispatcher.dispatch([
+        domain_event_grouping,
+        other_domain_event_grouping
+    ])
+
+    # Assert
+    while handled_events:
+        events = handled_events[:5]
+        del handled_events[:5]
+        assert events == [
+            'handle_union',
+            'handle_union',
+            'handle_list_of_union',
         ]
