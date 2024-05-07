@@ -1,3 +1,4 @@
+from typing import Callable
 from typing import Dict
 from typing import List
 
@@ -32,7 +33,13 @@ class EventDispatcher:
             handler_instance = injector.get(event_subscription.handler_method.component.component_cls)
 
             if event_subscription.collection:
-                event_subscription.handler_method.func(handler_instance, events)
+                self._execute_handler(event_subscription.handler_method.func, handler_instance, events)
             else:
                 for event in events:
-                    event_subscription.handler_method.func(handler_instance, event)
+                    self._execute_handler(event_subscription.handler_method.func, handler_instance, event)
+
+    def _execute_handler(self, func: Callable, *args, **kwargs):
+        """
+        The method is intentionally extracted to make it possible to override it externally for logging purposes.
+        """
+        func(*args, **kwargs)

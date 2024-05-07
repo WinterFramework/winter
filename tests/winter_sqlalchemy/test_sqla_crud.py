@@ -19,6 +19,7 @@ from winter.data import CRUDRepository
 from winter.data.exceptions import NotFoundException
 from winter_ddd import AggregateRoot
 from winter_ddd import DomainEvent
+from winter_ddd import DomainEventDispatcher
 from winter_ddd import domain_event_handler
 from winter_sqlalchemy import sqla_crud
 
@@ -103,6 +104,9 @@ class Fixture:
     @inject
     def __init__(self, engine: Engine):
         injector = get_injector()
+        domain_event_dispatcher = DomainEventDispatcher()
+        domain_event_dispatcher.add_handlers_from_class(DomainEventHandlers)
+        injector.binder.bind(DomainEventDispatcher, domain_event_dispatcher)
         injector.binder.bind(MyRepository, to=ClassProvider(sqla_crud(MyRepository)))
         self._engine = engine
         self.repository = injector.get(MyRepository)

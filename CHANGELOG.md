@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [22.0.0] - 2024-05-07
+### Changed
+
+- Delete `winter_ddd.global_domain_event_dispatcher`
+- It's now application responsibility to configure `DomainEventDispatcher`
+- For convenience there are a number of methods in `DomainEventDispatcher` class to add handlers
+- It's not a final form as it requires a lot of manual effort and configuration, so more changes to come
+
 ## [21.0.0] - 2024-04-22
 ### Changed
 
