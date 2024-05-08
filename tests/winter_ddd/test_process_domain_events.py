@@ -3,9 +3,10 @@ from typing import Union
 
 import pytest
 
+from winter.core import ComponentMethod
 from winter_ddd import DomainEvent
 from winter_ddd import domain_event_handler
-from winter_ddd import global_domain_event_dispatcher
+from winter_ddd import DomainEventDispatcher
 
 
 class CustomDomainEvent(DomainEvent):
@@ -20,41 +21,37 @@ class YetAnotherCustomEvent(DomainEvent):
     pass
 
 
-@pytest.fixture
-def empty_handler():
-    class Handler:
-        handled_domain_events = []
-        handled_another_domain_events = []
-        handled_many_domain_events = []
-        handled_many_another_domain_events = []
-        handled_union_domain_events = []
-        handled_union_list_domain_events = []
+class _TestHandler:
+    handled_domain_events = []
+    handled_another_domain_events = []
+    handled_many_domain_events = []
+    handled_many_another_domain_events = []
+    handled_union_domain_events = []
+    handled_union_list_domain_events = []
 
-        @domain_event_handler
-        def empty_handle(self, domain_event: CustomDomainEvent):
-            self.handled_domain_events.append(domain_event)
+    @domain_event_handler
+    def empty_handle(self, domain_event: CustomDomainEvent):
+        self.handled_domain_events.append(domain_event)
 
-        @domain_event_handler
-        def handle_many(self, domain_events: List[CustomDomainEvent]):
-            self.handled_many_domain_events.append(domain_events)
+    @domain_event_handler
+    def handle_many(self, domain_events: List[CustomDomainEvent]):
+        self.handled_many_domain_events.append(domain_events)
 
-        @domain_event_handler
-        def handle_another(self, domain_event: AnotherCustomEvent):
-            self.handled_another_domain_events.append(domain_event)
+    @domain_event_handler
+    def handle_another(self, domain_event: AnotherCustomEvent):
+        self.handled_another_domain_events.append(domain_event)
 
-        @domain_event_handler
-        def handle_many_another(self, domain_events: List[AnotherCustomEvent]):
-            self.handled_many_another_domain_events.append(domain_events)
+    @domain_event_handler
+    def handle_many_another(self, domain_events: List[AnotherCustomEvent]):
+        self.handled_many_another_domain_events.append(domain_events)
 
-        @domain_event_handler
-        def handle_union(self, domain_event: Union[CustomDomainEvent, AnotherCustomEvent]):
-            self.handled_union_domain_events.append(domain_event)
+    @domain_event_handler
+    def handle_union(self, domain_event: Union[CustomDomainEvent, AnotherCustomEvent]):
+        self.handled_union_domain_events.append(domain_event)
 
-        @domain_event_handler
-        def handle_union_list(self, domain_events: List[Union[CustomDomainEvent, AnotherCustomEvent]]):
-            self.handled_union_list_domain_events.append(domain_events)
-
-    yield Handler()
+    @domain_event_handler
+    def handle_union_list(self, domain_events: List[Union[CustomDomainEvent, AnotherCustomEvent]]):
+        self.handled_union_list_domain_events.append(domain_events)
 
 
 class DomainEventForOrder(DomainEvent):
@@ -101,14 +98,17 @@ class OrderHandler3:
         self.handled_domain_events.append('handle_one_3')
 
 
-def test_process_domain_events(empty_handler):
+def test_process_domain_events():
     domain_event1 = CustomDomainEvent()
     domain_event2 = CustomDomainEvent()
     another_domain_event = AnotherCustomEvent()
     yet_another_domain_event = YetAnotherCustomEvent()
 
+    dispatcher = DomainEventDispatcher()
+    dispatcher.add_handlers_from_class(_TestHandler)
+
     # Act
-    global_domain_event_dispatcher.dispatch([
+    dispatcher.dispatch([
         domain_event1,
         another_domain_event,
         yet_another_domain_event,
@@ -116,12 +116,12 @@ def test_process_domain_events(empty_handler):
     ])
 
     # Assert
-    assert empty_handler.handled_domain_events == [domain_event1, domain_event2]
-    assert empty_handler.handled_another_domain_events == [another_domain_event]
-    assert empty_handler.handled_many_domain_events == [[domain_event1, domain_event2]]
-    assert empty_handler.handled_many_another_domain_events == [[another_domain_event]]
-    assert empty_handler.handled_union_domain_events == [domain_event1, another_domain_event, domain_event2]
-    assert empty_handler.handled_union_list_domain_events == [[domain_event1, another_domain_event, domain_event2]]
+    assert _TestHandler.handled_domain_events == [domain_event1, domain_event2]
+    assert _TestHandler.handled_another_domain_events == [another_domain_event]
+    assert _TestHandler.handled_many_domain_events == [[domain_event1, domain_event2]]
+    assert _TestHandler.handled_many_another_domain_events == [[another_domain_event]]
+    assert _TestHandler.handled_union_domain_events == [domain_event1, another_domain_event, domain_event2]
+    assert _TestHandler.handled_union_list_domain_events == [[domain_event1, another_domain_event, domain_event2]]
 
 
 def test_order_process_domain_events():
@@ -132,9 +132,14 @@ def test_order_process_domain_events():
     OrderHandler2.handled_domain_events = handled_events
     OrderHandler3.handled_domain_events = handled_events
 
+    dispatcher = DomainEventDispatcher()
+    dispatcher.add_handlers_from_class(OrderHandler1)
+    dispatcher.add_handlers_from_class(OrderHandler2)
+    dispatcher.add_handlers_from_class(OrderHandler3)
+
     # Act
     for _ in range(5):
-        global_domain_event_dispatcher.dispatch([
+        dispatcher.dispatch([
             domain_event,
         ])
 
