@@ -104,3 +104,10 @@ def test_none_response(api_client):
     url = f'/winter-simple/get/'
     response = api_client.get(url)
     assert response.content == b''
+
+
+def test_custom_query_parameters(api_client):
+    url = '/winter-simple/custom-query-parameters/?x=1&x=2&y=3,4'
+    response = api_client.get(url)
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == [1, 2, 3, 4]

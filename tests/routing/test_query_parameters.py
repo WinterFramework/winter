@@ -13,7 +13,7 @@ from tests.utils import get_request
 from winter.core.annotations import AlreadyAnnotated
 from winter.web.argument_resolver import ArgumentNotSupported
 from winter.web.exceptions import RequestDataDecodeException
-from winter.web.query_parameters.query_parameters_argument_resolver import QueryParameterArgumentResolver
+from winter.web.query_parameters.query_parameter_argument_resolver import QueryParameterArgumentResolver
 
 
 @pytest.mark.parametrize(

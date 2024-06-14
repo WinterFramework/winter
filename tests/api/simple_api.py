@@ -1,6 +1,7 @@
 import json
 from dataclasses import dataclass
 from http import HTTPStatus
+from typing import List
 
 from django.http import HttpRequest
 from django.http import HttpResponse
@@ -20,6 +21,12 @@ class Dataclass:
 @dataclass(frozen=True)
 class CustomPage(Page[int]):
     extra: int
+
+
+@dataclass
+class CustomQueryParameters:
+    x: List[int]
+    y: List[int]
 
 
 @winter.route('winter-simple/')
@@ -70,3 +77,8 @@ class SimpleAPI:
     @winter.response_status(HTTPStatus.OK)
     def no_route(self):  # pragma: no cover
         pass
+
+    @winter.route_get('custom-query-parameters/{?x*,y}')
+    @winter.web.query_parameters('query_parameters')
+    def custom_query_parameters(self, query_parameters: CustomQueryParameters) -> List[int]:
+        return [*query_parameters.x, *query_parameters.y]

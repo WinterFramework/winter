@@ -10,6 +10,7 @@ from .interceptor import InterceptorRegistry
 from .media_type import InvalidMediaTypeException
 from .media_type import MediaType
 from .output_processor import register_output_processor_resolver
+from .query_parameters import query_parameters
 from .request_body_annotation import request_body
 from .request_body_resolver import RequestBodyArgumentResolver
 from .request_header_annotation import request_header
@@ -35,7 +36,8 @@ def setup():
     from .pagination.page_processor_resolver import PageOutputProcessorResolver
     from .pagination.page_position_argument_resolver import PagePositionArgumentResolver
     from .path_parameters_argument_resolver import PathParametersArgumentResolver
-    from .query_parameters.query_parameters_argument_resolver import QueryParameterArgumentResolver
+    from .query_parameters.query_parameter_argument_resolver import QueryParameterArgumentResolver
+    from .query_parameters.query_parameters_argument_resolver import QueryParametersArgumentResolver
     from .request_header_resolver import RequestHeaderArgumentResolver
     from .response_header_serializers import DateTimeResponseHeaderSerializer
     from .response_header_serializers import LastModifiedResponseHeaderSerializer
@@ -44,6 +46,7 @@ def setup():
     response_headers_serializer.add_serializer(DateTimeResponseHeaderSerializer())
     response_headers_serializer.add_serializer(LastModifiedResponseHeaderSerializer())
     arguments_resolver.add_argument_resolver(QueryParameterArgumentResolver())
+    arguments_resolver.add_argument_resolver(QueryParametersArgumentResolver())
     arguments_resolver.add_argument_resolver(PathParametersArgumentResolver())
     arguments_resolver.add_argument_resolver(RequestBodyArgumentResolver())
     arguments_resolver.add_argument_resolver(ResponseHeaderArgumentResolver())
