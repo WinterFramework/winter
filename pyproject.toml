@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "winter"
-version = "22.0.0"
+version = "22.1.0"
 homepage = "https://github.com/WinterFramework/winter"
 description = "Web Framework with focus on python typing, dataclasses and modular design"
 authors = ["Alexander Egorov <mofr@zond.org>"]

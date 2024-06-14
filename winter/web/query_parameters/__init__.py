@@ -1,3 +1,4 @@
 from .map_query_parameter import map_query_parameter
 from .map_query_parameter_annotation import MapQueryParameterAnnotation
 from .query_parameter import QueryParameter
+from .query_parameters_annotation import query_parameters
