@@ -25,7 +25,7 @@ class QueryParametersInspector(RouteParametersInspector):
         if annotation is not None:
             argument = next(
                 (argument for argument in route.method.arguments if argument.name == annotation.argument_name),
-            )  # pragma: no branch
+            )  # pragma: no cover
             query_parameters = route.get_query_parameters()
             query_parameters_map = {query_parameter.name: query_parameter for query_parameter in query_parameters}
             for field in dataclasses.fields(argument.type_):
