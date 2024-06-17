@@ -18,7 +18,7 @@ class QueryParametersArgumentResolver(ArgumentResolver):
         annotation = argument.method.annotations.get_one_or_none(QueryParametersAnnotation)
         if annotation is None:
             return False
-        return annotation.argument_name == argument.name
+        return annotation.argument.name == argument.name
 
     def resolve_argument(
         self,
