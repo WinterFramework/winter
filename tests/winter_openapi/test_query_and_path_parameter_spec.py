@@ -1,3 +1,4 @@
+import dataclasses
 from enum import Enum
 from enum import IntEnum
 from typing import List
@@ -188,3 +189,74 @@ def test_path_parameter_without_python_argument():
 
     # Assert
     assert str(exc_info.value) == 'Path variable "test" not found in method _TestAPI.api_method'
+
+
+def test_custom_query_parameters():
+    @dataclasses.dataclass
+    class CustomQueryParameters:
+        x: int
+
+    class _TestAPI:
+        @winter.route_get('/resource/{?x}')
+        @winter.web.query_parameters('query_parameters')
+        def simple_method(
+            self,
+            query_parameters: CustomQueryParameters,
+        ):  # pragma: no cover
+            pass
+
+    expected_parameter = {
+        'name': 'x',
+        'in': 'query',
+        'description': '',
+        'required': True,
+        'allowEmptyValue': False,
+        'allowReserved': False,
+        'deprecated': False,
+        'explode': False,
+        'schema': {'format': 'int32', 'type': 'integer'},
+    }
+    route = get_route(_TestAPI.simple_method)
+    # Act
+    result = generate_openapi(title='title', version='1.0.0', routes=[route])
+
+    # Assert
+    parameters = result["paths"]["/resource/"]["get"]["parameters"]
+    assert parameters == [expected_parameter]
+
+
+def test_custom_query_parameters_with_wrong_field_type():
+    class UnknownType:
+        pass
+
+    @dataclasses.dataclass
+    class CustomQueryParameters:
+        x: UnknownType
+
+    class _TestAPI:
+        @winter.route_get('/resource/{?x}')
+        @winter.web.query_parameters('query_parameters')
+        def simple_method(
+            self,
+            query_parameters: CustomQueryParameters,
+        ):  # pragma: no cover
+            pass
+
+    expected_parameter = {
+        'name': 'x',
+        'in': 'query',
+        'description': 'winter_openapi has failed to inspect the parameter',
+        'required': True,
+        'allowEmptyValue': False,
+        'allowReserved': False,
+        'deprecated': False,
+        'explode': False,
+        'schema': {'type': 'string'},
+    }
+    route = get_route(_TestAPI.simple_method)
+    # Act
+    result = generate_openapi(title='title', version='1.0.0', routes=[route])
+
+    # Assert
+    parameters = result["paths"]["/resource/"]["get"]["parameters"]
+    assert parameters == [expected_parameter]
