@@ -23,12 +23,9 @@ class QueryParametersInspector(RouteParametersInspector):
 
         annotation = route.method.annotations.get_one_or_none(QueryParametersAnnotation)
         if annotation is not None:
-            argument = next(
-                (argument for argument in route.method.arguments if argument.name == annotation.argument_name),
-            )  # pragma: no cover
             query_parameters = route.get_query_parameters()
             query_parameters_map = {query_parameter.name: query_parameter for query_parameter in query_parameters}
-            for field in dataclasses.fields(argument.type_):
+            for field in dataclasses.fields(annotation.argument.type_):
                 query_parameter = query_parameters_map[field.name]
                 openapi_parameter = self._convert_dataclass_field_to_openapi_parameter(field, query_parameter)
                 parameters.append(openapi_parameter)
