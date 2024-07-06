@@ -46,6 +46,7 @@ def generate_openapi(
     description: Optional[str] = None,
     tags: Optional[List[Dict[str, Any]]] = None,
     validate: bool = True,
+    add_url_segment_as_tag: bool = True,
 ) -> Dict[str, Any]:
     routes = list(routes)
     routes.sort(key=lambda r: r.url_path)
@@ -62,11 +63,11 @@ def generate_openapi(
         if not url_path_without_prefix.startswith('/'):
             url_path_without_prefix = '/' + url_path_without_prefix
 
-        url_path_tag = get_url_path_tag(url_path, path_prefix)
         path_tag_names = list(tag_names)
-
-        if url_path_tag:
-            path_tag_names.append(url_path_tag)
+        if add_url_segment_as_tag:
+            url_path_tag = get_url_path_tag(url_path, path_prefix)
+            if url_path_tag:
+                path_tag_names.append(url_path_tag)
 
         path_item = _get_openapi_path(routes=group_routes, operation_ids=operation_ids, tag_names=path_tag_names)
         paths[url_path_without_prefix] = path_item

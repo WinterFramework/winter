@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [22.2.0] - 2024-07-06
+- Add `add_url_segment_as_tag` boolean parameter to generate_openapi function to disable adding url segment as tag in OpenAPI
+
 ## [22.1.1] - 2024-06-17
 ### Bugfixes
 - Add OpenAPI inspector for `@winter.web.query_parameters` case

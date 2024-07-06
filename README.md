@@ -5,7 +5,7 @@
 [![PyPI version](https://badge.fury.io/py/winter.svg)](https://badge.fury.io/py/winter)
 [![Gitter](https://badges.gitter.im/winter-python/community.svg)](https://gitter.im/winter-python/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-Web Framework for Python inspired by Spring Framework
+Web Framework with focus on python typing, dataclasses and modular design
 
 # Main features
 * Declarative API
