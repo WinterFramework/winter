@@ -1,5 +1,6 @@
 import inspect
 import types
+from functools import cached_property
 from types import FunctionType
 from typing import Mapping
 from typing import Optional
@@ -12,7 +13,6 @@ from .annotations import Annotations
 from .component import Component
 from .component_method_argument import ComponentMethodArgument
 from .docstring import Docstring
-from .utils import cached_property
 
 
 class ComponentMethod:

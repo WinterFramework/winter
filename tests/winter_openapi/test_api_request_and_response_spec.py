@@ -85,6 +85,9 @@ class CustomPage(Page, Generic[CustomPageItem]):
     extra: str
 
 
+TypeVarItem = TypeVar('TypeVarItem')
+
+
 @dataclass
 class RequestBodyWithUndefined:
     """Some description"""
@@ -118,6 +121,15 @@ class RequestBodyWithUndefined:
     (List[StringValueEnum], {'schema': {'items': {'enum': ['red', 'green'], 'type': 'string'}, 'type': 'array'}}),
     (
         Any,
+        {
+            'schema': {
+                'description': 'Can be any value - string, number, boolean, array or object.',
+                'nullable': False
+            }
+        }
+    ),
+    (
+        TypeVarItem,
         {
             'schema': {
                 'description': 'Can be any value - string, number, boolean, array or object.',

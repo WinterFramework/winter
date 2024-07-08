@@ -13,7 +13,6 @@ from strenum import StrEnum
 from winter.core.docstring import Docstring
 from winter.core.json import Undefined
 from winter.core.utils import has_nested_type
-from winter.core.utils.typing import get_generic_args
 from winter.core.utils.typing import get_union_args
 from winter.core.utils.typing import is_any
 from winter.core.utils.typing import is_optional
@@ -63,14 +62,14 @@ def inspect_dict(hint_class) -> TypeInfo:
 
 
 # noinspection PyUnusedLocal
-@register_type_inspector(object, checker=is_any)
-def inspect_any(hint_class) -> TypeInfo:
+@register_type_inspector(object, checker=is_type_var)
+def inspect_type_var(hint_class) -> TypeInfo:
     return TypeInfo(type_=DataTypes.ANY)
 
 
 # noinspection PyUnusedLocal
-@register_type_inspector(object, checker=is_type_var)
-def inspect_type_var(hint_class) -> TypeInfo:
+@register_type_inspector(object, checker=is_any)
+def inspect_any(hint_class) -> TypeInfo:
     return TypeInfo(type_=DataTypes.ANY)
 
 
@@ -101,7 +100,7 @@ def inspect_date(hint_class) -> TypeInfo:
 # noinspection PyUnusedLocal
 @register_type_inspector(list, tuple, set, Iterable)
 def inspect_iterable(hint_class) -> TypeInfo:
-    args = get_generic_args(hint_class)
+    args = typing.get_args(hint_class)
     if not args:
         return TypeInfo(type_=DataTypes.ARRAY, child=TypeInfo(type_=DataTypes.ANY))
     child_class = args[0]
