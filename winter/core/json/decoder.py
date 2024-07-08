@@ -15,10 +15,10 @@ from typing import Optional
 from typing import Type
 from typing import TypeVar
 from typing import Union
+from typing import get_args
 
 from dateutil import parser
 
-from winter.core.utils.typing import get_generic_args
 from winter.core.utils.typing import get_origin_type
 from winter.core.utils.typing import get_union_args
 from winter.core.utils.typing import is_optional
@@ -311,7 +311,7 @@ def decode_tuple(value, type_) -> tuple:
 def decode_dict(value, type_) -> dict:
     if not isinstance(value, dict):
         raise JSONDecodeException.cannot_decode(value=value, type_name='object')
-    key_and_value_type = get_generic_args(type_)
+    key_and_value_type = get_args(type_)
 
     if not key_and_value_type:
         return value

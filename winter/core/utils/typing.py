@@ -60,10 +60,3 @@ def get_type_name(type_):
         return type_name
 
     return type(type_).__name__
-
-
-def get_generic_args(type_):
-    if sys.version_info >= (3, 8):
-        from typing import get_args
-        return get_args(type_)
-    return getattr(type_, '__args__', None) or ()

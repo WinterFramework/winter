@@ -3,8 +3,7 @@ from typing import Generic
 from typing import Iterable
 from typing import Optional
 from typing import TypeVar
-
-from winter.core.utils.typing import get_generic_args
+from typing import get_args
 
 T = TypeVar('T')
 K = TypeVar('K')
@@ -13,7 +12,7 @@ K = TypeVar('K')
 class RepositoryGenericMeta(type):
     def __init__(cls, name, bases, attr, **kwargs):
         if name not in ('Repository', 'CRUDRepository'):
-            args = get_generic_args(cls.__orig_bases__[0])
+            args = get_args(cls.__orig_bases__[0])
             if not args:  # pragma: no cover
                 return
             if len(args) != 2:
