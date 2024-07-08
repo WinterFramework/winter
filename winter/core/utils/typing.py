@@ -1,5 +1,7 @@
 import inspect
+import sys
 from typing import Iterable
+from typing import TypeVar
 from typing import Union
 
 NoneType = type(None)
@@ -15,7 +17,7 @@ def is_any(type_: object) -> bool:
 
 
 def is_type_var(type_: object) -> bool:
-    return type(type_) == 'typing.TypeVar'
+    return type(type_) == TypeVar
 
 
 def is_iterable_type(type_: object) -> bool:
