@@ -1,11 +1,11 @@
 import inspect
+from functools import cached_property
 from typing import Any
 from typing import TYPE_CHECKING
 from typing import Type
 
 import dataclasses
 
-from .utils import cached_property
 from .utils.typing import is_optional
 
 if TYPE_CHECKING:  # pragma: no cover
