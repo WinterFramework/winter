@@ -62,14 +62,14 @@ def inspect_dict(hint_class) -> TypeInfo:
 
 
 # noinspection PyUnusedLocal
-@register_type_inspector(object, checker=is_any)
-def inspect_any(hint_class) -> TypeInfo:
+@register_type_inspector(object, checker=is_type_var)
+def inspect_type_var(hint_class) -> TypeInfo:
     return TypeInfo(type_=DataTypes.ANY)
 
 
 # noinspection PyUnusedLocal
-@register_type_inspector(object, checker=is_type_var)
-def inspect_type_var(hint_class) -> TypeInfo:
+@register_type_inspector(object, checker=is_any)
+def inspect_any(hint_class) -> TypeInfo:
     return TypeInfo(type_=DataTypes.ANY)
 
 
