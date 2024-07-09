@@ -1,12 +1,12 @@
 from . import pagination
 from .argument_resolver import arguments_resolver
 from .autodiscovery import find_package_routes
-from .configurer import Configurer
 from .exceptions import ExceptionHandler
 from .exceptions import exception_handlers_registry
 from .exceptions import problem
 from .interceptor import Interceptor
 from .interceptor import InterceptorRegistry
+from .interceptor import interceptor_registry
 from .media_type import InvalidMediaTypeException
 from .media_type import MediaType
 from .output_processor import register_output_processor_resolver
@@ -26,7 +26,6 @@ from .urls import register_url_regexp
 
 def setup():
     from winter.data.exceptions import NotFoundException
-    from .configurer import run_configurers
     from .exceptions import RedirectException
     from .exceptions.problem_handling import autodiscover_problem_annotations
     from .exceptions.problem_handling import ProblemExceptionHandlerGenerator
@@ -62,5 +61,3 @@ def setup():
     }
     for exception_class, handler in auto_handle_exceptions.items():
         exception_handlers_registry.add_handler(exception_class, handler, auto_handle=True)
-
-    run_configurers()

@@ -1,9 +1,9 @@
 from django.apps import AppConfig
 
+from tests.web.interceptors import HelloWorldInterceptor
 from winter.web import exception_handlers_registry
+from winter.web import interceptor_registry
 from winter.web.exceptions.handlers import DefaultExceptionHandler
-# noinspection PyUnresolvedReferences
-from .web.interceptors import *  # noqa: F401, F403
 
 
 class TestAppConfig(AppConfig):
@@ -15,6 +15,8 @@ class TestAppConfig(AppConfig):
         import winter
         import winter_django
         import winter_openapi
+
+        interceptor_registry.add_interceptor(HelloWorldInterceptor())
 
         winter_openapi.setup()
         winter.web.setup()
