@@ -244,18 +244,16 @@ class HelloWorldInterceptor(Interceptor):
 ```
 
 
-The only way now to register an interceptor is to define a configurer
-(don't forget to import during app initialization) and implement the add_interceptors method.
-```python
-from winter.web import Configurer
-from winter.web import InterceptorRegistry
+The only way now to register an interceptor is to add it to InterceptorRegistry singleton.
 
+Don't forget to import this adding during app initialization.
+```python
+from winter.web import interceptor_registry
 from .interceptors import HelloWorldInterceptor
 
-
-class HelloWorldConfigurer(Configurer):
-    def add_interceptors(self, registry: InterceptorRegistry):
-        registry.add_interceptor(HelloWorldInterceptor())
+class SomeInitializationClassInMyApplication:
+    def initialize_my_app(self):
+        interceptor_registry.add_interceptor(HelloWorldInterceptor())
 
 ```
 

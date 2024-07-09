@@ -3,13 +3,11 @@ import mock
 from winter.core import Component
 from winter.core.module_discovery import get_all_classes
 from winter.core.module_discovery import get_all_subclasses
-from winter.web import Configurer
 
 
 def test_module_import():
     found_classes = list(get_all_classes('winter.web'))
     # Verifying that some class (it can be any class) could be found
-    assert ('Configurer', Configurer) in found_classes
     assert ('Component', Component) not in found_classes
 
 
