@@ -344,3 +344,10 @@ def decode_decimal(value, type_) -> decimal.Decimal:
 @json_decoder(type(Any), validator=lambda type_: type_ is Any)
 def decode_any(value, type_) -> Any:
     return value
+
+
+# noinspection PyUnusedLocal
+@json_decoder(Any)
+@json_decoder(type(Any), validator=lambda type_: type_ is Any)
+def decode_any(value, type_) -> Any:
+    return value

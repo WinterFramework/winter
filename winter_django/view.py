@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from typing import Type
 
 import django.http
-from django.conf.urls import url
+from django.urls import re_path as url
 from django.urls import URLPattern
 
 from winter.core import Component
