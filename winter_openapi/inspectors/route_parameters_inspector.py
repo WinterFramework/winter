@@ -1,7 +1,7 @@
 import abc
 from typing import List
 
-from openapi_schema_pydantic import Parameter
+from openapi_pydantic import Parameter
 
 from winter.web.routing import Route
 import logging

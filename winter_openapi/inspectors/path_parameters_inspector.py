@@ -1,6 +1,6 @@
 from typing import List
 
-from openapi_schema_pydantic.v3.v3_0_3 import Parameter
+from openapi_pydantic.v3.v3_0_3 import Parameter
 
 from winter.core import ComponentMethodArgument
 from winter.web.routing import Route

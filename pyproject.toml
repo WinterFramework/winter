@@ -46,8 +46,8 @@ SQLAlchemy = [
 ]
 typing-extensions = "^4.8"
 StrEnum = "^0.4.8"
-openapi-schema-pydantic = ">=1.2.4, <2"
-pydantic = "<1.10.11" # Because of usage "const" in openapi-schema-pydantic
+openapi-pydantic = ">=0.4.1, <1"
+pydantic = ">=1.10, <2"
 openapi-spec-validator = [
     {version = ">=0.7.1, <1", python = ">=3.12"},
     {version = "^0.5.7", python = "<3.12"}
