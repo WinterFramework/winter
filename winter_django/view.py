@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from typing import Type
 
 import django.http
-from django.urls import re_path as url
+from django.urls import re_path
 from django.urls import URLPattern
 
 from winter.core import Component
@@ -45,7 +45,7 @@ def create_django_urls_from_routes(routes: List[Route]) -> List[URLPattern]:
         django_url_path = rewrite_uritemplate_with_regexps(winter_url_path, methods)
 
         for route in routes:
-            django_url = url(django_url_path, django_view, name=route.method.full_name)
+            django_url = re_path(django_url_path, django_view, name=route.method.full_name)
             django_urls.append(django_url)
 
     return django_urls
