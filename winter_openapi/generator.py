@@ -23,7 +23,7 @@ from openapi_pydantic.v3.v3_0_3 import Response
 from openapi_pydantic.v3.v3_0_3 import Responses
 from openapi_pydantic.v3.v3_0_3 import Server
 from openapi_pydantic.v3.v3_0_3 import Tag
-from openapi_spec_validator import validate as validate_openapi
+from openapi_spec_validator.shortcuts import validate as validate_openapi
 
 from winter.core import ComponentMethod
 from winter.web import MediaType
