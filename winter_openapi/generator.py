@@ -23,7 +23,7 @@ from openapi_pydantic.v3.v3_0_3 import Response
 from openapi_pydantic.v3.v3_0_3 import Responses
 from openapi_pydantic.v3.v3_0_3 import Server
 from openapi_pydantic.v3.v3_0_3 import Tag
-from openapi_spec_validator.shortcuts import validate as validate_openapi
+from openapi_pydantic import schema_validate
 
 from winter.core import ComponentMethod
 from winter.web import MediaType
@@ -76,7 +76,7 @@ def generate_openapi(
     openapi = OpenAPI(info=info, servers=servers_, paths=paths, components=components, tags=tags_)
     openapi_dict = openapi.dict(by_alias=True, exclude_none=True)
     if validate:
-        validate_openapi(openapi_dict)
+        schema_validate(openapi_dict)
     return openapi_dict
 
 
