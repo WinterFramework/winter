@@ -1,4 +1,4 @@
-from openapi_schema_pydantic.v3.v3_0_3 import Schema
+from openapi_pydantic.v3.v3_0_3 import Schema
 
 from winter_openapi.inspection import DataTypes
 from winter_openapi.inspection import TypeInfo

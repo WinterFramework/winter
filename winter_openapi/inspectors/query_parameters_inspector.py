@@ -2,7 +2,7 @@ from typing import List
 from typing import Tuple
 
 import dataclasses
-from openapi_schema_pydantic import Parameter
+from openapi_pydantic import Parameter
 
 from winter.core import ComponentMethodArgument
 from winter.web.query_parameters import QueryParameter
