@@ -55,6 +55,7 @@ def convert_type_info_to_openapi_schema(value: TypeInfo, *, output: bool) -> Sch
     if value.nullable:
         if value.type_.value == 'object':
             # https://stackoverflow.com/questions/40920441/how-to-specify-a-property-can-be-null-or-a-reference-with-swagger
+            # Better solution, but not implemented yet https://github.com/OpenAPITools/openapi-generator/issues/9083
             schema = Schema(nullable=True, allOf=[schema])
         else:
             schema.nullable = True
