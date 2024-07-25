@@ -26,9 +26,6 @@ def convert_type_info_to_openapi_schema(value: TypeInfo, *, output: bool) -> Sch
     if value.child is not None:
         data['items'] = convert_type_info_to_openapi_schema(value.child, output=output)
 
-    if value.nullable:
-        data['nullable'] = True
-
     if value.enum is not None:
         data['enum'] = value.enum
 
@@ -53,4 +50,13 @@ def convert_type_info_to_openapi_schema(value: TypeInfo, *, output: bool) -> Sch
     if required_properties:
         data['required'] = required_properties
 
-    return Schema(**data)
+    schema = Schema(**data)
+
+    if value.nullable:
+        if value.type_.value == 'object':
+            # https://stackoverflow.com/questions/40920441/how-to-specify-a-property-can-be-null-or-a-reference-with-swagger
+            schema = Schema(nullable=True, allOf=[schema])
+        else:
+            schema.nullable = True
+
+    return schema

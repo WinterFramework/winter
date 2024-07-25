@@ -53,6 +53,12 @@ class Dataclass:
     nested: NestedDataclass
 
 
+@dataclass
+class DataclassWithOptionalField:
+    """DataclassWithOptionalField description"""
+    nested: Optional[NestedDataclass]
+
+
 class StringValueEnum(Enum):
     RED = 'red'
     GREEN = 'green'
@@ -151,9 +157,8 @@ class RequestBodyWithUndefined:
         {
             'schema': {
                 'items': {
-                    'nullable': False,
                     'description': 'Can be any value - string, number, boolean, array or object.',
-                    'nullable': False
+                    'nullable': False,
                 },
                 'type': 'array',
             },
@@ -164,9 +169,8 @@ class RequestBodyWithUndefined:
         {
             'schema': {
                 'items': {
-                    'nullable': False,
                     'description': 'Can be any value - string, number, boolean, array or object.',
-                    'nullable': False
+                    'nullable': False,
                 },
                 'type': 'array',
             },
@@ -189,6 +193,31 @@ class RequestBodyWithUndefined:
                 },
                 'required': ['nested'],
                 'title': 'Dataclass',
+                'type': 'object',
+            },
+        },
+    ),
+    (
+        DataclassWithOptionalField,
+        {
+            'schema': {
+                'description': 'DataclassWithOptionalField description',
+                'properties': {
+                    'nested': {
+                        'nullable': True,
+                        'allOf': [
+                            {
+                                'properties': {'nested_number': {'format': 'int32', 'type': 'integer'}},
+                                'required': ['nested_number'],
+                                'title': 'NestedDataclass',
+                                'type': 'object',
+                                'description': 'NestedDataclass(nested_number: int)',
+                            },
+                        ],
+                    },
+                },
+                'required': ['nested'],
+                'title': 'DataclassWithOptionalField',
                 'type': 'object',
             },
         },
