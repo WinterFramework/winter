@@ -8,6 +8,7 @@ import pytest
 import winter
 from winter.web.routing import get_route
 from winter_openapi import generate_openapi
+from winter_openapi.generator import CanNotInspectType
 
 
 class IntegerValueEnum(Enum):
@@ -31,7 +32,6 @@ class IntegerEnum(IntEnum):
 
 
 param_with_diff_types = [
-    (object, {'schema': {'type': 'string'}, 'description': 'winter_openapi has failed to inspect the parameter'}),
     (int, {'schema': {'format': 'int32', 'type': 'integer'}}),
     (str, {'schema': {'type': 'string'}}),
     (IntegerEnum, {'schema': {'enum': [1, 2], 'format': 'int32', 'type': 'integer'}}),
@@ -255,8 +255,13 @@ def test_custom_query_parameters_with_wrong_field_type():
     }
     route = get_route(_TestAPI.simple_method)
     # Act
-    result = generate_openapi(title='title', version='1.0.0', routes=[route])
+    with pytest.raises(CanNotInspectType) as e:
+        generate_openapi(title='title', version='1.0.0', routes=[route])
 
     # Assert
-    parameters = result["paths"]["/resource/"]["get"]["parameters"]
-    assert parameters == [expected_parameter]
+    assert str(e.value) == (
+        "test_query_and_path_parameter_spec._TestAPI.simple_method: Unknown type: "
+        "<class 'test_query_and_path_parameter_spec.test_custom_query_parameters_with_wrong_field_type."
+        "<locals>.UnknownType'>"
+    )
+

@@ -1,4 +1,5 @@
 from typing import List
+from typing import TYPE_CHECKING
 
 from openapi_pydantic.v3.v3_0_3 import Parameter
 from openapi_pydantic.v3.v3_0_3 import Schema
@@ -9,6 +10,9 @@ from winter.web.pagination.page_position_argument_resolver import PagePositionAr
 from winter.web.routing import Route
 from winter_openapi.inspection.data_types import DataTypes
 from .route_parameters_inspector import RouteParametersInspector
+
+if TYPE_CHECKING:
+    from winter_openapi.generator import SchemaRegistry
 
 
 class PagePositionArgumentsInspector(RouteParametersInspector):
@@ -31,7 +35,7 @@ class PagePositionArgumentsInspector(RouteParametersInspector):
             param_schema=Schema(type=DataTypes.INTEGER)
         )
 
-    def inspect_parameters(self, route: 'Route') -> List[Parameter]:
+    def inspect_parameters(self, route: 'Route', schema_registry: 'SchemaRegistry') -> List[Parameter]:
         parameters = []
         has_page_position_argument = any(argument.type_ == PagePosition for argument in route.method.arguments)
         if not has_page_position_argument:

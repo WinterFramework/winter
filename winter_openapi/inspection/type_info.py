@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from dataclasses import field
 from typing import Dict
 from typing import Optional
+from typing import Type
 
 from .data_formats import DataFormat
 from .data_types import DataTypes
@@ -11,6 +12,7 @@ from .data_types import DataTypes
 @dataclass
 class TypeInfo:
     type_: DataTypes
+    hint_class: Type
     format_: Optional[DataFormat] = None
     child: Optional['TypeInfo'] = None
     nullable: bool = False

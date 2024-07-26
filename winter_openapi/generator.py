@@ -49,10 +49,10 @@ class SchemaRegistry:
         self._types_by_titles: Dict[str, Type] = {}
 
     def get_schema_or_reference(self, type_: Type, output: bool) -> Union[Schema, Reference]:
+        type_info = inspect_type(type_)
         schema = self._schemas.get((type_, output))
         if not schema:
-            type_info = inspect_type(type_)
-            schema = convert_type_info_to_openapi_schema(type_info, output=output)
+            schema = convert_type_info_to_openapi_schema(type_info, output=output, schema_registry=self)
             if not schema.title:
                 return schema
             self._schemas[type_, output] = schema
@@ -62,7 +62,14 @@ class SchemaRegistry:
         elif self._types_by_titles[schema.title] != type_:
             raise ValueError(f'Title {schema.title} for type {type_} is already used for another type: {self._types_by_titles[schema.title]}')
 
-        return Reference(ref='#/components/schemas/' + schema.title)
+        reference = Reference(ref='#/components/schemas/' + schema.title)
+
+        if type_info.nullable and schema.type == 'object':
+            # https://stackoverflow.com/questions/40920441/how-to-specify-a-property-can-be-null-or-a-reference-with-swagger
+            # Better solution, but not implemented yet https://github.com/OpenAPITools/openapi-generator/issues/9083
+            return Schema(nullable=True, allOf=[reference])
+
+        return reference
 
     def get_schemas(self) -> Dict[str, Schema]:
         return {
@@ -144,7 +151,7 @@ def _get_openapi_path(
                 schema_registry=schema_registry,
             )
         except InspectorNotFound as e:
-            raise CanNotInspectType(route.method, e.hint_cls, str(e))
+            raise CanNotInspectType(route.method, str(e))
         path[route.http_method.lower()] = operation
 
     return PathItem.parse_obj(path)
@@ -159,7 +166,7 @@ def _get_openapi_operation(
 ) -> Operation:
     summary = route.method.docstring.short_description
     description = route.method.docstring.long_description
-    operation_parameters = get_route_parameters(route)
+    operation_parameters = get_route_parameters(route, schema_registry)
     operation_request_body = get_request_body_parameters(route, schema_registry)
     operation_responses = get_responses_schemas(route, schema_registry)
     return Operation(
@@ -178,10 +185,8 @@ class CanNotInspectType(Exception):
     def __init__(
         self,
         method: ComponentMethod,
-        type_: Any,
         message: str,
     ):
-        self._type = type_
         self._message = message
         self._method = method
 
@@ -191,7 +196,7 @@ class CanNotInspectType(Exception):
     def __str__(self):
         component_cls = self._method.component.component_cls
         method_path = f'{component_cls.__module__}.{self._method.full_name}'
-        return f'{method_path}: -> {self._type}: {self._message}'
+        return f'{method_path}: {self._message}'
 
 
 def get_url_path_without_prefix(url_path: str, path_prefix: str) -> str:
@@ -225,10 +230,10 @@ def get_url_path_tag(url_path: str, path_prefix: str) -> Optional[str]:
     return url_path_tag
 
 
-def get_route_parameters(route: Route) -> List[Parameter]:
+def get_route_parameters(route: Route, schema_registry: SchemaRegistry) -> List[Parameter]:
     parameters = []
     for inspector in get_route_parameters_inspectors():
-        parameters += inspector.inspect_parameters(route)
+        parameters += inspector.inspect_parameters(route, schema_registry)
     return parameters
 
 
