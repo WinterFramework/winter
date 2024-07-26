@@ -54,27 +54,40 @@ class ProblemExistsExceptionDTO:
 
 
 @pytest.mark.parametrize(
-    'handler_return_type, handler_spec', [
+    'handler_return_type, handler_spec, expected_components', [
         (
             ProblemExistsExceptionDTO,
             {
                 'content': {
                     'application/json': {
                         'schema': {
-                            'description': 'ProblemExistsExceptionDTO(message: str)',
-                            'properties': {'message': {'type': 'string'}},
-                            'required': ['message'],
-                            'title': 'ProblemExistsExceptionDTO',
-                            'type': 'object',
+                            '$ref': '#/components/schemas/ProblemExistsExceptionDTO'
                         },
                     },
                 },
             },
+            {
+                'schemas': {
+                    'ProblemExistsExceptionDTO': {
+                        'description': 'ProblemExistsExceptionDTO(message: str)',
+                        'properties': {'message': {'type': 'string'}},
+                        'required': ['message'],
+                        'title': 'ProblemExistsExceptionDTO',
+                        'type': 'object',
+                    },
+                },
+                'parameters': {},
+                'responses': {},
+            }
         ),
-        (None, {'description': ''}),
+        (None, {'description': ''}, {'parameters': {}, 'responses': {}, 'schemas': {}}),
     ],
 )
-def test_exception_annotated_on_method_with_custom_handler_with_dto(handler_return_type, handler_spec):
+def test_exception_annotated_on_method_with_custom_handler_with_dto(
+    handler_return_type,
+    handler_spec,
+    expected_components,
+):
     @winter.web.problem(status=HTTPStatus.FORBIDDEN)
     class ProblemExistsException(Exception):
         pass
@@ -99,7 +112,7 @@ def test_exception_annotated_on_method_with_custom_handler_with_dto(handler_retu
     )
     # Assert
     assert result == {
-        'components': {'parameters': {}, 'responses': {}, 'schemas': {}},
+        'components': expected_components,
         'info': {'title': 'title', 'version': '1.0.0'},
         'openapi': '3.0.3',
         'paths': {
