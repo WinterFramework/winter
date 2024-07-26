@@ -24,7 +24,7 @@ from winter.core.utils import TypeWrapper
 from winter.data.pagination import Page
 from winter.web.routing import get_route
 from winter_openapi import generate_openapi
-from winter_openapi.generator import CanNotInspectReturnType
+from winter_openapi.generator import CanNotInspectType
 
 
 class IntegerValueEnum(Enum):
@@ -101,30 +101,107 @@ class RequestBodyWithUndefined:
     field_b: Union[str, Undefined] = Undefined()
 
 
-@pytest.mark.parametrize('type_hint, expected_response_info', [
-    (TestType, {'schema': {'format': 'int32', 'type': 'integer'}}),
-    (Id, {'schema': {'format': 'int32', 'type': 'integer'}}),
-    (uuid.UUID, {'schema': {'format': 'uuid', 'type': 'string'}}),
-    (bool, {'schema': {'type': 'boolean'}}),
-    (dict, {'schema': {'type': 'object'}}),
-    (float, {'schema': {'format': 'float', 'type': 'number'}}),
-    (decimal.Decimal, {'schema': {'format': 'decimal', 'type': 'string'}}),
-    (Optional[int], {'schema': {'format': 'int32', 'type': 'integer', 'nullable': True}}),
-    (datetime.datetime, {'schema': {'format': 'date-time', 'type': 'string'}}),
-    (datetime.date, {'schema': {'format': 'date', 'type': 'string'}}),
-    (int, {'schema': {'format': 'int32', 'type': 'integer'}}),
-    (str, {'schema': {'type': 'string'}}),
-    (bytes, {'schema': {'format': 'bytes', 'type': 'string'}}),
-    (IntegerEnum, {'schema': {'enum': [1, 2], 'format': 'int32', 'type': 'integer'}}),
-    (IntegerValueEnum, {'schema': {'enum': [1, 2], 'format': 'int32', 'type': 'integer'}}),
-    (StringValueEnum, {'schema': {'enum': ['red', 'green'], 'type': 'string'}}),
-    (StringEnum, {'schema': {'enum': ['RED', 'GREEN'], 'type': 'string'}}),
-    (MixedValueEnum, {'schema': {'enum': [123, 'green'], 'type': 'string'}}),
+@pytest.mark.parametrize('type_hint, expected_response_info, expected_components', [
+    (
+        TestType,
+        {'schema': {'format': 'int32', 'type': 'integer'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        Id,
+        {'schema': {'format': 'int32', 'type': 'integer'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        uuid.UUID,
+        {'schema': {'format': 'uuid', 'type': 'string'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        bool,
+        {'schema': {'type': 'boolean'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        dict,
+        {'schema': {'type': 'object'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        float,
+        {'schema': {'format': 'float', 'type': 'number'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        decimal.Decimal,
+        {'schema': {'format': 'decimal', 'type': 'string'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        Optional[int],
+        {'schema': {'format': 'int32', 'type': 'integer', 'nullable': True}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        datetime.datetime,
+        {'schema': {'format': 'date-time', 'type': 'string'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        datetime.date,
+        {'schema': {'format': 'date', 'type': 'string'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        int,
+        {'schema': {'format': 'int32', 'type': 'integer'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        str,
+        {'schema': {'type': 'string'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        bytes,
+        {'schema': {'format': 'bytes', 'type': 'string'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        IntegerEnum,
+        {'schema': {'enum': [1, 2], 'format': 'int32', 'type': 'integer'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        IntegerValueEnum,
+        {'schema': {'enum': [1, 2], 'format': 'int32', 'type': 'integer'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        StringValueEnum,
+        {'schema': {'enum': ['red', 'green'], 'type': 'string'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        StringEnum,
+        {'schema': {'enum': ['RED', 'GREEN'], 'type': 'string'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        MixedValueEnum,
+        {'schema': {'enum': [123, 'green'], 'type': 'string'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
     (
         List[IntegerValueEnum],
-        {'schema': {'items': {'enum': [1, 2], 'format': 'int32', 'type': 'integer'}, 'type': 'array'}}
+        {'schema': {'items': {'enum': [1, 2], 'format': 'int32', 'type': 'integer'}, 'type': 'array'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
     ),
-    (List[StringValueEnum], {'schema': {'items': {'enum': ['red', 'green'], 'type': 'string'}, 'type': 'array'}}),
+    (
+        List[StringValueEnum],
+        {'schema': {'items': {'enum': ['red', 'green'], 'type': 'string'}, 'type': 'array'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
     (
         Any,
         {
@@ -132,7 +209,8 @@ class RequestBodyWithUndefined:
                 'description': 'Can be any value - string, number, boolean, array or object.',
                 'nullable': False
             }
-        }
+        },
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
     ),
     (
         TypeVarItem,
@@ -141,7 +219,8 @@ class RequestBodyWithUndefined:
                 'description': 'Can be any value - string, number, boolean, array or object.',
                 'nullable': False
             }
-        }
+        },
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
     ),
     (
         Optional[Any],
@@ -150,7 +229,8 @@ class RequestBodyWithUndefined:
                 'description': 'Can be any value - string, number, boolean, array or object.',
                 'nullable': True
             }
-        }
+        },
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
     ),
     (
         List,
@@ -163,6 +243,7 @@ class RequestBodyWithUndefined:
                 'type': 'array',
             },
         },
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
     ),
     (
         List[Any],
@@ -175,25 +256,39 @@ class RequestBodyWithUndefined:
                 'type': 'array',
             },
         },
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
     ),
-    (Set[int], {'schema': {'items': {'format': 'int32', 'type': 'integer'}, 'type': 'array'}}),
+    (
+        Set[int],
+        {'schema': {'items': {'format': 'int32', 'type': 'integer'}, 'type': 'array'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
     (
         Dataclass,
         {
             'schema': {
-                'description': 'Parent data class description',
-                'properties': {
-                    'nested': {
-                        'description': 'doc string for nested field',
-                        'properties': {'nested_number': {'format': 'int32', 'type': 'integer'}},
-                        'required': ['nested_number'],
-                        'title': 'NestedDataclass',
-                        'type': 'object',
+                '$ref': '#/components/schemas/Dataclass',
+            },
+        },
+        {
+            'parameters': {},
+            'responses': {},
+            'schemas': {
+                'Dataclass': {
+                    'description': 'Parent data class description',
+                    'properties': {
+                        'nested': {
+                            'description': 'doc string for nested field',
+                            'properties': {'nested_number': {'format': 'int32', 'type': 'integer'}},
+                            'required': ['nested_number'],
+                            'title': 'NestedDataclass',
+                            'type': 'object',
+                        },
                     },
-                },
-                'required': ['nested'],
-                'title': 'Dataclass',
-                'type': 'object',
+                    'required': ['nested'],
+                    'title': 'Dataclass',
+                    'type': 'object',
+                }
             },
         },
     ),
@@ -201,24 +296,33 @@ class RequestBodyWithUndefined:
         DataclassWithOptionalField,
         {
             'schema': {
-                'description': 'DataclassWithOptionalField description',
-                'properties': {
-                    'nested': {
-                        'nullable': True,
-                        'allOf': [
-                            {
-                                'properties': {'nested_number': {'format': 'int32', 'type': 'integer'}},
-                                'required': ['nested_number'],
-                                'title': 'NestedDataclass',
-                                'type': 'object',
-                                'description': 'NestedDataclass(nested_number: int)',
-                            },
-                        ],
+                '$ref': '#/components/schemas/DataclassWithOptionalField',
+            },
+        },
+        {
+            'parameters': {},
+            'responses': {},
+            'schemas': {
+                'DataclassWithOptionalField': {
+                    'description': 'DataclassWithOptionalField description',
+                    'properties': {
+                        'nested': {
+                            'nullable': True,
+                            'allOf': [
+                                {
+                                    'properties': {'nested_number': {'format': 'int32', 'type': 'integer'}},
+                                    'required': ['nested_number'],
+                                    'title': 'NestedDataclass',
+                                    'type': 'object',
+                                    'description': 'NestedDataclass(nested_number: int)',
+                                },
+                            ],
+                        },
                     },
-                },
-                'required': ['nested'],
-                'title': 'DataclassWithOptionalField',
-                'type': 'object',
+                    'required': ['nested'],
+                    'title': 'DataclassWithOptionalField',
+                    'type': 'object',
+                }
             },
         },
     ),
@@ -226,75 +330,102 @@ class RequestBodyWithUndefined:
         Page[NestedDataclass],
         {
             'schema': {
-                'properties': {
-                    'meta': {
-                        'properties': {
-                            'limit': {'nullable': True, 'type': 'integer'},
-                            'next': {'format': 'uri', 'nullable': True, 'type': 'string'},
-                            'offset': {'nullable': True, 'type': 'integer'},
-                            'previous': {'format': 'uri', 'nullable': True, 'type': 'string'},
-                            'total_count': {'type': 'integer'},
-                        },
-                        'required': ['total_count', 'limit', 'offset', 'previous', 'next'],
-                        'title': 'PageMetaOfNestedDataclass',
-                        'type': 'object',
-                    },
-                    'objects': {
-                        'items': {
-                            'description': 'NestedDataclass(nested_number: int)',
-                            'properties': {'nested_number': {'format': 'int32', 'type': 'integer'}},
-                            'required': ['nested_number'],
-                            'title': 'NestedDataclass',
+                '$ref': '#/components/schemas/PageOfNestedDataclass',
+            },
+        },
+        {
+            'parameters': {},
+            'responses': {},
+            'schemas': {
+                'PageOfNestedDataclass': {
+                    'properties': {
+                        'meta': {
+                            'properties': {
+                                'limit': {'nullable': True, 'type': 'integer'},
+                                'next': {'format': 'uri', 'nullable': True, 'type': 'string'},
+                                'offset': {'nullable': True, 'type': 'integer'},
+                                'previous': {'format': 'uri', 'nullable': True, 'type': 'string'},
+                                'total_count': {'type': 'integer'},
+                            },
+                            'required': ['total_count', 'limit', 'offset', 'previous', 'next'],
+                            'title': 'PageMetaOfNestedDataclass',
                             'type': 'object',
                         },
-                        'type': 'array',
+                        'objects': {
+                            'items': {
+                                'description': 'NestedDataclass(nested_number: int)',
+                                'properties': {'nested_number': {'format': 'int32', 'type': 'integer'}},
+                                'required': ['nested_number'],
+                                'title': 'NestedDataclass',
+                                'type': 'object',
+                            },
+                            'type': 'array',
+                        },
                     },
-                },
-                'required': ['meta', 'objects'],
-                'title': 'PageOfNestedDataclass',
-                'type': 'object',
+                    'required': ['meta', 'objects'],
+                    'title': 'PageOfNestedDataclass',
+                    'type': 'object',
+                }
             },
-        }
+        },
     ),
     (
         CustomPage[int],
         {
             'schema': {
-                'properties': {
-                    'meta': {
-                        'properties': {
-                            'extra': {'type': 'string'},
-                            'limit': {'nullable': True, 'type': 'integer'},
-                            'next': {'format': 'uri', 'nullable': True, 'type': 'string'},
-                            'offset': {'nullable': True, 'type': 'integer'},
-                            'previous': {'format': 'uri', 'nullable': True, 'type': 'string'},
-                            'total_count': {'type': 'integer'}},
-                        'required': ['total_count', 'limit', 'offset', 'previous', 'next', 'extra'],
-                        'title': 'PageMetaOfInteger',
-                        'type': 'object',
-                    },
-                    'objects': {'items': {'format': 'int32', 'type': 'integer'}, 'type': 'array'},
-                },
-                'required': ['meta', 'objects'],
-                'title': 'PageOfInteger',
-                'type': 'object',
+                '$ref': '#/components/schemas/PageOfInteger',
             },
-        }
+        },
+        {
+            'parameters': {},
+            'responses': {},
+            'schemas': {
+                'PageOfInteger': {
+                    'properties': {
+                        'meta': {
+                            'properties': {
+                                'extra': {'type': 'string'},
+                                'limit': {'nullable': True, 'type': 'integer'},
+                                'next': {'format': 'uri', 'nullable': True, 'type': 'string'},
+                                'offset': {'nullable': True, 'type': 'integer'},
+                                'previous': {'format': 'uri', 'nullable': True, 'type': 'string'},
+                                'total_count': {'type': 'integer'}},
+                            'required': ['total_count', 'limit', 'offset', 'previous', 'next', 'extra'],
+                            'title': 'PageMetaOfInteger',
+                            'type': 'object',
+                        },
+                        'objects': {'items': {'format': 'int32', 'type': 'integer'}, 'type': 'array'},
+                    },
+                    'required': ['meta', 'objects'],
+                    'title': 'PageOfInteger',
+                    'type': 'object',
+                }
+            },
+        },
     ),
     (
         DataclassWrapper[NestedDataclass],
         {
             'schema': {
-                'description': 'NestedDataclass(nested_number: int)',
-                'properties': {'nested_number': {'format': 'int32', 'type': 'integer'}},
-                'required': ['nested_number'],
-                'title': 'NestedDataclass',
-                'type': 'object',
+                '$ref': '#/components/schemas/NestedDataclass',
+            },
+        },
+        {
+            'parameters': {},
+            'responses': {},
+            'schemas': {
+                'NestedDataclass': {
+                    'description': 'NestedDataclass(nested_number: int)',
+                    'properties': {'nested_number': {'format': 'int32', 'type': 'integer'}},
+                    'required': ['nested_number'],
+                    'title': 'NestedDataclass',
+                    'type': 'object',
+                }
             },
         },
     ),
 ])
-def test_response_return_type(type_hint, expected_response_info):
+def test_response_return_type(type_hint, expected_response_info, expected_components):
     class _TestAPI:
         @winter.route_get('/types/')
         def simple_method(self) -> type_hint:  # pragma: no cover
@@ -314,7 +445,6 @@ def test_response_return_type(type_hint, expected_response_info):
             },
         },
         'tags': ['types'],
-
     }
     # Act
     result = generate_openapi(title='title', version='1.0.0', routes=[route])
@@ -322,6 +452,7 @@ def test_response_return_type(type_hint, expected_response_info):
     # Assert
     method_info = result['paths']['/types/']['get']
     assert method_info == expected_method_info, type_hint
+    assert result['components'] == expected_components
 
 
 def test_response_with_invalid_return_type():
@@ -332,39 +463,53 @@ def test_response_with_invalid_return_type():
 
     route = get_route(_TestAPI.with_invalid_return_type)
 
-    with pytest.raises(CanNotInspectReturnType) as e:
+    with pytest.raises(CanNotInspectType) as e:
         # Act
         generate_openapi(title='title', version='1.0.0', routes=[route])
 
     assert repr(e.value) == (
-        'CanNotInspectReturnType(test_api_request_and_response_spec._TestAPI.with_invalid_return_type: '
+        'CanNotInspectType(test_api_request_and_response_spec._TestAPI.with_invalid_return_type: '
         "-> <class 'object'>: Unknown type: <class 'object'>)"
     )
 
 
-@pytest.mark.parametrize('type_hint, expected_request_body_spec', [
+@pytest.mark.parametrize('type_hint, expected_request_body_spec, expected_components', [
     (
         List[IntegerValueEnum],
-        {'schema': {'items': {'enum': [1, 2], 'format': 'int32', 'type': 'integer'}, 'type': 'array'}}
+        {'schema': {'items': {'enum': [1, 2], 'format': 'int32', 'type': 'integer'}, 'type': 'array'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
     ),
-    (List[StringValueEnum], {'schema': {'items': {'enum': ['red', 'green'], 'type': 'string'}, 'type': 'array'}}),
+    (
+        List[StringValueEnum],
+        {'schema': {'items': {'enum': ['red', 'green'], 'type': 'string'}, 'type': 'array'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
     (
         Dataclass,
         {
             'schema': {
-                'description': 'Parent data class description',
-                'properties': {
-                    'nested': {
-                        'description': 'doc string for nested field',
-                        'properties': {'nested_number': {'format': 'int32', 'type': 'integer'}},
-                        'required': ['nested_number'],
-                        'title': 'NestedDataclassInput',
-                        'type': 'object',
+                '$ref': '#/components/schemas/DataclassInput',
+            },
+        },
+        {
+            'parameters': {},
+            'responses': {},
+            'schemas': {
+                'DataclassInput': {
+                    'description': 'Parent data class description',
+                    'properties': {
+                        'nested': {
+                            'description': 'doc string for nested field',
+                            'properties': {'nested_number': {'format': 'int32', 'type': 'integer'}},
+                            'required': ['nested_number'],
+                            'title': 'NestedDataclassInput',
+                            'type': 'object',
+                        },
                     },
+                    'required': ['nested'],
+                    'title': 'DataclassInput',
+                    'type': 'object',
                 },
-                'required': ['nested'],
-                'title': 'DataclassInput',
-                'type': 'object',
             },
         },
     ),
@@ -372,18 +517,27 @@ def test_response_with_invalid_return_type():
         RequestBodyWithUndefined,
         {
             'schema': {
-                'title': 'RequestBodyWithUndefinedInput',
-                'description': 'Some description',
-                'type': 'object',
-                'properties': {
-                    'field_a': {'type': 'string'},
-                    'field_b': {'type': 'string'},
+                '$ref': '#/components/schemas/RequestBodyWithUndefinedInput',
+            },
+        },
+        {
+            'parameters': {},
+            'responses': {},
+            'schemas': {
+                'RequestBodyWithUndefinedInput': {
+                    'title': 'RequestBodyWithUndefinedInput',
+                    'description': 'Some description',
+                    'type': 'object',
+                    'properties': {
+                        'field_a': {'type': 'string'},
+                        'field_b': {'type': 'string'},
+                    },
                 },
             },
         },
     ),
 ])
-def test_request_type(type_hint, expected_request_body_spec):
+def test_request_type(type_hint, expected_request_body_spec, expected_components):
     class _TestAPI:
         @winter.route_post('/types/')
         @winter.request_body('data')
@@ -398,3 +552,4 @@ def test_request_type(type_hint, expected_request_body_spec):
     # Assert
     method_info = result['paths']['/types/']['post']['requestBody']
     assert method_info == {'content': {'application/json': expected_request_body_spec}, 'required': False}
+    assert result['components'] == expected_components

@@ -65,11 +65,7 @@ def test_generate_spec_for_media_type_consumes():
                     'content': {
                         'application/xml': {
                             'schema': {
-                                'description': 'Data(field1: str)',
-                                'properties': {'field1': {'type': 'string'}},
-                                'required': ['field1'],
-                                'title': 'DataInput',
-                                'type': 'object',
+                                '$ref': '#/components/schemas/DataInput',
                             },
                         },
                     },
@@ -79,4 +75,17 @@ def test_generate_spec_for_media_type_consumes():
                 'tags': ['xml'],
             },
         },
+    }
+    assert result['components'] == {
+        'schemas': {
+            'DataInput': {
+                'description': 'Data(field1: str)',
+                'properties': {'field1': {'type': 'string'}},
+                'required': ['field1'],
+                'title': 'DataInput',
+                'type': 'object',
+            },
+        },
+        'parameters': {},
+        'responses': {},
     }
