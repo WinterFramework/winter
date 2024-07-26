@@ -37,6 +37,7 @@ TestType = NewType('TestType', int)
 
 @dataclass
 class NestedDataclass:
+    """NestedDataclass"""
     nested_number: int
 
 
@@ -275,7 +276,7 @@ class RequestBodyWithUndefined:
             'responses': {},
             'schemas': {
                 'NestedDataclass': {
-                    'description': 'NestedDataclass(nested_number: int)',
+                    'description': 'NestedDataclass',
                     'properties': {'nested_number': {'format': 'int32', 'type': 'integer'}},
                     'required': ['nested_number'],
                     'title': 'NestedDataclass',
@@ -311,7 +312,7 @@ class RequestBodyWithUndefined:
                     'required': ['nested_number'],
                     'title': 'NestedDataclass',
                     'type': 'object',
-                    'description': 'NestedDataclass(nested_number: int)',
+                    'description': 'NestedDataclass',
                 },
                 'DataclassWithOptionalField': {
                     'description': 'DataclassWithOptionalField description',
@@ -344,10 +345,6 @@ class RequestBodyWithUndefined:
             'responses': {},
             'schemas': {
                 'PageMetaOfNestedDataclass': {
-                    'description': (
-                        'PageMetaOfNestedDataclass(total_count: int, limit: Union[int, NoneType], '
-                        'offset: Union[int, NoneType], previous: Union[str, NoneType], next: Union[str, NoneType])'
-                    ),
                     'properties': {
                         'limit': {'format': 'int32', 'nullable': True, 'type': 'integer'},
                         'offset': {'format': 'int32', 'nullable': True, 'type': 'integer'},
@@ -360,18 +357,13 @@ class RequestBodyWithUndefined:
                     'type': 'object',
                 },
                 'NestedDataclass': {
-                    'description': 'NestedDataclass(nested_number: int)',
+                    'description': 'NestedDataclass',
                     'properties': {'nested_number': {'format': 'int32', 'type': 'integer'}},
                     'required': ['nested_number'],
                     'title': 'NestedDataclass',
                     'type': 'object',
                 },
                 'PageOfNestedDataclass': {
-                    'description': (
-                        'PageOfNestedDataclass('
-                        'meta: winter_openapi.inspectors.page_inspector.PageMetaOfNestedDataclass, '
-                        'objects: List[test_api_request_and_response_spec.NestedDataclass])'
-                    ),
                     'properties': {
                         'meta': {
                             '$ref': '#/components/schemas/PageMetaOfNestedDataclass',
@@ -402,11 +394,6 @@ class RequestBodyWithUndefined:
             'responses': {},
             'schemas': {
                 'PageMetaOfInteger': {
-                    'description': (
-                        'PageMetaOfInteger(total_count: int, limit: Union[int, NoneType], '
-                        'offset: Union[int, NoneType], previous: Union[str, NoneType], next: Union[str, NoneType], '
-                        'extra: str)'
-                    ),
                     'properties': {
                         'extra': {'type': 'string'},
                         'limit': {'format': 'int32', 'nullable': True, 'type': 'integer'},
@@ -419,10 +406,6 @@ class RequestBodyWithUndefined:
                     'type': 'object',
                 },
                 'PageOfInteger': {
-                    'description': (
-                        'PageOfInteger(meta: winter_openapi.inspectors.page_inspector.PageMetaOfInteger, '
-                        'objects: List[int])'
-                    ),
                     'properties': {
                         'meta': {
                             '$ref': '#/components/schemas/PageMetaOfInteger',
@@ -448,7 +431,7 @@ class RequestBodyWithUndefined:
             'responses': {},
             'schemas': {
                 'NestedDataclass': {
-                    'description': 'NestedDataclass(nested_number: int)',
+                    'description': 'NestedDataclass',
                     'properties': {'nested_number': {'format': 'int32', 'type': 'integer'}},
                     'required': ['nested_number'],
                     'title': 'NestedDataclass',
@@ -529,7 +512,7 @@ def test_response_with_invalid_return_type():
             'responses': {},
             'schemas': {
                 'NestedDataclassInput': {
-                    'description': 'NestedDataclass(nested_number: int)',
+                    'description': 'NestedDataclass',
                     'properties': {'nested_number': {'format': 'int32', 'type': 'integer'}},
                     'required': ['nested_number'],
                     'title': 'NestedDataclassInput',
@@ -627,7 +610,7 @@ def test_reuse_schema():
             'responses': {},
             'schemas': {
                 'NestedDataclass': {
-                    'description': 'NestedDataclass(nested_number: int)',
+                    'description': 'NestedDataclass',
                     'properties': {
                         'nested_number': {
                             'format': 'int32',
@@ -639,7 +622,7 @@ def test_reuse_schema():
                     'type': 'object',
                 },
                 'NestedDataclassInput': {
-                    'description': 'NestedDataclass(nested_number: int)',
+                    'description': 'NestedDataclass',
                     'properties': {
                         'nested_number': {
                             'format': 'int32',

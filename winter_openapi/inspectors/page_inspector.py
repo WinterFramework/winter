@@ -33,6 +33,7 @@ def inspect_page(hint_class) -> TypeInfo:
             },
         ),
     )
+    PageMetaDataclass.__doc__ = ''
     PageDataclass = dataclasses.dataclass(
         type(
             f'PageOf{title}',
@@ -45,5 +46,6 @@ def inspect_page(hint_class) -> TypeInfo:
             },
         ),
     )
+    PageDataclass.__doc__ = ''
 
     return inspect_type(PageDataclass)
