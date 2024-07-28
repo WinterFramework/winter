@@ -38,10 +38,10 @@ from winter.web.request_body_annotation import RequestBodyAnnotation
 from winter.web.routing import Route
 from winter.web.routing import RouteAnnotation
 from winter_openapi.inspection.inspection import inspect_type
+from .inspection import DataTypes
 from .inspection import TypeInfo
 from .inspection.inspection import InspectorNotFound
 from .inspectors import get_route_parameters_inspectors
-from .type_info_converter import convert_type_info_to_openapi_schema
 
 
 class SchemaRegistry:
@@ -54,7 +54,7 @@ class SchemaRegistry:
             type_info = inspect_type(type_info)
         schema = self._schemas.get((type_info.hint_class, output))
         if not schema:
-            schema = convert_type_info_to_openapi_schema(type_info, output=output, schema_registry=self)
+            schema = self.build_schema(type_info, output=output)
             if not schema.title:
                 return schema
             if schema.nullable:
@@ -80,6 +80,59 @@ class SchemaRegistry:
             schema.title: schema
             for schema in self._schemas.values()
         }
+
+    def build_schema(self, type_info: TypeInfo, *, output: bool) -> Schema:
+        if type_info.type_ == DataTypes.ANY:
+            return Schema(
+                description='Can be any value - string, number, boolean, array or object.',
+                nullable=type_info.nullable,
+            )
+
+        data = {
+            'type': type_info.type_,
+        }
+
+        if type_info.nullable:
+            data['nullable'] = True
+
+        if type_info.title:
+            data['title'] = type_info.title if output else f'{type_info.title}Input'
+
+        if type_info.description:
+            data['description'] = type_info.description
+
+        if type_info.format_ is not None:
+            data['schema_format'] = type_info.format_
+
+        if type_info.child is not None:
+            data['items'] = self.get_schema_or_reference(type_info.child, output=output)
+
+        if type_info.enum is not None:
+            data['enum'] = type_info.enum
+
+        if type_info.properties:
+            sorted_keys = sorted(type_info.properties.keys())
+            data['properties'] = {
+                key: self.get_schema_or_reference(type_info.properties[key], output=output)
+                for key in sorted_keys
+            }
+
+        if output:
+            required_properties = list(type_info.properties)
+        else:
+            required_properties = [
+                property_name
+                for property_name in type_info.properties
+                if property_name not in type_info.properties_defaults
+                   and not type_info.properties[property_name].nullable
+                   and not type_info.properties[property_name].can_be_undefined
+            ]
+
+        if required_properties:
+            data['required'] = required_properties
+
+        return Schema(**data)
+
 
 def generate_openapi(
     title: str,
