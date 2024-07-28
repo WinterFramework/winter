@@ -8,6 +8,7 @@ from winter_openapi.inspection import TypeInfo
 if TYPE_CHECKING:
     from winter_openapi.generator import SchemaRegistry
 
+
 def convert_type_info_to_openapi_schema(value: TypeInfo, *, output: bool, schema_registry: 'SchemaRegistry') -> Schema:
     if value.type_ == DataTypes.ANY:
         return Schema(
@@ -19,7 +20,7 @@ def convert_type_info_to_openapi_schema(value: TypeInfo, *, output: bool, schema
         'type': value.type_,
     }
 
-    if value.type_ != DataTypes.OBJECT and value.nullable:
+    if value.nullable:
         data['nullable'] = True
 
     if value.title:
@@ -32,7 +33,7 @@ def convert_type_info_to_openapi_schema(value: TypeInfo, *, output: bool, schema
         data['schema_format'] = value.format_
 
     if value.child is not None:
-        data['items'] = schema_registry.get_schema_or_reference(value.child.hint_class, output=output)
+        data['items'] = schema_registry.get_schema_or_reference(value.child, output=output)
 
     if value.enum is not None:
         data['enum'] = value.enum
@@ -40,7 +41,7 @@ def convert_type_info_to_openapi_schema(value: TypeInfo, *, output: bool, schema
     if value.properties:
         sorted_keys = sorted(value.properties.keys())
         data['properties'] = {
-            key: schema_registry.get_schema_or_reference(value.properties[key].hint_class, output=output)
+            key: schema_registry.get_schema_or_reference(value.properties[key], output=output)
             for key in sorted_keys
         }
 

@@ -38,6 +38,7 @@ from winter.web.request_body_annotation import RequestBodyAnnotation
 from winter.web.routing import Route
 from winter.web.routing import RouteAnnotation
 from winter_openapi.inspection.inspection import inspect_type
+from .inspection import TypeInfo
 from .inspection.inspection import InspectorNotFound
 from .inspectors import get_route_parameters_inspectors
 from .type_info_converter import convert_type_info_to_openapi_schema
@@ -48,19 +49,22 @@ class SchemaRegistry:
         self._schemas: Dict[Tuple[Type, bool], Schema] = {}
         self._types_by_titles: Dict[str, Type] = {}
 
-    def get_schema_or_reference(self, type_: Type, output: bool) -> Union[Schema, Reference]:
-        type_info = inspect_type(type_)
-        schema = self._schemas.get((type_, output))
+    def get_schema_or_reference(self, type_info: Union[Type, TypeInfo], output: bool) -> Union[Schema, Reference]:
+        if not isinstance(type_info, TypeInfo):
+            type_info = inspect_type(type_info)
+        schema = self._schemas.get((type_info.hint_class, output))
         if not schema:
             schema = convert_type_info_to_openapi_schema(type_info, output=output, schema_registry=self)
             if not schema.title:
                 return schema
-            self._schemas[type_, output] = schema
+            if schema.nullable:
+                schema.nullable = None
+            self._schemas[type_info.hint_class, output] = schema
 
         if schema.title not in self._types_by_titles:
-            self._types_by_titles[schema.title] = type_
-        elif self._types_by_titles[schema.title] != type_:
-            raise ValueError(f'Title {schema.title} for type {type_} is already used for another type: {self._types_by_titles[schema.title]}')
+            self._types_by_titles[schema.title] = type_info.hint_class
+        elif self._types_by_titles[schema.title] != type_info.hint_class:
+            raise ValueError(f'Title {schema.title} for type {type_info.hint_class} is already used for another type: {self._types_by_titles[schema.title]}')
 
         reference = Reference(ref='#/components/schemas/' + schema.title)
 
