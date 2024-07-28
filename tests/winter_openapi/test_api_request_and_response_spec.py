@@ -574,34 +574,73 @@ def test_request_type(type_hint, expected_request_body_spec, expected_components
     assert result['components'] == expected_components
 
 
+@dataclass
+class DataclassWithUndefined:
+    """DataclassWithUndefined description"""
+    nested: Union[Dataclass, Undefined]
+    nested_2: Union[Dataclass, Undefined, None]
+
+
 def test_reuse_schema():
     class _TestAPI:  # pragma: no cover
-        @winter.route_get('/method_1/')
-        def method_1(self) -> Dataclass:
+        @winter.route_get('/method_return_1/')
+        def method_return_1(self) -> Dataclass:
             pass
 
-        @winter.route_get('/method_2/')
-        def method_2(self) -> Dataclass:
+        @winter.route_get('/method_return_2/')
+        def method_return_2(self) -> Dataclass:
             pass
 
-        @winter.route_post('/method_3/')
+        @winter.route_get('/method_return_optional_1/')
+        def method_return_optional_1(self) -> Optional[Dataclass]:
+            pass
+
+        @winter.route_get('/method_return_optional_2/')
+        def method_return_optional_2(self) -> Optional[Dataclass]:
+            pass
+
+        @winter.route_get('/method_return_with_undefined_1/')
+        def method_return_with_undefined_1(self) -> DataclassWithUndefined:
+            pass
+
+        @winter.route_get('/method_return_with_undefined_2/')
+        def method_return_with_undefined_2(self) -> DataclassWithUndefined:
+            pass
+
+        @winter.route_post('/method_request_body_1/')
         @winter.request_body('data')
-        def method_3(self, data: Dataclass):
+        def method_request_body_1(self, data: Dataclass):
             pass
 
-        @winter.route_post('/method_4/')
+        @winter.route_post('/method_request_body_2/')
         @winter.request_body('data')
-        def method_4(self, data: Dataclass):
+        def method_request_body_2(self, data: Dataclass):
+            pass
+
+        @winter.route_post('/method_request_body_undefined_1/')
+        @winter.request_body('data')
+        def method_request_body_undefined_1(self, data: DataclassWithUndefined):
+            pass
+
+        @winter.route_post('/method_request_body_undefined_2/')
+        @winter.request_body('data')
+        def method_request_body_undefined_2(self, data: DataclassWithUndefined):
             pass
 
     result = generate_openapi(
         title='title',
         version='1.0.0',
         routes=[
-            get_route(_TestAPI.method_1),
-            get_route(_TestAPI.method_2),
-            get_route(_TestAPI.method_3),
-            get_route(_TestAPI.method_4),
+            get_route(_TestAPI.method_return_1),
+            get_route(_TestAPI.method_return_2),
+            get_route(_TestAPI.method_return_optional_1),
+            get_route(_TestAPI.method_return_optional_2),
+            get_route(_TestAPI.method_return_with_undefined_1),
+            get_route(_TestAPI.method_return_with_undefined_2),
+            get_route(_TestAPI.method_request_body_1),
+            get_route(_TestAPI.method_request_body_2),
+            get_route(_TestAPI.method_request_body_undefined_1),
+            get_route(_TestAPI.method_request_body_undefined_2),
         ],
     )
     assert result == {
@@ -655,15 +694,48 @@ def test_reuse_schema():
                     'title': 'DataclassInput',
                     'type': 'object',
                 },
+                'DataclassWithUndefined': {
+                    'description': 'DataclassWithUndefined description',
+                    'properties': {
+                        'nested': {
+                            '$ref': '#/components/schemas/Dataclass',
+                        },
+                        'nested_2': {
+                            'nullable': True,
+                            'allOf': [
+                                {'$ref': '#/components/schemas/Dataclass'},
+                            ],
+                        },
+                    },
+                    'required': ['nested', 'nested_2'],
+                    'title': 'DataclassWithUndefined',
+                    'type': 'object',
+                },
+                'DataclassWithUndefinedInput': {
+                    'description': 'DataclassWithUndefined description',
+                    'properties': {
+                        'nested': {
+                            '$ref': '#/components/schemas/DataclassInput',
+                        },
+                        'nested_2': {
+                            'nullable': True,
+                            'allOf': [
+                                {'$ref': '#/components/schemas/DataclassInput'},
+                            ],
+                        },
+                    },
+                    'title': 'DataclassWithUndefinedInput',
+                    'type': 'object',
+                },
             },
         },
         'info': {'title': 'title', 'version': '1.0.0'},
         'openapi': '3.0.3',
         'paths': {
-            '/method_1/': {
+            '/method_return_1/': {
                 'get': {
                     'deprecated': False,
-                    'operationId': '_TestAPI.method_1',
+                    'operationId': '_TestAPI.method_return_1',
                     'parameters': [],
                     'responses': {
                         '200': {
@@ -675,13 +747,13 @@ def test_reuse_schema():
                             'description': '',
                         },
                     },
-                    'tags': ['method_1'],
+                    'tags': ['method_return_1'],
                 },
             },
-            '/method_2/': {
+            '/method_return_2/': {
                 'get': {
                     'deprecated': False,
-                    'operationId': '_TestAPI.method_2',
+                    'operationId': '_TestAPI.method_return_2',
                     'parameters': [],
                     'responses': {
                         '200': {
@@ -693,13 +765,99 @@ def test_reuse_schema():
                             'description': '',
                         },
                     },
-                    'tags': ['method_2'],
+                    'tags': ['method_return_2'],
                 },
             },
-            '/method_3/': {
+            '/method_return_optional_1/': {
+                'get': {
+                    'deprecated': False,
+                    'operationId': '_TestAPI.method_return_optional_1',
+                    'parameters': [],
+                    'responses': {
+                        '200': {
+                            'content': {
+                                'application/json': {
+                                    'schema': {
+                                        'nullable': True,
+                                        'allOf': [
+                                            {'$ref': '#/components/schemas/Dataclass'},
+                                        ],
+                                    },
+                                },
+                            },
+                            'description': '',
+                        },
+                    },
+                    'tags': ['method_return_optional_1'],
+                },
+            },
+            '/method_return_optional_2/': {
+                'get': {
+                    'deprecated': False,
+                    'operationId': '_TestAPI.method_return_optional_2',
+                    'parameters': [],
+                    'responses': {
+                        '200': {
+                            'content': {
+                                'application/json': {
+                                    'schema': {
+                                        'nullable': True,
+                                        'allOf': [
+                                            {'$ref': '#/components/schemas/Dataclass'},
+                                        ],
+                                    },
+                                },
+                            },
+                            'description': '',
+                        },
+                    },
+                    'tags': ['method_return_optional_2'],
+                },
+            },
+            '/method_return_with_undefined_1/': {
+                'get': {
+                    'deprecated': False,
+                    'operationId': '_TestAPI.method_return_with_undefined_1',
+                    'parameters': [],
+                    'responses': {
+                        '200': {
+                            'content': {
+                                'application/json': {
+                                    'schema': {
+                                        '$ref': '#/components/schemas/DataclassWithUndefined',
+                                    },
+                                },
+                            },
+                            'description': '',
+                        },
+                    },
+                    'tags': ['method_return_with_undefined_1'],
+                },
+            },
+            '/method_return_with_undefined_2/': {
+                'get': {
+                    'deprecated': False,
+                    'operationId': '_TestAPI.method_return_with_undefined_2',
+                    'parameters': [],
+                    'responses': {
+                        '200': {
+                            'content': {
+                                'application/json': {
+                                    'schema': {
+                                        '$ref': '#/components/schemas/DataclassWithUndefined',
+                                    },
+                                },
+                            },
+                            'description': '',
+                        },
+                    },
+                    'tags': ['method_return_with_undefined_2'],
+                },
+            },
+            '/method_request_body_1/': {
                 'post': {
                     'deprecated': False,
-                    'operationId': '_TestAPI.method_3',
+                    'operationId': '_TestAPI.method_request_body_1',
                     'parameters': [],
                     'requestBody': {
                         'content': {
@@ -712,13 +870,13 @@ def test_reuse_schema():
                     'responses': {
                         '200': {'description': ''},
                     },
-                    'tags': ['method_3'],
+                    'tags': ['method_request_body_1'],
                 },
             },
-            '/method_4/': {
+            '/method_request_body_2/': {
                 'post': {
                     'deprecated': False,
-                    'operationId': '_TestAPI.method_4',
+                    'operationId': '_TestAPI.method_request_body_2',
                     'parameters': [],
                     'requestBody': {
                         'content': {
@@ -731,7 +889,45 @@ def test_reuse_schema():
                     'responses': {
                         '200': {'description': ''},
                     },
-                    'tags': ['method_4'],
+                    'tags': ['method_request_body_2'],
+                },
+            },
+            '/method_request_body_undefined_1/': {
+                'post': {
+                    'deprecated': False,
+                    'operationId': '_TestAPI.method_request_body_undefined_1',
+                    'parameters': [],
+                    'requestBody': {
+                        'content': {
+                            'application/json': {
+                                'schema': {'$ref': '#/components/schemas/DataclassWithUndefinedInput'},
+                            },
+                        },
+                        'required': False,
+                    },
+                    'responses': {
+                        '200': {'description': ''},
+                    },
+                    'tags': ['method_request_body_undefined_1'],
+                },
+            },
+            '/method_request_body_undefined_2/': {
+                'post': {
+                    'deprecated': False,
+                    'operationId': '_TestAPI.method_request_body_undefined_2',
+                    'parameters': [],
+                    'requestBody': {
+                        'content': {
+                            'application/json': {
+                                'schema': {'$ref': '#/components/schemas/DataclassWithUndefinedInput'},
+                            },
+                        },
+                        'required': False
+                    },
+                    'responses': {
+                        '200': {'description': ''},
+                    },
+                    'tags': ['method_request_body_undefined_2'],
                 },
             },
         },

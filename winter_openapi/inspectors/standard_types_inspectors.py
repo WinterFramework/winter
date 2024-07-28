@@ -132,7 +132,6 @@ def inspect_optional(hint_class) -> TypeInfo:
     child_type = hint_class.__args__[0]
     schema = inspect_type(child_type)
     schema.nullable = True
-    schema.hint_class = hint_class
     return schema
 
 
@@ -149,10 +148,6 @@ def inspect_dataclass(hint_class) -> TypeInfo:
         field.name: inspect_type(field.type)
         for field in fields
     }
-    for field_name, type_info in properties.items():
-        field_description = docstring.get_argument_description(field_name)
-        if field_description:
-            type_info.description = field_description
 
     defaults = {
         field.name: field.default
