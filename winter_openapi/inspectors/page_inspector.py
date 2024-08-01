@@ -1,6 +1,8 @@
 import dataclasses
+from typing import Dict
 from typing import List
 from typing import Optional
+from typing import Type
 
 from winter.data.pagination import Page
 from winter_openapi.inspection.type_info import TypeInfo
@@ -8,12 +10,10 @@ from winter_openapi.inspectors.standard_types_inspectors import inspect_type
 from winter_openapi.inspectors.standard_types_inspectors import register_type_inspector
 
 
-# noinspection PyUnusedLocal
-@register_type_inspector(Page)
-def inspect_page(hint_class) -> TypeInfo:
-    args = getattr(hint_class, '__args__', None)
+def create_dataclass(page_type: Type) -> Type:
+    args = getattr(page_type, '__args__', None)
     child_class = args[0] if args else str
-    extra_fields = set(dataclasses.fields(hint_class.__origin__)) - set(dataclasses.fields(Page))
+    extra_fields = set(dataclasses.fields(page_type.__origin__)) - set(dataclasses.fields(Page))
     child_type_info = inspect_type(child_class)
     title = child_type_info.title or child_type_info.type_.capitalize()
 
@@ -47,5 +47,16 @@ def inspect_page(hint_class) -> TypeInfo:
         ),
     )
     PageDataclass.__doc__ = ''
+    return PageDataclass
 
-    return inspect_type(PageDataclass)
+
+page_to_dataclass_map: Dict[Type, Type] = {}
+
+
+# noinspection PyUnusedLocal
+@register_type_inspector(Page)
+def inspect_page(hint_class) -> TypeInfo:
+    if hint_class not in page_to_dataclass_map:
+        page_to_dataclass_map[hint_class] = create_dataclass(hint_class)
+    page_dataclass = page_to_dataclass_map[hint_class]
+    return inspect_type(page_dataclass)

@@ -581,7 +581,7 @@ class DataclassWithUndefined:
     nested_2: Union[Dataclass, Undefined, None]
 
 
-def test_reuse_schema():
+def test_reuse_dataclass_schema():
     class _TestAPI:  # pragma: no cover
         @winter.route_get('/method_return_1/')
         def method_return_1(self) -> Dataclass:
@@ -928,6 +928,99 @@ def test_reuse_schema():
                         '200': {'description': ''},
                     },
                     'tags': ['method_request_body_undefined_2'],
+                },
+            },
+        },
+        'servers': [{'url': '/'}],
+        'tags': [],
+    }
+
+
+def test_reuse_page_schema():
+    class _TestAPI:  # pragma: no cover
+        @winter.route_get('/method_1/')
+        def method_1(self) -> Page[str]:
+            pass
+
+        @winter.route_get('/method_2/')
+        def method_2(self) -> Page[str]:
+            pass
+
+    result = generate_openapi(
+        title='title',
+        version='1.0.0',
+        routes=[
+            get_route(_TestAPI.method_1),
+            get_route(_TestAPI.method_2),
+        ],
+    )
+    assert result == {
+        'components': {
+            'parameters': {},
+            'responses': {},
+            'schemas': {
+                'PageMetaOfString': {
+                    'properties': {
+                        'limit': {'format': 'int32', 'nullable': True, 'type': 'integer'},
+                        'next': {'nullable': True, 'type': 'string'},
+                        'offset': {'format': 'int32', 'nullable': True, 'type': 'integer'},
+                        'previous': {'nullable': True, 'type': 'string'},
+                        'total_count': {'format': 'int32', 'type': 'integer'},
+                    },
+                    'required': ['total_count', 'limit', 'offset', 'previous', 'next'],
+                    'title': 'PageMetaOfString',
+                    'type': 'object'},
+                'PageOfString': {
+                    'properties': {
+                        'meta': {'$ref': '#/components/schemas/PageMetaOfString'},
+                        'objects': {
+                            'items': {'type': 'string'},
+                            'type': 'array'
+                        }
+                    },
+                    'required': ['meta', 'objects'],
+                    'title': 'PageOfString',
+                    'type': 'object',
+                },
+            },
+        },
+        'info': {'title': 'title', 'version': '1.0.0'},
+        'openapi': '3.0.3',
+        'paths': {
+            '/method_1/': {
+                'get': {
+                    'deprecated': False,
+                    'operationId': '_TestAPI.method_1',
+                    'parameters': [],
+                    'responses': {
+                        '200': {
+                            'content': {
+                                'application/json': {
+                                    'schema': {'$ref': '#/components/schemas/PageOfString'},
+                                },
+                            },
+                            'description': '',
+                        },
+                    },
+                    'tags': ['method_1'],
+                },
+            },
+            '/method_2/': {
+                'get': {
+                    'deprecated': False,
+                    'operationId': '_TestAPI.method_2',
+                    'parameters': [],
+                    'responses': {
+                        '200': {
+                            'content': {
+                                'application/json': {
+                                    'schema': {'$ref': '#/components/schemas/PageOfString'},
+                                },
+                            },
+                            'description': '',
+                        },
+                    },
+                    'tags': ['method_2'],
                 },
             },
         },
