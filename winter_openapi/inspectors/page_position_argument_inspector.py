@@ -23,7 +23,6 @@ class PagePositionArgumentsInspector(RouteParametersInspector):
             description='Number of results to return per page',
             required=False,
             param_in="query",
-            type=DataTypes.INTEGER,
             param_schema=Schema(type=DataTypes.INTEGER),
         )
         self.offset_parameter = Parameter(
@@ -31,7 +30,6 @@ class PagePositionArgumentsInspector(RouteParametersInspector):
             description='The initial index from which to return the results',
             required=False,
             param_in="query",
-            type=DataTypes.INTEGER,
             param_schema=Schema(type=DataTypes.INTEGER)
         )
 

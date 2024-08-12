@@ -72,7 +72,6 @@ class QueryParametersInspector(RouteParametersInspector):
             description='',
             required=field.default is dataclasses.MISSING,
             param_in='query',
-            default=field.default,
             param_schema=schema,
             explode=query_parameter.explode,
         )
