@@ -115,6 +115,47 @@ def test_query_parameter_inspector_with_explode(type_hint, expected_parameter_pr
     assert parameters == [expected_parameter]
 
 
+@pytest.mark.parametrize('type_hint, default_value, expected_parameter_properties', [
+    (int, 3, {'schema': {'format': 'int32', 'type': 'integer'}}),
+    (str, '12', {'schema': {'type': 'string'}}),
+    (IntegerEnum, IntegerEnum.RED, {'schema': {'enum': [1, 2], 'format': 'int32', 'type': 'integer'}}),
+    (IntegerValueEnum, IntegerValueEnum.RED, {'schema': {'enum': [1, 2], 'format': 'int32', 'type': 'integer'}}),
+    (StringValueEnum, StringValueEnum.RED, {'schema': {'enum': ['red', 'green'], 'type': 'string'}}),
+    (MixedValueEnum, MixedValueEnum.RED, {'schema': {'enum': [123, 'green'], 'type': 'string'}}),
+])
+def test_query_parameter_inspector_with_default_value(type_hint, default_value, expected_parameter_properties):
+    class _TestAPI:
+        @winter.route_get('/resource/{?query_param}')
+        @winter.map_query_parameter('mapped_query_param', to='invalid_query_param')
+        def simple_method(
+            self,
+            query_param: type_hint = default_value,
+        ):  # pragma: no cover
+            """
+            :param query_param: docstr
+            """
+            pass
+
+    expected_parameter = {
+        'name': 'query_param',
+        'in': 'query',
+        'required': False,
+        'allowEmptyValue': False,
+        'allowReserved': False,
+        'deprecated': False,
+        'explode': False,
+        'description': 'docstr',
+        **expected_parameter_properties,
+    }
+    route = get_route(_TestAPI.simple_method)
+    # Act
+    result = generate_openapi(title='title', version='1.0.0', description='Winter api description', routes=[route])
+
+    # Assert
+    parameters = result["paths"]["/resource/"]["get"]["parameters"]
+    assert parameters == [expected_parameter]
+
+
 @pytest.mark.parametrize('type_hint, expected_parameter_properties', param_with_diff_types)
 def test_path_parameter_different_types(type_hint, expected_parameter_properties):
     class _TestAPI:

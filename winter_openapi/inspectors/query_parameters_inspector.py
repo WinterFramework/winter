@@ -55,7 +55,6 @@ class QueryParametersInspector(RouteParametersInspector):
             description=argument.description,
             required=argument.required,
             param_in='query',
-            default=argument.get_default(None),
             param_schema=schema,
             explode=query_parameter.explode,
         )
