@@ -33,7 +33,6 @@ class PathParametersInspector(RouteParametersInspector):
             description=argument.description,
             required=argument.required,
             param_in='path',
-            default=argument.get_default(None),
             param_schema=schema,
         )
 

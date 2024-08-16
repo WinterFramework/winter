@@ -31,13 +31,11 @@ class ComponentMethodArgument:
     def parameter(self) -> inspect.Parameter:
         return self.method.signature.parameters[self.name]
 
-    def get_default(self, default=inspect.Parameter.empty) -> Any:
+    def get_default(self) -> Any:
         if self.parameter.default is not inspect.Parameter.empty:
             return self.parameter.default
         if is_optional(self.type_):
             return None
-        if default is not inspect.Parameter.empty:
-            return default
         raise ArgumentDoesNotHaveDefault(self)
 
     @property
