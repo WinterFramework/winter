@@ -1,0 +1,12 @@
+name: Required checks
+
+on:
+  pull_request:
+
+jobs:
+  required-checks:
+    name: Required checks
+    runs-on: ubuntu-22.04
+    needs: [testing]
+    steps:
+      - run: echo "All required checks passed"
