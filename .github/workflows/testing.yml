@@ -43,7 +43,7 @@ jobs:
   coverage-check:
     name: Coverage check
     runs-on: ubuntu-20.04
-    needs: [build]
+    needs: [test]
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.12
