@@ -27,8 +27,8 @@ jobs:
         version: 1.3.2
     - name: Install dependencies
       run: |
-        sed -i.bak 's/^SQLAlchemy = .*/SQLAlchemy = "^${{ matrix.sqlalchemy-version }}"' pyproject.toml
-        sed -i.bak 's/^Django = .*/Django = "^${{ matrix.django-version }}"' pyproject.toml
+        sed -i.bak 's/^SQLAlchemy = .*/SQLAlchemy = "^${{ matrix.sqlalchemy-version }}"/' pyproject.toml
+        sed -i.bak 's/^Django = .*/Django = "^${{ matrix.django-version }}"/' pyproject.toml
         poetry install
     - name: Test with pytest
       run: |
