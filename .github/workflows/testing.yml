@@ -18,11 +18,11 @@ jobs:
           - python-version: '3.8'
             sqlalchemy-version: '1.4'
           - python-version: '3.8'
-            sqlalchemy-version: '4.2'
+            django-version: '4.2'
           - python-version: '3.9'
             sqlalchemy-version: '1.4'
           - python-version: '3.9'
-            sqlalchemy-version: '4.2'
+            django-version: '4.2'
     name: Test Py ${{ matrix.python-version }}, SQLA ${{ matrix.sqlalchemy-version }}, Django ${{ matrix.django-version }}
     steps:
     - uses: actions/checkout@v3
