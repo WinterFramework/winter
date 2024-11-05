@@ -59,7 +59,7 @@ jobs:
         run: |
           pip3 install coverage==7.2.3
       - name: Download coverage reports
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3
         with:
           name: coverage-reports
       - name: Combine reports
