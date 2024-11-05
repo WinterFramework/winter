@@ -39,12 +39,14 @@ jobs:
       run: |
         poetry run pytest -rfs --cov --cov-config=.coveragerc --cov-report="" --disable-warnings
         cp .coverage ".coverage.${{ matrix.python-version }}"
+    - name: Show file structure
+      run: |
+        ls -la
     - name: Upload coverage report
       uses: actions/upload-artifact@v3
       with:
         name: coverage-reports
         path: ".coverage.${{ matrix.python-version }}"
-    - run: ls
 
   coverage-check:
     name: Coverage check
@@ -59,12 +61,14 @@ jobs:
       - name: Install dependencies
         run: |
           pip3 install coverage==7.2.3
+      - name: Show file structure
+        run: |
+          ls -la
       - name: Download coverage reports
         uses: actions/download-artifact@v3
         with:
           name: coverage-reports
           path: coverage-reports
-      - run: ls
       - name: Combine reports
         run: |
           coverage combine coverage-reports
