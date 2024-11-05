@@ -46,6 +46,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: coverage-reports
+        include-hidden-files: true
         path: ".coverage.${{ matrix.python-version }}"
 
   coverage-check:
