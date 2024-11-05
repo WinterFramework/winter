@@ -44,7 +44,7 @@ jobs:
       with:
         name: coverage-reports
         path: ".coverage.${{ matrix.python-version }}"
-    - run: ls -R coverage-reports
+    - run: ls
 
   coverage-check:
     name: Coverage check
@@ -64,7 +64,7 @@ jobs:
         with:
           name: coverage-reports
           path: coverage-reports
-      - run: ls -R coverage-reports
+      - run: ls
       - name: Combine reports
         run: |
           coverage combine coverage-reports
