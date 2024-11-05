@@ -43,6 +43,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: coverage-reports
+        include-hidden-files: true
         path: ".coverage.${{ matrix.python-version }}"
 
   coverage-check:
@@ -59,9 +60,10 @@ jobs:
         run: |
           pip3 install coverage==7.2.3
       - name: Download coverage reports
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v3
         with:
           name: coverage-reports
+          path: coverage-reports
       - name: Combine reports
         run: |
           coverage combine coverage-reports

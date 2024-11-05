@@ -14,21 +14,21 @@ from typing import Union
 
 from django.http.response import HttpResponseBase
 from openapi_pydantic import schema_validate
-from openapi_pydantic.v3.v3_0_3 import Components
-from openapi_pydantic.v3.v3_0_3 import Info
-from openapi_pydantic.v3.v3_0_3 import MediaType as MediaTypeModel
-from openapi_pydantic.v3.v3_0_3 import OpenAPI
-from openapi_pydantic.v3.v3_0_3 import Operation
-from openapi_pydantic.v3.v3_0_3 import Parameter
-from openapi_pydantic.v3.v3_0_3 import PathItem
-from openapi_pydantic.v3.v3_0_3 import Paths
-from openapi_pydantic.v3.v3_0_3 import Reference
-from openapi_pydantic.v3.v3_0_3 import RequestBody
-from openapi_pydantic.v3.v3_0_3 import Response
-from openapi_pydantic.v3.v3_0_3 import Responses
-from openapi_pydantic.v3.v3_0_3 import Schema
-from openapi_pydantic.v3.v3_0_3 import Server
-from openapi_pydantic.v3.v3_0_3 import Tag
+from openapi_pydantic.v3.v3_0 import Components
+from openapi_pydantic.v3.v3_0 import Info
+from openapi_pydantic.v3.v3_0 import MediaType as MediaTypeModel
+from openapi_pydantic.v3.v3_0 import OpenAPI
+from openapi_pydantic.v3.v3_0 import Operation
+from openapi_pydantic.v3.v3_0 import Parameter
+from openapi_pydantic.v3.v3_0 import PathItem
+from openapi_pydantic.v3.v3_0 import Paths
+from openapi_pydantic.v3.v3_0 import Reference
+from openapi_pydantic.v3.v3_0 import RequestBody
+from openapi_pydantic.v3.v3_0 import Response
+from openapi_pydantic.v3.v3_0 import Responses
+from openapi_pydantic.v3.v3_0 import Schema
+from openapi_pydantic.v3.v3_0 import Server
+from openapi_pydantic.v3.v3_0 import Tag
 
 from winter.core import ComponentMethod
 from winter.web import MediaType
