@@ -177,7 +177,6 @@ def test_path_parameter_different_types(type_hint, expected_parameter_properties
         'allowEmptyValue': False,
         'allowReserved': False,
         'deprecated': False,
-        'explode': False,
         'description': 'docstr',
         **expected_parameter_properties,
     }
