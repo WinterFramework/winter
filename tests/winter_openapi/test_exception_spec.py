@@ -31,7 +31,7 @@ def test_global_exception_annotated_on_method():
     assert result == {
         'components': {'parameters': {}, 'responses': {}, 'schemas': {}},
         'info': {'title': 'title', 'version': '1.0.0'},
-        'openapi': '3.0.4',
+        'openapi': '3.0.3',
         'paths': {
             '/resource': {
                 'get': {
@@ -114,7 +114,7 @@ def test_exception_annotated_on_method_with_custom_handler_with_dto(
     assert result == {
         'components': expected_components,
         'info': {'title': 'title', 'version': '1.0.0'},
-        'openapi': '3.0.4',
+        'openapi': '3.0.3',
         'paths': {
             '/resource': {
                 'get': {

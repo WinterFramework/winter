@@ -22,7 +22,7 @@ def test_add_url_segment_as_tag_false():
     assert result == {
         'components': {'parameters': {}, 'responses': {}, 'schemas': {}},
         'info': {'description': 'description', 'title': 'title', 'version': '1.0.0'},
-        'openapi': '3.0.4',
+        'openapi': '3.0.3',
         'paths': {
             '/resource': {
                 'get': {

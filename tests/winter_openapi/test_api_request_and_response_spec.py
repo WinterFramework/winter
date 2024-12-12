@@ -730,7 +730,7 @@ def test_reuse_dataclass_schema():
             },
         },
         'info': {'title': 'title', 'version': '1.0.0'},
-        'openapi': '3.0.4',
+        'openapi': '3.0.3',
         'paths': {
             '/method_return_1/': {
                 'get': {
@@ -985,7 +985,7 @@ def test_reuse_page_schema():
             },
         },
         'info': {'title': 'title', 'version': '1.0.0'},
-        'openapi': '3.0.4',
+        'openapi': '3.0.3',
         'paths': {
             '/method_1/': {
                 'get': {

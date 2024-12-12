@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "winter"
-version = "28.0.0"
+version = "29.0.0"
 homepage = "https://github.com/WinterFramework/winter"
 description = "Web Framework with focus on python typing, dataclasses and modular design"
 authors = ["Alexander Egorov <mofr@zond.org>"]
@@ -44,7 +44,7 @@ openapi-pydantic = ">=0.5.0, <0.6"
 pydantic = ">=1.10, <2"
 openapi-spec-validator = ">=0.5.7, <1"
 uritemplate = ">=4.1.1, <5"
-httpx = ">=0.24.1, <1"
+httpx = ">=0.27.0, <0.28"
 
 [tool.poetry.dev-dependencies]
 flake8 = ">=3.7.7, <4"
