@@ -179,7 +179,7 @@ def generate_openapi(
         responses={},
         parameters={},
     )
-    openapi = OpenAPI(info=info, servers=servers_, paths=paths, components=components, tags=tags_)
+    openapi = OpenAPI(openapi="3.0.3", info=info, servers=servers_, paths=paths, components=components, tags=tags_)
     openapi_dict = openapi.dict(by_alias=True, exclude_none=True)
     if validate:
         schema_validate(openapi_dict)
