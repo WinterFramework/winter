@@ -42,9 +42,19 @@ jobs:
     - name: Upload coverage report
       uses: actions/upload-artifact@v4
       with:
-        name: coverage-reports
+        name: coverage-reports-${{ matrix.runs-on }}
         include-hidden-files: true
         path: ".coverage.${{ matrix.python-version }}"
+
+  merge:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Merge Artifacts
+        uses: actions/upload-artifact/merge@v4
+        with:
+          name: coverage-reports
+          pattern: coverage-reports-*
 
   coverage-check:
     name: Coverage check
