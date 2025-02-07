@@ -99,7 +99,9 @@ TypeVarItem = TypeVar('TypeVarItem')
 class RequestBodyWithUndefined:
     """Some description"""
     field_a: Union[str, Undefined]
-    field_b: Union[str, Undefined] = Undefined()
+    field_b: str | Undefined
+    field_c: Union[str, Undefined] = Undefined()
+    field_d: str | Undefined = Undefined()
 
 
 @pytest.mark.parametrize('type_hint, expected_response_info, expected_components', [
@@ -550,6 +552,8 @@ def test_response_with_invalid_return_type():
                     'properties': {
                         'field_a': {'type': 'string'},
                         'field_b': {'type': 'string'},
+                        'field_c': {'type': 'string'},
+                        'field_d': {'type': 'string'},
                     },
                 },
             },
