@@ -40,7 +40,7 @@ jobs:
         poetry run pytest -rfs --cov --cov-config=.coveragerc --cov-report="" --disable-warnings
         cp .coverage ".coverage.${{ matrix.python-version }}"
     - name: Upload coverage report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: coverage-reports
         include-hidden-files: true
