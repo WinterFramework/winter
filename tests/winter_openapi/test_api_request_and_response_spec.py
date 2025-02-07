@@ -1,5 +1,6 @@
 import datetime
 import decimal
+import sys
 import uuid
 from dataclasses import dataclass
 from enum import Enum
@@ -99,9 +100,7 @@ TypeVarItem = TypeVar('TypeVarItem')
 class RequestBodyWithUndefined:
     """Some description"""
     field_a: Union[str, Undefined]
-    field_b: str | Undefined
-    field_c: Union[str, Undefined] = Undefined()
-    field_d: str | Undefined = Undefined()
+    field_b: Union[str, Undefined] = Undefined()
 
 
 @pytest.mark.parametrize('type_hint, expected_response_info, expected_components', [
@@ -552,8 +551,6 @@ def test_response_with_invalid_return_type():
                     'properties': {
                         'field_a': {'type': 'string'},
                         'field_b': {'type': 'string'},
-                        'field_c': {'type': 'string'},
-                        'field_d': {'type': 'string'},
                     },
                 },
             },
@@ -566,6 +563,55 @@ def test_request_type(type_hint, expected_request_body_spec, expected_components
         @winter.request_body('data')
         def simple_method(self, data: type_hint):  # pragma: no cover
             pass
+
+    route = get_route(_TestAPI.simple_method)
+
+    # Act
+    result = generate_openapi(title='title', version='1.0.0', routes=[route])
+
+    # Assert
+    method_info = result['paths']['/types/']['post']['requestBody']
+    assert method_info == {'content': {'application/json': expected_request_body_spec}, 'required': False}
+    assert result['components'] == expected_components
+
+
+@pytest.mark.skipif(
+    not sys.version_info >= (3, 10),
+    reason="These tests require Python 3.10 or higher"
+)
+def test_request_type_with_union_undefined():
+    @dataclass
+    class RequestBodyWithUnionUndefined:
+        """Some description"""
+        field_a: str | Undefined
+        field_b: str | Undefined = Undefined()
+
+    class _TestAPI:
+        @winter.route_post('/types/')
+        @winter.request_body('data')
+        def simple_method(self, data: RequestBodyWithUnionUndefined):  # pragma: no cover
+            pass
+
+    expected_request_body_spec = {
+            'schema': {
+                '$ref': '#/components/schemas/RequestBodyWithUnionUndefinedInput',
+            },
+        }
+    expected_components = {
+            'parameters': {},
+            'responses': {},
+            'schemas': {
+                'RequestBodyWithUnionUndefinedInput': {
+                    'title': 'RequestBodyWithUnionUndefinedInput',
+                    'description': 'Some description',
+                    'type': 'object',
+                    'properties': {
+                        'field_a': {'type': 'string'},
+                        'field_b': {'type': 'string'},
+                    },
+                },
+            },
+        }
 
     route = get_route(_TestAPI.simple_method)
 
