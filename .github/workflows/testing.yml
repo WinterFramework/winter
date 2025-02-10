@@ -65,7 +65,6 @@ jobs:
           pattern: coverage-reports-*
           merge-multiple: true
           path: coverage-reports
-      - run: ls -R coverage-reports
       - name: Combine reports
         run: |
           coverage combine coverage-reports
