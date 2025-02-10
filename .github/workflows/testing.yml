@@ -42,19 +42,9 @@ jobs:
     - name: Upload coverage report
       uses: actions/upload-artifact@v4
       with:
-        name: coverage-reports-${{ github.run_id }}-${{ github.run_attempt }}
+        name: coverage-reports-${{ matrix.python-version }}-${{ matrix.sqlalchemy-version }}-${{ matrix.django-version }}
         include-hidden-files: true
-        path: ".coverage.${{ matrix.python-version }}"
-
-  merge:
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - name: Merge Artifacts
-        uses: actions/upload-artifact/merge@v4
-        with:
-          name: coverage-reports
-          pattern: coverage-reports-*
+        path: ".coverage.${{ matrix.python-version }}-${{ matrix.sqlalchemy-version }}-${{ matrix.django-version }}"
 
   coverage-check:
     name: Coverage check
@@ -70,9 +60,10 @@ jobs:
         run: |
           pip3 install coverage==7.2.3
       - name: Download coverage reports
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: coverage-reports
+          pattern: coverage-reports-*
+          merge-multiple: true
           path: coverage-reports
       - name: Combine reports
         run: |
