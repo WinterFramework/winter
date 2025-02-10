@@ -38,7 +38,7 @@ jobs:
     - name: Test with pytest
       run: |
         poetry run pytest -rfs --cov --cov-config=.coveragerc --cov-report="" --disable-warnings
-        cp .coverage ".coverage.${{ matrix.python-version }}"
+        cp .coverage ".coverage.${{ matrix.python-version }}-${{ matrix.sqlalchemy-version }}-${{ matrix.django-version }}"
     - name: Upload coverage report
       uses: actions/upload-artifact@v4
       with:
