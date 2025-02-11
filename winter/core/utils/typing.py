@@ -1,8 +1,9 @@
 import inspect
-import sys
+import types
 from typing import Iterable
 from typing import TypeVar
 from typing import Union
+from typing import get_args
 
 NoneType = type(None)
 UnionType = type(Union)
@@ -37,6 +38,12 @@ def get_union_args(type_: object) -> list:
 
 
 def get_origin_type(hint_class):
+    if hasattr(types, 'UnionType') and isinstance(hint_class, types.UnionType):
+        # Extract the arguments of the union (e.g., `str | int` -> (str, int))
+        args = get_args(hint_class)
+        # Convert to the old `typing.Union` style
+        hint_class = Union[args]
+
     return getattr(hint_class, '__origin__', None) or hint_class
 
 
