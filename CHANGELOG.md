@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [30.0.0] - 2025-02-27
+- Dropped support of Python earlier than 3.11
+- Dropped support of Django earlier than 4.2
+- Dropped support of SQLAlchemy earlier than 1.4
+- Added support of Python 3.13
+- Reviewed new typing-related things since Python 3.8:
+    - Added support of `Union[A, B]` → `A | B`
+    - Added support of `List[T]` → `list[T]`, `Dict[K, V]` → `dict[K, V]`, etc.
+    - Reviewed `Never` and `NoReturn` types - they are only for forever-looping functions, no sense to add their support
+    - Reviewed `Self` return type support - not suitable for endpoints, they do not return classes
+    - Added test for `TypeAlias` 
+    - Reviewed `TypeGuard` - not suitable for endpoints
+    - Reviewed `LiteralString` - not suitable for endpoints, they usually return strings
+    - Reviewed `Concatenate` - not suitable for endpoints
+
 ## [29.0.2] - 2025-02-07
 - Add support of UnionType in OpenAPI schema
 
