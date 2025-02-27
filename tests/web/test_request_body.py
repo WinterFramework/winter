@@ -13,6 +13,11 @@ def test_request_body(api_client):
         'status': 'active',
         'items': [1, 2],
         'items_alias': [1, 2],
+        'typed_dict': {
+            'field': 'field',
+            'required_field': 1,
+            'optional_field': 2,
+        },
     }
     expected_data = {
         'id': 1,
@@ -26,6 +31,11 @@ def test_request_body(api_client):
         'items_alias': [1, 2],
         'optional_items': None,
         'optional_items_new_typing_style': None,
+        'typed_dict': {
+            'field': 'field',
+            'required_field': 1,
+            'optional_field': 2,
+        },
     }
 
     # Act
@@ -43,6 +53,11 @@ def test_request_body_as_list(api_client):
         'status': 'active',
         'items': [1, 2],
         'items_alias': [1, 2],
+        'typed_dict': {
+            'field': 'field',
+            'required_field': 1,
+            'optional_field': 2,
+        },
     }]
     expected_data = [{
         'id': 1,
@@ -56,6 +71,11 @@ def test_request_body_as_list(api_client):
         'items_alias': [1, 2],
         'optional_items': None,
         'optional_items_new_typing_style': None,
+        'typed_dict': {
+            'field': 'field',
+            'required_field': 1,
+            'optional_field': 2,
+        },
     }]
 
     # Act
@@ -73,6 +93,11 @@ def test_request_body_with_errors(api_client):
         'invalid_key': 'data',
         'items': ['invalid integer'],
         'items_alias': ['invalid integer'],
+        'typed_dict': {
+            'field': 'field',
+            'required_field': 1,
+            'optional_field': 2,
+        },
     }
 
     expected_data = {
