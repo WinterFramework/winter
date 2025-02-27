@@ -37,7 +37,8 @@ def pytest_configure():
         ),
         MIDDLEWARE=[
             'tests.middleware.AuthenticationMiddleware',
-        ]
+        ],
+        SECRET_KEY='Test secret key',
     )
     injector = Injector([Configuration])
     set_injector(injector)

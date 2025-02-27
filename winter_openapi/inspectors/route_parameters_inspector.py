@@ -1,15 +1,20 @@
 import abc
+import logging
 from typing import List
+from typing import TYPE_CHECKING
 
-from openapi_schema_pydantic import Parameter
+from openapi_pydantic import Parameter
 
 from winter.web.routing import Route
-import logging
 
-class RouteParametersInspector(abc.ABC):
+if TYPE_CHECKING:
+    from winter_openapi.generator import SchemaRegistry
+
+
+class RouteParametersInspector(abc.ABC):  # pragma: no cover
 
     @abc.abstractmethod
-    def inspect_parameters(self, route: 'Route') -> List[Parameter]:  # pragma: no cover
+    def inspect_parameters(self, route: 'Route', schema_registry: 'SchemaRegistry') -> List[Parameter]:
         return []
 
 

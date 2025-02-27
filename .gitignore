@@ -1,3 +1,6 @@
+# winter is tested in different python versions with different dependencies, so it doesn't make sense to lock the dependencies
+poetry.lock
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -7,8 +7,8 @@ from dataclasses import dataclass
 
 import pytest
 import pytz
-from django.utils.translation import ugettext
-from django.utils.translation import ugettext_lazy
+from django.utils.translation import gettext
+from django.utils.translation import gettext_lazy
 
 from winter.core.json import JSONEncoder
 
@@ -53,8 +53,8 @@ def generator():
         (generator(), [2]),
         (set(), []),
         (Id(1), 1),
-        (ugettext_lazy('translated_text'), 'translated_text'),
-        (ugettext('translated_text'), 'translated_text'),
+        (gettext_lazy('translated_text'), 'translated_text'),
+        (gettext('translated_text'), 'translated_text'),
         (Enum.ID, 1),
         (Enum.NUMBER, 2),
         (Enum.FLOAT, 3.0),

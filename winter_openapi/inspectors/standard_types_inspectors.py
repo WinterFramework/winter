@@ -28,73 +28,73 @@ from winter_openapi.inspection.type_info import TypeInfo
 # noinspection PyUnusedLocal
 @register_type_inspector(bool)
 def inspect_bool(hint_class) -> TypeInfo:
-    return TypeInfo(type_=DataTypes.BOOLEAN)
+    return TypeInfo(type_=DataTypes.BOOLEAN, hint_class=hint_class)
 
 
 # noinspection PyUnusedLocal
 @register_type_inspector(int)
 def inspect_int(hint_class) -> TypeInfo:
-    return TypeInfo(type_=DataTypes.INTEGER, format_=DataFormat.INT32)
+    return TypeInfo(type_=DataTypes.INTEGER, hint_class=hint_class, format_=DataFormat.INT32)
 
 
 # noinspection PyUnusedLocal
 @register_type_inspector(bytes)
 def inspect_bytes(hint_class) -> TypeInfo:
-    return TypeInfo(type_=DataTypes.STRING, format_=DataFormat.BASE64)
+    return TypeInfo(type_=DataTypes.STRING, hint_class=hint_class, format_=DataFormat.BASE64)
 
 
 # noinspection PyUnusedLocal
 @register_type_inspector(str)
 def inspect_str(hint_class) -> TypeInfo:
-    return TypeInfo(type_=DataTypes.STRING)
+    return TypeInfo(type_=DataTypes.STRING, hint_class=hint_class)
 
 
 # noinspection PyUnusedLocal
 @register_type_inspector(float)
 def inspect_float(hint_class) -> TypeInfo:
-    return TypeInfo(type_=DataTypes.NUMBER, format_=DataFormat.FLOAT)
+    return TypeInfo(type_=DataTypes.NUMBER, format_=DataFormat.FLOAT, hint_class=hint_class)
 
 
 # noinspection PyUnusedLocal
 @register_type_inspector(dict)
 def inspect_dict(hint_class) -> TypeInfo:
-    return TypeInfo(type_=DataTypes.OBJECT)
+    return TypeInfo(type_=DataTypes.OBJECT, hint_class=hint_class)
 
 
 # noinspection PyUnusedLocal
 @register_type_inspector(object, checker=is_type_var)
 def inspect_type_var(hint_class) -> TypeInfo:
-    return TypeInfo(type_=DataTypes.ANY)
+    return TypeInfo(type_=DataTypes.ANY, hint_class=hint_class)
 
 
 # noinspection PyUnusedLocal
 @register_type_inspector(object, checker=is_any)
 def inspect_any(hint_class) -> TypeInfo:
-    return TypeInfo(type_=DataTypes.ANY)
+    return TypeInfo(type_=DataTypes.ANY, hint_class=hint_class)
 
 
 # noinspection PyUnusedLocal
 @register_type_inspector(decimal.Decimal)
 def inspect_decimal(hint_class) -> TypeInfo:
-    return TypeInfo(type_=DataTypes.STRING, format_=DataFormat.DECIMAL)
+    return TypeInfo(type_=DataTypes.STRING, hint_class=hint_class, format_=DataFormat.DECIMAL)
 
 
 # noinspection PyUnusedLocal
 @register_type_inspector(uuid.UUID)
 def inspect_uuid(hint_class) -> TypeInfo:
-    return TypeInfo(type_=DataTypes.STRING, format_=DataFormat.UUID)
+    return TypeInfo(type_=DataTypes.STRING, hint_class=hint_class, format_=DataFormat.UUID)
 
 
 # noinspection PyUnusedLocal
 @register_type_inspector(datetime.datetime)
 def inspect_datetime(hint_class) -> TypeInfo:
-    return TypeInfo(type_=DataTypes.STRING, format_=DataFormat.DATETIME)
+    return TypeInfo(type_=DataTypes.STRING, hint_class=hint_class, format_=DataFormat.DATETIME)
 
 
 # noinspection PyUnusedLocal
 @register_type_inspector(datetime.date)
 def inspect_date(hint_class) -> TypeInfo:
-    return TypeInfo(type_=DataTypes.STRING, format_=DataFormat.DATE)
+    return TypeInfo(type_=DataTypes.STRING, hint_class=hint_class, format_=DataFormat.DATE)
 
 
 # noinspection PyUnusedLocal
@@ -102,10 +102,14 @@ def inspect_date(hint_class) -> TypeInfo:
 def inspect_iterable(hint_class) -> TypeInfo:
     args = typing.get_args(hint_class)
     if not args:
-        return TypeInfo(type_=DataTypes.ARRAY, child=TypeInfo(type_=DataTypes.ANY))
+        return TypeInfo(
+            type_=DataTypes.ARRAY,
+            hint_class=hint_class,
+            child=TypeInfo(type_=DataTypes.ANY, hint_class=typing.Any),
+        )
     child_class = args[0]
     child_schema = inspect_type(child_class)
-    return TypeInfo(type_=DataTypes.ARRAY, child=child_schema)
+    return TypeInfo(type_=DataTypes.ARRAY, hint_class=hint_class, child=child_schema)
 
 
 @register_type_inspector(enum.IntEnum, StrEnum, enum.Enum)
@@ -117,8 +121,9 @@ def inspect_enum(enum_class: Type[enum.Enum]) -> TypeInfo:
     if len(enum_value_types) == 1:
         schema = inspect_type(enum_value_types.pop())
     else:
-        schema = TypeInfo(type_=DataTypes.STRING)
+        schema = TypeInfo(type_=DataTypes.STRING, hint_class=enum_class)
     schema.enum = enum_values
+    schema.hint_class = enum_class
     return schema
 
 
@@ -143,10 +148,6 @@ def inspect_dataclass(hint_class) -> TypeInfo:
         field.name: inspect_type(field.type)
         for field in fields
     }
-    for field_name, type_info in properties.items():
-        field_description = docstring.get_argument_description(field_name)
-        if field_description:
-            type_info.description = field_description
 
     defaults = {
         field.name: field.default
@@ -156,6 +157,7 @@ def inspect_dataclass(hint_class) -> TypeInfo:
 
     return TypeInfo(
         type_=DataTypes.OBJECT,
+        hint_class=hint_class,
         properties=properties,
         properties_defaults=defaults,
         title=title,

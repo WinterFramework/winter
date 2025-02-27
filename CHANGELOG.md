@@ -4,6 +4,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [29.0.2] - 2025-02-07
+- Add support of UnionType in OpenAPI schema
+
+## [29.0.1] - 2024-12-12
+- Make httpx version specification less restrictive
+
+## [29.0.0] - 2024-12-12
+- Downgrade manifested openapi version to 3.0.3
+
+## [28.0.0] - 2024-11-05
+- Update to openapi-pydantic 0.5.0
+
+## [26.0.1] - 2024-08-15
+- Remove unexpected openapi attributes from path and query parameters
+
+## [26.0.0] - 2024-08-12
+- Do not ignore unexpected openapi attributes anymore
+
+## [25.0.2] - 2024-08-01
+- Fix openapi schema sharing for Page types
+
+## [25.0.1] - 2024-07-28
+- Fix openapi schema sharing between optional and non-optional types
+
+## [25.0.0] - 2024-07-26
+- Schemas extracted to OpenAPI components, are always referenced
+- Better nullable handling in OpenAPI schemas
+
+## [24.0.1] - 2024-07-23
+- Added support of Python 3.12
+- Replaced openapi-schema-pydantic with openapi-pydantic
+
 ## [24.0.0] - 2024-07-09
 - Get rid of Configurer
 

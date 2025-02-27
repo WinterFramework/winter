@@ -1,24 +1,23 @@
+import dataclasses
 from typing import List
+from typing import TYPE_CHECKING
 from typing import Tuple
 
-import dataclasses
-from openapi_schema_pydantic import Parameter
+from openapi_pydantic import Parameter
 
 from winter.core import ComponentMethodArgument
 from winter.web.query_parameters import QueryParameter
 from winter.web.query_parameters.query_parameters_annotation import QueryParametersAnnotation
 from winter.web.routing import Route
-from winter_openapi.inspection import DataTypes
-from winter_openapi.inspection import TypeInfo
-from winter_openapi.inspection.inspection import InspectorNotFound
-from winter_openapi.inspection.inspection import inspect_type
-from winter_openapi.inspectors.route_parameters_inspector import RouteParametersInspector
-from winter_openapi.type_info_converter import convert_type_info_to_openapi_schema
+from .route_parameters_inspector import RouteParametersInspector
+
+if TYPE_CHECKING:
+    from winter_openapi.generator import SchemaRegistry
 
 
 class QueryParametersInspector(RouteParametersInspector):
 
-    def inspect_parameters(self, route: 'Route') -> List[Parameter]:
+    def inspect_parameters(self, route: 'Route', schema_registry: 'SchemaRegistry') -> List[Parameter]:
         parameters = []
 
         annotation = route.method.annotations.get_one_or_none(QueryParametersAnnotation)
@@ -27,11 +26,19 @@ class QueryParametersInspector(RouteParametersInspector):
             query_parameters_map = {query_parameter.name: query_parameter for query_parameter in query_parameters}
             for field in dataclasses.fields(annotation.argument.type_):
                 query_parameter = query_parameters_map[field.name]
-                openapi_parameter = self._convert_dataclass_field_to_openapi_parameter(field, query_parameter)
+                openapi_parameter = self._convert_dataclass_field_to_openapi_parameter(
+                    field,
+                    query_parameter,
+                    schema_registry,
+                )
                 parameters.append(openapi_parameter)
         else:
             for argument, query_parameter in self._query_arguments(route):
-                openapi_parameter = self._convert_argument_to_openapi_parameter(argument, query_parameter)
+                openapi_parameter = self._convert_argument_to_openapi_parameter(
+                    argument,
+                    query_parameter,
+                    schema_registry,
+                )
                 parameters.append(openapi_parameter)
 
         return parameters
@@ -40,20 +47,14 @@ class QueryParametersInspector(RouteParametersInspector):
         self,
         argument: ComponentMethodArgument,
         query_parameter: QueryParameter,
+        schema_registry: 'SchemaRegistry',
     ) -> Parameter:
-        try:
-            type_info = inspect_type(argument.type_)
-            description = argument.description
-        except InspectorNotFound:
-            type_info = TypeInfo(DataTypes.STRING)
-            description = 'winter_openapi has failed to inspect the parameter'
-        schema = convert_type_info_to_openapi_schema(type_info, output=False)
+        schema = schema_registry.get_schema_or_reference(argument.type_, output=False)
         return Parameter(
             name=query_parameter.name,
-            description=description,
+            description=argument.description,
             required=argument.required,
             param_in='query',
-            default=argument.get_default(None),
             param_schema=schema,
             explode=query_parameter.explode,
         )
@@ -62,20 +63,14 @@ class QueryParametersInspector(RouteParametersInspector):
         self,
         field: dataclasses.Field,
         query_parameter: QueryParameter,
+        schema_registry: 'SchemaRegistry',
     ) -> Parameter:
-        try:
-            type_info = inspect_type(field.type)
-            description = ''
-        except InspectorNotFound:
-            type_info = TypeInfo(DataTypes.STRING)
-            description = 'winter_openapi has failed to inspect the parameter'
-        schema = convert_type_info_to_openapi_schema(type_info, output=False)
+        schema = schema_registry.get_schema_or_reference(field.type, output=False)
         return Parameter(
             name=query_parameter.name,
-            description=description,
+            description='',
             required=field.default is dataclasses.MISSING,
             param_in='query',
-            default=field.default,
             param_schema=schema,
             explode=query_parameter.explode,
         )

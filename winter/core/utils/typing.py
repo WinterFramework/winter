@@ -1,11 +1,11 @@
 import inspect
 import types
-from types import GenericAlias
 from typing import Iterable
 from typing import TypeVar
 from typing import Union
 from typing import get_args
 from typing import get_origin
+from typing import get_args
 
 NoneType = type(None)
 
@@ -35,7 +35,7 @@ def is_union(type_: object) -> bool:
 
 
 def get_union_args(type_: object) -> list:
-    return get_args(type_) or []
+    return getattr(type_, '__args__', []) or []
 
 
 def get_origin_type(hint_class):

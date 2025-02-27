@@ -1,5 +1,6 @@
 import datetime
 import decimal
+import sys
 import uuid
 from dataclasses import dataclass
 from enum import Enum
@@ -24,7 +25,7 @@ from winter.core.utils import TypeWrapper
 from winter.data.pagination import Page
 from winter.web.routing import get_route
 from winter_openapi import generate_openapi
-from winter_openapi.generator import CanNotInspectReturnType
+from winter_openapi.generator import CanNotInspectType
 
 
 class IntegerValueEnum(Enum):
@@ -37,6 +38,7 @@ TestType = NewType('TestType', int)
 
 @dataclass
 class NestedDataclass:
+    """NestedDataclass"""
     nested_number: int
 
 
@@ -51,6 +53,12 @@ class Dataclass:
     @param nested: doc string for nested field
     """
     nested: NestedDataclass
+
+
+@dataclass
+class DataclassWithOptionalField:
+    """DataclassWithOptionalField description"""
+    nested: Optional[NestedDataclass]
 
 
 class StringValueEnum(Enum):
@@ -95,30 +103,107 @@ class RequestBodyWithUndefined:
     field_b: Union[str, Undefined] = Undefined()
 
 
-@pytest.mark.parametrize('type_hint, expected_response_info', [
-    (TestType, {'schema': {'format': 'int32', 'type': 'integer'}}),
-    (Id, {'schema': {'format': 'int32', 'type': 'integer'}}),
-    (uuid.UUID, {'schema': {'format': 'uuid', 'type': 'string'}}),
-    (bool, {'schema': {'type': 'boolean'}}),
-    (dict, {'schema': {'type': 'object'}}),
-    (float, {'schema': {'format': 'float', 'type': 'number'}}),
-    (decimal.Decimal, {'schema': {'format': 'decimal', 'type': 'string'}}),
-    (Optional[int], {'schema': {'format': 'int32', 'type': 'integer', 'nullable': True}}),
-    (datetime.datetime, {'schema': {'format': 'date-time', 'type': 'string'}}),
-    (datetime.date, {'schema': {'format': 'date', 'type': 'string'}}),
-    (int, {'schema': {'format': 'int32', 'type': 'integer'}}),
-    (str, {'schema': {'type': 'string'}}),
-    (bytes, {'schema': {'format': 'bytes', 'type': 'string'}}),
-    (IntegerEnum, {'schema': {'enum': [1, 2], 'format': 'int32', 'type': 'integer'}}),
-    (IntegerValueEnum, {'schema': {'enum': [1, 2], 'format': 'int32', 'type': 'integer'}}),
-    (StringValueEnum, {'schema': {'enum': ['red', 'green'], 'type': 'string'}}),
-    (StringEnum, {'schema': {'enum': ['RED', 'GREEN'], 'type': 'string'}}),
-    (MixedValueEnum, {'schema': {'enum': [123, 'green'], 'type': 'string'}}),
+@pytest.mark.parametrize('type_hint, expected_response_info, expected_components', [
+    (
+        TestType,
+        {'schema': {'format': 'int32', 'type': 'integer'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        Id,
+        {'schema': {'format': 'int32', 'type': 'integer'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        uuid.UUID,
+        {'schema': {'format': 'uuid', 'type': 'string'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        bool,
+        {'schema': {'type': 'boolean'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        dict,
+        {'schema': {'type': 'object'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        float,
+        {'schema': {'format': 'float', 'type': 'number'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        decimal.Decimal,
+        {'schema': {'format': 'decimal', 'type': 'string'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        Optional[int],
+        {'schema': {'format': 'int32', 'type': 'integer', 'nullable': True}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        datetime.datetime,
+        {'schema': {'format': 'date-time', 'type': 'string'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        datetime.date,
+        {'schema': {'format': 'date', 'type': 'string'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        int,
+        {'schema': {'format': 'int32', 'type': 'integer'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        str,
+        {'schema': {'type': 'string'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        bytes,
+        {'schema': {'format': 'bytes', 'type': 'string'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        IntegerEnum,
+        {'schema': {'enum': [1, 2], 'format': 'int32', 'type': 'integer'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        IntegerValueEnum,
+        {'schema': {'enum': [1, 2], 'format': 'int32', 'type': 'integer'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        StringValueEnum,
+        {'schema': {'enum': ['red', 'green'], 'type': 'string'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        StringEnum,
+        {'schema': {'enum': ['RED', 'GREEN'], 'type': 'string'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
+    (
+        MixedValueEnum,
+        {'schema': {'enum': [123, 'green'], 'type': 'string'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
     (
         List[IntegerValueEnum],
-        {'schema': {'items': {'enum': [1, 2], 'format': 'int32', 'type': 'integer'}, 'type': 'array'}}
+        {'schema': {'items': {'enum': [1, 2], 'format': 'int32', 'type': 'integer'}, 'type': 'array'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
     ),
-    (List[StringValueEnum], {'schema': {'items': {'enum': ['red', 'green'], 'type': 'string'}, 'type': 'array'}}),
+    (
+        List[StringValueEnum],
+        {'schema': {'items': {'enum': ['red', 'green'], 'type': 'string'}, 'type': 'array'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
     (
         Any,
         {
@@ -126,7 +211,8 @@ class RequestBodyWithUndefined:
                 'description': 'Can be any value - string, number, boolean, array or object.',
                 'nullable': False
             }
-        }
+        },
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
     ),
     (
         TypeVarItem,
@@ -135,7 +221,8 @@ class RequestBodyWithUndefined:
                 'description': 'Can be any value - string, number, boolean, array or object.',
                 'nullable': False
             }
-        }
+        },
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
     ),
     (
         Optional[Any],
@@ -144,52 +231,106 @@ class RequestBodyWithUndefined:
                 'description': 'Can be any value - string, number, boolean, array or object.',
                 'nullable': True
             }
-        }
+        },
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
     ),
     (
         List,
         {
             'schema': {
                 'items': {
-                    'nullable': False,
                     'description': 'Can be any value - string, number, boolean, array or object.',
-                    'nullable': False
+                    'nullable': False,
                 },
                 'type': 'array',
             },
         },
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
     ),
     (
         List[Any],
         {
             'schema': {
                 'items': {
-                    'nullable': False,
                     'description': 'Can be any value - string, number, boolean, array or object.',
-                    'nullable': False
+                    'nullable': False,
                 },
                 'type': 'array',
             },
         },
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
     ),
-    (Set[int], {'schema': {'items': {'format': 'int32', 'type': 'integer'}, 'type': 'array'}}),
+    (
+        Set[int],
+        {'schema': {'items': {'format': 'int32', 'type': 'integer'}, 'type': 'array'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
     (
         Dataclass,
         {
             'schema': {
-                'description': 'Parent data class description',
-                'properties': {
-                    'nested': {
-                        'description': 'doc string for nested field',
-                        'properties': {'nested_number': {'format': 'int32', 'type': 'integer'}},
-                        'required': ['nested_number'],
-                        'title': 'NestedDataclass',
-                        'type': 'object',
-                    },
+                '$ref': '#/components/schemas/Dataclass',
+            },
+        },
+        {
+            'parameters': {},
+            'responses': {},
+            'schemas': {
+                'NestedDataclass': {
+                    'description': 'NestedDataclass',
+                    'properties': {'nested_number': {'format': 'int32', 'type': 'integer'}},
+                    'required': ['nested_number'],
+                    'title': 'NestedDataclass',
+                    'type': 'object',
                 },
-                'required': ['nested'],
-                'title': 'Dataclass',
-                'type': 'object',
+                'Dataclass': {
+                    'description': 'Parent data class description',
+                    'properties': {
+                        'nested': {
+                            '$ref': '#/components/schemas/NestedDataclass',
+                        },
+                    },
+                    'required': ['nested'],
+                    'title': 'Dataclass',
+                    'type': 'object',
+                }
+            },
+        },
+    ),
+    (
+        DataclassWithOptionalField,
+        {
+            'schema': {
+                '$ref': '#/components/schemas/DataclassWithOptionalField',
+            },
+        },
+        {
+            'parameters': {},
+            'responses': {},
+            'schemas': {
+                'NestedDataclass': {
+                    'properties': {'nested_number': {'format': 'int32', 'type': 'integer'}},
+                    'required': ['nested_number'],
+                    'title': 'NestedDataclass',
+                    'type': 'object',
+                    'description': 'NestedDataclass',
+                },
+                'DataclassWithOptionalField': {
+                    'description': 'DataclassWithOptionalField description',
+                    'properties': {
+                        'nested': {
+                            'nullable': True,
+                            'allOf': [
+                                {
+                                    '$ref': '#/components/schemas/NestedDataclass',
+                                },
+                            ],
+                        },
+                    },
+                    'required': ['nested'],
+                    'title': 'DataclassWithOptionalField',
+                    'type': 'object',
+                }
             },
         },
     ),
@@ -197,75 +338,111 @@ class RequestBodyWithUndefined:
         Page[NestedDataclass],
         {
             'schema': {
-                'properties': {
-                    'meta': {
-                        'properties': {
-                            'limit': {'nullable': True, 'type': 'integer'},
-                            'next': {'format': 'uri', 'nullable': True, 'type': 'string'},
-                            'offset': {'nullable': True, 'type': 'integer'},
-                            'previous': {'format': 'uri', 'nullable': True, 'type': 'string'},
-                            'total_count': {'type': 'integer'},
-                        },
-                        'required': ['total_count', 'limit', 'offset', 'previous', 'next'],
-                        'title': 'PageMetaOfNestedDataclass',
-                        'type': 'object',
-                    },
-                    'objects': {
-                        'items': {
-                            'description': 'NestedDataclass(nested_number: int)',
-                            'properties': {'nested_number': {'format': 'int32', 'type': 'integer'}},
-                            'required': ['nested_number'],
-                            'title': 'NestedDataclass',
-                            'type': 'object',
-                        },
-                        'type': 'array',
-                    },
-                },
-                'required': ['meta', 'objects'],
-                'title': 'PageOfNestedDataclass',
-                'type': 'object',
+                '$ref': '#/components/schemas/PageOfNestedDataclass',
             },
-        }
+        },
+        {
+            'parameters': {},
+            'responses': {},
+            'schemas': {
+                'PageMetaOfNestedDataclass': {
+                    'properties': {
+                        'limit': {'format': 'int32', 'nullable': True, 'type': 'integer'},
+                        'offset': {'format': 'int32', 'nullable': True, 'type': 'integer'},
+                        'next': {'nullable': True, 'type': 'string'},
+                        'previous': {'nullable': True, 'type': 'string'},
+                        'total_count': {'format': 'int32', 'type': 'integer'},
+                    },
+                    'required': ['total_count', 'limit', 'offset', 'previous', 'next'],
+                    'title': 'PageMetaOfNestedDataclass',
+                    'type': 'object',
+                },
+                'NestedDataclass': {
+                    'description': 'NestedDataclass',
+                    'properties': {'nested_number': {'format': 'int32', 'type': 'integer'}},
+                    'required': ['nested_number'],
+                    'title': 'NestedDataclass',
+                    'type': 'object',
+                },
+                'PageOfNestedDataclass': {
+                    'properties': {
+                        'meta': {
+                            '$ref': '#/components/schemas/PageMetaOfNestedDataclass',
+                        },
+                        'objects': {
+                            'items': {
+                                '$ref': '#/components/schemas/NestedDataclass',
+                            },
+                            'type': 'array',
+                        },
+                    },
+                    'required': ['meta', 'objects'],
+                    'title': 'PageOfNestedDataclass',
+                    'type': 'object',
+                }
+            },
+        },
     ),
     (
         CustomPage[int],
         {
             'schema': {
-                'properties': {
-                    'meta': {
-                        'properties': {
-                            'extra': {'type': 'string'},
-                            'limit': {'nullable': True, 'type': 'integer'},
-                            'next': {'format': 'uri', 'nullable': True, 'type': 'string'},
-                            'offset': {'nullable': True, 'type': 'integer'},
-                            'previous': {'format': 'uri', 'nullable': True, 'type': 'string'},
-                            'total_count': {'type': 'integer'}},
-                        'required': ['total_count', 'limit', 'offset', 'previous', 'next', 'extra'],
-                        'title': 'PageMetaOfInteger',
-                        'type': 'object',
-                    },
-                    'objects': {'items': {'format': 'int32', 'type': 'integer'}, 'type': 'array'},
-                },
-                'required': ['meta', 'objects'],
-                'title': 'PageOfInteger',
-                'type': 'object',
+                '$ref': '#/components/schemas/PageOfInteger',
             },
-        }
+        },
+        {
+            'parameters': {},
+            'responses': {},
+            'schemas': {
+                'PageMetaOfInteger': {
+                    'properties': {
+                        'extra': {'type': 'string'},
+                        'limit': {'format': 'int32', 'nullable': True, 'type': 'integer'},
+                        'offset': {'format': 'int32', 'nullable': True, 'type': 'integer'},
+                        'next': {'nullable': True, 'type': 'string'},
+                        'previous': {'nullable': True, 'type': 'string'},
+                        'total_count': {'format': 'int32', 'type': 'integer'}},
+                    'required': ['total_count', 'limit', 'offset', 'previous', 'next', 'extra'],
+                    'title': 'PageMetaOfInteger',
+                    'type': 'object',
+                },
+                'PageOfInteger': {
+                    'properties': {
+                        'meta': {
+                            '$ref': '#/components/schemas/PageMetaOfInteger',
+                        },
+                        'objects': {'items': {'format': 'int32', 'type': 'integer'}, 'type': 'array'},
+                    },
+                    'required': ['meta', 'objects'],
+                    'title': 'PageOfInteger',
+                    'type': 'object',
+                }
+            },
+        },
     ),
     (
         DataclassWrapper[NestedDataclass],
         {
             'schema': {
-                'description': 'NestedDataclass(nested_number: int)',
-                'properties': {'nested_number': {'format': 'int32', 'type': 'integer'}},
-                'required': ['nested_number'],
-                'title': 'NestedDataclass',
-                'type': 'object',
+                '$ref': '#/components/schemas/NestedDataclass',
+            },
+        },
+        {
+            'parameters': {},
+            'responses': {},
+            'schemas': {
+                'NestedDataclass': {
+                    'description': 'NestedDataclass',
+                    'properties': {'nested_number': {'format': 'int32', 'type': 'integer'}},
+                    'required': ['nested_number'],
+                    'title': 'NestedDataclass',
+                    'type': 'object',
+                }
             },
         },
     ),
 ])
-def test_response_return_type(type_hint, expected_response_info):
+def test_response_return_type(type_hint, expected_response_info, expected_components):
     class _TestAPI:
         @winter.route_get('/types/')
         def simple_method(self) -> type_hint:  # pragma: no cover
@@ -285,7 +462,6 @@ def test_response_return_type(type_hint, expected_response_info):
             },
         },
         'tags': ['types'],
-
     }
     # Act
     result = generate_openapi(title='title', version='1.0.0', routes=[route])
@@ -293,6 +469,7 @@ def test_response_return_type(type_hint, expected_response_info):
     # Assert
     method_info = result['paths']['/types/']['get']
     assert method_info == expected_method_info, type_hint
+    assert result['components'] == expected_components
 
 
 def test_response_with_invalid_return_type():
@@ -303,39 +480,56 @@ def test_response_with_invalid_return_type():
 
     route = get_route(_TestAPI.with_invalid_return_type)
 
-    with pytest.raises(CanNotInspectReturnType) as e:
+    with pytest.raises(CanNotInspectType) as e:
         # Act
         generate_openapi(title='title', version='1.0.0', routes=[route])
 
     assert repr(e.value) == (
-        'CanNotInspectReturnType(test_api_request_and_response_spec._TestAPI.with_invalid_return_type: '
-        "-> <class 'object'>: Unknown type: <class 'object'>)"
+        "CanNotInspectType(test_api_request_and_response_spec._TestAPI.with_invalid_return_type: "
+        "Unknown type: <class 'object'>)"
     )
 
 
-@pytest.mark.parametrize('type_hint, expected_request_body_spec', [
+@pytest.mark.parametrize('type_hint, expected_request_body_spec, expected_components', [
     (
         List[IntegerValueEnum],
-        {'schema': {'items': {'enum': [1, 2], 'format': 'int32', 'type': 'integer'}, 'type': 'array'}}
+        {'schema': {'items': {'enum': [1, 2], 'format': 'int32', 'type': 'integer'}, 'type': 'array'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
     ),
-    (List[StringValueEnum], {'schema': {'items': {'enum': ['red', 'green'], 'type': 'string'}, 'type': 'array'}}),
+    (
+        List[StringValueEnum],
+        {'schema': {'items': {'enum': ['red', 'green'], 'type': 'string'}, 'type': 'array'}},
+        {'parameters': {}, 'responses': {}, 'schemas': {}},
+    ),
     (
         Dataclass,
         {
             'schema': {
-                'description': 'Parent data class description',
-                'properties': {
-                    'nested': {
-                        'description': 'doc string for nested field',
-                        'properties': {'nested_number': {'format': 'int32', 'type': 'integer'}},
-                        'required': ['nested_number'],
-                        'title': 'NestedDataclassInput',
-                        'type': 'object',
-                    },
+                '$ref': '#/components/schemas/DataclassInput',
+            },
+        },
+        {
+            'parameters': {},
+            'responses': {},
+            'schemas': {
+                'NestedDataclassInput': {
+                    'description': 'NestedDataclass',
+                    'properties': {'nested_number': {'format': 'int32', 'type': 'integer'}},
+                    'required': ['nested_number'],
+                    'title': 'NestedDataclassInput',
+                    'type': 'object',
                 },
-                'required': ['nested'],
-                'title': 'DataclassInput',
-                'type': 'object',
+                'DataclassInput': {
+                    'description': 'Parent data class description',
+                    'properties': {
+                        'nested': {
+                            '$ref': '#/components/schemas/NestedDataclassInput',
+                        },
+                    },
+                    'required': ['nested'],
+                    'title': 'DataclassInput',
+                    'type': 'object',
+                },
             },
         },
     ),
@@ -343,18 +537,27 @@ def test_response_with_invalid_return_type():
         RequestBodyWithUndefined,
         {
             'schema': {
-                'title': 'RequestBodyWithUndefinedInput',
-                'description': 'Some description',
-                'type': 'object',
-                'properties': {
-                    'field_a': {'type': 'string'},
-                    'field_b': {'type': 'string'},
+                '$ref': '#/components/schemas/RequestBodyWithUndefinedInput',
+            },
+        },
+        {
+            'parameters': {},
+            'responses': {},
+            'schemas': {
+                'RequestBodyWithUndefinedInput': {
+                    'title': 'RequestBodyWithUndefinedInput',
+                    'description': 'Some description',
+                    'type': 'object',
+                    'properties': {
+                        'field_a': {'type': 'string'},
+                        'field_b': {'type': 'string'},
+                    },
                 },
             },
         },
     ),
 ])
-def test_request_type(type_hint, expected_request_body_spec):
+def test_request_type(type_hint, expected_request_body_spec, expected_components):
     class _TestAPI:
         @winter.route_post('/types/')
         @winter.request_body('data')
@@ -369,3 +572,540 @@ def test_request_type(type_hint, expected_request_body_spec):
     # Assert
     method_info = result['paths']['/types/']['post']['requestBody']
     assert method_info == {'content': {'application/json': expected_request_body_spec}, 'required': False}
+    assert result['components'] == expected_components
+
+
+@pytest.mark.skipif(
+    not sys.version_info >= (3, 10),
+    reason="These tests require Python 3.10 or higher"
+)
+def test_request_type_with_union_undefined():
+    @dataclass
+    class RequestBodyWithUnionUndefined:
+        """Some description"""
+        field_a: str | Undefined
+        field_b: str | Undefined = Undefined()
+
+    class _TestAPI:
+        @winter.route_post('/types/')
+        @winter.request_body('data')
+        def simple_method(self, data: RequestBodyWithUnionUndefined):  # pragma: no cover
+            pass
+
+    expected_request_body_spec = {
+            'schema': {
+                '$ref': '#/components/schemas/RequestBodyWithUnionUndefinedInput',
+            },
+        }
+    expected_components = {
+            'parameters': {},
+            'responses': {},
+            'schemas': {
+                'RequestBodyWithUnionUndefinedInput': {
+                    'title': 'RequestBodyWithUnionUndefinedInput',
+                    'description': 'Some description',
+                    'type': 'object',
+                    'properties': {
+                        'field_a': {'type': 'string'},
+                        'field_b': {'type': 'string'},
+                    },
+                },
+            },
+        }
+
+    route = get_route(_TestAPI.simple_method)
+
+    # Act
+    result = generate_openapi(title='title', version='1.0.0', routes=[route])
+
+    # Assert
+    method_info = result['paths']['/types/']['post']['requestBody']
+    assert method_info == {'content': {'application/json': expected_request_body_spec}, 'required': False}
+    assert result['components'] == expected_components
+
+
+@dataclass
+class DataclassWithUndefined:
+    """DataclassWithUndefined description"""
+    nested: Union[Dataclass, Undefined]
+    nested_2: Union[Dataclass, Undefined, None]
+
+
+def test_reuse_dataclass_schema():
+    class _TestAPI:  # pragma: no cover
+        @winter.route_get('/method_return_1/')
+        def method_return_1(self) -> Dataclass:
+            pass
+
+        @winter.route_get('/method_return_2/')
+        def method_return_2(self) -> Dataclass:
+            pass
+
+        @winter.route_get('/method_return_optional_1/')
+        def method_return_optional_1(self) -> Optional[Dataclass]:
+            pass
+
+        @winter.route_get('/method_return_optional_2/')
+        def method_return_optional_2(self) -> Optional[Dataclass]:
+            pass
+
+        @winter.route_get('/method_return_with_undefined_1/')
+        def method_return_with_undefined_1(self) -> DataclassWithUndefined:
+            pass
+
+        @winter.route_get('/method_return_with_undefined_2/')
+        def method_return_with_undefined_2(self) -> DataclassWithUndefined:
+            pass
+
+        @winter.route_post('/method_request_body_1/')
+        @winter.request_body('data')
+        def method_request_body_1(self, data: Dataclass):
+            pass
+
+        @winter.route_post('/method_request_body_2/')
+        @winter.request_body('data')
+        def method_request_body_2(self, data: Dataclass):
+            pass
+
+        @winter.route_post('/method_request_body_undefined_1/')
+        @winter.request_body('data')
+        def method_request_body_undefined_1(self, data: DataclassWithUndefined):
+            pass
+
+        @winter.route_post('/method_request_body_undefined_2/')
+        @winter.request_body('data')
+        def method_request_body_undefined_2(self, data: DataclassWithUndefined):
+            pass
+
+    result = generate_openapi(
+        title='title',
+        version='1.0.0',
+        routes=[
+            get_route(_TestAPI.method_return_1),
+            get_route(_TestAPI.method_return_2),
+            get_route(_TestAPI.method_return_optional_1),
+            get_route(_TestAPI.method_return_optional_2),
+            get_route(_TestAPI.method_return_with_undefined_1),
+            get_route(_TestAPI.method_return_with_undefined_2),
+            get_route(_TestAPI.method_request_body_1),
+            get_route(_TestAPI.method_request_body_2),
+            get_route(_TestAPI.method_request_body_undefined_1),
+            get_route(_TestAPI.method_request_body_undefined_2),
+        ],
+    )
+    assert result == {
+        'components': {
+            'parameters': {},
+            'responses': {},
+            'schemas': {
+                'NestedDataclass': {
+                    'description': 'NestedDataclass',
+                    'properties': {
+                        'nested_number': {
+                            'format': 'int32',
+                            'type': 'integer',
+                        },
+                    },
+                    'required': ['nested_number'],
+                    'title': 'NestedDataclass',
+                    'type': 'object',
+                },
+                'NestedDataclassInput': {
+                    'description': 'NestedDataclass',
+                    'properties': {
+                        'nested_number': {
+                            'format': 'int32',
+                            'type': 'integer',
+                        },
+                    },
+                    'required': ['nested_number'],
+                    'title': 'NestedDataclassInput',
+                    'type': 'object',
+                },
+                'Dataclass': {
+                    'description': 'Parent data class description',
+                    'properties': {
+                        'nested': {
+                            '$ref': '#/components/schemas/NestedDataclass',
+                        },
+                    },
+                    'required': ['nested'],
+                    'title': 'Dataclass',
+                    'type': 'object',
+                },
+                'DataclassInput': {
+                    'description': 'Parent data class description',
+                    'properties': {
+                        'nested': {
+                            '$ref': '#/components/schemas/NestedDataclassInput',
+                        },
+                    },
+                    'required': ['nested'],
+                    'title': 'DataclassInput',
+                    'type': 'object',
+                },
+                'DataclassWithUndefined': {
+                    'description': 'DataclassWithUndefined description',
+                    'properties': {
+                        'nested': {
+                            '$ref': '#/components/schemas/Dataclass',
+                        },
+                        'nested_2': {
+                            'nullable': True,
+                            'allOf': [
+                                {'$ref': '#/components/schemas/Dataclass'},
+                            ],
+                        },
+                    },
+                    'required': ['nested', 'nested_2'],
+                    'title': 'DataclassWithUndefined',
+                    'type': 'object',
+                },
+                'DataclassWithUndefinedInput': {
+                    'description': 'DataclassWithUndefined description',
+                    'properties': {
+                        'nested': {
+                            '$ref': '#/components/schemas/DataclassInput',
+                        },
+                        'nested_2': {
+                            'nullable': True,
+                            'allOf': [
+                                {'$ref': '#/components/schemas/DataclassInput'},
+                            ],
+                        },
+                    },
+                    'title': 'DataclassWithUndefinedInput',
+                    'type': 'object',
+                },
+            },
+        },
+        'info': {'title': 'title', 'version': '1.0.0'},
+        'openapi': '3.0.3',
+        'paths': {
+            '/method_return_1/': {
+                'get': {
+                    'deprecated': False,
+                    'operationId': '_TestAPI.method_return_1',
+                    'parameters': [],
+                    'responses': {
+                        '200': {
+                            'content': {
+                                'application/json': {
+                                    'schema': {'$ref': '#/components/schemas/Dataclass'},
+                                },
+                            },
+                            'description': '',
+                        },
+                    },
+                    'tags': ['method_return_1'],
+                },
+            },
+            '/method_return_2/': {
+                'get': {
+                    'deprecated': False,
+                    'operationId': '_TestAPI.method_return_2',
+                    'parameters': [],
+                    'responses': {
+                        '200': {
+                            'content': {
+                                'application/json': {
+                                    'schema': {'$ref': '#/components/schemas/Dataclass'},
+                                },
+                            },
+                            'description': '',
+                        },
+                    },
+                    'tags': ['method_return_2'],
+                },
+            },
+            '/method_return_optional_1/': {
+                'get': {
+                    'deprecated': False,
+                    'operationId': '_TestAPI.method_return_optional_1',
+                    'parameters': [],
+                    'responses': {
+                        '200': {
+                            'content': {
+                                'application/json': {
+                                    'schema': {
+                                        'nullable': True,
+                                        'allOf': [
+                                            {'$ref': '#/components/schemas/Dataclass'},
+                                        ],
+                                    },
+                                },
+                            },
+                            'description': '',
+                        },
+                    },
+                    'tags': ['method_return_optional_1'],
+                },
+            },
+            '/method_return_optional_2/': {
+                'get': {
+                    'deprecated': False,
+                    'operationId': '_TestAPI.method_return_optional_2',
+                    'parameters': [],
+                    'responses': {
+                        '200': {
+                            'content': {
+                                'application/json': {
+                                    'schema': {
+                                        'nullable': True,
+                                        'allOf': [
+                                            {'$ref': '#/components/schemas/Dataclass'},
+                                        ],
+                                    },
+                                },
+                            },
+                            'description': '',
+                        },
+                    },
+                    'tags': ['method_return_optional_2'],
+                },
+            },
+            '/method_return_with_undefined_1/': {
+                'get': {
+                    'deprecated': False,
+                    'operationId': '_TestAPI.method_return_with_undefined_1',
+                    'parameters': [],
+                    'responses': {
+                        '200': {
+                            'content': {
+                                'application/json': {
+                                    'schema': {
+                                        '$ref': '#/components/schemas/DataclassWithUndefined',
+                                    },
+                                },
+                            },
+                            'description': '',
+                        },
+                    },
+                    'tags': ['method_return_with_undefined_1'],
+                },
+            },
+            '/method_return_with_undefined_2/': {
+                'get': {
+                    'deprecated': False,
+                    'operationId': '_TestAPI.method_return_with_undefined_2',
+                    'parameters': [],
+                    'responses': {
+                        '200': {
+                            'content': {
+                                'application/json': {
+                                    'schema': {
+                                        '$ref': '#/components/schemas/DataclassWithUndefined',
+                                    },
+                                },
+                            },
+                            'description': '',
+                        },
+                    },
+                    'tags': ['method_return_with_undefined_2'],
+                },
+            },
+            '/method_request_body_1/': {
+                'post': {
+                    'deprecated': False,
+                    'operationId': '_TestAPI.method_request_body_1',
+                    'parameters': [],
+                    'requestBody': {
+                        'content': {
+                            'application/json': {
+                                'schema': {'$ref': '#/components/schemas/DataclassInput'},
+                            },
+                        },
+                        'required': False,
+                    },
+                    'responses': {
+                        '200': {'description': ''},
+                    },
+                    'tags': ['method_request_body_1'],
+                },
+            },
+            '/method_request_body_2/': {
+                'post': {
+                    'deprecated': False,
+                    'operationId': '_TestAPI.method_request_body_2',
+                    'parameters': [],
+                    'requestBody': {
+                        'content': {
+                            'application/json': {
+                                'schema': {'$ref': '#/components/schemas/DataclassInput'},
+                            },
+                        },
+                        'required': False
+                    },
+                    'responses': {
+                        '200': {'description': ''},
+                    },
+                    'tags': ['method_request_body_2'],
+                },
+            },
+            '/method_request_body_undefined_1/': {
+                'post': {
+                    'deprecated': False,
+                    'operationId': '_TestAPI.method_request_body_undefined_1',
+                    'parameters': [],
+                    'requestBody': {
+                        'content': {
+                            'application/json': {
+                                'schema': {'$ref': '#/components/schemas/DataclassWithUndefinedInput'},
+                            },
+                        },
+                        'required': False,
+                    },
+                    'responses': {
+                        '200': {'description': ''},
+                    },
+                    'tags': ['method_request_body_undefined_1'],
+                },
+            },
+            '/method_request_body_undefined_2/': {
+                'post': {
+                    'deprecated': False,
+                    'operationId': '_TestAPI.method_request_body_undefined_2',
+                    'parameters': [],
+                    'requestBody': {
+                        'content': {
+                            'application/json': {
+                                'schema': {'$ref': '#/components/schemas/DataclassWithUndefinedInput'},
+                            },
+                        },
+                        'required': False
+                    },
+                    'responses': {
+                        '200': {'description': ''},
+                    },
+                    'tags': ['method_request_body_undefined_2'],
+                },
+            },
+        },
+        'servers': [{'url': '/'}],
+        'tags': [],
+    }
+
+
+def test_reuse_page_schema():
+    class _TestAPI:  # pragma: no cover
+        @winter.route_get('/method_1/')
+        def method_1(self) -> Page[str]:
+            pass
+
+        @winter.route_get('/method_2/')
+        def method_2(self) -> Page[str]:
+            pass
+
+    result = generate_openapi(
+        title='title',
+        version='1.0.0',
+        routes=[
+            get_route(_TestAPI.method_1),
+            get_route(_TestAPI.method_2),
+        ],
+    )
+    assert result == {
+        'components': {
+            'parameters': {},
+            'responses': {},
+            'schemas': {
+                'PageMetaOfString': {
+                    'properties': {
+                        'limit': {'format': 'int32', 'nullable': True, 'type': 'integer'},
+                        'next': {'nullable': True, 'type': 'string'},
+                        'offset': {'format': 'int32', 'nullable': True, 'type': 'integer'},
+                        'previous': {'nullable': True, 'type': 'string'},
+                        'total_count': {'format': 'int32', 'type': 'integer'},
+                    },
+                    'required': ['total_count', 'limit', 'offset', 'previous', 'next'],
+                    'title': 'PageMetaOfString',
+                    'type': 'object'},
+                'PageOfString': {
+                    'properties': {
+                        'meta': {'$ref': '#/components/schemas/PageMetaOfString'},
+                        'objects': {
+                            'items': {'type': 'string'},
+                            'type': 'array'
+                        }
+                    },
+                    'required': ['meta', 'objects'],
+                    'title': 'PageOfString',
+                    'type': 'object',
+                },
+            },
+        },
+        'info': {'title': 'title', 'version': '1.0.0'},
+        'openapi': '3.0.3',
+        'paths': {
+            '/method_1/': {
+                'get': {
+                    'deprecated': False,
+                    'operationId': '_TestAPI.method_1',
+                    'parameters': [],
+                    'responses': {
+                        '200': {
+                            'content': {
+                                'application/json': {
+                                    'schema': {'$ref': '#/components/schemas/PageOfString'},
+                                },
+                            },
+                            'description': '',
+                        },
+                    },
+                    'tags': ['method_1'],
+                },
+            },
+            '/method_2/': {
+                'get': {
+                    'deprecated': False,
+                    'operationId': '_TestAPI.method_2',
+                    'parameters': [],
+                    'responses': {
+                        '200': {
+                            'content': {
+                                'application/json': {
+                                    'schema': {'$ref': '#/components/schemas/PageOfString'},
+                                },
+                            },
+                            'description': '',
+                        },
+                    },
+                    'tags': ['method_2'],
+                },
+            },
+        },
+        'servers': [{'url': '/'}],
+        'tags': [],
+    }
+
+
+def test_raises_for_type_duplicates():
+    class DuplicateTypes:
+        @dataclass
+        class Dataclass:
+            nested: NestedDataclass
+
+    class _TestAPI:  # pragma: no cover
+        @winter.route_get('/method_1/')
+        def method_1(self) -> Dataclass:
+            pass
+
+        @winter.route_get('/method_2/')
+        def method_2(self) -> DuplicateTypes.Dataclass:
+            pass
+
+    with pytest.raises(ValueError) as e:
+        generate_openapi(
+            title='title',
+            version='1.0.0',
+            routes=[
+                get_route(_TestAPI.method_1),
+                get_route(_TestAPI.method_2),
+            ],
+        )
+
+    assert str(e.value) == (
+        'Title Dataclass for type '
+        "<class 'test_api_request_and_response_spec.test_raises_for_type_duplicates.<locals>.DuplicateTypes.Dataclass'>"
+        " is already used for another type: <class 'test_api_request_and_response_spec.Dataclass'>"
+    )

@@ -1,10 +1,11 @@
-from pkg_resources import get_distribution
+import importlib
+
 from semver import parse
 
 
 def test_version_is_a_valid_semver():
     # Act
-    version = parse(get_distribution('winter').version)
+    version = parse(importlib.metadata.version('winter'))
 
     # Assert
     assert version['major'] > 0  # In fact we test that parse doesn't fail with ValueError

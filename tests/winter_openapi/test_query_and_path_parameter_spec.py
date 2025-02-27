@@ -8,6 +8,7 @@ import pytest
 import winter
 from winter.web.routing import get_route
 from winter_openapi import generate_openapi
+from winter_openapi.generator import CanNotInspectType
 
 
 class IntegerValueEnum(Enum):
@@ -31,7 +32,6 @@ class IntegerEnum(IntEnum):
 
 
 param_with_diff_types = [
-    (object, {'schema': {'type': 'string'}, 'description': 'winter_openapi has failed to inspect the parameter'}),
     (int, {'schema': {'format': 'int32', 'type': 'integer'}}),
     (str, {'schema': {'type': 'string'}}),
     (IntegerEnum, {'schema': {'enum': [1, 2], 'format': 'int32', 'type': 'integer'}}),
@@ -115,6 +115,47 @@ def test_query_parameter_inspector_with_explode(type_hint, expected_parameter_pr
     assert parameters == [expected_parameter]
 
 
+@pytest.mark.parametrize('type_hint, default_value, expected_parameter_properties', [
+    (int, 3, {'schema': {'format': 'int32', 'type': 'integer'}}),
+    (str, '12', {'schema': {'type': 'string'}}),
+    (IntegerEnum, IntegerEnum.RED, {'schema': {'enum': [1, 2], 'format': 'int32', 'type': 'integer'}}),
+    (IntegerValueEnum, IntegerValueEnum.RED, {'schema': {'enum': [1, 2], 'format': 'int32', 'type': 'integer'}}),
+    (StringValueEnum, StringValueEnum.RED, {'schema': {'enum': ['red', 'green'], 'type': 'string'}}),
+    (MixedValueEnum, MixedValueEnum.RED, {'schema': {'enum': [123, 'green'], 'type': 'string'}}),
+])
+def test_query_parameter_inspector_with_default_value(type_hint, default_value, expected_parameter_properties):
+    class _TestAPI:
+        @winter.route_get('/resource/{?query_param}')
+        @winter.map_query_parameter('mapped_query_param', to='invalid_query_param')
+        def simple_method(
+            self,
+            query_param: type_hint = default_value,
+        ):  # pragma: no cover
+            """
+            :param query_param: docstr
+            """
+            pass
+
+    expected_parameter = {
+        'name': 'query_param',
+        'in': 'query',
+        'required': False,
+        'allowEmptyValue': False,
+        'allowReserved': False,
+        'deprecated': False,
+        'explode': False,
+        'description': 'docstr',
+        **expected_parameter_properties,
+    }
+    route = get_route(_TestAPI.simple_method)
+    # Act
+    result = generate_openapi(title='title', version='1.0.0', description='Winter api description', routes=[route])
+
+    # Assert
+    parameters = result["paths"]["/resource/"]["get"]["parameters"]
+    assert parameters == [expected_parameter]
+
+
 @pytest.mark.parametrize('type_hint, expected_parameter_properties', param_with_diff_types)
 def test_path_parameter_different_types(type_hint, expected_parameter_properties):
     class _TestAPI:
@@ -136,7 +177,6 @@ def test_path_parameter_different_types(type_hint, expected_parameter_properties
         'allowEmptyValue': False,
         'allowReserved': False,
         'deprecated': False,
-        'explode': False,
         'description': 'docstr',
         **expected_parameter_properties,
     }
@@ -255,8 +295,13 @@ def test_custom_query_parameters_with_wrong_field_type():
     }
     route = get_route(_TestAPI.simple_method)
     # Act
-    result = generate_openapi(title='title', version='1.0.0', routes=[route])
+    with pytest.raises(CanNotInspectType) as e:
+        generate_openapi(title='title', version='1.0.0', routes=[route])
 
     # Assert
-    parameters = result["paths"]["/resource/"]["get"]["parameters"]
-    assert parameters == [expected_parameter]
+    assert str(e.value) == (
+        "test_query_and_path_parameter_spec._TestAPI.simple_method: Unknown type: "
+        "<class 'test_query_and_path_parameter_spec.test_custom_query_parameters_with_wrong_field_type."
+        "<locals>.UnknownType'>"
+    )
+
