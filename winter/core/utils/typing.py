@@ -3,9 +3,7 @@ import types
 from typing import Iterable
 from typing import TypeVar
 from typing import Union
-from typing import get_args
 from typing import get_origin
-from typing import get_args
 
 NoneType = type(None)
 
@@ -61,7 +59,7 @@ def get_type_name(type_):
         type_name = type_name[7:]
         return type_name
 
-    if type(type_) in (GenericAlias, types.UnionType):
+    if type(type_) in (types.GenericAlias, types.UnionType):
         return type_name
 
     return type(type_).__name__
