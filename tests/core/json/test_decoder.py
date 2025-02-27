@@ -58,6 +58,7 @@ class User:
     emails: List[str] = dataclasses.field(default_factory=list)
     created_at: Optional[datetime.datetime] = None
     name: str = 'test name'
+    comments: list[str] | None = None
 
 
 @dataclasses.dataclass(frozen=True)
@@ -79,6 +80,7 @@ class Profile:
                 'contact': {
                     'phones': ['123', '456'],
                 },
+                'comments': ['comment1', 'comment2'],
             },
             User(
                 Id(1),
@@ -89,6 +91,7 @@ class Profile:
                 ['test@test.ru'],
                 datetime.datetime(year=2001, month=2, day=3, hour=4, minute=5, second=6, tzinfo=tzutc()),
                 'name',
+                ['comment1', 'comment2'],
             ),
         ),
         (
@@ -127,7 +130,9 @@ def test_decode(data, expected_instance):
 @pytest.mark.parametrize(
     ('data', 'type_', 'expected_instance'), (
         (['super'], Set[Status], {Status.SUPER}),
+        (['super'], set[Status], {Status.SUPER}),
         ([1], Set, {1}),
+        ([1], set, {1}),
     ),
 )
 def test_decode_set(data, type_, expected_instance):
@@ -150,6 +155,8 @@ def test_decode_sequence(data, type_, expected_instance):
     ('data', 'type_', 'expected_instance'), (
         (None, Optional[Status], None),
         ('super', Optional[Status], Status.SUPER),
+        (None, Status | None, None),
+        ('super', Status | None, Status.SUPER),
     ),
 )
 def test_decode_optional(data, type_, expected_instance):
@@ -180,6 +187,7 @@ def test_decode_set_with_errors(data, type_, expected_errors):
         (['super'], List[Status], [Status.SUPER]),
         (['1'], List[IntStatus], [IntStatus.SUPER]),
         ([1], List[IntStatus], [IntStatus.SUPER]),
+        ([1], list[IntStatus], [IntStatus.SUPER]),
         ({1}, List, [1]),
         ({1}, list, [1]),
     ),
@@ -198,6 +206,7 @@ def test_decode_list(data, type_, expected_instance):
         ),
         (1, List[Status], 'Cannot decode "1" to list'),
         (None, List[Status], 'Cannot decode "None" to list'),
+        (None, list[Status], 'Cannot decode "None" to list'),
         (None, List[IntStatus], 'Cannot decode "None" to list'),
         (['a'], List[IntStatus], 'Value not in allowed values("1", "2"): "a"'),
     ),
@@ -466,6 +475,11 @@ class DataclassWithUndefinedType:
 
 
 @dataclasses.dataclass
+class DataclassWithUndefinedTypeNewTypingStyle:
+    a: int | Undefined
+
+
+@dataclasses.dataclass
 class DataclassWithUndefinedByDefault:
     a: Union[int, Undefined] = Undefined()
 
@@ -474,6 +488,8 @@ class DataclassWithUndefinedByDefault:
     ('data', 'type_', 'expected_result'), (
         ({}, DataclassWithUndefinedType, DataclassWithUndefinedType(a=Undefined())),
         ({'a': 123}, DataclassWithUndefinedType, DataclassWithUndefinedType(a=123)),
+        ({}, DataclassWithUndefinedTypeNewTypingStyle, DataclassWithUndefinedTypeNewTypingStyle(a=Undefined())),
+        ({'a': 123}, DataclassWithUndefinedTypeNewTypingStyle, DataclassWithUndefinedTypeNewTypingStyle(a=123)),
         ({}, DataclassWithUndefinedByDefault, DataclassWithUndefinedByDefault(a=Undefined())),
         ({'a': 123}, DataclassWithUndefinedByDefault, DataclassWithUndefinedByDefault(a=123)),
     ),

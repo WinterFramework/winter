@@ -183,20 +183,25 @@ def test_query_parameter(api_client, date, date_time, boolean, optional_boolean,
         'date_time': '2019-05-01T22:28:31',
         'boolean': boolean == 'true',
         'optional_boolean': optional_boolean == 'true' if optional_boolean is not None else None,
+        'optional_boolean_new_typing_style': optional_boolean == 'true' if optional_boolean is not None else None,
         'array': array,
+        'array_new_typing_style': array,
+        'array_alias': array,
         'expanded_array': list(map(str, array)),
         'string': string,
         'uid': str(uid),
     }
     base_uri = URITemplate(
         '/with-query-parameter/'
-        '{?date,date_time,boolean,optional_boolean,array,expanded_array*,string,uid}',
+        '{?date,date_time,boolean,optional_boolean,optional_boolean_new_typing_style,array,array_new_typing_style,array_alias,expanded_array*,string,uid}',
     )
     query_params = {
         'date': date,
         'date_time': date_time,
         'boolean': boolean,
         'array': ','.join(map(str, array)),
+        'array_new_typing_style': ','.join(map(str, array)),
+        'array_alias': ','.join(map(str, array)),
         'expanded_array': array,
         'string': string,
         'uid': uid,
@@ -204,6 +209,7 @@ def test_query_parameter(api_client, date, date_time, boolean, optional_boolean,
 
     if optional_boolean is not None:
         query_params['optional_boolean'] = optional_boolean
+        query_params['optional_boolean_new_typing_style'] = optional_boolean
 
     base_uri = base_uri.expand(**query_params)
 
@@ -215,13 +221,15 @@ def test_query_parameter(api_client, date, date_time, boolean, optional_boolean,
 def test_invalid_uuid_query_parameter_triggers_400(api_client):
     base_uri = URITemplate(
         '/with-query-parameter/'
-        '{?date,date_time,boolean,optional_boolean,array,expanded_array*,string,uid}',
+        '{?date,date_time,boolean,optional_boolean,array,array_new_typing_style,array_alias,expanded_array*,string,uid}',
     )
     query_params = {
         'date': datetime.datetime.now().date(),
         'date_time': datetime.datetime.now(),
         'boolean': 'true',
         'array': '5',
+        'array_new_typing_style': '5',
+        'array_alias': '5',
         'expanded_array': ['5'],
         'string': '',
         'uid': str(uuid4()) + 'a',

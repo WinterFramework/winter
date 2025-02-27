@@ -575,10 +575,6 @@ def test_request_type(type_hint, expected_request_body_spec, expected_components
     assert result['components'] == expected_components
 
 
-@pytest.mark.skipif(
-    not sys.version_info >= (3, 10),
-    reason="These tests require Python 3.10 or higher"
-)
 def test_request_type_with_union_undefined():
     @dataclass
     class RequestBodyWithUnionUndefined:

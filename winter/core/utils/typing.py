@@ -3,10 +3,9 @@ import types
 from typing import Iterable
 from typing import TypeVar
 from typing import Union
-from typing import get_args
+from typing import get_origin
 
 NoneType = type(None)
-UnionType = type(Union)
 
 
 def is_optional(type_: object) -> bool:
@@ -30,7 +29,7 @@ def is_iterable_type(type_: object) -> bool:
 
 
 def is_union(type_: object) -> bool:
-    return get_origin_type(type_) == Union
+    return get_origin_type(type_) in (Union, types.UnionType)
 
 
 def get_union_args(type_: object) -> list:
@@ -38,13 +37,7 @@ def get_union_args(type_: object) -> list:
 
 
 def get_origin_type(hint_class):
-    if hasattr(types, 'UnionType') and isinstance(hint_class, types.UnionType):
-        # Extract the arguments of the union (e.g., `str | int` -> (str, int))
-        args = get_args(hint_class)
-        # Convert to the old `typing.Union` style
-        hint_class = Union[args]
-
-    return getattr(hint_class, '__origin__', None) or hint_class
+    return get_origin(hint_class) or hint_class
 
 
 def is_origin_type_subclasses(hint_class, check_class):
@@ -64,6 +57,9 @@ def get_type_name(type_):
     type_name = repr(type_)
     if type_name.startswith('typing.'):
         type_name = type_name[7:]
+        return type_name
+
+    if type(type_) in (types.GenericAlias, types.UnionType):
         return type_name
 
     return type(type_).__name__
