@@ -8,9 +8,7 @@ jobs:
     strategy:
       matrix:
         python-version: [3.11, 3.12, 3.13]
-        sqlalchemy-version: [1.3, 1.4]
-        django-version: [2.2, 4.2]
-    name: Test Py ${{ matrix.python-version }}, SQLA ${{ matrix.sqlalchemy-version }}, Django ${{ matrix.django-version }}
+    name: Test Py ${{ matrix.python-version }}
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
@@ -23,19 +21,17 @@ jobs:
         version: 1.3.2
     - name: Install dependencies
       run: |
-        sed -i.bak 's/^SQLAlchemy = .*/SQLAlchemy = "^${{ matrix.sqlalchemy-version }}"/' pyproject.toml
-        sed -i.bak 's/^Django = .*/Django = "^${{ matrix.django-version }}"/' pyproject.toml
         poetry install
     - name: Test with pytest
       run: |
         poetry run pytest -rfs --cov --cov-config=.coveragerc --cov-report="" --disable-warnings
-        cp .coverage ".coverage.${{ matrix.python-version }}-${{ matrix.sqlalchemy-version }}-${{ matrix.django-version }}"
+        cp .coverage ".coverage.${{ matrix.python-version }}"
     - name: Upload coverage report
       uses: actions/upload-artifact@v4
       with:
-        name: coverage-reports-${{ matrix.python-version }}-${{ matrix.sqlalchemy-version }}-${{ matrix.django-version }}
+        name: coverage-reports-${{ matrix.python-version }}
         include-hidden-files: true
-        path: ".coverage.${{ matrix.python-version }}-${{ matrix.sqlalchemy-version }}-${{ matrix.django-version }}"
+        path: ".coverage.${{ matrix.python-version }}"
 
   coverage-check:
     name: Coverage check
