@@ -29,7 +29,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.11"
-Django = ">=4.2"
+Django = ">=4.2,<5"
 docstring-parser = ">=0.1"
 furl = ">=2.0.0, <3"
 python-dateutil = "^2.8.2"
@@ -48,7 +48,7 @@ flake8 = ">=3.7.7, <4"
 flake8-commas = ">=2.0.0, <4"
 flake8-formatter-abspath = ">=1.0.1, <2"
 pre-commit-hooks = ">=2.2.3, <3"
-freezegun = ">=0.3.15, <1"
+freezegun = ">=1.5.1, <2"
 mock = ">=2.0.0, <3"
 pytest = ">=6.2.5, <7"
 pytest-pythonpath = ">=0.7.1"
