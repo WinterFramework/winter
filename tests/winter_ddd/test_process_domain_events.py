@@ -28,6 +28,7 @@ class _TestHandler:
     handled_many_another_domain_events = []
     handled_union_domain_events = []
     handled_union_list_domain_events = []
+    handled_union_list_domain_events_new_typing_style = []
 
     @domain_event_handler
     def empty_handle(self, domain_event: CustomDomainEvent):
@@ -52,6 +53,10 @@ class _TestHandler:
     @domain_event_handler
     def handle_union_list(self, domain_events: List[Union[CustomDomainEvent, AnotherCustomEvent]]):
         self.handled_union_list_domain_events.append(domain_events)
+
+    @domain_event_handler
+    def handle_union_list_new_typing_style(self, domain_events: list[CustomDomainEvent | AnotherCustomEvent]):
+        self.handled_union_list_domain_events_new_typing_style.append(domain_events)
 
 
 class DomainEventForOrder(DomainEvent):
@@ -122,6 +127,7 @@ def test_process_domain_events():
     assert _TestHandler.handled_many_another_domain_events == [[another_domain_event]]
     assert _TestHandler.handled_union_domain_events == [domain_event1, another_domain_event, domain_event2]
     assert _TestHandler.handled_union_list_domain_events == [[domain_event1, another_domain_event, domain_event2]]
+    assert _TestHandler.handled_union_list_domain_events_new_typing_style == [[domain_event1, another_domain_event, domain_event2]]
 
 
 def test_order_process_domain_events():

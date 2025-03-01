@@ -18,7 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Reviewed `TypeGuard` - not suitable for endpoints
     - Reviewed `LiteralString` - not suitable for endpoints, they usually return strings
     - Reviewed `Concatenate` - not suitable for endpoints
-    - Added test for `TypedDict` 
+    - Added test for `TypedDict`
+- Added tests of new typing features for event system 
 
 ## [29.0.2] - 2025-02-07
 - Add support of UnionType in OpenAPI schema
