@@ -12,6 +12,12 @@ def test_request_body(api_client):
         'is_god': True,
         'status': 'active',
         'items': [1, 2],
+        'items_alias': [1, 2],
+        'typed_dict': {
+            'field': 'field',
+            'required_field': 1,
+            'optional_field': 2,
+        },
     }
     expected_data = {
         'id': 1,
@@ -20,8 +26,16 @@ def test_request_body(api_client):
         'is_god': True,
         'status': 'active',
         'optional_status': None,
+        'optional_status_new_typing_style': None,
         'items': [1, 2],
+        'items_alias': [1, 2],
         'optional_items': None,
+        'optional_items_new_typing_style': None,
+        'typed_dict': {
+            'field': 'field',
+            'required_field': 1,
+            'optional_field': 2,
+        },
     }
 
     # Act
@@ -38,6 +52,12 @@ def test_request_body_as_list(api_client):
         'is_god': True,
         'status': 'active',
         'items': [1, 2],
+        'items_alias': [1, 2],
+        'typed_dict': {
+            'field': 'field',
+            'required_field': 1,
+            'optional_field': 2,
+        },
     }]
     expected_data = [{
         'id': 1,
@@ -46,8 +66,16 @@ def test_request_body_as_list(api_client):
         'is_god': True,
         'status': 'active',
         'optional_status': None,
+        'optional_status_new_typing_style': None,
         'items': [1, 2],
+        'items_alias': [1, 2],
         'optional_items': None,
+        'optional_items_new_typing_style': None,
+        'typed_dict': {
+            'field': 'field',
+            'required_field': 1,
+            'optional_field': 2,
+        },
     }]
 
     # Act
@@ -64,6 +92,12 @@ def test_request_body_with_errors(api_client):
         'status': 'invalid status',
         'invalid_key': 'data',
         'items': ['invalid integer'],
+        'items_alias': ['invalid integer'],
+        'typed_dict': {
+            'field': 'field',
+            'required_field': 1,
+            'optional_field': 2,
+        },
     }
 
     expected_data = {
@@ -75,6 +109,7 @@ def test_request_body_with_errors(api_client):
             'id': 'Cannot decode "invalid integer" to integer',
             'status': 'Value not in allowed values("active", "super_active"): "invalid status"',
             'items': 'Cannot decode "invalid integer" to integer',
+            'items_alias': 'Cannot decode "invalid integer" to integer',
             'non_field_error': 'Missing fields: "name"',
         }
     }

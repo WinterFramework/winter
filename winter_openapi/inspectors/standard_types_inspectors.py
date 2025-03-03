@@ -173,14 +173,6 @@ def inspect_type_wrapper(hint_class) -> TypeInfo:
 
 
 @register_type_inspector(
-    types.FunctionType,
-    checker=lambda instance: getattr(instance, '__supertype__', None) is not None,
-)
-def inspect_new_type(hint_class) -> TypeInfo:
-    return inspect_type(hint_class.__supertype__)
-
-
-@register_type_inspector(
     typing.NewType,
     checker=lambda instance: getattr(instance, '__supertype__', None) is not None,
 )
