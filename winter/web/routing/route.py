@@ -4,6 +4,7 @@ from typing import Set
 
 import uritemplate
 from uritemplate import URITemplate
+from uritemplate.variable import Operator
 
 from winter.core import ComponentMethod
 from winter.web.query_parameters import MapQueryParameterAnnotation
@@ -42,7 +43,7 @@ class Route:
         query_variables = (
             variable
             for variable in URITemplate(self._url_path_with_query_parameters).variables
-            if variable.operator == '?'
+            if variable.operator == Operator.form_style_query
         )
         for variable in query_variables:
             for variable_name, variable_params in variable.variables:
