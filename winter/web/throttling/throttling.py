@@ -5,12 +5,12 @@ from typing import TYPE_CHECKING
 from typing import Tuple
 
 import django.http
-from django.core.cache import cache as default_cache
 
 from winter.core import annotate_method
+from .throttling_statistic_storage import get_throttling_statistic_storage
 
 if TYPE_CHECKING:
-    from .routing import Route  # noqa: F401
+    from winter.web.routing import Route  # noqa: F401
 
 
 @dataclasses.dataclass
@@ -33,23 +33,25 @@ def throttling(rate: Optional[str], scope: Optional[str] = None):
 class BaseRateThrottle:
     def __init__(self, throttling_: Throttling):
         self._throttling = throttling_
+        self._storage = get_throttling_statistic_storage()
 
     def allow_request(self, request: django.http.HttpRequest) -> bool:
         ident = _get_ident(request)
         key = _get_cache_key(self._throttling.scope, ident)
 
-        history = default_cache.get(key, [])
-        now = time.time()
+        with self._storage.lock(key, timeout_sec=2):
+            history = self._storage.get(key)
+            now = time.time()
 
-        while history and history[-1] <= now - self._throttling.duration:
-            history.pop()
+            while history and history[-1] <= now - self._throttling.duration:
+                history.pop()
 
-        if len(history) >= self._throttling.num_requests:
-            return False
+            if len(history) >= self._throttling.num_requests:
+                return False
 
-        history.insert(0, now)
-        default_cache.set(key, history, self._throttling.duration)
-        return True
+            history.insert(0, now)
+            self._storage.set(key, history, self._throttling.duration)
+            return True
 
 
 def reset(request: django.http.HttpRequest, scope: str):
@@ -59,7 +61,9 @@ def reset(request: django.http.HttpRequest, scope: str):
     """
     ident = _get_ident(request)
     key = _get_cache_key(scope, ident)
-    default_cache.delete(key)
+    storage = get_throttling_statistic_storage()
+    with storage.lock(key, timeout_sec=2):
+        storage.delete(key)
 
 
 CACHE_KEY_FORMAT = 'throttle_{scope}_{ident}'
