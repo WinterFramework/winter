@@ -7,7 +7,7 @@ from typing import Tuple
 import django.http
 
 from winter.core import annotate_method
-from .throttling_statistic_storage import get_throttling_statistic_storage
+from .redis_throttling_client import get_redis_throttling_client
 
 if TYPE_CHECKING:
     from winter.web.routing import Route  # noqa: F401
@@ -33,25 +33,21 @@ def throttling(rate: Optional[str], scope: Optional[str] = None):
 class BaseRateThrottle:
     def __init__(self, throttling_: Throttling):
         self._throttling = throttling_
-        self._storage = get_throttling_statistic_storage()
+        self._redis_client = get_redis_throttling_client()
 
     def allow_request(self, request: django.http.HttpRequest) -> bool:
         ident = _get_ident(request)
         key = _get_cache_key(self._throttling.scope, ident)
+        now = time.time()
 
-        with self._storage.lock(key, timeout_sec=2):
-            history = self._storage.get(key)
-            now = time.time()
+        pipe = self._redis_client.pipeline()
+        pipe.zadd(key, {str(now): now})
+        pipe.zremrangebyscore(key, 0, now - self._throttling.duration)
+        pipe.zcard(key)
+        pipe.expire(key, self._throttling.duration)
+        _, _, count, _ = pipe.execute()
 
-            while history and history[-1] <= now - self._throttling.duration:
-                history.pop()
-
-            if len(history) >= self._throttling.num_requests:
-                return False
-
-            history.insert(0, now)
-            self._storage.set(key, history, self._throttling.duration)
-            return True
+        return count <= self._throttling.num_requests
 
 
 def reset(request: django.http.HttpRequest, scope: str):

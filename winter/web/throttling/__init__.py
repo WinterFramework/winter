@@ -1,6 +1,5 @@
 from .throttling import throttling
 from .throttling import reset
 from .throttling import create_throttle_class
-from .throttling_statistic_storage import init_throttling_statistic_storage
-from .throttling_statistic_storage import get_throttling_statistic_storage
+from .redis_throttling_configuration import set_redis_throttling_configuration
 from .redis_throttling_configuration import RedisThrottlingConfiguration

@@ -7,3 +7,17 @@ class RedisThrottlingConfiguration:
     port: int
     db: int
     password: str | None = None
+
+
+_redis_throttling_configuration: RedisThrottlingConfiguration | None = None
+
+
+def set_redis_throttling_configuration(configuration: RedisThrottlingConfiguration):
+    global _redis_throttling_configuration
+    if _redis_throttling_configuration is not None:
+        raise RuntimeError(f'{RedisThrottlingConfiguration.__name__} is already initialized.')
+    _redis_throttling_configuration = configuration
+
+
+def get_redis_throttling_configuration() -> RedisThrottlingConfiguration | None:
+    return _redis_throttling_configuration

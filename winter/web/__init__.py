@@ -20,13 +20,13 @@ from .response_header_annotation import response_header
 from .response_header_resolver import ResponseHeaderArgumentResolver
 from .response_header_serializer import response_headers_serializer
 from .response_status_annotation import response_status
-from .throttling import init_throttling_statistic_storage
 from .throttling import RedisThrottlingConfiguration
+from .throttling import set_redis_throttling_configuration
 from .throttling import throttling
 from .urls import register_url_regexp
 
 
-def setup(redis_throttling_configuration: RedisThrottlingConfiguration):
+def setup():
     from winter.data.exceptions import NotFoundException
     from .exceptions import RedirectException
     from .exceptions.problem_handling import autodiscover_problem_annotations
@@ -63,5 +63,3 @@ def setup(redis_throttling_configuration: RedisThrottlingConfiguration):
     }
     for exception_class, handler in auto_handle_exceptions.items():
         exception_handlers_registry.add_handler(exception_class, handler, auto_handle=True)
-
-    init_throttling_statistic_storage(redis_throttling_configuration)

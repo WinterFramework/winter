@@ -28,6 +28,8 @@ class TestAppConfig(AppConfig):
 
         winter_openapi.setup()
 
+        winter.web.setup()
+
         self._redis_container = RedisContainer()
         self._redis_container.start()
         self._redis_container.get_client().flushdb()
@@ -39,7 +41,7 @@ class TestAppConfig(AppConfig):
             db=0,
             password=self._redis_container.password
         )
-        winter.web.setup(redis_throttling_configuration)
+        winter.web.set_redis_throttling_configuration(redis_throttling_configuration)
 
         winter_django.setup()
 
