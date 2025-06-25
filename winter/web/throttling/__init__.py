@@ -1,3 +1,4 @@
+from .exceptions import ThrottlingMisconfigurationException
 from .throttling import throttling
 from .throttling import reset
 from .throttling import create_throttle_class

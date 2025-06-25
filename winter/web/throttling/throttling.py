@@ -33,21 +33,19 @@ def throttling(rate: Optional[str], scope: Optional[str] = None):
 class BaseRateThrottle:
     def __init__(self, throttling_: Throttling):
         self._throttling = throttling_
-        self._redis_client = get_redis_throttling_client()
+        self._redis_client, self._rate_limit_script = get_redis_throttling_client()
 
     def allow_request(self, request: django.http.HttpRequest) -> bool:
         ident = _get_ident(request)
         key = _get_cache_key(self._throttling.scope, ident)
         now = time.time()
 
-        pipe = self._redis_client.pipeline()
-        pipe.zadd(key, {str(now): now})
-        pipe.zremrangebyscore(key, 0, now - self._throttling.duration)
-        pipe.zcard(key)
-        pipe.expire(key, self._throttling.duration)
-        _, _, count, _ = pipe.execute()
+        is_allowed = self._rate_limit_script(
+            keys=[key],
+            args=[now, self._throttling.duration, self._throttling.num_requests]
+        )
 
-        return count <= self._throttling.num_requests
+        return is_allowed == 1
 
 
 def reset(request: django.http.HttpRequest, scope: str):
@@ -57,9 +55,8 @@ def reset(request: django.http.HttpRequest, scope: str):
     """
     ident = _get_ident(request)
     key = _get_cache_key(scope, ident)
-    storage = get_throttling_statistic_storage()
-    with storage.lock(key, timeout_sec=2):
-        storage.delete(key)
+    redis_client, _ = get_redis_throttling_client()
+    redis_client.delete(key)
 
 
 CACHE_KEY_FORMAT = 'throttle_{scope}_{ident}'

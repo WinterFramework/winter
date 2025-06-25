@@ -20,6 +20,7 @@ from .response_header_annotation import response_header
 from .response_header_resolver import ResponseHeaderArgumentResolver
 from .response_header_serializer import response_headers_serializer
 from .response_status_annotation import response_status
+from .throttling import ThrottlingMisconfigurationException
 from .throttling import RedisThrottlingConfiguration
 from .throttling import set_redis_throttling_configuration
 from .throttling import throttling
