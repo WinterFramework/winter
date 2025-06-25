@@ -33,19 +33,13 @@ def throttling(rate: Optional[str], scope: Optional[str] = None):
 class BaseRateThrottle:
     def __init__(self, throttling_: Throttling):
         self._throttling = throttling_
-        self._redis_client, self._rate_limit_script = get_redis_throttling_client()
+        self._redis_client = get_redis_throttling_client()
 
     def allow_request(self, request: django.http.HttpRequest) -> bool:
         ident = _get_ident(request)
         key = _get_cache_key(self._throttling.scope, ident)
-        now = time.time()
 
-        is_allowed = self._rate_limit_script(
-            keys=[key],
-            args=[now, self._throttling.duration, self._throttling.num_requests]
-        )
-
-        return is_allowed == 1
+        return self._redis_client.is_request_allowed(key, self._throttling.duration, self._throttling.num_requests)
 
 
 def reset(request: django.http.HttpRequest, scope: str):
@@ -55,7 +49,7 @@ def reset(request: django.http.HttpRequest, scope: str):
     """
     ident = _get_ident(request)
     key = _get_cache_key(scope, ident)
-    redis_client, _ = get_redis_throttling_client()
+    redis_client = get_redis_throttling_client()
     redis_client.delete(key)
 
 

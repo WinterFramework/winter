@@ -37,7 +37,7 @@ class TestAppConfig(AppConfig):
 
         redis_throttling_configuration = RedisThrottlingConfiguration(
             host=self._redis_container.get_container_host_ip(),
-            port=self._redis_container.port,
+            port=self._redis_container.get_exposed_port(self._redis_container.port),
             db=0,
             password=self._redis_container.password
         )
@@ -47,6 +47,6 @@ class TestAppConfig(AppConfig):
 
         exception_handlers_registry.set_default_handler(DefaultExceptionHandler)  # for 100% test coverage
 
-    def cleanup_redis(self):
+    def cleanup_redis(self):  # pragma: no cover
         if self._redis_container:
             self._redis_container.stop()
