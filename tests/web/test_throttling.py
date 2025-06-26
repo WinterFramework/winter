@@ -3,7 +3,14 @@ from http import HTTPStatus
 
 import freezegun
 import pytest
+from mock import patch
 
+from winter.web import RedisThrottlingConfiguration
+from winter.web import ThrottlingMisconfigurationException
+from winter.web import set_redis_throttling_configuration
+from winter.web.throttling.redis_throttling_client import get_redis_throttling_client
+from winter.web.throttling import redis_throttling_client
+from winter.web.throttling import redis_throttling_configuration
 
 expected_error_response = {
     'status': 429,
@@ -65,3 +72,35 @@ def test_get_throttling_with_conditional_reset(api_client):
             is_reset = True if i == 5 else False
             response = api_client.get(f'/with-throttling/with-reset/?is_reset={is_reset}')
             assert response.status_code == HTTPStatus.OK, i
+
+
+@patch.object(redis_throttling_client, 'get_redis_throttling_configuration', return_value=None)
+@patch.object(redis_throttling_client, '_redis_throttling_client', None)
+def test_get_redis_throttling_client_without_configuration(_):
+    with pytest.raises(ThrottlingMisconfigurationException) as exc_info:
+        get_redis_throttling_client()
+
+    assert 'Configuration for Redis must be set' in str(exc_info.value)
+
+
+@patch.object(
+    redis_throttling_configuration,
+    '_redis_throttling_configuration',
+    RedisThrottlingConfiguration(
+        host='localhost',
+        port=1234,
+        db=0,
+        password=None
+    )
+)
+def test_try_to_set_redis_configuration_twice():
+    configuration = RedisThrottlingConfiguration(
+        host='localhost',
+        port=5678,
+        db=0,
+        password=None
+    )
+    with pytest.raises(ThrottlingMisconfigurationException) as exc_info:
+        set_redis_throttling_configuration(configuration)
+
+    assert 'RedisThrottlingConfiguration is already initialized' in str(exc_info.value)

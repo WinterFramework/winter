@@ -1,7 +1,6 @@
 import time
 
 from redis import Redis
-from redis.commands.core import Script
 
 from .exceptions import ThrottlingMisconfigurationException
 from .redis_throttling_configuration import get_redis_throttling_configuration
