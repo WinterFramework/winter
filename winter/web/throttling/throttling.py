@@ -5,12 +5,12 @@ from typing import TYPE_CHECKING
 from typing import Tuple
 
 import django.http
-from django.core.cache import cache as default_cache
 
 from winter.core import annotate_method
+from .redis_throttling_client import get_redis_throttling_client
 
 if TYPE_CHECKING:
-    from .routing import Route  # noqa: F401
+    from winter.web.routing import Route  # noqa: F401
 
 
 @dataclasses.dataclass
@@ -33,23 +33,13 @@ def throttling(rate: Optional[str], scope: Optional[str] = None):
 class BaseRateThrottle:
     def __init__(self, throttling_: Throttling):
         self._throttling = throttling_
+        self._redis_client = get_redis_throttling_client()
 
     def allow_request(self, request: django.http.HttpRequest) -> bool:
         ident = _get_ident(request)
         key = _get_cache_key(self._throttling.scope, ident)
 
-        history = default_cache.get(key, [])
-        now = time.time()
-
-        while history and history[-1] <= now - self._throttling.duration:
-            history.pop()
-
-        if len(history) >= self._throttling.num_requests:
-            return False
-
-        history.insert(0, now)
-        default_cache.set(key, history, self._throttling.duration)
-        return True
+        return self._redis_client.is_request_allowed(key, self._throttling.duration, self._throttling.num_requests)
 
 
 def reset(request: django.http.HttpRequest, scope: str):
@@ -59,7 +49,8 @@ def reset(request: django.http.HttpRequest, scope: str):
     """
     ident = _get_ident(request)
     key = _get_cache_key(scope, ident)
-    default_cache.delete(key)
+    redis_client = get_redis_throttling_client()
+    redis_client.delete(key)
 
 
 CACHE_KEY_FORMAT = 'throttle_{scope}_{ident}'

@@ -1,0 +1,2 @@
+class ThrottlingMisconfigurationException(Exception):
+    pass
