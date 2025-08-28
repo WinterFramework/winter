@@ -50,6 +50,11 @@ class PagePositionArgumentsInspector(RouteParametersInspector):
                 if order_by_annotation.default_sort is not None else
                 None
             )
+            enum_values = []
+            for field in map(str, sorted(order_by_annotation.allowed_fields)):
+                enum_values.append(field)
+                enum_values.append('-' + field)
+
             order_by_parameter = Parameter(
                 name=self._page_position_argument_resolver.order_by_name,
                 description=f'Comma separated order by fields. Allowed fields: {allowed_order_by_fields}.',
@@ -60,6 +65,7 @@ class PagePositionArgumentsInspector(RouteParametersInspector):
                     default=default_sort,
                     items=Schema(
                         type=DataTypes.STRING,
+                        enum=enum_values,
                     )
                 ),
             )

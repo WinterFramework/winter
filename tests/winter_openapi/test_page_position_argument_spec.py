@@ -63,7 +63,7 @@ def test_generate_object_argument_spec():
 def test_page_position_argument_inspector_with_allowed_order_by_fields(default_sort):
     class TestAPI:
         @winter.route_get("ordered_resource")
-        @winter.web.pagination.order_by(["id"], default_sort=default_sort)
+        @winter.web.pagination.order_by(["id","name","created_at"], default_sort=default_sort)
         def method(self, arg1: PagePosition):  # pragma: no cover
             pass
 
@@ -72,11 +72,24 @@ def test_page_position_argument_inspector_with_allowed_order_by_fields(default_s
         "allowEmptyValue": False,
         "allowReserved": False,
         "deprecated": False,
-        "description": "Comma separated order by fields. Allowed fields: id.",
+        "description": "Comma separated order by fields. Allowed fields: created_at,id,name.",
         "in": "query",
         "name": "order_by",
         "required": False,
-        "schema": {"items": {"type": "string"}, "type": "array"},
+        "schema": {
+            "items": {
+                "type": "string",
+                'enum': [
+                    'created_at',
+                    '-created_at',
+                    'id',
+                    '-id',
+                    'name',
+                    '-name'
+                ]
+            },
+            "type": "array"
+        },
     }
 
     if default_sort:
