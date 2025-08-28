@@ -60,6 +60,8 @@ class PagePositionArgumentsInspector(RouteParametersInspector):
                 description=f'Comma separated order by fields.',
                 required=False,
                 param_in="query",
+                style="form",
+                explode=False,
                 param_schema=Schema(
                     type=DataTypes.ARRAY,
                     default=default_sort,

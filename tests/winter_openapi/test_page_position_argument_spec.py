@@ -76,6 +76,8 @@ def test_page_position_argument_inspector_with_allowed_order_by_fields(default_s
         "in": "query",
         "name": "order_by",
         "required": False,
+        "style": "form",
+        "explode": False,
         "schema": {
             "items": {
                 "type": "string",
