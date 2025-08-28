@@ -4,9 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [30.0.1] - 2025-06-03
+## [31.0.1] - 2025-08-28
+- Winter openapi now supports enum for order_by query parameter
+
+## [31.0.0] - 2025-06-03
 - Winter was made compatible with the latest version of 'uritemplate'
-- 'uritemplate' doesn't follow semantic versioning so exact version was pinned
+- 'uritemplate' doesn't follow semantic versioning so an exact version was pinned
 - GH runners were updated from 20.04 to 22.04
 
 ## [30.0.0] - 2025-02-27
