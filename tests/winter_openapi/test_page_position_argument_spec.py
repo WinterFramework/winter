@@ -72,7 +72,7 @@ def test_page_position_argument_inspector_with_allowed_order_by_fields(default_s
         "allowEmptyValue": False,
         "allowReserved": False,
         "deprecated": False,
-        "description": "Comma separated order by fields. Allowed fields: created_at,id,name.",
+        "description": "Comma separated order by fields.",
         "in": "query",
         "name": "order_by",
         "required": False,

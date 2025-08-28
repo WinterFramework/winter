@@ -57,7 +57,7 @@ class PagePositionArgumentsInspector(RouteParametersInspector):
 
             order_by_parameter = Parameter(
                 name=self._page_position_argument_resolver.order_by_name,
-                description=f'Comma separated order by fields. Allowed fields: {allowed_order_by_fields}.',
+                description=f'Comma separated order by fields.',
                 required=False,
                 param_in="query",
                 param_schema=Schema(
