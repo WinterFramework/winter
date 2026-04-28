@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [32.1.0] - 2026-04-28
+- Added Django 5.2 support (widened constraint to >=4.2,<6)
+- Fixed duplicate inspector registration in register_route_parameters_inspector
+
 ## [32.0.0] - 2026-04-27
 - Bumped minimum pydantic version to 2.13
 - Fixed Parameter import to use openapi-pydantic v3.0 consistently
