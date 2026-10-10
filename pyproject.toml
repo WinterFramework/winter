@@ -65,6 +65,35 @@ pytz = ">=2020.5"
 setuptools = "^71.1.0"
 testcontainers = "^4.10.0"
 
+[tool.semantic_release]
+version_toml = ["pyproject.toml:tool.poetry.version"]
+tag_format = "{version}"  # plain X.Y.Z, like all existing tags
+commit_message = "chore(release): {version} [skip ci]"
+commit_author = "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
+commit_parser = "conventional"
+
+[tool.semantic_release.commit_parser_options]
+minor_tags = ["feat"]
+patch_tags = ["fix", "perf"]
+parse_squash_commits = true
+ignore_merge_commits = true
+
+[tool.semantic_release.changelog]
+mode = "update"
+insertion_flag = "<!-- version list -->"
+exclude_commit_patterns = ['chore\(release\):.*']
+
+[tool.semantic_release.changelog.default_templates]
+changelog_file = "CHANGELOG.md"
+
+[tool.semantic_release.remote]
+type = "github"
+ignore_token_for_push = true  # push with the deploy key from actions/checkout, not GITHUB_TOKEN
+
+[tool.semantic_release.branches.main]
+match = "master"
+prerelease = false
+
 [build-system]
 requires = ["poetry-core>=1.3.1"]
 build-backend = "poetry.core.masonry.api"
