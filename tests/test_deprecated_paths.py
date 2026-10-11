@@ -31,6 +31,8 @@ def test_winter_core_is_an_alias_of_components_and_application():
     ('winter.core.utils.typing', 'winter.components.typing'),
     ('winter.data.pagination', 'winter.pagination'),
     ('winter.data.pagination.sort', 'winter.pagination.sort'),
+    ('winter.data.repository', 'winter_ddd.repository'),
+    ('winter.data.exceptions', 'winter_ddd.exceptions'),
 ])
 def test_old_module_is_the_new_module(old_name, new_name):
     with pytest.warns(DeprecationWarning, match=f'{old_name} is deprecated, use {new_name}'):
@@ -48,6 +50,15 @@ def test_winter_core_utils_exports_the_former_names():
 
     assert utils.TypeWrapper is TypeWrapper
     assert utils.PositiveInteger is PositiveInteger
+
+
+def test_winter_data_exports_crud_repository():
+    import winter_ddd
+
+    with pytest.warns(DeprecationWarning, match='winter.data is deprecated'):
+        data = _reimport('winter.data')
+
+    assert data.CRUDRepository is winter_ddd.CRUDRepository
 
 
 def test_unknown_old_module_is_not_invented():

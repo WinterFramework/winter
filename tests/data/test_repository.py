@@ -1,4 +1,4 @@
-from winter.data import CRUDRepository
+from winter_ddd import CRUDRepository
 
 
 def test_crud_repository_generic_parameters():
