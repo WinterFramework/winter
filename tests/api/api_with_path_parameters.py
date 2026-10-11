@@ -1,7 +1,7 @@
 import enum
 import uuid
 
-import winter
+import winter.web
 
 
 class OneTwoEnum(enum.Enum):
@@ -18,9 +18,9 @@ class OneTwoEnumWithInt(enum.Enum):
         return cls(int(value))
 
 
-@winter.route('with-path-parameters/{param1}/')
+@winter.web.route('with-path-parameters/{param1}/')
 class APIWithPathParameters:
-    @winter.route_get('{param2}/{param3}/{param4}/{param5}/{?param6}')
+    @winter.web.route_get('{param2}/{param3}/{param4}/{param5}/{?param6}')
     def test(
         self,
         param1: str,

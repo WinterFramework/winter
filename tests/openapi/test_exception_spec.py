@@ -3,7 +3,7 @@ from http import HTTPStatus
 
 import pytest
 
-import winter
+import winter.web
 from winter.web.routing import get_route
 from winter.openapi import generate_openapi
 from winter.openapi.annotations import global_exception
@@ -15,8 +15,8 @@ def test_global_exception_annotated_on_method():
         pass
 
     class _TestAPI:
-        @winter.raises(GlobalException)
-        @winter.route_get('resource')
+        @winter.web.raises(GlobalException)
+        @winter.web.route_get('resource')
         def get_resource(self):  # pragma: no cover
             pass
 
@@ -93,13 +93,13 @@ def test_exception_annotated_on_method_with_custom_handler_with_dto(
         pass
 
     class ProblemExistsExceptionHandler(winter.web.ExceptionHandler):
-        @winter.response_status(HTTPStatus.FORBIDDEN)
+        @winter.web.response_status(HTTPStatus.FORBIDDEN)
         def handle(self, exception: ProblemExistsException, **kwargs) -> handler_return_type:  # pragma: no cover
             pass
 
     class _TestAPI:
-        @winter.raises(ProblemExistsException, ProblemExistsExceptionHandler)
-        @winter.route_get('resource')
+        @winter.web.raises(ProblemExistsException, ProblemExistsExceptionHandler)
+        @winter.web.route_get('resource')
         def get_resource(self):  # pragma: no cover
             pass
 

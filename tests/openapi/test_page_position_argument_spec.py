@@ -1,6 +1,6 @@
 import pytest
 
-import winter
+import winter.web
 from winter.pagination import PagePosition
 from winter.web.routing import get_route
 from winter.openapi import generate_openapi
@@ -8,7 +8,7 @@ from winter.openapi import generate_openapi
 
 def test_generate_page_position_argument_spec():
     class _TestAPI:
-        @winter.route_get("pageable_resource")
+        @winter.web.route_get("pageable_resource")
         def method(self, arg1: PagePosition):  # pragma: no cover
             pass
 
@@ -45,7 +45,7 @@ def test_generate_page_position_argument_spec():
 
 def test_generate_object_argument_spec():
     class _TestAPI:
-        @winter.route_get("pageable_resource")
+        @winter.web.route_get("pageable_resource")
         def method(self, arg1: object):  # pragma: no cover
             pass
 
@@ -62,7 +62,7 @@ def test_generate_object_argument_spec():
 @pytest.mark.parametrize("default_sort", (None, ["id"]))
 def test_page_position_argument_inspector_with_allowed_order_by_fields(default_sort):
     class TestAPI:
-        @winter.route_get("ordered_resource")
+        @winter.web.route_get("ordered_resource")
         @winter.web.pagination.order_by(["id","name","created_at"], default_sort=default_sort)
         def method(self, arg1: PagePosition):  # pragma: no cover
             pass

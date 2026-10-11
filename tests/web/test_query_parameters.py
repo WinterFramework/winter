@@ -8,7 +8,7 @@ from uuid import uuid4
 import pytest
 from uritemplate import URITemplate
 
-import winter
+import winter.web
 from tests.utils import get_request
 from winter.components.annotations import AlreadyAnnotated
 from winter.web.argument_resolver import ArgumentNotSupported
@@ -27,7 +27,7 @@ from winter.web.query_parameters.query_parameter_argument_resolver import QueryP
     ),
 )
 def test_query_parameter_resolver(argument_name, query_string, expected_value):
-    @winter.route_get('{?without_default,optional,with_default,array*}')
+    @winter.web.route_get('{?without_default,optional,with_default,array*}')
     def method(
         without_default: int,
         optional: Optional[str],
@@ -54,7 +54,7 @@ def test_query_parameter_resolver(argument_name, query_string, expected_value):
     ),
 )
 def test_query_parameter_resolver_with_raises_parse_error(query_string, expected_exception_message, expected_errors):
-    @winter.route_get('{?query_param}')
+    @winter.web.route_get('{?query_param}')
     def method(query_param: int):  # pragma: no cover
         return query_param
 
@@ -71,7 +71,7 @@ def test_query_parameter_resolver_with_raises_parse_error(query_string, expected
 
 
 def test_query_parameter_resolver_with_raises_parse_uuid_error():
-    @winter.route_get('{?query_param}')
+    @winter.web.route_get('{?query_param}')
     def method(query_param: UUID):  # pragma: no cover
         pass
 
@@ -94,7 +94,7 @@ def test_query_parameter_resolver_with_raises_parse_uuid_error():
     ),
 )
 def test_is_supported(argument_name, expected_is_supported):
-    @winter.route_get('{?' + argument_name + '}')
+    @winter.web.route_get('{?' + argument_name + '}')
     def method(query_param: int):  # pragma: no cover
         return query_param
 
@@ -108,7 +108,7 @@ def test_is_supported(argument_name, expected_is_supported):
 
 
 def test_query_parameter_resolver_with_raises_argument_not_supported():
-    @winter.route_get()
+    @winter.web.route_get()
     def method(invalid_query_param: int):  # pragma: no cover
         return invalid_query_param
 
@@ -125,8 +125,8 @@ def test_query_parameter_resolver_with_raises_argument_not_supported():
 
 def test_duplicate_routing_map_to():
     with pytest.raises(AlreadyAnnotated) as exception:
-        @winter.map_query_parameter('y', to='query_param')
-        @winter.map_query_parameter('x', to='query_param')
+        @winter.web.map_query_parameter('y', to='query_param')
+        @winter.web.map_query_parameter('x', to='query_param')
         def method(query_param: int):  # pragma: no cover
             return query_param
     message = (
@@ -138,9 +138,9 @@ def test_duplicate_routing_map_to():
 
 def test_duplicate_map_query_parameter_map_to():
     with pytest.raises(AlreadyAnnotated) as exception:
-        @winter.map_query_parameter('x', to='query_param1')
-        @winter.map_query_parameter('x', to='query_param2')
-        @winter.route_get('{?query_param}')
+        @winter.web.map_query_parameter('x', to='query_param1')
+        @winter.web.map_query_parameter('x', to='query_param2')
+        @winter.web.route_get('{?query_param}')
         def method(query_param: int):  # pragma: no cover
             return query_param
 
@@ -152,9 +152,9 @@ def test_duplicate_map_query_parameter_map_to():
 
 
 def test_orphan_map_query_parameter_fails():
-    @winter.route_get('{?x,y}')
-    @winter.map_query_parameter('x', to='x_param')
-    @winter.map_query_parameter('y', to='y_param')
+    @winter.web.route_get('{?x,y}')
+    @winter.web.map_query_parameter('x', to='x_param')
+    @winter.web.map_query_parameter('y', to='y_param')
     def method(x_param: int, y_param: int = 1):  # pragma: no cover
         return 0
 

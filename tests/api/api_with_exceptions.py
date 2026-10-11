@@ -1,6 +1,7 @@
 import dataclasses
 
 import winter.web
+from winter.web import route_get, route, raises, response_status
 
 
 class CustomException(Exception):
@@ -23,19 +24,19 @@ class CustomExceptionDTO:
 
 
 class CustomExceptionHandler(winter.web.ExceptionHandler):
-    @winter.response_status(400)
+    @response_status(400)
     def handle(self, exception: CustomException) -> CustomExceptionDTO:
         return CustomExceptionDTO(exception.message)
 
 
 class AnotherExceptionHandler(winter.web.ExceptionHandler):
-    @winter.response_status(401)
+    @response_status(401)
     def handle(self, exception: CustomException) -> int:
         return 21
 
 
 class WithUnknownArgumentExceptionHandler(winter.web.ExceptionHandler):
-    @winter.response_status(400)
+    @response_status(400)
     def handle(self, exception: WithUnknownArgumentException, unknown_argument: int) -> str:  # pragma: no cover
         pass
 
@@ -48,40 +49,40 @@ class ChildCustomException(CustomException):
     pass
 
 
-@winter.route('with_exceptions/')
+@route('with_exceptions/')
 class APIWithExceptions:
 
-    @winter.route_get('declared_but_not_thrown/')
-    @winter.raises(CustomException)
+    @route_get('declared_but_not_thrown/')
+    @raises(CustomException)
     def declared_but_not_thrown(self) -> str:
         return 'Hello, sir!'
 
-    @winter.route_get('declared_and_thrown/')
-    @winter.raises(CustomException)
+    @route_get('declared_and_thrown/')
+    @raises(CustomException)
     def declared_and_thrown(self) -> str:
         raise CustomException('declared_and_thrown')
 
-    @winter.route_get('declared_and_thrown_child/')
-    @winter.raises(CustomException)
+    @route_get('declared_and_thrown_child/')
+    @raises(CustomException)
     def declared_and_thrown_child(self) -> str:
         raise ChildCustomException('declared_and_thrown_child')
 
-    @winter.route_get('not_declared_but_thrown/')
+    @route_get('not_declared_but_thrown/')
     def not_declared_but_thrown(self) -> str:
         raise CustomException('not_declared_but_thrown')
 
-    @winter.route_get('declared_but_no_handler/')
-    @winter.raises(ExceptionWithoutHandler)
+    @route_get('declared_but_no_handler/')
+    @raises(ExceptionWithoutHandler)
     def declared_but_no_handler(self) -> str:
         raise ExceptionWithoutHandler()
 
-    @winter.raises(CustomException, AnotherExceptionHandler)
-    @winter.route_get('exception_with_custom_handler/')
+    @raises(CustomException, AnotherExceptionHandler)
+    @route_get('exception_with_custom_handler/')
     def with_custom_handler(self) -> str:
         raise CustomException('message')
 
-    @winter.raises(WithUnknownArgumentException)
-    @winter.raises(CustomException)  # second "raises" just for 100% test coverage
-    @winter.route_get('with_unknown_argument_exception/')
+    @raises(WithUnknownArgumentException)
+    @raises(CustomException)  # second "raises" just for 100% test coverage
+    @route_get('with_unknown_argument_exception/')
     def with_unknown_argument_handler(self) -> str:
         raise WithUnknownArgumentException()

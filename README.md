@@ -18,7 +18,19 @@ Web Framework with focus on python typing, dataclasses and modular design
 
 # Architecture
 
-Target package structure, layer rules and the migration plan: [docs/architecture.md](docs/architecture.md).
+Package structure and layer rules: [docs/architecture.md](docs/architecture.md).
+
+## Upgrading to Winter 33
+
+`winter` is a namespace package now: the `import winter` facade is gone, use `winter.web` instead
+(`@winter.web.route_get(...)`). `winter_openapi`, `winter_django`, `winter_sqlalchemy`, `winter_ddd`,
+`winter.core` and `winter.data` moved under new names and keep working with a `DeprecationWarning` until 34.0.
+A codemod rewrites a code base, preserving formatting:
+
+```
+pip install libcst
+python tools/migrate_to_33.py path/to/your/project
+```
 
 # How to use
 
@@ -31,10 +43,10 @@ pip install winter
 
 ## Hello world
 ```python
-import winter
+import winter.web
 
 class HelloWorld:
-    @winter.route_get('/hello/')
+    @winter.web.route_get('/hello/')
     def hello(self) -> str:
         return 'Hello, world!'
 ```
@@ -42,11 +54,11 @@ class HelloWorld:
 To use it with Django:
 ```python
 from winter.web.autodiscovery import find_package_routes
-import winter_django
+import winter.django
 
 routes = find_package_routes('some_package.sub_package')
 urlpatterns = [
-    *winter_django.create_django_urls_from_routes(routes),
+    *winter.django.create_django_urls_from_routes(routes),
 ]
 ```
 
@@ -56,11 +68,11 @@ from http import HTTPStatus
 from typing import List
 from typing import Optional
 
-import winter
+import winter.web
 import winter.web
 from dataclasses import dataclass
-from winter.data.pagination import Page
-from winter.data.pagination import PagePosition
+from winter.pagination import Page
+from winter.pagination import PagePosition
 
 
 @dataclass
@@ -88,20 +100,20 @@ class NotFoundException(Exception):
 todo_list: List[str] = []
 
 
-@winter.route('todo/')
+@winter.web.route('todo/')
 class TodoAPI:
-    @winter.route_post('')
-    @winter.request_body(argument_name='new_todo_dto')
+    @winter.web.route_post('')
+    @winter.web.request_body(argument_name='new_todo_dto')
     def create_todo(self, new_todo_dto: NewTodoDTO) -> TodoDTO:
         todo_list.append(new_todo_dto.todo)
         return self._build_todo_dto(len(todo_list) - 1)
 
-    @winter.route_get('{todo_index}/')
+    @winter.web.route_get('{todo_index}/')
     def get_todo(self, todo_index: int) -> TodoDTO:
         self._check_index(todo_index)
         return self._build_todo_dto(todo_index)
 
-    @winter.route_get('{?q}')
+    @winter.web.route_get('{?q}')
     def get_todo_list(self, page_position: PagePosition, q: Optional[str] = None) -> Page[TodoDTO]:
         q = q if q is None else q.lower()
         dto_list = [
@@ -114,13 +126,13 @@ class TodoAPI:
         paginated_dto_list = dto_list[offset: offset + limit]
         return Page(total_count=len(dto_list), items=paginated_dto_list, position=page_position)
 
-    @winter.route_get('{todo_index}/')
-    @winter.request_body(argument_name='todo_update_dto')
+    @winter.web.route_get('{todo_index}/')
+    @winter.web.request_body(argument_name='todo_update_dto')
     def update_todo(self, todo_index: int, todo_update_dto: TodoUpdateDTO):
         self._check_index(todo_index)
         todo_list[todo_index] = todo_update_dto.todo
 
-    @winter.route_get('{todo_index}/')
+    @winter.web.route_get('{todo_index}/')
     def delete_todo(self, todo_index: int):
         self._check_index(todo_index)
         del todo_list[todo_index]
@@ -136,11 +148,11 @@ class TodoAPI:
 
 ## Extending Page class
 ```python
-import winter
+import winter.web
 import winter.web
 from dataclasses import dataclass
-from winter.data.pagination import Page
-from winter.data.pagination import PagePosition
+from winter.pagination import Page
+from winter.pagination import PagePosition
 from typing import TypeVar
 from typing import Generic
 
@@ -153,7 +165,7 @@ class CustomPage(Page, Generic[T]):
 
 
 class Example:
-    @winter.route_get('/')
+    @winter.web.route_get('/')
     def create_todo(self, page_position: PagePosition) -> CustomPage[int]:
         return CustomPage(
             # Standard Page fields
@@ -203,7 +215,7 @@ class ErrorDTO:
 
 
 class TodoNotFoundExceptionCustomHandler(winter.web.ExceptionHandler):
-    @winter.response_status(HTTPStatus.NOT_FOUND)
+    @winter.web.response_status(HTTPStatus.NOT_FOUND)
     def handle(self, request: HttpRequest, exception: TodoNotFoundException) -> ErrorDTO:
         return ErrorDTO(index=exception.invalid_index, message='Access denied')
 
@@ -212,12 +224,12 @@ todo_list: List[str] = []
 
 
 class TodoProblemExistsExampleAPI:
-    @winter.route_get('global/{todo_index}/')
+    @winter.web.route_get('global/{todo_index}/')
     def get_todo_with_global_handling(self, todo_index: int):
         raise TodoNotFoundException(invalid_index=todo_index)
 
-    @winter.route_get('custom/{todo_index}/')
-    @winter.raises(TodoNotFoundException, handler_cls=TodoNotFoundExceptionCustomHandler)
+    @winter.web.route_get('custom/{todo_index}/')
+    @winter.web.raises(TodoNotFoundException, handler_cls=TodoNotFoundExceptionCustomHandler)
     def get_todo_with_custom_handling(self, todo_index: int):
         raise TodoNotFoundException(invalid_index=todo_index)
 
@@ -226,20 +238,20 @@ class TodoProblemExistsExampleAPI:
 
 ## Interceptors
 You can define interceptors to pre-handle a web request before it gets to an endpoint code.
-The pre_handle method arguments will be injected the same way as it's done in methods with winter.route annotation.
+The pre_handle method arguments will be injected the same way as it's done in methods with winter.web.route annotation.
 It's not supported to return any response from interceptors.
 However, the exceptions thrown from within an interceptor will be handled automatically.
 ```python
 from django.http import HttpRequest
 
-import winter
-from winter.core import ComponentMethod
+import winter.web
+from winter.components import ComponentMethod
 from winter.web import Interceptor
 from winter.web import ResponseHeader
 
 
 class HelloWorldInterceptor(Interceptor):
-    @winter.response_header('x-hello-world', 'hello_world_header')
+    @winter.web.response_header('x-hello-world', 'hello_world_header')
     def pre_handle(self, method: ComponentMethod, request: HttpRequest, hello_world_header: ResponseHeader[str]):
         print(f'Method: {method.name}')
         if 'hello_world' in request.GET:
@@ -267,10 +279,10 @@ By default, if a JSON request contains a field that is not defined in a dataclas
 To accept missing fields in dataclass, you can use Undefined class to explicitly mark fields as optional.
 
 ```python
-import winter
+import winter.web
 from dataclasses import dataclass
 from typing import Union
-from winter.core.json import Undefined
+from winter.json import Undefined
 
 
 @dataclass
@@ -280,8 +292,8 @@ class RequestBody:
 
 
 class SomeAPI:
-    @winter.route_post('/')
-    @winter.request_body('body')
+    @winter.web.route_post('/')
+    @winter.web.request_body('body')
     def some_method(self, body: RequestBody):
         if body.field_a == Undefined():
             print('Field A is not defined in JSON request')

@@ -18,7 +18,7 @@ from typing import Union
 import pytest
 from strenum import StrEnum
 
-import winter
+import winter.web
 import winter.components
 from winter.json import Undefined
 from winter.components.nested_types import TypeWrapper
@@ -444,7 +444,7 @@ class RequestBodyWithUndefined:
 ])
 def test_response_return_type(type_hint, expected_response_info, expected_components):
     class _TestAPI:
-        @winter.route_get('/types/')
+        @winter.web.route_get('/types/')
         def simple_method(self) -> type_hint:  # pragma: no cover
             pass
 
@@ -474,7 +474,7 @@ def test_response_return_type(type_hint, expected_response_info, expected_compon
 
 def test_response_with_invalid_return_type():
     class _TestAPI:
-        @winter.route_get('')
+        @winter.web.route_get('')
         def with_invalid_return_type(self) -> object:  # pragma: no cover
             pass
 
@@ -559,8 +559,8 @@ def test_response_with_invalid_return_type():
 ])
 def test_request_type(type_hint, expected_request_body_spec, expected_components):
     class _TestAPI:
-        @winter.route_post('/types/')
-        @winter.request_body('data')
+        @winter.web.route_post('/types/')
+        @winter.web.request_body('data')
         def simple_method(self, data: type_hint):  # pragma: no cover
             pass
 
@@ -583,8 +583,8 @@ def test_request_type_with_union_undefined():
         field_b: str | Undefined = Undefined()
 
     class _TestAPI:
-        @winter.route_post('/types/')
-        @winter.request_body('data')
+        @winter.web.route_post('/types/')
+        @winter.web.request_body('data')
         def simple_method(self, data: RequestBodyWithUnionUndefined):  # pragma: no cover
             pass
 
@@ -629,47 +629,47 @@ class DataclassWithUndefined:
 
 def test_reuse_dataclass_schema():
     class _TestAPI:  # pragma: no cover
-        @winter.route_get('/method_return_1/')
+        @winter.web.route_get('/method_return_1/')
         def method_return_1(self) -> Dataclass:
             pass
 
-        @winter.route_get('/method_return_2/')
+        @winter.web.route_get('/method_return_2/')
         def method_return_2(self) -> Dataclass:
             pass
 
-        @winter.route_get('/method_return_optional_1/')
+        @winter.web.route_get('/method_return_optional_1/')
         def method_return_optional_1(self) -> Optional[Dataclass]:
             pass
 
-        @winter.route_get('/method_return_optional_2/')
+        @winter.web.route_get('/method_return_optional_2/')
         def method_return_optional_2(self) -> Optional[Dataclass]:
             pass
 
-        @winter.route_get('/method_return_with_undefined_1/')
+        @winter.web.route_get('/method_return_with_undefined_1/')
         def method_return_with_undefined_1(self) -> DataclassWithUndefined:
             pass
 
-        @winter.route_get('/method_return_with_undefined_2/')
+        @winter.web.route_get('/method_return_with_undefined_2/')
         def method_return_with_undefined_2(self) -> DataclassWithUndefined:
             pass
 
-        @winter.route_post('/method_request_body_1/')
-        @winter.request_body('data')
+        @winter.web.route_post('/method_request_body_1/')
+        @winter.web.request_body('data')
         def method_request_body_1(self, data: Dataclass):
             pass
 
-        @winter.route_post('/method_request_body_2/')
-        @winter.request_body('data')
+        @winter.web.route_post('/method_request_body_2/')
+        @winter.web.request_body('data')
         def method_request_body_2(self, data: Dataclass):
             pass
 
-        @winter.route_post('/method_request_body_undefined_1/')
-        @winter.request_body('data')
+        @winter.web.route_post('/method_request_body_undefined_1/')
+        @winter.web.request_body('data')
         def method_request_body_undefined_1(self, data: DataclassWithUndefined):
             pass
 
-        @winter.route_post('/method_request_body_undefined_2/')
-        @winter.request_body('data')
+        @winter.web.route_post('/method_request_body_undefined_2/')
+        @winter.web.request_body('data')
         def method_request_body_undefined_2(self, data: DataclassWithUndefined):
             pass
 
@@ -984,11 +984,11 @@ def test_reuse_dataclass_schema():
 
 def test_reuse_page_schema():
     class _TestAPI:  # pragma: no cover
-        @winter.route_get('/method_1/')
+        @winter.web.route_get('/method_1/')
         def method_1(self) -> Page[str]:
             pass
 
-        @winter.route_get('/method_2/')
+        @winter.web.route_get('/method_2/')
         def method_2(self) -> Page[str]:
             pass
 
@@ -1082,11 +1082,11 @@ def test_raises_for_type_duplicates():
             nested: NestedDataclass
 
     class _TestAPI:  # pragma: no cover
-        @winter.route_get('/method_1/')
+        @winter.web.route_get('/method_1/')
         def method_1(self) -> Dataclass:
             pass
 
-        @winter.route_get('/method_2/')
+        @winter.web.route_get('/method_2/')
         def method_2(self) -> DuplicateTypes.Dataclass:
             pass
 

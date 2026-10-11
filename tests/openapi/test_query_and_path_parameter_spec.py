@@ -5,7 +5,7 @@ from typing import List
 
 import pytest
 
-import winter
+import winter.web
 from winter.web.routing import get_route
 from winter.openapi import generate_openapi
 from winter.openapi.generator import CanNotInspectType
@@ -50,8 +50,8 @@ param_with_diff_types = [
 @pytest.mark.parametrize('type_hint, expected_parameter_properties', param_with_diff_types)
 def test_query_parameter_inspector(type_hint, expected_parameter_properties):
     class _TestAPI:
-        @winter.route_get('/resource/{?query_param}')
-        @winter.map_query_parameter('mapped_query_param', to='invalid_query_param')
+        @winter.web.route_get('/resource/{?query_param}')
+        @winter.web.map_query_parameter('mapped_query_param', to='invalid_query_param')
         def simple_method(
             self,
             query_param: type_hint,
@@ -84,8 +84,8 @@ def test_query_parameter_inspector(type_hint, expected_parameter_properties):
 @pytest.mark.parametrize('type_hint, expected_parameter_properties', param_with_diff_types)
 def test_query_parameter_inspector_with_explode(type_hint, expected_parameter_properties):
     class _TestAPI:
-        @winter.route_get('/resource/{?query_param*}')
-        @winter.map_query_parameter('mapped_query_param', to='invalid_query_param')
+        @winter.web.route_get('/resource/{?query_param*}')
+        @winter.web.map_query_parameter('mapped_query_param', to='invalid_query_param')
         def simple_method(
             self,
             query_param: type_hint,
@@ -125,8 +125,8 @@ def test_query_parameter_inspector_with_explode(type_hint, expected_parameter_pr
 ])
 def test_query_parameter_inspector_with_default_value(type_hint, default_value, expected_parameter_properties):
     class _TestAPI:
-        @winter.route_get('/resource/{?query_param}')
-        @winter.map_query_parameter('mapped_query_param', to='invalid_query_param')
+        @winter.web.route_get('/resource/{?query_param}')
+        @winter.web.map_query_parameter('mapped_query_param', to='invalid_query_param')
         def simple_method(
             self,
             query_param: type_hint = default_value,
@@ -159,7 +159,7 @@ def test_query_parameter_inspector_with_default_value(type_hint, default_value, 
 @pytest.mark.parametrize('type_hint, expected_parameter_properties', param_with_diff_types)
 def test_path_parameter_different_types(type_hint, expected_parameter_properties):
     class _TestAPI:
-        @winter.route_post('{param}/')
+        @winter.web.route_post('{param}/')
         def simple_method_with_path_param(
             self,
             param: type_hint,
@@ -191,7 +191,7 @@ def test_path_parameter_different_types(type_hint, expected_parameter_properties
 
 def test_query_parameter_without_python_argument():
     class _TestAPI:
-        @winter.route_post('{?test}')
+        @winter.web.route_post('{?test}')
         def api_method(
             self,
         ):  # pragma: no cover
@@ -212,7 +212,7 @@ def test_query_parameter_without_python_argument():
 
 def test_path_parameter_without_python_argument():
     class _TestAPI:
-        @winter.route_post('{test}')
+        @winter.web.route_post('{test}')
         def api_method(
             self,
         ):  # pragma: no cover
@@ -237,7 +237,7 @@ def test_custom_query_parameters():
         x: int
 
     class _TestAPI:
-        @winter.route_get('/resource/{?x}')
+        @winter.web.route_get('/resource/{?x}')
         @winter.web.query_parameters('query_parameters')
         def simple_method(
             self,
@@ -274,7 +274,7 @@ def test_custom_query_parameters_with_wrong_field_type():
         x: UnknownType
 
     class _TestAPI:
-        @winter.route_get('/resource/{?x}')
+        @winter.web.route_get('/resource/{?x}')
         @winter.web.query_parameters('query_parameters')
         def simple_method(
             self,

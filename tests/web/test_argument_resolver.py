@@ -1,7 +1,7 @@
 import pytest
 from mock import Mock
 
-from winter import ArgumentsResolver
+from winter.web import ArgumentsResolver
 from winter.components import ComponentMethod
 from winter.web.argument_resolver import ArgumentNotSupported
 

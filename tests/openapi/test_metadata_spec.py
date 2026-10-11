@@ -1,11 +1,11 @@
-import winter
+import winter.web
 from winter.web.routing import get_route
 from winter.openapi import generate_openapi
 
 
 def test_generate_openapi_with_all_args_spec():
     class _TestAPI:
-        @winter.route_get('resource')
+        @winter.web.route_get('resource')
         def get_resource(self):  # pragma: no cover
             pass
 

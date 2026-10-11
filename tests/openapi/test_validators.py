@@ -2,7 +2,7 @@ from http import HTTPStatus
 
 import pytest
 
-import winter
+import winter.web
 from winter.web import problem
 from winter.web.routing import get_route
 from winter.openapi import generate_openapi
@@ -26,7 +26,7 @@ def test_validate_spec(validate):
     So it's mostly to execute both branches of the code and check that it doesn't fail.
     """
     class _TestAPI:
-        @winter.route_get('/test-api/')
+        @winter.web.route_get('/test-api/')
         def endpoint(self):  # pragma: no cover
             pass
 

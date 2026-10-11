@@ -2,7 +2,7 @@ import json
 from http import HTTPStatus
 
 import pytest
-from winter import request_body
+from winter.web import request_body
 
 
 def test_request_body(api_client):

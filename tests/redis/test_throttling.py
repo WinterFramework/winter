@@ -69,10 +69,11 @@ def test_deprecated_set_redis_throttling_configuration():
 def test_deprecated_names_in_winter_web():
     throttling_package = importlib.import_module('winter.web.throttling')  # winter.web.throttling is the decorator
 
+    # getattr keeps tools/migrate_to_33.py from rewriting the deprecated access this test is about
     with pytest.warns(DeprecationWarning, match='winter.web.throttling.RedisThrottlingConfiguration is deprecated'):
-        assert winter.web.RedisThrottlingConfiguration is RedisThrottlingConfiguration
+        assert getattr(winter.web, 'RedisThrottlingConfiguration') is RedisThrottlingConfiguration
     with pytest.warns(DeprecationWarning):
-        assert throttling_package.set_redis_throttling_configuration is set_redis_throttling_configuration
+        assert getattr(throttling_package, 'set_redis_throttling_configuration') is set_redis_throttling_configuration
     with pytest.raises(AttributeError):
         winter.web.no_such_name
     with pytest.raises(AttributeError):

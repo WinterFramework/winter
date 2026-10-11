@@ -18,7 +18,7 @@ from .handlers import exception_handlers_registry
 from .problem_annotation import ProblemAnnotation
 from .problem_handling_info import ProblemHandlingInfo
 from .. import MediaType
-from ... import response_header
+from ..response_header_annotation import response_header
 
 
 class ProblemExceptionHandlerGenerator(ExceptionHandlerGenerator):
@@ -26,7 +26,7 @@ class ProblemExceptionHandlerGenerator(ExceptionHandlerGenerator):
         self._exception_mapper = exception_mapper
 
     def generate(self, exception_class: Type[Exception], handling_info: ProblemHandlingInfo) -> Type[ExceptionHandler]:
-        from winter import response_status
+        from ..response_status_annotation import response_status
 
         return_type_class = self._build_exception_dataclass(exception_class)
         exception_mapper = self._exception_mapper

@@ -1,4 +1,4 @@
-import winter
+import winter.web
 
 
 def test_find_package_routes():

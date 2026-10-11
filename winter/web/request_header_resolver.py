@@ -3,7 +3,7 @@ from typing import Optional
 
 import django.http
 
-from winter import ArgumentResolver
+from .argument_resolver import ArgumentResolver
 from winter.components import ArgumentDoesNotHaveDefault
 from winter.components import ComponentMethodArgument
 from winter.json import JSONDecodeException

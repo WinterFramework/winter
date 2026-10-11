@@ -1,14 +1,14 @@
 from django.http import HttpRequest
 
-import winter
+import winter.web
 from winter.components import ComponentMethod
 from winter.web import Interceptor
 from winter.web import ResponseHeader
 
 
 class HelloWorldInterceptor(Interceptor):
-    @winter.response_header('x-method', 'method_header')
-    @winter.response_header('x-hello-world', 'hello_world_header')
+    @winter.web.response_header('x-method', 'method_header')
+    @winter.web.response_header('x-hello-world', 'hello_world_header')
     def pre_handle(
         self,
         method: ComponentMethod,

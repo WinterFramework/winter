@@ -1,10 +1,10 @@
 from http import HTTPStatus
 
-import winter
+import winter.web
 
 
-@winter.route('api_4/')
+@winter.web.route('api_4/')
 class API4:
-    @winter.response_status(HTTPStatus.OK)
+    @winter.web.response_status(HTTPStatus.OK)
     def no_route(self):  # pragma: no cover
         pass

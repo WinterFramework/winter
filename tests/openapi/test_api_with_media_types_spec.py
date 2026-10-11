@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-import winter
+import winter.web
 from winter.web import MediaType
 from winter.web.routing import get_route
 from winter.openapi import generate_openapi
@@ -8,7 +8,7 @@ from winter.openapi import generate_openapi
 
 def test_generate_spec_for_media_type_produces():
     class _TestAPI:
-        @winter.route_get('xml/', produces=(MediaType.APPLICATION_XML,))
+        @winter.web.route_get('xml/', produces=(MediaType.APPLICATION_XML,))
         def get_xml(self) -> str:  # pragma: no cover
             return 'Hello, sir!'
 
@@ -43,8 +43,8 @@ def test_generate_spec_for_media_type_consumes():
         field1: str
 
     class _TestAPI:
-        @winter.route_post('xml/', consumes=(MediaType.APPLICATION_XML,))
-        @winter.request_body('body')
+        @winter.web.route_post('xml/', consumes=(MediaType.APPLICATION_XML,))
+        @winter.web.request_body('body')
         def get_xml(self, body: Data):  # pragma: no cover
             pass
 
