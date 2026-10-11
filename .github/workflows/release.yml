@@ -1,0 +1,119 @@
+name: Release
+
+# merge to master -> tests -> semantic version + CHANGELOG + tag + GitHub Release -> PyPI
+# Versions come from Conventional Commits (see CONTRIBUTING.md).
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Force this bump even if there are no releasable commits
+        type: choice
+        options: [patch, minor, major]
+        default: patch
+      dry_run:
+        description: Dry run - compute the next version and show what would happen, change nothing
+        type: boolean
+        default: false
+
+# Serialize releases. A queued run releases whatever is on master by then; if master
+# moves during a run, semantic-release refuses to push and the next run picks it up.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  testing:
+    uses: ./.github/workflows/testing.yml
+
+  release:
+    name: Semantic release
+    needs: [testing]
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    outputs:
+      released: ${{ steps.release.outputs.released }}
+      tag: ${{ steps.release.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master  # the tip, not the triggering commit
+          fetch-depth: 0
+          # Write deploy key, a bypass actor of the master ruleset: the release commit skips PR review.
+          ssh-key: ${{ secrets.RELEASE_DEPLOY_KEY }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install python-semantic-release
+        run: pip install python-semantic-release==10.7.0
+
+      - name: Compute version and release
+        id: release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FORCE: ${{ github.event.inputs.force }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          force_flag=""
+          if [ -n "$FORCE" ]; then
+            force_flag="--$FORCE"
+          fi
+
+          last=$(semantic-release version --print-last-released)
+          next=$(semantic-release version --print $force_flag)
+          test -n "$next"
+          echo "Last released: ${last:-<none>}; next: $next"
+
+          if [ "$last" = "$next" ]; then
+            echo "Nothing to release."
+            echo "released=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "Dry run: would release $next"
+            semantic-release --noop version $force_flag
+            echo "released=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          semantic-release version $force_flag
+          echo "released=true" >> "$GITHUB_OUTPUT"
+          echo "tag=$next" >> "$GITHUB_OUTPUT"
+
+  publish:
+    name: Publish to PyPI
+    needs: [release]
+    if: needs.release.outputs.released == 'true'
+    runs-on: ubuntu-22.04
+    # Trusted Publishing (OIDC): PyPI trusts this workflow + environment, no token.
+    # Builds from the tag, so it can be re-run on its own if publishing fails.
+    environment:
+      name: pypi
+      url: https://pypi.org/project/winter/${{ needs.release.outputs.tag }}/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ needs.release.outputs.tag }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build sdist and wheel
+        run: |
+          pip install build
+          python -m build
+          ls -l dist/
+          test -f "dist/winter-${{ needs.release.outputs.tag }}.tar.gz"
+
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@release/v1
