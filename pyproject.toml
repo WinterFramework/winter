@@ -96,9 +96,8 @@ match = "master"
 prerelease = false
 
 [tool.importlinter]
-# Enforces the layer rules of docs/architecture.md on the current package names.
-# ignore_imports lists the known violations: the measured distance to the target.
-# Stages of the migration remove entries; nothing new may be added.
+# Enforces the layer rules of docs/architecture.md.
+# ignore_imports lists the known violations with their reason; nothing new may be added.
 root_packages = ["winter", "winter_ddd", "winter_django", "winter_openapi", "winter_sqlalchemy"]
 include_external_packages = true
 
