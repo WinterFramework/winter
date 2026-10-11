@@ -11,7 +11,7 @@ What it does:
 - `winter_openapi`, `winter_django`, `winter_sqlalchemy`, `winter_ddd` become `winter.openapi`, ...
 - `winter.core` is split into `winter.components`, `winter.application` and `winter.json`.
 - `winter.data` is split into `winter.pagination` and `winter.ddd`.
-- Redis throttling configuration moves to `winter.redis.throttling`.
+- Redis throttling configuration moves to `winter.redis.throttling`, `reverse` to `winter.django`.
 Formatting and comments are preserved. None of the old paths exist in 33.0.
 """
 import argparse
@@ -58,6 +58,7 @@ RENAMES: List[Tuple[str, str]] = [
     ('winter.data.exceptions', 'winter.ddd.exceptions'),
     ('winter.data.repository', 'winter.ddd.repository'),
     ('winter.data', 'winter.ddd'),
+    ('winter.web.routing.reverse', 'winter.django.reverse'),
     ('winter.web.throttling.RedisThrottlingConfiguration', 'winter.redis.throttling.RedisThrottlingConfiguration'),
     (
         'winter.web.throttling.set_redis_throttling_configuration',

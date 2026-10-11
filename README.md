@@ -44,7 +44,6 @@ python tools/migrate_to_33.py path/to/your/project
   `winter.web.problem(status=404)(NotFoundException)` before `winter.web.setup()`.
 - Throttling storage is explicit: `winter.web.set_throttling_storage(RedisThrottlingStorage(configuration))`
   from `winter.redis.throttling`, or `InMemoryThrottlingStorage()` for a single process.
-- `winter.web.routing.reverse` is `winter.django.reverse`; the codemod does not know about it.
 
 # How to use
 
