@@ -16,6 +16,10 @@ Web Framework with focus on python typing, dataclasses and modular design
 * Dependency injection
 * Exception handling without boilerplate in accordance with [RFC 7807](https://tools.ietf.org/html/rfc7807)
 
+# Architecture
+
+Target package structure, layer rules and the migration plan: [docs/architecture.md](docs/architecture.md).
+
 # How to use
 
 Check out [Getting Started](https://github.com/WinterFramework/winter-getting-started) project for more information

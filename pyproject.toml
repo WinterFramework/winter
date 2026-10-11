@@ -60,6 +60,7 @@ add-trailing-comma = ">=1.3.0, <2"
 pre-commit = ">=1.17.0, <2"
 lxml = ">=4.9.1, <6.0.0"
 pytz = ">=2020.5"
+import-linter = ">=2.0, <3"
 
 [tool.poetry.group.dev.dependencies]
 setuptools = "^71.1.0"
@@ -93,6 +94,57 @@ ignore_token_for_push = true  # push with the deploy key from actions/checkout, 
 [tool.semantic_release.branches.main]
 match = "master"
 prerelease = false
+
+[tool.importlinter]
+# Enforces the layer rules of docs/architecture.md on the current package names.
+# ignore_imports lists the known violations: the measured distance to the target.
+# Stages of the migration remove entries; nothing new may be added.
+root_packages = ["winter", "winter_ddd", "winter_django", "winter_openapi", "winter_sqlalchemy"]
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "Layers: adapters -> models -> foundations"
+type = "layers"
+layers = [
+    "winter_django | winter_openapi | winter_sqlalchemy",
+    "winter.web | winter.data | winter_ddd | winter.messaging",
+    "winter.core",
+]
+ignore_imports = [
+    # winter.data.pagination becomes winter.pagination (foundations), stage 2
+    "winter.web.pagination.* -> winter.data.pagination",
+    # NotFoundException -> 404 glue moves to application code, stage 7
+    "winter.web -> winter.data.exceptions",
+]
+
+[[tool.importlinter.contracts]]
+name = "Models and foundations do not import web frameworks or infrastructure"
+type = "forbidden"
+source_modules = ["winter.core", "winter.web", "winter.data", "winter_ddd", "winter.messaging"]
+forbidden_modules = ["django", "redis", "sqlalchemy", "pydantic"]
+ignore_imports = [
+    # Django Promise handling moves to winter.django, stage 2
+    "winter.core.json.encoder -> django",
+    # Redis client moves to winter.redis.throttling, stage 5
+    "winter.web.throttling.redis_throttling_client -> redis",
+    # Django-specific code moves to winter.django, stage 6
+    "winter.web.argument_resolver -> django",
+    "winter.web.exceptions.exception_mapper -> django",
+    "winter.web.exceptions.handlers -> django",
+    "winter.web.exceptions.problem_handling -> django",
+    "winter.web.output_processor -> django",
+    "winter.web.pagination.page_position_argument_resolver -> django",
+    "winter.web.pagination.page_processor -> django",
+    "winter.web.pagination.utils -> django",
+    "winter.web.path_parameters_argument_resolver -> django",
+    "winter.web.query_parameters.query_parameter_argument_resolver -> django",
+    "winter.web.query_parameters.query_parameters_argument_resolver -> django",
+    "winter.web.request_body_resolver -> django",
+    "winter.web.request_header_resolver -> django",
+    "winter.web.response_header_resolver -> django",
+    "winter.web.routing.reverse -> django",
+    "winter.web.throttling.throttling -> django",
+]
 
 [build-system]
 requires = ["poetry-core>=1.3.1"]
