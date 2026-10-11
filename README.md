@@ -24,8 +24,8 @@ Package structure and layer rules: [docs/architecture.md](docs/architecture.md).
 
 `winter` is a namespace package now: the `import winter` facade is gone, use `winter.web` instead
 (`@winter.web.route_get(...)`). `winter_openapi`, `winter_django`, `winter_sqlalchemy`, `winter_ddd`,
-`winter.core` and `winter.data` moved under new names and keep working with a `DeprecationWarning` until 34.0.
-A codemod rewrites a code base, preserving formatting:
+`winter.core` and `winter.data` are gone; their contents live under `winter.<package>` as described in
+[docs/architecture.md](docs/architecture.md). A codemod rewrites a code base, preserving formatting:
 
 ```
 pip install libcst
@@ -44,7 +44,7 @@ python tools/migrate_to_33.py path/to/your/project
   `winter.web.problem(status=404)(NotFoundException)` before `winter.web.setup()`.
 - Throttling storage is explicit: `winter.web.set_throttling_storage(RedisThrottlingStorage(configuration))`
   from `winter.redis.throttling`, or `InMemoryThrottlingStorage()` for a single process.
-- `winter.web.routing.reverse` is `winter.django.reverse`.
+- `winter.web.routing.reverse` is `winter.django.reverse`; the codemod does not know about it.
 
 # How to use
 

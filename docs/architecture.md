@@ -86,15 +86,11 @@ at least two of them.
   `winter` even when their adapter is not used; extras are the intended shape.
 - **`winter.openapi` recognises Django's `HttpResponseBase`** as a raw response type when Django
   is importable, so that API methods returning a Django response get no response schema.
-- **Deprecated import paths** (`winter.core`, `winter.data`, `winter_ddd`, `winter_django`,
-  `winter_openapi`, `winter_sqlalchemy`, the Redis names in `winter.web.throttling`,
-  `winter.web.routing.reverse`) are aliases implemented in `winter/_deprecation.py` and listed in
-  `ignore_imports`. They are removed in the next major version.
 
 ## Enforcement
 
 - **import-linter** (`lint-imports`, configured in `pyproject.toml`) checks the layer rules.
-  `ignore_imports` lists the known violations, each with the reason; nothing new may be added.
+  There are no `ignore_imports`, and none may be added.
 - **North-star test** `tests/test_application_scope.py` is marked `xfail(strict=True)`. It
   creates two `Application` instances with different exception handlers and asserts they do
   not see each other. `strict` forces the marker to be removed the moment it passes.

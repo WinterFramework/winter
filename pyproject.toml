@@ -21,10 +21,6 @@ classifiers = [
 ]
 packages = [
     { include = "winter" },
-    { include = "winter_ddd" },
-    { include = "winter_django" },
-    { include = "winter_openapi" },
-    { include = "winter_sqlalchemy" },
 ]
 
 [tool.poetry.dependencies]
@@ -97,8 +93,7 @@ prerelease = false
 
 [tool.importlinter]
 # Enforces the layer rules of docs/architecture.md.
-# ignore_imports lists the known violations with their reason; nothing new may be added.
-root_packages = ["winter", "winter_ddd", "winter_django", "winter_openapi", "winter_sqlalchemy"]
+root_packages = ["winter"]
 include_external_packages = true
 
 [[tool.importlinter.contracts]]
@@ -109,11 +104,6 @@ layers = [
     "winter.web | winter.ddd | winter.messaging",
     "winter.components : winter.application : winter.json : winter.pagination",
 ]
-ignore_imports = [
-    # Deprecated aliases of the Redis storage and of reverse, removed in 34.0
-    "winter.web.throttling -> winter.redis.throttling",
-    "winter.web.routing.reverse -> winter.django.reverse",
-]
 
 [[tool.importlinter.contracts]]
 name = "Models and foundations do not import web frameworks or infrastructure"
@@ -123,11 +113,6 @@ source_modules = [
     "winter.web", "winter.ddd", "winter.messaging",
 ]
 forbidden_modules = ["django", "redis", "sqlalchemy", "pydantic"]
-ignore_imports = [
-    # Deprecated aliases of the Redis storage and of reverse, removed in 34.0
-    "winter.web.throttling -> winter.redis.throttling",
-    "winter.web.routing.reverse -> winter.django.reverse",
-]
 
 [build-system]
 requires = ["poetry-core>=1.3.1"]

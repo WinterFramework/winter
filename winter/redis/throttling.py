@@ -1,12 +1,10 @@
 import time
-import warnings
 from dataclasses import dataclass
 from typing import Optional
 
 from redis import Redis
 
 from winter.web.throttling import ThrottlingStorage
-from winter.web.throttling import set_throttling_storage
 
 
 @dataclass
@@ -59,14 +57,3 @@ class RedisThrottlingStorage(ThrottlingStorage):
 
     def delete(self, key: str):
         self._redis_client.delete(key)
-
-
-def set_redis_throttling_configuration(configuration: RedisThrottlingConfiguration):
-    """Deprecated since 33.0, removed in 34.0. Use set_throttling_storage(RedisThrottlingStorage(configuration))."""
-    warnings.warn(
-        'set_redis_throttling_configuration is deprecated, '
-        'use winter.web.throttling.set_throttling_storage(RedisThrottlingStorage(configuration))',
-        DeprecationWarning,
-        stacklevel=2,
-    )
-    set_throttling_storage(RedisThrottlingStorage(configuration))

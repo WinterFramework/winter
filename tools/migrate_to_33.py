@@ -12,8 +12,7 @@ What it does:
 - `winter.core` is split into `winter.components`, `winter.application` and `winter.json`.
 - `winter.data` is split into `winter.pagination` and `winter.ddd`.
 - Redis throttling configuration moves to `winter.redis.throttling`.
-Formatting and comments are preserved. The old paths keep working with a DeprecationWarning until 34.0,
-so running this is not urgent, except for the `import winter` facade which is gone in 33.0.
+Formatting and comments are preserved. None of the old paths exist in 33.0.
 """
 import argparse
 import pathlib

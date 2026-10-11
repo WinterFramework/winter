@@ -1,4 +1,3 @@
-import importlib
 
 from . import pagination
 from .argument_resolver import ArgumentResolver
@@ -77,12 +76,3 @@ def setup():
     exception_handler_generator = ProblemExceptionHandlerGenerator(exception_mapper)
     autodiscover_problem_annotations(exception_handler_generator)
     exception_handlers_registry.add_handler(RedirectException, RedirectExceptionHandler, auto_handle=True)
-
-
-def __getattr__(name):
-    # Deprecated since 33.0, removed in 34.0: the Redis storage lives in the winter.redis adapter.
-    # The subpackage is imported by name because `throttling` in this namespace is the decorator.
-    throttling_package = importlib.import_module('winter.web.throttling')
-    if name in throttling_package._DEPRECATED_REDIS_NAMES:
-        return getattr(throttling_package, name)
-    raise AttributeError(f'module {__name__!r} has no attribute {name!r}')
