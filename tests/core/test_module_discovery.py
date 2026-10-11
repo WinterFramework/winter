@@ -1,8 +1,8 @@
 import mock
 
-from winter.core import Component
-from winter.core.module_discovery import get_all_classes
-from winter.core.module_discovery import get_all_subclasses
+from winter.components import Component
+from winter.application.module_discovery import get_all_classes
+from winter.application.module_discovery import get_all_subclasses
 
 
 def test_module_import():
@@ -15,7 +15,7 @@ def test_module_import():
 def test_module_import_with_exception(getmembers):
     # Verifying that import error during search of class will not stop the search
     getmembers.side_effect = ImportError
-    found_classes = list(get_all_classes('winter.core'))
+    found_classes = list(get_all_classes('winter.components'))
     # It can't find any class, because we have ImportError on any class
     assert not found_classes
 

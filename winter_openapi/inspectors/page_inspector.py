@@ -4,7 +4,7 @@ from typing import List
 from typing import Optional
 from typing import Type
 
-from winter.data.pagination import Page
+from winter.pagination import Page
 from winter_openapi.inspection.type_info import TypeInfo
 from winter_openapi.inspectors.standard_types_inspectors import inspect_type
 from winter_openapi.inspectors.standard_types_inspectors import register_type_inspector

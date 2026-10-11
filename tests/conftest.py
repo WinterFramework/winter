@@ -9,7 +9,7 @@ from injector import singleton
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 
-from winter.core import set_injector
+from winter.application import set_injector
 
 
 def pytest_configure():

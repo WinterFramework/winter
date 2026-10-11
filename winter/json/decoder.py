@@ -19,10 +19,10 @@ from typing import get_args
 
 from dateutil import parser
 
-from winter.core.utils.typing import get_origin_type
-from winter.core.utils.typing import get_union_args
-from winter.core.utils.typing import is_optional
-from winter.core.utils.typing import is_union
+from winter.components.typing import get_origin_type
+from winter.components.typing import get_union_args
+from winter.components.typing import is_optional
+from winter.components.typing import is_union
 from .undefined import Undefined
 
 try:

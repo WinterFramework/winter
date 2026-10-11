@@ -9,9 +9,9 @@ from typing import Optional
 
 import django.http
 
-from winter.core import ComponentMethod
-from winter.core import ComponentMethodArgument
-from winter.core.utils.typing import get_type_name
+from winter.components import ComponentMethod
+from winter.components import ComponentMethodArgument
+from winter.components.typing import get_type_name
 
 
 class ArgumentNotSupported(Exception):

@@ -7,7 +7,7 @@ from mock import Mock
 from tests.api.api_with_path_parameters import APIWithPathParameters
 from tests.api.api_with_path_parameters import OneTwoEnum
 from tests.api.api_with_path_parameters import OneTwoEnumWithInt
-from winter.core import Component
+from winter.components import Component
 from winter.web.argument_resolver import ArgumentNotSupported
 from winter.web.path_parameters_argument_resolver import PathParametersArgumentResolver
 

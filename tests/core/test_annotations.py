@@ -1,15 +1,15 @@
 import dataclasses
 import pytest
 
-from winter.core import Component
-from winter.core import annotate
-from winter.core import annotate_class
-from winter.core import annotate_method
-from winter.core import is_component
-from winter.core.annotations import AlreadyAnnotated
-from winter.core.annotations import Annotations
-from winter.core.annotations import MultipleAnnotationFound
-from winter.core.annotations import NotFoundAnnotation
+from winter.components import Component
+from winter.components import annotate
+from winter.components import annotate_class
+from winter.components import annotate_method
+from winter.components import is_component
+from winter.components.annotations import AlreadyAnnotated
+from winter.components.annotations import Annotations
+from winter.components.annotations import MultipleAnnotationFound
+from winter.components.annotations import NotFoundAnnotation
 
 
 @dataclasses.dataclass(frozen=True)

@@ -3,7 +3,7 @@ from typing import MutableMapping
 
 import django.http
 
-from winter.core import ComponentMethodArgument
+from winter.components import ComponentMethodArgument
 from winter.web.argument_resolver import ArgumentResolver
 
 

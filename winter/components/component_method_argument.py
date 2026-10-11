@@ -6,7 +6,7 @@ from typing import Type
 
 import dataclasses
 
-from .utils.typing import is_optional
+from .typing import is_optional
 
 if TYPE_CHECKING:  # pragma: no cover
     from .component_method import ComponentMethod

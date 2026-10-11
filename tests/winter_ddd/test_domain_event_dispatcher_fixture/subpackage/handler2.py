@@ -1,4 +1,4 @@
-from winter.core import annotate
+from winter.components import annotate
 from winter_ddd import domain_event_handler
 from ..events import DomainEvent2
 

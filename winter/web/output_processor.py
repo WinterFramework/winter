@@ -7,8 +7,8 @@ from typing import Optional
 
 import django.http
 
-from winter.core import ComponentMethod
-from winter.core import annotate
+from winter.components import ComponentMethod
+from winter.components import annotate
 
 
 class IOutputProcessor(abc.ABC):

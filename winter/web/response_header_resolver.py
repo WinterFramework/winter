@@ -2,8 +2,8 @@ from typing import MutableMapping
 
 import django.http
 
-from winter.core import ComponentMethodArgument
-from winter.core.utils.typing import is_origin_type_subclasses
+from winter.components import ComponentMethodArgument
+from winter.components.typing import is_origin_type_subclasses
 from .argument_resolver import ArgumentResolver
 from .response_header_annotation import ResponseHeader
 from .response_header_annotation import ResponseHeaderAnnotation

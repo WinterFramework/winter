@@ -1,4 +1,4 @@
-from winter.core import get_injector
+from winter.application import get_injector
 
 
 def test_get_injector():

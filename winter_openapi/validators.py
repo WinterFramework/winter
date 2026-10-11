@@ -9,7 +9,7 @@ from winter_openapi.annotations import GlobalExceptionAnnotation
 def validate_missing_raises_annotations():
     from winter.web.exceptions.problem_annotation import ProblemAnnotation
     from winter.web.exceptions.raises import ExceptionAnnotation
-    from winter.core import Component
+    from winter.components import Component
 
     all_problem_exception: Set[Type[Exception]] = set()
     global_exceptions: Set[Type[Exception]] = set()

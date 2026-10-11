@@ -3,11 +3,11 @@ from typing import Optional
 
 import django.http
 
-from winter.core import ArgumentDoesNotHaveDefault
-from winter.core import ComponentMethodArgument
-from winter.core.json import JSONDecodeException
-from winter.core.json import json_decode
-from winter.core.utils.typing import is_iterable_type
+from winter.components import ArgumentDoesNotHaveDefault
+from winter.components import ComponentMethodArgument
+from winter.json import JSONDecodeException
+from winter.json import json_decode
+from winter.components.typing import is_iterable_type
 from .query_parameter import QueryParameter
 from ..argument_resolver import ArgumentNotSupported
 from ..argument_resolver import ArgumentResolver

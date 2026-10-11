@@ -15,9 +15,9 @@ from typing import Union
 import pytest
 from dateutil.tz import tzutc
 
-from winter.core.json import JSONDecodeException
-from winter.core.json import Undefined
-from winter.core.json import json_decode
+from winter.json import JSONDecodeException
+from winter.json import Undefined
+from winter.json import json_decode
 
 empty = object()
 

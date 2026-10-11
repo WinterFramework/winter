@@ -3,7 +3,7 @@ from typing import Dict
 
 import django.http
 
-from winter.data.pagination import Page
+from winter.pagination import Page
 from winter.web.output_processor import IOutputProcessor
 from .utils import get_next_page_url
 from .utils import get_previous_page_url

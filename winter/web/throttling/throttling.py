@@ -5,7 +5,7 @@ from typing import Tuple
 
 import django.http
 
-from winter.core import annotate_method
+from winter.components import annotate_method
 from .storage import get_throttling_storage
 
 if TYPE_CHECKING:

@@ -1,4 +1,4 @@
-from winter.core.json import Undefined
+from winter.json import Undefined
 
 
 def test_undefined():

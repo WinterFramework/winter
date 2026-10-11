@@ -1,7 +1,7 @@
 import pytest
 
 import winter
-from winter.data.pagination import PagePosition
+from winter.pagination import PagePosition
 from winter.web.routing import get_route
 from winter_openapi import generate_openapi
 

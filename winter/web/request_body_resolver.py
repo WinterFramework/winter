@@ -8,9 +8,9 @@ from .argument_resolver import ArgumentResolver
 from .exceptions import UnsupportedMediaTypeException
 from .exceptions import RequestDataDecodeException
 from .request_body_annotation import RequestBodyAnnotation
-from ..core import ComponentMethodArgument
-from ..core.json import JSONDecodeException
-from ..core.json import json_decode
+from winter.components import ComponentMethodArgument
+from winter.json import JSONDecodeException
+from winter.json import json_decode
 
 
 class RequestBodyArgumentResolver(ArgumentResolver):

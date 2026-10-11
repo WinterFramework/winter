@@ -3,7 +3,7 @@ from typing import Optional
 
 import dataclasses
 
-from winter.data.pagination import Sort
+from winter.pagination import Sort
 
 
 @dataclasses.dataclass

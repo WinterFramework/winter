@@ -10,10 +10,10 @@ import django.http
 from django.urls import re_path
 from django.urls import URLPattern
 
-from winter.core import Component
-from winter.core import ComponentMethod
-from winter.core import get_injector
-from winter.core.json import JSONEncoder
+from winter.components import Component
+from winter.components import ComponentMethod
+from winter.application import get_injector
+from winter.json import JSONEncoder
 from winter.web import ResponseEntity
 from winter.web import exception_handlers_registry
 from winter.web import response_headers_serializer

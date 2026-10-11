@@ -1,4 +1,4 @@
-from winter.data.pagination import Page
+from winter.pagination import Page
 from winter.web.exceptions import RequestDataDecodeException
 from winter.web.exceptions import ThrottleException
 from winter.web.exceptions import UnsupportedMediaTypeException

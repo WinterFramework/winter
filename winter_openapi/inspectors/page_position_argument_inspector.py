@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from openapi_pydantic.v3.v3_0 import Parameter
 from openapi_pydantic.v3.v3_0 import Schema
 
-from winter.data.pagination import PagePosition
+from winter.pagination import PagePosition
 from winter.web.pagination.order_by import OrderByAnnotation
 from winter.web.pagination.page_position_argument_resolver import PagePositionArgumentResolver
 from winter.web.routing import Route

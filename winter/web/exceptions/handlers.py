@@ -7,7 +7,7 @@ from typing import Union
 
 from django.http import HttpResponse
 
-from winter.core import ComponentMethod
+from winter.components import ComponentMethod
 from .raises import get_raises
 
 NotHandled = object()

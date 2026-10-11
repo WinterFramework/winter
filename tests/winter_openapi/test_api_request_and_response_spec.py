@@ -19,10 +19,10 @@ import pytest
 from strenum import StrEnum
 
 import winter
-import winter.core
-from winter.core.json import Undefined
-from winter.core.utils import TypeWrapper
-from winter.data.pagination import Page
+import winter.components
+from winter.json import Undefined
+from winter.components.nested_types import TypeWrapper
+from winter.pagination import Page
 from winter.web.routing import get_route
 from winter_openapi import generate_openapi
 from winter_openapi.generator import CanNotInspectType

@@ -3,7 +3,7 @@ from typing import MutableMapping
 import django.http
 from django.urls import get_resolver
 
-from winter.core import ComponentMethodArgument
+from winter.components import ComponentMethodArgument
 from .argument_resolver import ArgumentNotSupported
 from .argument_resolver import ArgumentResolver
 from .routing import get_route

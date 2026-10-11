@@ -11,7 +11,6 @@ from typing import Tuple
 from typing import Type
 
 import dataclasses
-from django.utils.functional import Promise
 
 _encoder_map: Dict[Type, Tuple[Callable, bool]] = {}
 
@@ -148,8 +147,3 @@ def dataclass_encoder(obj: object):
     if not dataclasses.is_dataclass(obj):
         raise CannotEncode
     return dataclasses.asdict(obj)
-
-
-@register_encoder
-def promise_encoder(promise: Promise):
-    return str(promise)

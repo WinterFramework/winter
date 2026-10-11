@@ -4,7 +4,7 @@ from typing import List
 
 from injector import inject
 
-from winter.core import get_injector
+from winter.application import get_injector
 from .event import Event
 from .event_subscription import EventSubscription
 from .event_subscription_registry import EventSubscriptionRegistry

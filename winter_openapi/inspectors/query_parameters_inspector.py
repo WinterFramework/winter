@@ -5,7 +5,7 @@ from typing import Tuple
 
 from openapi_pydantic.v3.v3_0 import Parameter
 
-from winter.core import ComponentMethodArgument
+from winter.components import ComponentMethodArgument
 from winter.web.query_parameters import QueryParameter
 from winter.web.query_parameters.query_parameters_annotation import QueryParametersAnnotation
 from winter.web.routing import Route

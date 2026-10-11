@@ -6,7 +6,7 @@ from typing import Optional
 from typing import Tuple
 from typing import Type
 
-from winter.core.utils.typing import get_origin_type
+from winter.components.typing import get_origin_type
 from .type_info import TypeInfo
 
 _inspectors_by_type: Dict[

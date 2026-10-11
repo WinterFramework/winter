@@ -7,9 +7,9 @@ from .query_parameter_argument_resolver import QueryParameterArgumentResolver
 from .query_parameters_annotation import QueryParametersAnnotation
 from ..argument_resolver import ArgumentResolver
 from ..routing import get_route
-from ...core import ComponentMethodArgument
-from ...core.json import json_decode
-from ...core.utils.typing import is_iterable_type
+from winter.components import ComponentMethodArgument
+from winter.json import json_decode
+from winter.components.typing import is_iterable_type
 
 
 class QueryParametersArgumentResolver(ArgumentResolver):

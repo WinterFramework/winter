@@ -2,7 +2,7 @@ from typing import Type
 
 from dataclasses import dataclass
 
-from winter.core import annotate
+from winter.components import annotate
 
 
 @dataclass

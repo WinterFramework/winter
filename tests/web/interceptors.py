@@ -1,7 +1,7 @@
 from django.http import HttpRequest
 
 import winter
-from winter.core import ComponentMethod
+from winter.components import ComponentMethod
 from winter.web import Interceptor
 from winter.web import ResponseHeader
 

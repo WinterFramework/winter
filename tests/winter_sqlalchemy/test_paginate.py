@@ -6,8 +6,8 @@ from sqlalchemy import Table
 from sqlalchemy import create_engine
 from sqlalchemy import select
 
-from winter.data.pagination import PagePosition
-from winter.data.pagination import Sort
+from winter.pagination import PagePosition
+from winter.pagination import Sort
 from winter_sqlalchemy import paginate
 
 

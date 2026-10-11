@@ -1,7 +1,7 @@
 import pytest
 
-from winter.core import ArgumentDoesNotHaveDefault
-from winter.core import ComponentMethod
+from winter.components import ArgumentDoesNotHaveDefault
+from winter.components import ComponentMethod
 
 
 def test_parameter():

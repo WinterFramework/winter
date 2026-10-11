@@ -14,7 +14,7 @@ from sqlalchemy import Table
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import mapper
 
-from winter.core import get_injector
+from winter.application import get_injector
 from winter.data import CRUDRepository
 from winter.data.exceptions import NotFoundException
 from winter_ddd import AggregateRoot

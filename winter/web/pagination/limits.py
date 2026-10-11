@@ -4,7 +4,7 @@ from typing import Optional
 
 import dataclasses
 
-from winter.core import annotate
+from winter.components import annotate
 from ..exceptions import problem
 
 

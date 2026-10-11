@@ -4,11 +4,11 @@ from typing import Iterable
 from typing import List
 from typing import Type
 
-from winter.core import Component
-from winter.core import ComponentMethod
-from winter.core import get_injector
-from winter.core.module_discovery import get_all_classes
-from winter.core.module_discovery import import_recursively
+from winter.components import Component
+from winter.components import ComponentMethod
+from winter.application import get_injector
+from winter.application.module_discovery import get_all_classes
+from winter.application.module_discovery import import_recursively
 from .domain_event import DomainEvent
 from .domain_event_handler import DomainEventHandlerAnnotation
 from .domain_event_subscription import DomainEventSubscription

@@ -8,12 +8,12 @@ from typing import Union
 
 import pytest
 
-from winter.core.utils.typing import get_origin_type
-from winter.core.utils.typing import get_type_name
-from winter.core.utils.typing import is_iterable_type
-from winter.core.utils.typing import is_optional
-from winter.core.utils.typing import is_origin_type_subclasses
-from winter.core.utils.typing import is_union
+from winter.components.typing import get_origin_type
+from winter.components.typing import get_type_name
+from winter.components.typing import is_iterable_type
+from winter.components.typing import is_optional
+from winter.components.typing import is_origin_type_subclasses
+from winter.components.typing import is_union
 
 
 @pytest.mark.parametrize(

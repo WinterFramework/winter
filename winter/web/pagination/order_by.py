@@ -1,7 +1,7 @@
 from typing import Iterable
 from typing import Tuple
 
-from winter.core.annotation_decorator import annotate_method
+from winter.components.annotation_decorator import annotate_method
 from .check_sort import check_sort
 from .order_by_annotation import OrderByAnnotation
 from .parse_sort import parse_sort

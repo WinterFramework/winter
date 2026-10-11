@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 from openapi_pydantic.v3.v3_0 import Parameter
 
-from winter.core import ComponentMethodArgument
+from winter.components import ComponentMethodArgument
 from winter.web.routing import Route
 from .route_parameters_inspector import RouteParametersInspector
 

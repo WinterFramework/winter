@@ -2,7 +2,7 @@ from http import HTTPStatus
 from typing import Optional
 from typing import Union
 
-from winter.core import annotate
+from winter.components import annotate
 from .problem_annotation import ProblemAnnotation
 from .problem_handling_info import ProblemHandlingInfo
 

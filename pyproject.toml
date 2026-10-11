@@ -108,11 +108,9 @@ type = "layers"
 layers = [
     "winter_django | winter_openapi | winter_sqlalchemy | winter.redis",
     "winter.web | winter.data | winter_ddd | winter.messaging",
-    "winter.core",
+    "winter.components : winter.application : winter.json : winter.pagination",
 ]
 ignore_imports = [
-    # winter.data.pagination becomes winter.pagination (foundations), stage 2
-    "winter.web.pagination.* -> winter.data.pagination",
     # NotFoundException -> 404 glue moves to application code, stage 7
     "winter.web -> winter.data.exceptions",
     # Deprecated aliases of the Redis storage, removed in 34.0
@@ -122,13 +120,14 @@ ignore_imports = [
 [[tool.importlinter.contracts]]
 name = "Models and foundations do not import web frameworks or infrastructure"
 type = "forbidden"
-source_modules = ["winter.core", "winter.web", "winter.data", "winter_ddd", "winter.messaging"]
+source_modules = [
+    "winter.components", "winter.application", "winter.json", "winter.pagination",
+    "winter.web", "winter.data", "winter_ddd", "winter.messaging",
+]
 forbidden_modules = ["django", "redis", "sqlalchemy", "pydantic"]
 ignore_imports = [
     # Deprecated aliases of the Redis storage, removed in 34.0
     "winter.web.throttling -> winter.redis.throttling",
-    # Django Promise handling moves to winter.django, stage 2
-    "winter.core.json.encoder -> django",
     # Django-specific code moves to winter.django, stage 6
     "winter.web.argument_resolver -> django",
     "winter.web.exceptions.exception_mapper -> django",

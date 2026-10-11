@@ -1,9 +1,9 @@
 import inspect
 
-from winter.core import ComponentMethod
-from winter.core import ComponentMethodArgument
-from winter.core import WinterApplication
-from winter.core import component_method
+from winter.components import ComponentMethod
+from winter.components import ComponentMethodArgument
+from winter.application import WinterApplication
+from winter.components import component_method
 
 
 def test_all_attributes():

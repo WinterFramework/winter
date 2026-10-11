@@ -14,7 +14,7 @@ from sqlalchemy.orm import class_mapper
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import UnmappedClassError
 
-from winter.core import get_injector
+from winter.application import get_injector
 from winter.data import CRUDRepository
 from winter.data.exceptions import NotFoundException
 from winter_ddd import AggregateRoot

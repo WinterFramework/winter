@@ -30,7 +30,7 @@ from openapi_pydantic.v3.v3_0 import Schema
 from openapi_pydantic.v3.v3_0 import Server
 from openapi_pydantic.v3.v3_0 import Tag
 
-from winter.core import ComponentMethod
+from winter.components import ComponentMethod
 from winter.web import MediaType
 from winter.web.default_response_status import get_response_status
 from winter.web.exceptions import MethodExceptionsManager

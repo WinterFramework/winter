@@ -3,7 +3,7 @@ from typing import Union
 
 import pytest
 
-from winter.core import ComponentMethod
+from winter.components import ComponentMethod
 from winter_ddd import DomainEvent
 from winter_ddd import domain_event_handler
 from winter_ddd import DomainEventDispatcher

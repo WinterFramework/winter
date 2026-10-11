@@ -1,13 +1,14 @@
-import winter.core
+import winter.application
+import winter.components
 
 
 def test_autodiscover():
 
-    @winter.core.component
+    @winter.components.component
     class SimpleComponent:
         pass
 
-    winter_app = winter.core.WinterApplication()
+    winter_app = winter.application.WinterApplication()
 
     winter_app.autodiscover()
 
@@ -19,7 +20,7 @@ def test_autodiscover_with_pre_add():
     class SimpleComponent:
         pass
 
-    winter_app = winter.core.WinterApplication()
+    winter_app = winter.application.WinterApplication()
     winter_app.add_component(SimpleComponent)
     winter_app.autodiscover()
 

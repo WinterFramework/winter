@@ -2,9 +2,9 @@ from sqlalchemy import asc
 from sqlalchemy import desc
 from sqlalchemy.sql import Select
 
-from winter.data.pagination import PagePosition
-from winter.data.pagination import Sort
-from winter.data.pagination import SortDirection
+from winter.pagination import PagePosition
+from winter.pagination import Sort
+from winter.pagination import SortDirection
 
 _sort_direction_map = {
     SortDirection.ASC: asc,

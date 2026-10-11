@@ -3,7 +3,7 @@ from typing import Optional
 import django.http
 from furl import furl
 
-from winter.data.pagination import Page
+from winter.pagination import Page
 
 
 def get_previous_page_url(page: Page, request: django.http.HttpRequest) -> Optional[str]:

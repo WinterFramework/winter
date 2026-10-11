@@ -1,9 +1,9 @@
 import dataclasses
 import pytest
 
-import winter.core
-from winter.core import Component
-from winter.core import WinterApplication
+import winter.components
+from winter.components import Component
+from winter.application import WinterApplication
 
 
 @dataclasses.dataclass(frozen=True)
@@ -12,7 +12,7 @@ class SimpleAnnotation:
 
 
 def simple_annotation(param: str):
-    return winter.core.annotate(SimpleAnnotation(param))
+    return winter.components.annotate(SimpleAnnotation(param))
 
 
 def test_is_component():
@@ -22,18 +22,18 @@ def test_is_component():
         pass
 
     winter_app.add_component(SimpleComponent)
-    assert winter.core.is_component(SimpleComponent)
+    assert winter.components.is_component(SimpleComponent)
 
 
 def test_component_raises():
     with pytest.raises(ValueError):
-        winter.core.component(object())
+        winter.components.component(object())
 
 
 def test_methods():
     class SimpleComponent:
 
-        @winter.core.component_method
+        @winter.components.component_method
         def simple_method(self):
             return self
 

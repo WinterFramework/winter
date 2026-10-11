@@ -10,7 +10,7 @@ from uritemplate import URITemplate
 
 import winter
 from tests.utils import get_request
-from winter.core.annotations import AlreadyAnnotated
+from winter.components.annotations import AlreadyAnnotated
 from winter.web.argument_resolver import ArgumentNotSupported
 from winter.web.exceptions import RequestDataDecodeException
 from winter.web.query_parameters.query_parameter_argument_resolver import QueryParameterArgumentResolver

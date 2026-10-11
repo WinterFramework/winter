@@ -8,8 +8,8 @@ from typing import Type
 
 from django.http import HttpRequest
 
-from winter.core import Component
-from winter.core.utils import camel_to_human
+from winter.components import Component
+from .beautify_string import camel_to_human
 from winter.web import ResponseHeader
 from .exception_handler_generator import ExceptionHandlerGenerator
 from .exception_mapper import ExceptionMapper

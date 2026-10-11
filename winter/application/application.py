@@ -2,7 +2,7 @@ import types
 from typing import Mapping
 from typing import Type
 
-from .component import Component
+from winter.components import Component
 
 
 class WinterApplication:

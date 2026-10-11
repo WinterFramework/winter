@@ -1,4 +1,4 @@
-from winter.core import annotate
+from winter.components import annotate
 
 
 class DomainEventHandlerAnnotation:

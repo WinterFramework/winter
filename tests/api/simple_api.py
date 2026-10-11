@@ -8,9 +8,9 @@ from django.http import HttpResponse
 
 import winter
 from winter import ResponseEntity
-from winter.core.json import JSONEncoder
-from winter.data.pagination import Page
-from winter.data.pagination import PagePosition
+from winter.json import JSONEncoder
+from winter.pagination import Page
+from winter.pagination import PagePosition
 
 
 @dataclass
