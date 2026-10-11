@@ -6,6 +6,7 @@ from typing import Tuple
 
 from winter.web.request import Request
 from winter.components import annotate_method
+from .identity import get_throttling_identity
 from .storage import get_throttling_storage
 
 if TYPE_CHECKING:
@@ -35,7 +36,7 @@ class BaseRateThrottle:
         self._storage = get_throttling_storage()
 
     def allow_request(self, request: Request) -> bool:
-        ident = _get_ident(request)
+        ident = get_throttling_identity(request)
         key = _get_cache_key(self._throttling.scope, ident)
 
         return self._storage.is_request_allowed(key, self._throttling.duration, self._throttling.num_requests)
@@ -46,7 +47,7 @@ def reset(request: Request, scope: str):
         This function allows to reset the accumulated throttling state
         for a specific user and scope
     """
-    ident = _get_ident(request)
+    ident = get_throttling_identity(request)
     key = _get_cache_key(scope, ident)
     get_throttling_storage().delete(key)
 
@@ -56,16 +57,6 @@ CACHE_KEY_FORMAT = 'throttle_{scope}_{ident}'
 
 def _get_cache_key(scope: str, ident: str) -> str:
     return CACHE_KEY_FORMAT.format(scope=scope, ident=ident)
-
-
-def _get_ident(request: Request) -> str:
-    user = request.user
-    if user is not None and getattr(user, 'is_authenticated', False):
-        identity = getattr(user, 'pk', None)
-        return str(identity if identity is not None else user.id)
-
-    forwarded_for = request.headers.get('X-Forwarded-For')
-    return ''.join(forwarded_for.split()) if forwarded_for else request.remote_address
 
 
 def _parse_rate(rate: str) -> Tuple[int, int]:

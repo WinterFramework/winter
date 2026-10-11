@@ -61,10 +61,5 @@ class Request(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def user(self) -> Any:
-        """The authenticated principal, or None. Throttling identifies it by its `pk` or `id` attribute."""
-
-    @property
-    @abc.abstractmethod
     def remote_address(self) -> Optional[str]:
         """IP address of the client as seen by the server."""

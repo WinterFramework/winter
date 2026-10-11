@@ -1,4 +1,3 @@
-from typing import Any
 from typing import Mapping
 from typing import Optional
 
@@ -41,10 +40,6 @@ class DjangoRequest(Request):
     @property
     def body(self) -> bytes:
         return self.django_request.body
-
-    @property
-    def user(self) -> Any:
-        return getattr(self.django_request, 'user', None)
 
     @property
     def remote_address(self) -> Optional[str]:

@@ -44,6 +44,8 @@ python tools/migrate_to_33.py path/to/your/project
   `winter.web.problem(status=404)(NotFoundException)` before `winter.web.setup()`.
 - Throttling storage is explicit: `winter.web.set_throttling_storage(RedisThrottlingStorage(configuration))`
   from `winter.redis.throttling`, or `InMemoryThrottlingStorage()` for a single process.
+- `Request` has no `user`. Who gets throttled is decided by the identity resolver: `winter.django.setup()`
+  installs one that uses the Django user, `winter.web.set_throttling_identity_resolver` replaces it.
 
 # How to use
 
