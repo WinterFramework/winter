@@ -14,18 +14,18 @@ class TestAppConfig(AppConfig):
         # define this import for force initialization all modules and to register Exceptions
         from .urls import urlpatterns   # noqa: F401
         import winter
-        import winter_django
-        import winter_openapi
+        import winter.django
+        import winter.openapi
 
         interceptor_registry.add_interceptor(HelloWorldInterceptor())
 
-        winter_openapi.setup()
+        winter.openapi.setup()
 
         winter.web.setup()
 
         # The Redis storage is covered in tests/redis; the sample application throttles in memory.
         winter.web.set_throttling_storage(InMemoryThrottlingStorage())
 
-        winter_django.setup()
+        winter.django.setup()
 
         exception_handlers_registry.set_default_handler(DefaultExceptionHandler)  # for 100% test coverage

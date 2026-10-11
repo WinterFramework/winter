@@ -31,8 +31,13 @@ def test_winter_core_is_an_alias_of_components_and_application():
     ('winter.core.utils.typing', 'winter.components.typing'),
     ('winter.data.pagination', 'winter.pagination'),
     ('winter.data.pagination.sort', 'winter.pagination.sort'),
-    ('winter.data.repository', 'winter_ddd.repository'),
-    ('winter.data.exceptions', 'winter_ddd.exceptions'),
+    ('winter.data.repository', 'winter.ddd.repository'),
+    ('winter.data.exceptions', 'winter.ddd.exceptions'),
+    ('winter_ddd.aggregate_root', 'winter.ddd.aggregate_root'),
+    ('winter_openapi.generator', 'winter.openapi.generator'),
+    ('winter_openapi.inspectors.page_inspector', 'winter.openapi.inspectors.page_inspector'),
+    ('winter_django.view', 'winter.django.view'),
+    ('winter_sqlalchemy.repository', 'winter.sqlalchemy.repository'),
 ])
 def test_old_module_is_the_new_module(old_name, new_name):
     with pytest.warns(DeprecationWarning, match=f'{old_name} is deprecated, use {new_name}'):
@@ -53,12 +58,28 @@ def test_winter_core_utils_exports_the_former_names():
 
 
 def test_winter_data_exports_crud_repository():
-    import winter_ddd
+    import winter.ddd
 
     with pytest.warns(DeprecationWarning, match='winter.data is deprecated'):
         data = _reimport('winter.data')
 
-    assert data.CRUDRepository is winter_ddd.CRUDRepository
+    assert data.CRUDRepository is winter.ddd.CRUDRepository
+
+
+@pytest.mark.parametrize('old_name, new_name', [
+    ('winter_ddd', 'winter.ddd'),
+    ('winter_openapi', 'winter.openapi'),
+    ('winter_django', 'winter.django'),
+    ('winter_sqlalchemy', 'winter.sqlalchemy'),
+])
+def test_old_top_level_package_exports_the_new_names(old_name, new_name):
+    with pytest.warns(DeprecationWarning, match=f'{old_name} is deprecated, use {new_name}'):
+        old_package = _reimport(old_name)
+    new_package = importlib.import_module(new_name)
+
+    public_names = [name for name in dir(new_package) if not name.startswith('_')]
+    assert public_names
+    assert all(getattr(old_package, name) is getattr(new_package, name) for name in public_names)
 
 
 def test_unknown_old_module_is_not_invented():

@@ -4,7 +4,7 @@ from typing import Dict
 import dataclasses
 
 import winter.web
-from winter_ddd.exceptions import NotFoundException
+from winter.ddd.exceptions import NotFoundException
 from winter.web.exceptions import RequestDataDecodeException
 
 

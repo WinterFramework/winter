@@ -106,13 +106,13 @@ include_external_packages = true
 name = "Layers: adapters -> models -> foundations"
 type = "layers"
 layers = [
-    "winter_django | winter_openapi | winter_sqlalchemy | winter.redis",
-    "winter.web | winter_ddd | winter.messaging",
+    "winter.django | winter.openapi | winter.sqlalchemy | winter.redis",
+    "winter.web | winter.ddd | winter.messaging",
     "winter.components : winter.application : winter.json : winter.pagination",
 ]
 ignore_imports = [
     # NotFoundException -> 404 glue moves to application code, stage 7
-    "winter.web -> winter_ddd.exceptions",
+    "winter.web -> winter.ddd.exceptions",
     # Deprecated aliases of the Redis storage, removed in 34.0
     "winter.web.throttling -> winter.redis.throttling",
 ]
@@ -122,7 +122,7 @@ name = "Models and foundations do not import web frameworks or infrastructure"
 type = "forbidden"
 source_modules = [
     "winter.components", "winter.application", "winter.json", "winter.pagination",
-    "winter.web", "winter_ddd", "winter.messaging",
+    "winter.web", "winter.ddd", "winter.messaging",
 ]
 forbidden_modules = ["django", "redis", "sqlalchemy", "pydantic"]
 ignore_imports = [

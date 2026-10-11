@@ -1,8 +1,8 @@
-from .aggregate_root import AggregateRoot
-from .domain_event import DomainEvent
-from .domain_event_dispatcher import DomainEventDispatcher
-from .domain_event_handler import domain_event_handler
-from .domain_events import DomainEvents
-from .exceptions import NotFoundException
-from .repository import CRUDRepository
-from .repository import Repository
+"""Deprecated since 33.0, removed in 34.0. Use winter.ddd."""
+from winter._deprecation import alias_modules
+from winter._deprecation import deprecated_package
+
+deprecated_package('winter_ddd', 'winter.ddd')
+alias_modules(prefixes={'winter_ddd': 'winter.ddd'})
+
+from winter.ddd import *  # noqa: E402, F401, F403

@@ -31,7 +31,7 @@ from .urls import register_url_regexp
 
 
 def setup():
-    from winter_ddd.exceptions import NotFoundException
+    from winter.ddd.exceptions import NotFoundException
     from .exceptions import RedirectException
     from .exceptions.problem_handling import autodiscover_problem_annotations
     from .exceptions.problem_handling import ProblemExceptionHandlerGenerator
