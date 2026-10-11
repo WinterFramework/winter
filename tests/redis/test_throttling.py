@@ -40,20 +40,20 @@ def test_redis_storage_sliding_window(redis_configuration):
     throttling_storage = RedisThrottlingStorage(redis_configuration)
     now = datetime.datetime.now()
 
+    def at(seconds: float) -> bool:
+        with freezegun.freeze_time(now + datetime.timedelta(seconds=seconds)):
+            return throttling_storage.is_request_allowed('key', 10, 2)
+
+    # two requests per 10 seconds; the third one inside the window is rejected and not counted
+    assert [at(0), at(1), at(2), at(5)] == [True, True, False, False]
     with freezegun.freeze_time(now):
-        assert [throttling_storage.is_request_allowed('key', 10, 2) for _ in range(3)] == [True, True, False]
         assert throttling_storage.is_request_allowed('other key', 10, 2)
 
-    with freezegun.freeze_time(now + datetime.timedelta(seconds=5)):
-        assert not throttling_storage.is_request_allowed('key', 10, 2)
-
-    with freezegun.freeze_time(now + datetime.timedelta(seconds=10)):
-        # the two requests made at `now` left the window
-        assert [throttling_storage.is_request_allowed('key', 10, 2) for _ in range(3)] == [True, True, False]
+    # the requests made at 0 and 1 have left the window
+    assert [at(11.5), at(12), at(12.5)] == [True, True, False]
 
     throttling_storage.delete('key')
-    with freezegun.freeze_time(now + datetime.timedelta(seconds=10)):
-        assert throttling_storage.is_request_allowed('key', 10, 2)
+    assert at(12.5)
 
 
 @pytest.mark.usefixtures('keep_throttling_storage')
