@@ -1,8 +1,10 @@
 import uuid
 
+import pytest
+
 from tests.api import APIWithPathParameters
 from tests.api import SimpleAPI
-from winter.web.routing import reverse
+from winter.django import reverse
 
 
 def test_reverse_without_args():
@@ -36,3 +38,10 @@ def test_reverse_with_kwargs():
     )
     # Assert
     assert url == f'/with-path-parameters/param1/1/one/{uid}/1/'
+
+
+def test_deprecated_reverse_in_winter_web():
+    from winter.web.routing.reverse import reverse as deprecated_reverse
+
+    with pytest.warns(DeprecationWarning, match='winter.web.routing.reverse is deprecated'):
+        assert deprecated_reverse(SimpleAPI.hello) == '/winter-simple/'

@@ -111,10 +111,9 @@ layers = [
     "winter.components : winter.application : winter.json : winter.pagination",
 ]
 ignore_imports = [
-    # NotFoundException -> 404 glue moves to application code, stage 7
-    "winter.web -> winter.ddd.exceptions",
-    # Deprecated aliases of the Redis storage, removed in 34.0
+    # Deprecated aliases of the Redis storage and of reverse, removed in 34.0
     "winter.web.throttling -> winter.redis.throttling",
+    "winter.web.routing.reverse -> winter.django.reverse",
 ]
 
 [[tool.importlinter.contracts]]
@@ -126,25 +125,9 @@ source_modules = [
 ]
 forbidden_modules = ["django", "redis", "sqlalchemy", "pydantic"]
 ignore_imports = [
-    # Deprecated aliases of the Redis storage, removed in 34.0
+    # Deprecated aliases of the Redis storage and of reverse, removed in 34.0
     "winter.web.throttling -> winter.redis.throttling",
-    # Django-specific code moves to winter.django, stage 6
-    "winter.web.argument_resolver -> django",
-    "winter.web.exceptions.exception_mapper -> django",
-    "winter.web.exceptions.handlers -> django",
-    "winter.web.exceptions.problem_handling -> django",
-    "winter.web.output_processor -> django",
-    "winter.web.pagination.page_position_argument_resolver -> django",
-    "winter.web.pagination.page_processor -> django",
-    "winter.web.pagination.utils -> django",
-    "winter.web.path_parameters_argument_resolver -> django",
-    "winter.web.query_parameters.query_parameter_argument_resolver -> django",
-    "winter.web.query_parameters.query_parameters_argument_resolver -> django",
-    "winter.web.request_body_resolver -> django",
-    "winter.web.request_header_resolver -> django",
-    "winter.web.response_header_resolver -> django",
-    "winter.web.routing.reverse -> django",
-    "winter.web.throttling.throttling -> django",
+    "winter.web.routing.reverse -> winter.django.reverse",
 ]
 
 [build-system]

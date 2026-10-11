@@ -1,9 +1,9 @@
 from typing import MutableMapping
 from typing import Optional
 
-import django.http
 
 from .argument_resolver import ArgumentResolver
+from winter.web.request import Request
 from winter.components import ArgumentDoesNotHaveDefault
 from winter.components import ComponentMethodArgument
 from winter.json import JSONDecodeException
@@ -19,7 +19,7 @@ class RequestHeaderArgumentResolver(ArgumentResolver):
     def resolve_argument(
         self,
         argument: ComponentMethodArgument,
-        request: django.http.HttpRequest,
+        request: Request,
         response_headers: MutableMapping[str, str],
     ):
         request_headers = request.headers

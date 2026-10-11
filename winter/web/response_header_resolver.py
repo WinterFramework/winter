@@ -1,7 +1,7 @@
 from typing import MutableMapping
 
-import django.http
 
+from winter.web.request import Request
 from winter.components import ComponentMethodArgument
 from winter.components.typing import is_origin_type_subclasses
 from .argument_resolver import ArgumentResolver
@@ -20,7 +20,7 @@ class ResponseHeaderArgumentResolver(ArgumentResolver):
     def resolve_argument(
         self,
         argument: ComponentMethodArgument,
-        request: django.http.HttpRequest,
+        request: Request,
         response_headers: MutableMapping[str, str],
     ):
         annotations = argument.method.annotations.get(ResponseHeaderAnnotation)

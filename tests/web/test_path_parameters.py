@@ -1,9 +1,8 @@
 import uuid
 
 import pytest
-from django.http import HttpRequest
-from mock import Mock
 
+from tests.utils import get_request
 from tests.api.api_with_path_parameters import APIWithPathParameters
 from tests.api.api_with_path_parameters import OneTwoEnum
 from tests.api.api_with_path_parameters import OneTwoEnumWithInt
@@ -14,21 +13,23 @@ from winter.web.path_parameters_argument_resolver import PathParametersArgumentR
 uuid_ = uuid.uuid4()
 
 
+path_parameters = {'param1': '123', 'param2': '456', 'param3': 'one', 'param4': str(uuid_), 'param5': '2'}
+
+
 @pytest.mark.parametrize(
-    'path, arg_name, expected_value', [
-        (f'/with-path-parameters/123/456/one/{uuid_}/2/', 'param1', '123'),
-        (f'/with-path-parameters/123/456/one/{uuid_}/2/', 'param2', 456),
-        (f'/with-path-parameters/123/456/one/{uuid_}/2/', 'param3', OneTwoEnum.ONE),
-        (f'/with-path-parameters/123/456/one/{uuid_}/2/', 'param4', uuid_),
-        (f'/with-path-parameters/123/456/one/{uuid_}/2/', 'param5', OneTwoEnumWithInt.TWO),
+    'arg_name, expected_value', [
+        ('param1', '123'),
+        ('param2', 456),
+        ('param3', OneTwoEnum.ONE),
+        ('param4', uuid_),
+        ('param5', OneTwoEnumWithInt.TWO),
     ],
 )
-def test_resolve_path_parameter(path, arg_name, expected_value):
+def test_resolve_path_parameter(arg_name, expected_value):
     component = Component.get_by_cls(APIWithPathParameters)
     argument = component.get_method('test').get_argument(arg_name)
     resolver = PathParametersArgumentResolver()
-    request = Mock(spec=HttpRequest)
-    request.path_info = path
+    request = get_request(path_parameters=path_parameters)
 
     # Act
     result = resolver.resolve_argument(argument, request, {})
@@ -62,8 +63,7 @@ def test_with_raises_argument_not_supported():
     component = Component.get_by_cls(APIWithPathParameters)
     argument = component.get_method('test').get_argument('param6')
     resolver = PathParametersArgumentResolver()
-    request = Mock(spec=HttpRequest)
-    request.path_info = f'/with-path-parameters/123/456/one/{uuid_}/2/'
+    request = get_request(path_parameters=path_parameters)
 
     with pytest.raises(ArgumentNotSupported) as exception:
         resolver.resolve_argument(argument, request, {})

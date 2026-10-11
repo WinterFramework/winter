@@ -7,8 +7,8 @@ from typing import Mapping
 from typing import MutableMapping
 from typing import Optional
 
-import django.http
 
+from winter.web.request import Request
 from winter.components import ComponentMethod
 from winter.components import ComponentMethodArgument
 from winter.components.typing import get_type_name
@@ -32,7 +32,7 @@ class ArgumentResolver(abc.ABC):
     def resolve_argument(
         self,
         argument: ComponentMethodArgument,
-        request: django.http.HttpRequest,
+        request: Request,
         response_headers: MutableMapping[str, str],
     ):  # pragma: no cover
         pass
@@ -51,7 +51,7 @@ class ArgumentsResolver:
     def resolve_arguments(
         self,
         method: ComponentMethod,
-        request: django.http.HttpRequest,
+        request: Request,
         response_headers: MutableMapping[str, str],
         context: Optional[Mapping[str, Any]] = None,
     ) -> Dict[str, Any]:
@@ -70,7 +70,7 @@ class ArgumentsResolver:
     def _resolve_argument(
         self,
         argument: ComponentMethodArgument,
-        request: django.http.HttpRequest,
+        request: Request,
         response_headers: MutableMapping[str, str],
     ) -> Any:
         argument_resolver = self._get_argument_resolver(argument)

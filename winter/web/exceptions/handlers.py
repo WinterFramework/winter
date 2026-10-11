@@ -5,10 +5,10 @@ from typing import Tuple
 from typing import Type
 from typing import Union
 
-from django.http import HttpResponse
 
 from winter.components import ComponentMethod
 from .raises import get_raises
+from ..response import Response
 
 NotHandled = object()
 
@@ -20,8 +20,8 @@ class ExceptionHandler(abc.ABC):
 
 
 class DefaultExceptionHandler(ExceptionHandler):
-    def handle(self, exception: Exception, **kwargs) -> HttpResponse:
-        return HttpResponse(b'Server Error (500)', status=HTTPStatus.INTERNAL_SERVER_ERROR)
+    def handle(self, exception: Exception, **kwargs) -> Response:
+        return Response(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, body=b'Server Error (500)')
 
 
 class ExceptionHandlersRegistry:

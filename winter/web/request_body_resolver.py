@@ -2,12 +2,12 @@ import json
 from json import JSONDecodeError
 from typing import MutableMapping
 
-import django.http
 
 from .argument_resolver import ArgumentResolver
 from .exceptions import UnsupportedMediaTypeException
 from .exceptions import RequestDataDecodeException
 from .request_body_annotation import RequestBodyAnnotation
+from winter.web.request import Request
 from winter.components import ComponentMethodArgument
 from winter.json import JSONDecodeException
 from winter.json import json_decode
@@ -24,10 +24,11 @@ class RequestBodyArgumentResolver(ArgumentResolver):
     def resolve_argument(
         self,
         argument: ComponentMethodArgument,
-        request: django.http.HttpRequest,
+        request: Request,
         response_headers: MutableMapping[str, str],
     ):
-        if 'CONTENT_TYPE' in request.META and request.META['CONTENT_TYPE'] != 'application/json':
+        content_type = request.headers.get('Content-Type')
+        if content_type is not None and content_type != 'application/json':
             raise UnsupportedMediaTypeException()
         try:
             return json_decode(json.loads(request.body), argument.type_)

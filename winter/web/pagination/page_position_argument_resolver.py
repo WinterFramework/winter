@@ -1,9 +1,9 @@
 from typing import MutableMapping
 from typing import Optional
 
-import django.http
 from furl import furl
 
+from winter.web.request import Request
 from winter.components import ComponentMethod
 from winter.components import ComponentMethodArgument
 from winter.json import JSONDecodeException
@@ -43,14 +43,14 @@ class PagePositionArgumentResolver(ArgumentResolver):
     def resolve_argument(
         self,
         argument: ComponentMethodArgument,
-        request: django.http.HttpRequest,
+        request: Request,
         response_headers: MutableMapping[str, str],
     ) -> PagePosition:
         page_position = self._parse_page_position(argument, request)
         limits = self._get_limits(argument.method)
 
         if limits.redirect_to_default and page_position.limit is None and limits.default is not None:
-            parsed_url = furl(request.get_full_path())
+            parsed_url = furl(request.full_path)
             parsed_url.args[self.limit_name] = limits.default
             raise RedirectException(redirect_to=parsed_url.url)
 
@@ -75,11 +75,11 @@ class PagePositionArgumentResolver(ArgumentResolver):
     def _parse_page_position(
         self,
         argument: ComponentMethodArgument,
-        request: django.http.HttpRequest,
+        request: Request,
     ) -> PagePosition:
-        raw_limit = request.GET.get(self.limit_name) or None
-        raw_offset = request.GET.get(self.offset_name) or None
-        raw_order_by = request.GET.get(self.order_by_name, '')
+        raw_limit = request.query_parameters.get(self.limit_name) or None
+        raw_offset = request.query_parameters.get(self.offset_name) or None
+        raw_order_by = request.query_parameters.get(self.order_by_name) or ''
         try:
             limit = json_decode(raw_limit, Optional[PositiveInteger])
             offset = json_decode(raw_offset, Optional[PositiveInteger])

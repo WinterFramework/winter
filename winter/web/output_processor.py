@@ -5,8 +5,8 @@ from typing import Callable
 from typing import List
 from typing import Optional
 
-import django.http
 
+from winter.web.request import Request
 from winter.components import ComponentMethod
 from winter.components import annotate
 
@@ -16,7 +16,7 @@ class IOutputProcessor(abc.ABC):
     Common usage is to serializer some DTO to dict."""
 
     @abc.abstractmethod
-    def process_output(self, output, request: django.http.HttpRequest):  # pragma: no cover
+    def process_output(self, output, request: Request):  # pragma: no cover
         return output
 
 

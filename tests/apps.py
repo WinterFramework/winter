@@ -1,6 +1,9 @@
+from http import HTTPStatus
+
 from django.apps import AppConfig
 
 from tests.web.interceptors import HelloWorldInterceptor
+from winter.ddd import NotFoundException
 from winter.web import InMemoryThrottlingStorage
 from winter.web import exception_handlers_registry
 from winter.web import interceptor_registry
@@ -21,6 +24,8 @@ class TestAppConfig(AppConfig):
 
         winter.openapi.setup()
 
+        # Mapping a domain exception to an HTTP status is application wiring, not framework behaviour
+        winter.web.problem(status=HTTPStatus.NOT_FOUND)(NotFoundException)
         winter.web.setup()
 
         # The Redis storage is covered in tests/redis; the sample application throttles in memory.

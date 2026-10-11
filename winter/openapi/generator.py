@@ -12,7 +12,6 @@ from typing import Tuple
 from typing import Type
 from typing import Union
 
-from django.http.response import HttpResponseBase
 from openapi_pydantic import schema_validate
 from openapi_pydantic.v3.v3_0 import Components
 from openapi_pydantic.v3.v3_0 import Info
@@ -411,6 +410,17 @@ def _is_abstract_or_none_return_type(return_value_type):
         return_value_type in (None, type(None)) or
         (
             inspect.isclass(return_value_type) and
-            issubclass(return_value_type, HttpResponseBase)
+            issubclass(return_value_type, _raw_response_types())
         )
     )
+
+
+def _raw_response_types() -> tuple:
+    """Return types that carry a ready HTTP response and therefore have no schema."""
+    from winter.web import Response
+    types_ = (Response,)
+    try:
+        from django.http.response import HttpResponseBase
+    except ImportError:  # pragma: no cover
+        return types_
+    return types_ + (HttpResponseBase,)
