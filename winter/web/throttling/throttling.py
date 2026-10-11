@@ -1,5 +1,4 @@
 import dataclasses
-import time
 from typing import Optional
 from typing import TYPE_CHECKING
 from typing import Tuple
@@ -7,7 +6,7 @@ from typing import Tuple
 import django.http
 
 from winter.core import annotate_method
-from .redis_throttling_client import get_redis_throttling_client
+from .storage import get_throttling_storage
 
 if TYPE_CHECKING:
     from winter.web.routing import Route  # noqa: F401
@@ -33,13 +32,13 @@ def throttling(rate: Optional[str], scope: Optional[str] = None):
 class BaseRateThrottle:
     def __init__(self, throttling_: Throttling):
         self._throttling = throttling_
-        self._redis_client = get_redis_throttling_client()
+        self._storage = get_throttling_storage()
 
     def allow_request(self, request: django.http.HttpRequest) -> bool:
         ident = _get_ident(request)
         key = _get_cache_key(self._throttling.scope, ident)
 
-        return self._redis_client.is_request_allowed(key, self._throttling.duration, self._throttling.num_requests)
+        return self._storage.is_request_allowed(key, self._throttling.duration, self._throttling.num_requests)
 
 
 def reset(request: django.http.HttpRequest, scope: str):
@@ -49,8 +48,7 @@ def reset(request: django.http.HttpRequest, scope: str):
     """
     ident = _get_ident(request)
     key = _get_cache_key(scope, ident)
-    redis_client = get_redis_throttling_client()
-    redis_client.delete(key)
+    get_throttling_storage().delete(key)
 
 
 CACHE_KEY_FORMAT = 'throttle_{scope}_{ident}'

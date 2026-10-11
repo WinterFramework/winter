@@ -5,12 +5,10 @@ import freezegun
 import pytest
 from mock import patch
 
-from winter.web import RedisThrottlingConfiguration
 from winter.web import ThrottlingMisconfigurationException
-from winter.web import set_redis_throttling_configuration
-from winter.web.throttling.redis_throttling_client import get_redis_throttling_client
-from winter.web.throttling import redis_throttling_client
-from winter.web.throttling import redis_throttling_configuration
+from winter.web.throttling import InMemoryThrottlingStorage
+from winter.web.throttling import get_throttling_storage
+from winter.web.throttling import storage
 
 expected_error_response = {
     'status': 429,
@@ -74,33 +72,29 @@ def test_get_throttling_with_conditional_reset(api_client):
             assert response.status_code == HTTPStatus.OK, i
 
 
-@patch.object(redis_throttling_client, 'get_redis_throttling_configuration', return_value=None)
-@patch.object(redis_throttling_client, '_redis_throttling_client', None)
-def test_get_redis_throttling_client_without_configuration(_):
+@patch.object(storage, '_throttling_storage', None)
+def test_get_throttling_storage_without_configuration():
     with pytest.raises(ThrottlingMisconfigurationException) as exc_info:
-        get_redis_throttling_client()
+        get_throttling_storage()
 
-    assert 'Configuration for Redis must be set' in str(exc_info.value)
+    assert 'Throttling storage must be set' in str(exc_info.value)
 
 
-@patch.object(
-    redis_throttling_configuration,
-    '_redis_throttling_configuration',
-    RedisThrottlingConfiguration(
-        host='localhost',
-        port=1234,
-        db=0,
-        password=None
-    )
-)
-def test_try_to_set_redis_configuration_twice():
-    configuration = RedisThrottlingConfiguration(
-        host='localhost',
-        port=5678,
-        db=0,
-        password=None
-    )
-    with pytest.raises(ThrottlingMisconfigurationException) as exc_info:
-        set_redis_throttling_configuration(configuration)
+def test_in_memory_storage_sliding_window():
+    throttling_storage = InMemoryThrottlingStorage()
+    now = datetime.datetime.now()
 
-    assert 'RedisThrottlingConfiguration is already initialized' in str(exc_info.value)
+    with freezegun.freeze_time(now):
+        assert [throttling_storage.is_request_allowed('key', 10, 2) for _ in range(3)] == [True, True, False]
+        assert throttling_storage.is_request_allowed('other key', 10, 2)
+
+    with freezegun.freeze_time(now + datetime.timedelta(seconds=5)):
+        assert not throttling_storage.is_request_allowed('key', 10, 2)
+
+    with freezegun.freeze_time(now + datetime.timedelta(seconds=10)):
+        # the two requests made at `now` left the window
+        assert [throttling_storage.is_request_allowed('key', 10, 2) for _ in range(3)] == [True, True, False]
+
+    throttling_storage.delete('key')
+    with freezegun.freeze_time(now + datetime.timedelta(seconds=10)):
+        assert throttling_storage.is_request_allowed('key', 10, 2)

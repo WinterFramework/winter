@@ -1,3 +1,5 @@
+import importlib
+
 from . import pagination
 from .argument_resolver import arguments_resolver
 from .autodiscovery import find_package_routes
@@ -20,9 +22,10 @@ from .response_header_annotation import response_header
 from .response_header_resolver import ResponseHeaderArgumentResolver
 from .response_header_serializer import response_headers_serializer
 from .response_status_annotation import response_status
+from .throttling import InMemoryThrottlingStorage
 from .throttling import ThrottlingMisconfigurationException
-from .throttling import RedisThrottlingConfiguration
-from .throttling import set_redis_throttling_configuration
+from .throttling import ThrottlingStorage
+from .throttling import set_throttling_storage
 from .throttling import throttling
 from .urls import register_url_regexp
 
@@ -64,3 +67,12 @@ def setup():
     }
     for exception_class, handler in auto_handle_exceptions.items():
         exception_handlers_registry.add_handler(exception_class, handler, auto_handle=True)
+
+
+def __getattr__(name):
+    # Deprecated since 33.0, removed in 34.0: the Redis storage lives in the winter.redis adapter.
+    # The subpackage is imported by name because `throttling` in this namespace is the decorator.
+    throttling_package = importlib.import_module('winter.web.throttling')
+    if name in throttling_package._DEPRECATED_REDIS_NAMES:
+        return getattr(throttling_package, name)
+    raise AttributeError(f'module {__name__!r} has no attribute {name!r}')
