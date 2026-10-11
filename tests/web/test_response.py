@@ -10,10 +10,10 @@ def test_raw_response_bypasses_json_encoding(api_client):
 
 
 def test_output_processor_may_return_a_response(api_client):
-    response = api_client.get('/with-response/processed/')
+    response = api_client.get('/with-response/greeting/')
 
     assert response.status_code == HTTPStatus.OK
-    assert response.content == b'42'
+    assert response.content == b'Hello, Winter'
     assert response.headers['content-type'] == 'text/plain'
 
 
