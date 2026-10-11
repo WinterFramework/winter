@@ -7,7 +7,7 @@ from winter.components import ArgumentDoesNotHaveDefault
 from winter.components import ComponentMethodArgument
 from winter.json import JSONDecodeException
 from winter.json import json_decode
-from winter.components.typing import is_iterable_type
+from winter.typing import is_iterable_type
 from .query_parameter import QueryParameter
 from ..argument_resolver import ArgumentNotSupported
 from ..argument_resolver import ArgumentResolver

@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from typing import Any
 
-from winter.components.nested_types import TypeWrapper
+from winter.typing import TypeWrapper
 
 
 class ResponseEntity(TypeWrapper):

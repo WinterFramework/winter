@@ -17,7 +17,7 @@ def is_any(type_: object) -> bool:
 
 
 def is_type_var(type_: object) -> bool:
-    return type(type_) == TypeVar
+    return type(type_) is TypeVar
 
 
 def is_iterable_type(type_: object) -> bool:
@@ -63,3 +63,7 @@ def get_type_name(type_):
         return type_name
 
     return type(type_).__name__
+
+
+from .nested_types import TypeWrapper  # noqa: E402
+from .nested_types import has_nested_type  # noqa: E402

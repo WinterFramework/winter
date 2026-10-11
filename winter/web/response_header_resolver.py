@@ -3,7 +3,7 @@ from typing import MutableMapping
 
 from winter.web.request import Request
 from winter.components import ComponentMethodArgument
-from winter.components.typing import is_origin_type_subclasses
+from winter.typing import is_origin_type_subclasses
 from .argument_resolver import ArgumentResolver
 from .response_header_annotation import ResponseHeader
 from .response_header_annotation import ResponseHeaderAnnotation

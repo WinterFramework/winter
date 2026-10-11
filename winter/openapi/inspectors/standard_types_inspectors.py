@@ -12,12 +12,12 @@ from strenum import StrEnum
 
 from winter.components.docstring import Docstring
 from winter.json import Undefined
-from winter.components.nested_types import has_nested_type
-from winter.components.typing import get_union_args
-from winter.components.typing import is_any
-from winter.components.typing import is_optional
-from winter.components.typing import is_type_var
-from winter.components.typing import is_union
+from winter.typing import has_nested_type
+from winter.typing import get_union_args
+from winter.typing import is_any
+from winter.typing import is_optional
+from winter.typing import is_type_var
+from winter.typing import is_union
 from winter.openapi.inspection.data_formats import DataFormat
 from winter.openapi.inspection.data_types import DataTypes
 from winter.openapi.inspection.inspection import inspect_type

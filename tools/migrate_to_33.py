@@ -9,7 +9,7 @@ What it does:
 - `import winter` facade is gone (`winter` is a namespace package): `winter.route_get` becomes
   `winter.web.route_get`, `from winter import request_body` becomes `from winter.web import request_body`.
 - `winter_openapi`, `winter_django`, `winter_sqlalchemy`, `winter_ddd` become `winter.openapi`, ...
-- `winter.core` is split into `winter.components`, `winter.application` and `winter.json`.
+- `winter.core` is split into `winter.components`, `winter.application`, `winter.json` and `winter.typing`.
 - `winter.data` is split into `winter.pagination` and `winter.ddd`.
 - Redis throttling configuration moves to `winter.redis.throttling`, `reverse` to `winter.django`.
 Formatting and comments are preserved. None of the old paths exist in 33.0.
@@ -41,10 +41,10 @@ RENAMES: List[Tuple[str, str]] = [
     ('winter_sqlalchemy', 'winter.sqlalchemy'),
     ('winter_ddd', 'winter.ddd'),
     ('winter.core.json', 'winter.json'),
-    ('winter.core.utils.typing', 'winter.components.typing'),
-    ('winter.core.utils.nested_types', 'winter.components.nested_types'),
-    ('winter.core.utils.TypeWrapper', 'winter.components.nested_types.TypeWrapper'),
-    ('winter.core.utils.has_nested_type', 'winter.components.nested_types.has_nested_type'),
+    ('winter.core.utils.typing', 'winter.typing'),
+    ('winter.core.utils.nested_types', 'winter.typing'),
+    ('winter.core.utils.TypeWrapper', 'winter.typing.TypeWrapper'),
+    ('winter.core.utils.has_nested_type', 'winter.typing.has_nested_type'),
     ('winter.core.utils.camel_to_human', 'winter.web.exceptions.beautify_string.camel_to_human'),
     ('winter.core.utils.PositiveInteger', 'winter.web.pagination.positive_integer.PositiveInteger'),
     ('winter.core.module_discovery', 'winter.application.module_discovery'),

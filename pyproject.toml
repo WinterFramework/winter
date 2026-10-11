@@ -102,14 +102,14 @@ type = "layers"
 layers = [
     "winter.django | winter.openapi | winter.sqlalchemy | winter.redis",
     "winter.web | winter.ddd | winter.messaging",
-    "winter.components : winter.application : winter.json : winter.pagination",
+    "winter.components : winter.application : winter.json : winter.pagination : winter.typing",
 ]
 
 [[tool.importlinter.contracts]]
 name = "Models and foundations do not import web frameworks or infrastructure"
 type = "forbidden"
 source_modules = [
-    "winter.components", "winter.application", "winter.json", "winter.pagination",
+    "winter.components", "winter.application", "winter.json", "winter.pagination", "winter.typing",
     "winter.web", "winter.ddd", "winter.messaging",
 ]
 forbidden_modules = ["django", "redis", "sqlalchemy", "pydantic"]

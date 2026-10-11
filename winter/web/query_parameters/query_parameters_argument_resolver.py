@@ -9,7 +9,7 @@ from ..routing import get_route
 from winter.web.request import Request
 from winter.components import ComponentMethodArgument
 from winter.json import json_decode
-from winter.components.typing import is_iterable_type
+from winter.typing import is_iterable_type
 
 
 class QueryParametersArgumentResolver(ArgumentResolver):

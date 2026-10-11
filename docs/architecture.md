@@ -36,7 +36,7 @@ block-beta
     application["winter.application"]
     json["winter.json"]
     pagination["winter.pagination"]
-    space
+    typing["winter.typing"]
     space
   end
   style la fill:none,stroke:none
@@ -53,7 +53,7 @@ independent of each other. Dashed packages are planned and do not exist yet.
 |---|---|---|
 | Adapters | Bind the models to external technologies and standards. Independent of each other. | `django`, `openapi`, `sqlalchemy`, `redis`, `asgi` (planned), `rabbitmq` (planned) |
 | Models | Framework-agnostic descriptions of what an application does. Independent of each other. | `web` (HTTP), `ddd` (domain: aggregates, repositories, domain events), `messaging` (events) |
-| Foundations | Shared vocabulary and mechanisms. Unaware of the layers above. May use each other. | `components` (declarative metadata), `application` (scope, injector, discovery), `json`, `pagination` |
+| Foundations | Shared vocabulary and mechanisms. Unaware of the layers above. May use each other. | `components` (declarative metadata), `application` (scope, injector, discovery), `json`, `pagination`, `typing` (what the stdlib `typing` lacks) |
 
 A package belongs to Foundations when it knows nothing about models or adapters and is used by
 at least two of them.

@@ -11,7 +11,7 @@ from typing import Optional
 from winter.web.request import Request
 from winter.components import ComponentMethod
 from winter.components import ComponentMethodArgument
-from winter.components.typing import get_type_name
+from winter.typing import get_type_name
 
 
 class ArgumentNotSupported(Exception):

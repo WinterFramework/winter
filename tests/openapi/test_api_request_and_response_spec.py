@@ -21,7 +21,7 @@ from strenum import StrEnum
 import winter.web
 import winter.components
 from winter.json import Undefined
-from winter.components.nested_types import TypeWrapper
+from winter.typing import TypeWrapper
 from winter.pagination import Page
 from winter.web.routing import get_route
 from winter.openapi import generate_openapi

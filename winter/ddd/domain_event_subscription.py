@@ -5,8 +5,8 @@ from typing import Tuple
 from typing import Type
 from typing import get_args
 
-from winter.components.typing import is_iterable_type
-from winter.components.typing import is_union
+from winter.typing import is_iterable_type
+from winter.typing import is_union
 from .domain_event import DomainEvent
 
 
