@@ -12,6 +12,7 @@ What it does:
 - `winter.core` is split into `winter.components`, `winter.application`, `winter.json` and `winter.typing`.
 - `winter.data` is split into `winter.pagination` and `winter.ddd`.
 - Redis throttling configuration moves to `winter.redis.throttling`, `reverse` to `winter.django`.
+- `set_redis_throttling_configuration(c)` becomes `set_throttling_storage(RedisThrottlingStorage(c))`.
 Formatting and comments are preserved. None of the old paths exist in 33.0.
 """
 import argparse
@@ -27,6 +28,8 @@ from libcst.codemod import CodemodContext
 from libcst.codemod import TransformSuccess
 from libcst.codemod import transform_module
 from libcst.codemod.commands.rename import RenameCommand
+from libcst.codemod.visitors import AddImportsVisitor
+from libcst.codemod.visitors import RemoveImportsVisitor
 
 FACADE_NAMES = (
     'ResponseEntity', 'arguments_resolver', 'request_body', 'request_header', 'response_header', 'response_status',
@@ -60,12 +63,7 @@ RENAMES: List[Tuple[str, str]] = [
     ('winter.data', 'winter.ddd'),
     ('winter.web.routing.reverse', 'winter.django.reverse'),
     ('winter.web.throttling.RedisThrottlingConfiguration', 'winter.redis.throttling.RedisThrottlingConfiguration'),
-    (
-        'winter.web.throttling.set_redis_throttling_configuration',
-        'winter.redis.throttling.set_redis_throttling_configuration',
-    ),
     ('winter.web.RedisThrottlingConfiguration', 'winter.redis.throttling.RedisThrottlingConfiguration'),
-    ('winter.web.set_redis_throttling_configuration', 'winter.redis.throttling.set_redis_throttling_configuration'),
 ] + [(f'winter.{name}', f'winter.web.{name}') for name in FACADE_NAMES]
 
 SUBPACKAGES = (
@@ -142,8 +140,40 @@ class _TidyImports(cst.CSTTransformer):
         return cst.FlattenSentinel(lines)
 
 
+_REDIS_SETTER = 'set_redis_throttling_configuration'
+
+
+class _RedisSetterCalls(cst.CSTTransformer):
+    """`set_redis_throttling_configuration(c)` -> `set_throttling_storage(RedisThrottlingStorage(c))`."""
+
+    def leave_Call(self, original: cst.Call, updated: cst.Call) -> cst.Call:
+        func = updated.func
+        is_setter = (
+            (isinstance(func, cst.Name) and func.value == _REDIS_SETTER)
+            or (isinstance(func, cst.Attribute) and func.attr.value == _REDIS_SETTER)
+        )
+        if not is_setter:
+            return updated
+        storage = cst.Call(func=cst.Name('RedisThrottlingStorage'), args=updated.args)
+        return updated.with_changes(func=cst.Name('set_throttling_storage'), args=[cst.Arg(storage)])
+
+
+def _rewrite_redis_setter(code: str) -> str:
+    if _REDIS_SETTER not in code:
+        return code
+    context = CodemodContext()
+    module = cst.parse_module(code).visit(_RedisSetterCalls())
+    AddImportsVisitor.add_needed_import(context, 'winter.web', 'set_throttling_storage')
+    AddImportsVisitor.add_needed_import(context, 'winter.redis.throttling', 'RedisThrottlingStorage')
+    for old_module in ('winter.web', 'winter.web.throttling'):
+        RemoveImportsVisitor.remove_unused_import(context, old_module, _REDIS_SETTER)
+    module = AddImportsVisitor(context).transform_module(module)
+    module = RemoveImportsVisitor(context).transform_module(module)
+    return module.code
+
+
 def migrate_source(source: str) -> str:
-    code = source
+    code = _rewrite_redis_setter(source)
     for old_name, new_name in RENAMES:
         if not _might_use(code, old_name):
             continue
