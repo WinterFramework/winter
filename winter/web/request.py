@@ -1,8 +1,6 @@
 import abc
+from collections.abc import Mapping
 from typing import Any
-from typing import List
-from typing import Mapping
-from typing import Optional
 from typing import Protocol
 
 
@@ -13,9 +11,9 @@ class MultiValueMapping(Protocol):  # pragma: no cover
 
     def __getitem__(self, name: str) -> str: ...
 
-    def get(self, name: str, default: Any = None) -> Optional[str]: ...
+    def get(self, name: str, default: Any = None) -> str | None: ...
 
-    def getlist(self, name: str) -> List[str]: ...
+    def getlist(self, name: str) -> list[str]: ...
 
 
 class Request(abc.ABC):
@@ -61,5 +59,5 @@ class Request(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def remote_address(self) -> Optional[str]:
+    def remote_address(self) -> str | None:
         """IP address of the client as seen by the server."""

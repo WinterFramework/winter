@@ -1,6 +1,5 @@
 import dataclasses
 from typing import Any
-from typing import Dict
 
 
 @dataclasses.dataclass
@@ -14,4 +13,4 @@ class Response:
     """
     status_code: int
     body: Any = b''
-    headers: Dict[str, str] = dataclasses.field(default_factory=dict)
+    headers: dict[str, str] = dataclasses.field(default_factory=dict)

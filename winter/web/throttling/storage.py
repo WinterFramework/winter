@@ -3,9 +3,6 @@ import threading
 import time
 from collections import defaultdict
 from collections import deque
-from typing import Deque
-from typing import Dict
-from typing import Optional
 
 from .exceptions import ThrottlingMisconfigurationException
 
@@ -27,7 +24,7 @@ class ThrottlingStorage(abc.ABC):
 
 class InMemoryThrottlingStorage(ThrottlingStorage):
     def __init__(self):
-        self._timestamps: Dict[str, Deque[float]] = defaultdict(deque)
+        self._timestamps: dict[str, deque[float]] = defaultdict(deque)
         self._lock = threading.Lock()
 
     def is_request_allowed(self, key: str, duration: int, num_requests: int) -> bool:
@@ -46,7 +43,7 @@ class InMemoryThrottlingStorage(ThrottlingStorage):
             self._timestamps.pop(key, None)
 
 
-_throttling_storage: Optional[ThrottlingStorage] = None
+_throttling_storage: ThrottlingStorage | None = None
 
 
 def set_throttling_storage(storage: ThrottlingStorage):

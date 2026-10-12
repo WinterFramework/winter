@@ -1,6 +1,5 @@
 import json
 from typing import Any
-from typing import Dict
 
 from winter.application import get_injector
 from winter.components import ComponentMethod
@@ -28,7 +27,7 @@ def handle_request(route: Route, request: Request) -> Response:
     """
     method = route.method
     method_exceptions_manager = MethodExceptionsManager(method)
-    response_headers: Dict[str, Any] = {}
+    response_headers: dict[str, Any] = {}
 
     throttle = create_throttle_class(route)
     try:
@@ -62,7 +61,7 @@ def handle_request(route: Route, request: Request) -> Response:
     return _to_response(request, result, method, response_headers)
 
 
-def _to_response(request: Request, result: Any, method: ComponentMethod, response_headers: Dict[str, Any]) -> Response:
+def _to_response(request: Request, result: Any, method: ComponentMethod, response_headers: dict[str, Any]) -> Response:
     headers = {
         name: response_headers_serializer.serialize(value, name)
         for name, value in response_headers.items()

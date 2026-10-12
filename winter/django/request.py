@@ -1,5 +1,4 @@
-from typing import Mapping
-from typing import Optional
+from collections.abc import Mapping
 
 import django.http
 
@@ -42,5 +41,5 @@ class DjangoRequest(Request):
         return self.django_request.body
 
     @property
-    def remote_address(self) -> Optional[str]:
+    def remote_address(self) -> str | None:
         return self.django_request.META.get('REMOTE_ADDR')

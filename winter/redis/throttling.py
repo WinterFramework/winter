@@ -1,6 +1,5 @@
 import time
 from dataclasses import dataclass
-from typing import Optional
 
 from redis import Redis
 
@@ -12,7 +11,7 @@ class RedisThrottlingConfiguration:
     host: str
     port: int
     db: int
-    password: Optional[str] = None
+    password: str | None = None
 
 
 class RedisThrottlingStorage(ThrottlingStorage):
