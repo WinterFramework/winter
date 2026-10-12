@@ -30,3 +30,21 @@ def test_all_subclasses_with_exception(reference_type):
     reference_type.side_effect = TypeError
     exception_subclasses = list(get_all_subclasses(Exception))
     assert not exception_subclasses
+
+
+def test_get_all_classes_of_module():
+    from tests.application.discovery.sample import Sample
+
+    found_classes = list(get_all_classes('tests.application.discovery.sample'))
+
+    # SampleHelper is imported into the module but defined in a module whose name only starts the same
+    assert found_classes == [('Sample', Sample)]
+
+
+def test_get_all_classes_of_package():
+    from tests.application.discovery.sample import Sample
+    from tests.application.discovery.sample_helpers import SampleHelper
+
+    found_classes = list(get_all_classes('tests.application.discovery'))
+
+    assert sorted(found_classes) == [('Sample', Sample), ('SampleHelper', SampleHelper)]

@@ -8,6 +8,7 @@ from .routing import get_route
 
 
 def find_package_routes(package_name: str) -> List[Route]:
+    """Routes of the API classes in a package and its subpackages, or in a single module."""
     import_recursively(package_name)
     routes = []
 
