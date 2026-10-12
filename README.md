@@ -37,7 +37,8 @@ python tools/migrate_to_33.py path/to/your/project
 - Custom `ArgumentResolver`, `IOutputProcessor`, `ExceptionMapper` and `Interceptor` implementations receive
   `winter.web.Request` instead of `django.http.HttpRequest`: `request.query_parameters`, `request.headers`,
   `request.body`, `request.path_parameters`, `request.full_path`. API methods that declare a `HttpRequest`
-  argument still get the Django request. `winter.web.throttling.reset` takes a `winter.web.Request`.
+  argument still get the Django request. `winter.web.throttling.reset`, `get_next_page_url` and
+  `get_previous_page_url` from `winter.web.pagination.utils` take a `winter.web.Request` too.
 - Raw responses: return `winter.web.Response(status_code, body=bytes, headers={...})`; returning a Django
   `HttpResponse` still works under the Django adapter.
 - `winter.ddd.NotFoundException` is not mapped to HTTP 404 by the framework. Add

@@ -13,7 +13,8 @@ What it does:
 - `winter.data` is split into `winter.pagination` and `winter.ddd`.
 - Redis throttling configuration moves to `winter.redis.throttling`, `reverse` to `winter.django`.
 - `set_redis_throttling_configuration(c)` becomes `set_throttling_storage(RedisThrottlingStorage(c))`.
-Formatting and comments are preserved. None of the old paths exist in 33.0.
+Touched files get one name per import line, duplicates removed, comments kept, and their `winter`
+imports grouped where the first of them was. None of the old paths exist in 33.0.
 """
 import argparse
 import pathlib
@@ -48,6 +49,8 @@ RENAMES: List[Tuple[str, str]] = [
     ('winter.core.utils.nested_types', 'winter.typing'),
     ('winter.core.utils.TypeWrapper', 'winter.typing.TypeWrapper'),
     ('winter.core.utils.has_nested_type', 'winter.typing.has_nested_type'),
+    ('winter.core.utils.beautify_string', 'winter.web.exceptions.beautify_string'),
+    ('winter.core.utils.positive_integer', 'winter.web.pagination.positive_integer'),
     ('winter.core.utils.camel_to_human', 'winter.web.exceptions.beautify_string.camel_to_human'),
     ('winter.core.utils.PositiveInteger', 'winter.web.pagination.positive_integer.PositiveInteger'),
     ('winter.core.module_discovery', 'winter.application.module_discovery'),
@@ -77,11 +80,34 @@ def _might_use(source: str, old_name: str) -> bool:
     return old_name in source or (module in source and attribute in source)
 
 
+def _dotted(name: cst.BaseExpression) -> str:
+    return cst.Module([]).code_for_node(name)
+
+
+def _import_statement(line: cst.BaseStatement):
+    if isinstance(line, cst.SimpleStatementLine) and len(line.body) == 1:
+        statement = line.body[0]
+        if isinstance(statement, (cst.Import, cst.ImportFrom)):
+            return statement
+    return None
+
+
+def _is_winter_import(line: cst.BaseStatement) -> bool:
+    statement = _import_statement(line)
+    if isinstance(statement, cst.Import):
+        return all(_dotted(alias.name).split('.')[0] == 'winter' for alias in statement.names)
+    if isinstance(statement, cst.ImportFrom) and not statement.relative and statement.module is not None:
+        return _dotted(statement.module).split('.')[0] == 'winter'
+    return False
+
+
 class _TidyImports(cst.CSTTransformer):
     """
-    Dedupe imports the renames produced, one import per line, and replace the bare `import winter`
-    (a namespace package now) with imports of the subpackages the module actually uses. A `winter.x`
-    the codemod does not know keeps the bare import, so that nothing silently disappears.
+    One name per import line, duplicates removed, trailing comments kept. The bare `import winter`
+    (a namespace package now) becomes imports of the subpackages the module uses; a `winter.x` the
+    codemod does not know keeps the bare import, so that nothing silently disappears. The `winter`
+    imports of the module's import block are grouped where the first of them was, so that imports
+    the renames added do not end up after the project's own.
     """
 
     def __init__(self):
@@ -108,7 +134,7 @@ class _TidyImports(cst.CSTTransformer):
                         inner.unknown = True
 
             def visit_ImportAlias(inner, alias: cst.ImportAlias) -> None:
-                dotted = cst.Module([]).code_for_node(alias.name)
+                dotted = _dotted(alias.name)
                 if dotted.startswith('winter.'):
                     inner.imported.add(dotted.split('.')[1])
 
@@ -119,31 +145,62 @@ class _TidyImports(cst.CSTTransformer):
         self._uses_unknown_names = collector.unknown
 
     def leave_SimpleStatementLine(self, original: cst.SimpleStatementLine, updated: cst.SimpleStatementLine):
-        if len(updated.body) != 1 or not isinstance(updated.body[0], cst.Import):
+        statement = _import_statement(updated)
+        if statement is None or isinstance(statement.names, cst.ImportStar):
             return updated
-        wanted: List[str] = []
-        for alias in updated.body[0].names:
-            dotted = cst.Module([]).code_for_node(alias.name)
-            if dotted == 'winter' and alias.asname is None:
-                wanted.extend(f'winter.{sub}' for sub in sorted(self._used_subpackages - self._imported_subpackages))
+        singles: List[cst.BaseSmallStatement] = []
+        for alias in statement.names:
+            alias = alias.with_changes(comma=cst.MaybeSentinel.DEFAULT)
+            if isinstance(statement, cst.ImportFrom):
+                singles.append(statement.with_changes(names=[alias], lpar=None, rpar=None))
+            elif _dotted(alias.name) == 'winter' and alias.asname is None:
+                singles.extend(
+                    cst.Import(names=[cst.ImportAlias(name=cst.parse_expression(f'winter.{sub}'))])
+                    for sub in sorted(self._used_subpackages - self._imported_subpackages)
+                )
                 if self._uses_unknown_names:
-                    wanted.append('winter')
-            elif alias.asname is None:
-                wanted.append(dotted)
+                    singles.append(cst.Import(names=[alias]))
             else:
-                wanted.append(f'{dotted} as {cst.Module([]).code_for_node(alias.asname.name)}')
+                singles.append(cst.Import(names=[alias]))
         lines = []
-        for dotted in wanted:
-            if dotted in self._emitted:
+        for single in singles:
+            key = cst.Module([]).code_for_node(single)
+            if key in self._emitted:
                 continue
-            self._emitted.add(dotted)
-            line = cst.parse_statement(f'import {dotted}')
+            self._emitted.add(key)
+            line = cst.SimpleStatementLine(body=[single])
             if not lines:
-                line = line.with_changes(leading_lines=updated.leading_lines)
+                line = line.with_changes(
+                    leading_lines=updated.leading_lines, trailing_whitespace=updated.trailing_whitespace,
+                )
             lines.append(line)
         if not lines:
             return cst.RemoveFromParent()
         return cst.FlattenSentinel(lines)
+
+    def leave_Module(self, original: cst.Module, updated: cst.Module) -> cst.Module:
+        body = list(updated.body)
+        block_end = 0
+        for index, line in enumerate(body):
+            is_docstring = index == 0 and isinstance(line, cst.SimpleStatementLine) and isinstance(
+                line.body[0], cst.Expr,
+            ) and isinstance(line.body[0].value, cst.SimpleString)
+            if _import_statement(line) is None and not is_docstring:
+                break
+            block_end = index + 1
+        block = body[:block_end]
+        winter_positions = [index for index, line in enumerate(block) if _is_winter_import(line)]
+        if len(winter_positions) < 2:
+            return updated
+        first = winter_positions[0]
+        gaps = [index for index in range(first, block_end) if index not in winter_positions]
+        moved_from = gaps[0] if gaps else block_end
+        winter_lines = [
+            block[index].with_changes(leading_lines=[]) if index > moved_from else block[index]
+            for index in winter_positions
+        ]
+        others = [line for index, line in enumerate(block) if index not in winter_positions]
+        return updated.with_changes(body=others[:first] + winter_lines + others[first:] + body[block_end:])
 
 
 _REDIS_SETTER = 'set_redis_throttling_configuration'

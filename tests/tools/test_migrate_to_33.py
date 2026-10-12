@@ -57,6 +57,41 @@ def _migrate(tmp_path: pathlib.Path, source: str) -> str:
         'import winter.application\n\nx = winter.application.get_injector\n',
     ),
     (
+        'import winter  # noqa: F401\n\nx = winter.web.route_get\n',
+        'import winter.web  # noqa: F401\n\nx = winter.web.route_get\n',
+    ),
+    (
+        'from winter.core import (\n    Component,\n    ComponentMethod,\n)\n\nx = Component, ComponentMethod\n',
+        'from winter.components import Component\nfrom winter.components import ComponentMethod\n\n'
+        'x = Component, ComponentMethod\n',
+    ),
+    (
+        'from winter.core.utils.positive_integer import PositiveInteger\n'
+        'from winter.core.utils.beautify_string import camel_to_human\n\nx = PositiveInteger, camel_to_human\n',
+        'from winter.web.pagination.positive_integer import PositiveInteger\n'
+        'from winter.web.exceptions.beautify_string import camel_to_human\n\nx = PositiveInteger, camel_to_human\n',
+    ),
+    (
+        'from winter.data import CRUDRepository\nfrom winter.data.pagination import Page, PagePosition\n\n'
+        'x = CRUDRepository, Page, PagePosition\n',
+        'from winter.ddd import CRUDRepository\nfrom winter.pagination import Page\n'
+        'from winter.pagination import PagePosition\n\n'
+        'x = CRUDRepository, Page, PagePosition\n',
+    ),
+    (
+        'import os\n\nimport winter.web\n\nfrom backend.models import Model\n\n'
+        'winter.web.set_redis_throttling_configuration(config)\n',
+        'import os\n\nimport winter.web\nfrom winter.redis.throttling import RedisThrottlingStorage\n'
+        'from winter.web import set_throttling_storage\n\nfrom backend.models import Model\n\n'
+        'set_throttling_storage(RedisThrottlingStorage(config))\n',
+    ),
+    (
+        'import winter.web\nfrom .models import Model\n\nwinter.web.set_redis_throttling_configuration(config)\n',
+        'import winter.web\nfrom winter.redis.throttling import RedisThrottlingStorage\n'
+        'from winter.web import set_throttling_storage\nfrom .models import Model\n\n'
+        'set_throttling_storage(RedisThrottlingStorage(config))\n',
+    ),
+    (
         'from winter.web.routing import reverse\n\nurl = reverse(f)\n',
         'from winter.django import reverse\n\nurl = reverse(f)\n',
     ),
