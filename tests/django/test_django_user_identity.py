@@ -11,6 +11,12 @@ class _UserWithIdOnly:
     id = 7
 
 
+class _UserWithoutIdentity:
+    is_authenticated = True
+    pk = None
+    id = None
+
+
 def _request(user=None, remote_address='10.0.0.1') -> DjangoRequest:
     django_request = HttpRequest()
     django_request.META['REMOTE_ADDR'] = remote_address
@@ -23,6 +29,7 @@ def _request(user=None, remote_address='10.0.0.1') -> DjangoRequest:
     (User(pk=42), '42'),
     (_UserWithIdOnly(), '7'),
     (None, '10.0.0.1'),
+    (_UserWithoutIdentity(), '10.0.0.1'),
 ])
 def test_django_user_identity(user, expected_identity):
     assert django_user_identity(_request(user)) == expected_identity

@@ -9,5 +9,8 @@ def django_user_identity(request: Request) -> str:
     user = getattr(request.django_request, 'user', None)
     if user is not None and getattr(user, 'is_authenticated', False):
         identity = getattr(user, 'pk', None)
-        return str(identity if identity is not None else user.id)
+        if identity is None:
+            identity = getattr(user, 'id', None)
+        if identity is not None:
+            return str(identity)
     return remote_address_identity(request)
