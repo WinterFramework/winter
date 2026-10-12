@@ -257,19 +257,18 @@ The pre_handle method arguments will be injected the same way as it's done in me
 It's not supported to return any response from interceptors.
 However, the exceptions thrown from within an interceptor will be handled automatically.
 ```python
-from django.http import HttpRequest
-
 import winter.web
 from winter.components import ComponentMethod
 from winter.web import Interceptor
+from winter.web import Request
 from winter.web import ResponseHeader
 
 
 class HelloWorldInterceptor(Interceptor):
     @winter.web.response_header('x-hello-world', 'hello_world_header')
-    def pre_handle(self, method: ComponentMethod, request: HttpRequest, hello_world_header: ResponseHeader[str]):
+    def pre_handle(self, method: ComponentMethod, request: Request, hello_world_header: ResponseHeader[str]):
         print(f'Method: {method.name}')
-        if 'hello_world' in request.GET:
+        if 'hello_world' in request.query_parameters:
             hello_world_header.set('Hello, World!')
 
 ```
