@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from winter.web.exceptions import RequestDataDecodeException
 
 if TYPE_CHECKING:
-    from winter.data.pagination import Sort
+    from winter.pagination import Sort
 
 
 def check_sort(sort: 'Sort', allowed_fields: FrozenSet[str]):

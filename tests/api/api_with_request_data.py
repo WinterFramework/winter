@@ -8,7 +8,7 @@ from typing import Required
 from typing import TypeAlias
 from typing import TypedDict
 
-import winter
+import winter.web
 
 
 class Status(enum.Enum):
@@ -43,12 +43,12 @@ class Data:
 
 class APIWithRequestData:
 
-    @winter.request_body('data')
-    @winter.route_post('with-request-data/{?query}')
+    @winter.web.request_body('data')
+    @winter.web.route_post('with-request-data/{?query}')
     def method(self, query: Optional[str], data: Data) -> Data:
         return data
 
-    @winter.request_body('data')
-    @winter.route_post('with-request-data/many/')
+    @winter.web.request_body('data')
+    @winter.web.route_post('with-request-data/many/')
     def many_method(self, data: List[Data]) -> List[Data]:
         return data

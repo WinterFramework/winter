@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from ..core import ComponentMethod
+from winter.components import ComponentMethod
 from .response_status_annotation import ResponseStatusAnnotation
 
 _default_http_method_statuses = {

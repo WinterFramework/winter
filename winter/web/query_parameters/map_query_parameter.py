@@ -1,4 +1,4 @@
-from winter.core import annotate_method
+from winter.components import annotate_method
 from .map_query_parameter_annotation import MapQueryParameterAnnotation
 
 

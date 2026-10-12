@@ -3,7 +3,7 @@ from typing import Union
 
 import dataclasses
 
-from ..core import annotate
+from winter.components import annotate
 
 
 @dataclasses.dataclass

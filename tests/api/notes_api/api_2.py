@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from uuid import UUID
 
-import winter
+import winter.web
 
 
 @dataclass
@@ -10,7 +10,7 @@ class Note:
 
 
 class API2:
-    @winter.route_patch('notes/{?note_id}')
-    @winter.request_body('note')
+    @winter.web.route_patch('notes/{?note_id}')
+    @winter.web.request_body('note')
     def update(self, note_id: UUID, note: Note):
         pass

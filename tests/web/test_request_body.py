@@ -2,7 +2,7 @@ import json
 from http import HTTPStatus
 
 import pytest
-from winter import request_body
+from winter.web import request_body
 
 
 def test_request_body(api_client):
@@ -142,6 +142,16 @@ def test_unacceptible_content_type(api_client):
         'title': 'Unsupported media type',
         'detail': '',
     }
+
+
+def test_json_content_type_with_parameters(api_client):
+    data = {'id': 1, 'name': 'n', 'is_god': False, 'status': 'active', 'items': [], 'items_alias': [],
+            'typed_dict': {'field': 'f', 'required_field': 1}}
+    headers = {'content-type': 'application/json; charset=utf-8'}
+
+    response = api_client.post('/with-request-data/', content=json.dumps(data).encode(), headers=headers)
+
+    assert response.status_code == HTTPStatus.OK, response.content
 
 
 def test_invalid_json(api_client):

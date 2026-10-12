@@ -1,8 +1,8 @@
 from typing import Optional
 from typing import Tuple
 
-from winter.core import ComponentMethod
-from winter.core import annotate
+from winter.components import ComponentMethod
+from winter.components import annotate
 from .route_annotation import RouteAnnotation
 from ..media_type import MediaType
 from ..routing.route import Route

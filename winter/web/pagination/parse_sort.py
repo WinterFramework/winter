@@ -1,6 +1,6 @@
 from typing import Optional
 
-from winter.data.pagination import Sort
+from winter.pagination import Sort
 from .parse_order import parse_order
 
 

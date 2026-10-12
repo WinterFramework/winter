@@ -1,7 +1,7 @@
 import dataclasses
 from typing import List
 
-from winter.core import annotate_method
+from winter.components import annotate_method
 
 ListType = type(List)
 

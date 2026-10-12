@@ -26,6 +26,8 @@ jobs:
         sed -i.bak 's/^SQLAlchemy = .*/SQLAlchemy = "^${{ matrix.sqlalchemy-version }}"/' pyproject.toml
         sed -i.bak 's/^Django = .*/Django = "^${{ matrix.django-version }}"/' pyproject.toml
         poetry install
+    - name: Check architecture contracts
+      run: poetry run lint-imports
     - name: Test with pytest
       run: |
         poetry run pytest -rfs --cov --cov-config=.coveragerc --cov-report="" --disable-warnings

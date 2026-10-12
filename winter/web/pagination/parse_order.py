@@ -1,7 +1,7 @@
 import re
 
-from winter.data.pagination import Order
-from winter.data.pagination import SortDirection
+from winter.pagination import Order
+from winter.pagination import SortDirection
 from winter.web.exceptions import RequestDataDecodeException
 
 _field_pattern = re.compile(r'(-?)(\w+)')

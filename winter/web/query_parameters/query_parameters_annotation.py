@@ -1,8 +1,8 @@
 import dataclasses
 
-from winter.core import ComponentMethod
-from winter.core import ComponentMethodArgument
-from winter.core import annotate_method
+from winter.components import ComponentMethod
+from winter.components import ComponentMethodArgument
+from winter.components import annotate_method
 
 
 @dataclasses.dataclass

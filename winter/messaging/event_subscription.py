@@ -5,9 +5,9 @@ from typing import Tuple
 from typing import Type
 from typing import get_args
 
-from winter.core import ComponentMethod
-from winter.core.utils.typing import is_iterable_type
-from winter.core.utils.typing import is_union
+from winter.components import ComponentMethod
+from winter.typing import is_iterable_type
+from winter.typing import is_union
 from winter.messaging import Event
 
 

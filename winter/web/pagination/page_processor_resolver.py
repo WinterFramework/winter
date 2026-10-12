@@ -1,6 +1,6 @@
 from typing import Any
 
-from winter.data.pagination import Page
+from winter.pagination import Page
 from winter.web.output_processor import IOutputProcessorResolver
 from .page_processor import PageProcessor
 

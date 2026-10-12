@@ -3,7 +3,7 @@ from typing import MutableMapping
 
 import dataclasses
 
-from ..core import annotate_method
+from winter.components import annotate_method
 
 
 class _ResponseHeaderMeta(type):

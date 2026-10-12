@@ -21,10 +21,6 @@ classifiers = [
 ]
 packages = [
     { include = "winter" },
-    { include = "winter_ddd" },
-    { include = "winter_django" },
-    { include = "winter_openapi" },
-    { include = "winter_sqlalchemy" },
 ]
 
 [tool.poetry.dependencies]
@@ -60,6 +56,8 @@ add-trailing-comma = ">=1.3.0, <2"
 pre-commit = ">=1.17.0, <2"
 lxml = ">=4.9.1, <6.0.0"
 pytz = ">=2020.5"
+import-linter = ">=2.0, <3"
+libcst = ">=1.0, <2"
 
 [tool.poetry.group.dev.dependencies]
 setuptools = "^71.1.0"
@@ -93,6 +91,29 @@ ignore_token_for_push = true  # push with the deploy key from actions/checkout, 
 [tool.semantic_release.branches.main]
 match = "master"
 prerelease = false
+
+[tool.importlinter]
+# Enforces the layer rules of docs/architecture.md.
+root_packages = ["winter"]
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "Layers: adapters -> models -> foundations"
+type = "layers"
+layers = [
+    "winter.django | winter.openapi | winter.sqlalchemy | winter.redis",
+    "winter.web | winter.ddd | winter.messaging",
+    "winter.components : winter.application : winter.json : winter.pagination : winter.typing",
+]
+
+[[tool.importlinter.contracts]]
+name = "Models and foundations do not import web frameworks or infrastructure"
+type = "forbidden"
+source_modules = [
+    "winter.components", "winter.application", "winter.json", "winter.pagination", "winter.typing",
+    "winter.web", "winter.ddd", "winter.messaging",
+]
+forbidden_modules = ["django", "redis", "sqlalchemy", "pydantic"]
 
 [build-system]
 requires = ["poetry-core>=1.3.1"]

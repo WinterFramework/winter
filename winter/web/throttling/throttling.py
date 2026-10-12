@@ -1,13 +1,13 @@
 import dataclasses
-import time
 from typing import Optional
 from typing import TYPE_CHECKING
 from typing import Tuple
 
-import django.http
 
-from winter.core import annotate_method
-from .redis_throttling_client import get_redis_throttling_client
+from winter.web.request import Request
+from winter.components import annotate_method
+from .identity import get_throttling_identity
+from .storage import get_throttling_storage
 
 if TYPE_CHECKING:
     from winter.web.routing import Route  # noqa: F401
@@ -33,24 +33,23 @@ def throttling(rate: Optional[str], scope: Optional[str] = None):
 class BaseRateThrottle:
     def __init__(self, throttling_: Throttling):
         self._throttling = throttling_
-        self._redis_client = get_redis_throttling_client()
+        self._storage = get_throttling_storage()
 
-    def allow_request(self, request: django.http.HttpRequest) -> bool:
-        ident = _get_ident(request)
+    def allow_request(self, request: Request) -> bool:
+        ident = get_throttling_identity(request)
         key = _get_cache_key(self._throttling.scope, ident)
 
-        return self._redis_client.is_request_allowed(key, self._throttling.duration, self._throttling.num_requests)
+        return self._storage.is_request_allowed(key, self._throttling.duration, self._throttling.num_requests)
 
 
-def reset(request: django.http.HttpRequest, scope: str):
+def reset(request: Request, scope: str):
     """
         This function allows to reset the accumulated throttling state
         for a specific user and scope
     """
-    ident = _get_ident(request)
+    ident = get_throttling_identity(request)
     key = _get_cache_key(scope, ident)
-    redis_client = get_redis_throttling_client()
-    redis_client.delete(key)
+    get_throttling_storage().delete(key)
 
 
 CACHE_KEY_FORMAT = 'throttle_{scope}_{ident}'
@@ -58,15 +57,6 @@ CACHE_KEY_FORMAT = 'throttle_{scope}_{ident}'
 
 def _get_cache_key(scope: str, ident: str) -> str:
     return CACHE_KEY_FORMAT.format(scope=scope, ident=ident)
-
-
-def _get_ident(request: django.http.HttpRequest) -> str:
-    if hasattr(request, 'user') and request.user and request.user.is_authenticated:
-        return str(request.user.pk)
-
-    xff = request.META.get('HTTP_X_FORWARDED_FOR')
-    remote_addr = request.META.get('REMOTE_ADDR')
-    return ''.join(xff.split()) if xff else remote_addr
 
 
 def _parse_rate(rate: str) -> Tuple[int, int]:

@@ -1,13 +1,13 @@
 from typing import MutableMapping
 from typing import Optional
 
-import django.http
 
-from winter.core import ArgumentDoesNotHaveDefault
-from winter.core import ComponentMethodArgument
-from winter.core.json import JSONDecodeException
-from winter.core.json import json_decode
-from winter.core.utils.typing import is_iterable_type
+from winter.web.request import Request
+from winter.components import ArgumentDoesNotHaveDefault
+from winter.components import ComponentMethodArgument
+from winter.json import JSONDecodeException
+from winter.json import json_decode
+from winter.typing import is_iterable_type
 from .query_parameter import QueryParameter
 from ..argument_resolver import ArgumentNotSupported
 from ..argument_resolver import ArgumentResolver
@@ -27,10 +27,10 @@ class QueryParameterArgumentResolver(ArgumentResolver):
     def resolve_argument(
         self,
         argument: ComponentMethodArgument,
-        request: django.http.HttpRequest,
+        request: Request,
         response_headers: MutableMapping[str, str],
     ):
-        query_parameters = request.GET
+        query_parameters = request.query_parameters
 
         query_parameter = self._get_query_parameter(argument)
 

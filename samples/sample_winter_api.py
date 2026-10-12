@@ -3,7 +3,7 @@ from typing import List
 
 from dataclasses import dataclass
 
-import winter
+import winter.web
 
 
 @dataclass
@@ -22,31 +22,31 @@ class Greeting:
     name: str
 
 
-@winter.route('winter_sample/')
+@winter.web.route('winter_sample/')
 class SampleWinterAPI:
 
     def __init__(self, test_repository: TestRepository):
         self._test_repository = test_repository
 
-    @winter.route_get('hello{?name}')
-    @winter.map_query_parameter('name', to='names')
+    @winter.web.route_get('hello{?name}')
+    @winter.web.map_query_parameter('name', to='names')
     def hello(self, names: List[str] = None) -> str:
         names = ', '.join(names or ['stranger'])
         return f'Hello, {names}!'
 
-    @winter.route_get('foo/{number}{?name}')
-    def hello_with_response_code(self, name: str, number: int) -> winter.ResponseEntity[str]:
+    @winter.web.route_get('foo/{number}{?name}')
+    def hello_with_response_code(self, name: str, number: int) -> winter.web.ResponseEntity[str]:
         """
         :param name: Just a name
         :param number: Just a number
         """
-        return winter.ResponseEntity[str](f'Hello, {name}! {number}', HTTPStatus.CREATED)
+        return winter.web.ResponseEntity[str](f'Hello, {name}! {number}', HTTPStatus.CREATED)
 
-    @winter.route_get('example{?name}')
+    @winter.web.route_get('example{?name}')
     def second_hello(self, name: str) -> Greeting:
         return Greeting('Welcome', name)
 
-    @winter.route_post('example2')
-    @winter.request_body('greeting')
+    @winter.web.route_post('example2')
+    @winter.web.request_body('greeting')
     def third_hello(self, greeting: GreetingRequest) -> Greeting:
         return Greeting(message='got it', name=greeting.name)

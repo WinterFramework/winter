@@ -1,15 +1,15 @@
 import dataclasses
 from typing import MutableMapping
 
-import django.http
 
 from .query_parameter_argument_resolver import QueryParameterArgumentResolver
 from .query_parameters_annotation import QueryParametersAnnotation
 from ..argument_resolver import ArgumentResolver
 from ..routing import get_route
-from ...core import ComponentMethodArgument
-from ...core.json import json_decode
-from ...core.utils.typing import is_iterable_type
+from winter.web.request import Request
+from winter.components import ComponentMethodArgument
+from winter.json import json_decode
+from winter.typing import is_iterable_type
 
 
 class QueryParametersArgumentResolver(ArgumentResolver):
@@ -23,7 +23,7 @@ class QueryParametersArgumentResolver(ArgumentResolver):
     def resolve_argument(
         self,
         argument: ComponentMethodArgument,
-        request: django.http.HttpRequest,
+        request: Request,
         response_headers: MutableMapping[str, str],
     ):
         kwargs = {}
@@ -31,7 +31,7 @@ class QueryParametersArgumentResolver(ArgumentResolver):
         query_parameters_map = {query_parameter.name: query_parameter for query_parameter in query_parameters}
         for field in dataclasses.fields(argument.type_):
             value = QueryParameterArgumentResolver.get_value(
-                request.GET,
+                request.query_parameters,
                 field.name,
                 is_iterable_type(field.type),
                 query_parameters_map[field.name].explode,

@@ -1,13 +1,13 @@
 from typing import MutableMapping
 from typing import Optional
 
-import django.http
 
-from winter import ArgumentResolver
-from winter.core import ArgumentDoesNotHaveDefault
-from winter.core import ComponentMethodArgument
-from winter.core.json import JSONDecodeException
-from winter.core.json import json_decode
+from .argument_resolver import ArgumentResolver
+from winter.web.request import Request
+from winter.components import ArgumentDoesNotHaveDefault
+from winter.components import ComponentMethodArgument
+from winter.json import JSONDecodeException
+from winter.json import json_decode
 from winter.web.exceptions import RequestDataDecodeException
 from winter.web.request_header_annotation import RequestHeaderAnnotation
 
@@ -19,7 +19,7 @@ class RequestHeaderArgumentResolver(ArgumentResolver):
     def resolve_argument(
         self,
         argument: ComponentMethodArgument,
-        request: django.http.HttpRequest,
+        request: Request,
         response_headers: MutableMapping[str, str],
     ):
         request_headers = request.headers

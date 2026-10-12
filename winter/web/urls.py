@@ -5,8 +5,8 @@ from typing import Iterable
 
 import uritemplate
 
-from winter.core import ComponentMethod
-from winter.core.utils.typing import get_origin_type
+from winter.components import ComponentMethod
+from winter.typing import get_origin_type
 
 _regexp = {}
 

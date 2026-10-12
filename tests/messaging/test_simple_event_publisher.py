@@ -4,8 +4,8 @@ from typing import Union
 from injector import ClassProvider
 from injector import singleton
 
-from winter.core import annotate
-from winter.core import get_injector
+from winter.components import annotate
+from winter.application import get_injector
 from winter.messaging import EventSubscriptionRegistry
 from winter.messaging import SimpleEventPublisher
 from winter.messaging import event_handler

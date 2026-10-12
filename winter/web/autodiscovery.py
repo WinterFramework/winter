@@ -1,8 +1,8 @@
 from typing import List
 
-from winter.core import Component
-from winter.core.module_discovery import get_all_classes
-from winter.core.module_discovery import import_recursively
+from winter.components import Component
+from winter.application.module_discovery import get_all_classes
+from winter.application.module_discovery import import_recursively
 from .routing import Route
 from .routing import get_route
 

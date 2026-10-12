@@ -6,7 +6,7 @@ import uritemplate
 from uritemplate import URITemplate
 from uritemplate.variable import Operator
 
-from winter.core import ComponentMethod
+from winter.components import ComponentMethod
 from winter.web.query_parameters import MapQueryParameterAnnotation
 from winter.web.query_parameters.query_parameter import QueryParameter
 

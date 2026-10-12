@@ -6,10 +6,9 @@ from dataclasses import is_dataclass
 from typing import Dict
 from typing import Type
 
-from django.http import HttpRequest
 
-from winter.core import Component
-from winter.core.utils import camel_to_human
+from winter.components import Component
+from .beautify_string import camel_to_human
 from winter.web import ResponseHeader
 from .exception_handler_generator import ExceptionHandlerGenerator
 from .exception_mapper import ExceptionMapper
@@ -18,7 +17,8 @@ from .handlers import exception_handlers_registry
 from .problem_annotation import ProblemAnnotation
 from .problem_handling_info import ProblemHandlingInfo
 from .. import MediaType
-from ... import response_header
+from ..request import Request
+from ..response_header_annotation import response_header
 
 
 class ProblemExceptionHandlerGenerator(ExceptionHandlerGenerator):
@@ -26,7 +26,7 @@ class ProblemExceptionHandlerGenerator(ExceptionHandlerGenerator):
         self._exception_mapper = exception_mapper
 
     def generate(self, exception_class: Type[Exception], handling_info: ProblemHandlingInfo) -> Type[ExceptionHandler]:
-        from winter import response_status
+        from ..response_status_annotation import response_status
 
         return_type_class = self._build_exception_dataclass(exception_class)
         exception_mapper = self._exception_mapper
@@ -35,7 +35,7 @@ class ProblemExceptionHandlerGenerator(ExceptionHandlerGenerator):
         @response_header('Content-Type', 'content_type_header')
         def handle_method(
             self,
-            request: HttpRequest,
+            request: Request,
             exception: exception_class,
             content_type_header: ResponseHeader[str],
             **kwargs,
@@ -64,7 +64,7 @@ class ProblemExceptionHandlerGenerator(ExceptionHandlerGenerator):
 
 
 class ProblemExceptionMapper(ExceptionMapper):
-    def to_response_body(self, request: HttpRequest, exception: Exception, handling_info: ProblemHandlingInfo) -> Dict:
+    def to_response_body(self, request: Request, exception: Exception, handling_info: ProblemHandlingInfo) -> Dict:
         exception_class = exception.__class__
 
         problem_dict = dict(

@@ -1,9 +1,8 @@
 from typing import MutableMapping
 
-import django.http
-from django.urls import get_resolver
 
-from winter.core import ComponentMethodArgument
+from winter.web.request import Request
+from winter.components import ComponentMethodArgument
 from .argument_resolver import ArgumentNotSupported
 from .argument_resolver import ArgumentResolver
 from .routing import get_route
@@ -13,7 +12,6 @@ class PathParametersArgumentResolver(ArgumentResolver):
 
     def __init__(self):
         super().__init__()
-        self._url_resolver = get_resolver()
         self._cache = {}
 
     def is_supported(self, argument: ComponentMethodArgument) -> bool:
@@ -31,13 +29,10 @@ class PathParametersArgumentResolver(ArgumentResolver):
     def resolve_argument(
         self,
         argument: ComponentMethodArgument,
-        request: django.http.HttpRequest,
+        request: Request,
         response_headers: MutableMapping[str, str],
     ):
-        resolver_match = self._url_resolver.resolve(request.path_info)
-        callback, callback_args, callback_kwargs = resolver_match
-
-        if argument.name not in callback_kwargs:
+        if argument.name not in request.path_parameters:
             raise ArgumentNotSupported(argument)
 
-        return argument.type_(callback_kwargs[argument.name])
+        return argument.type_(request.path_parameters[argument.name])

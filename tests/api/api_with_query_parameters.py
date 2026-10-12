@@ -5,16 +5,16 @@ from typing import Optional
 from typing import TypeAlias
 from uuid import UUID
 
-import winter
+import winter.web
 
 ArrayAlias: TypeAlias = list[int]
 
 
-@winter.route('with-query-parameter')
+@winter.web.route('with-query-parameter')
 class APIWithQueryParameters:
 
-    @winter.map_query_parameter('string', to='mapped_string')
-    @winter.route_get('/{?date,boolean,optional_boolean,optional_boolean_new_typing_style,date_time,array,array_new_typing_style,array_alias,expanded_array*,string,uid}')
+    @winter.web.map_query_parameter('string', to='mapped_string')
+    @winter.web.route_get('/{?date,boolean,optional_boolean,optional_boolean_new_typing_style,date_time,array,array_new_typing_style,array_alias,expanded_array*,string,uid}')
     def root(
         self,
         date: datetime.date,

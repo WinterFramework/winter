@@ -4,7 +4,7 @@ import uuid
 
 import pytest
 
-from winter.core import ComponentMethod
+from winter.components import ComponentMethod
 from winter.web.urls import rewrite_uritemplate_with_regexps
 
 
