@@ -67,7 +67,7 @@ RENAMES: List[Tuple[str, str]] = [
 ] + [(f'winter.{name}', f'winter.web.{name}') for name in FACADE_NAMES]
 
 SUBPACKAGES = (
-    'components', 'application', 'json', 'pagination', 'web', 'ddd', 'messaging',
+    'components', 'application', 'json', 'pagination', 'typing', 'web', 'ddd', 'messaging',
     'django', 'openapi', 'sqlalchemy', 'redis', 'core', 'data',
 )
 
@@ -80,19 +80,22 @@ def _might_use(source: str, old_name: str) -> bool:
 class _TidyImports(cst.CSTTransformer):
     """
     Dedupe imports the renames produced, one import per line, and replace the bare `import winter`
-    (a namespace package now) with imports of the subpackages the module actually uses.
+    (a namespace package now) with imports of the subpackages the module actually uses. A `winter.x`
+    the codemod does not know keeps the bare import, so that nothing silently disappears.
     """
 
     def __init__(self):
         self._emitted: Set[str] = set()
         self._used_subpackages: Set[str] = set()
         self._imported_subpackages: Set[str] = set()
+        self._uses_unknown_names = False
 
     def visit_Module(self, node: cst.Module) -> None:
         class Collector(cst.CSTVisitor):
             def __init__(inner):
                 inner.used: Set[str] = set()
                 inner.imported: Set[str] = set()
+                inner.unknown = False
 
             def visit_ImportFrom(inner, import_from: cst.ImportFrom) -> bool:
                 return False  # `from winter.x import y` does not bind the name `winter`
@@ -101,6 +104,8 @@ class _TidyImports(cst.CSTTransformer):
                 if isinstance(attribute.value, cst.Name) and attribute.value.value == 'winter':
                     if attribute.attr.value in SUBPACKAGES:
                         inner.used.add(attribute.attr.value)
+                    else:
+                        inner.unknown = True
 
             def visit_ImportAlias(inner, alias: cst.ImportAlias) -> None:
                 dotted = cst.Module([]).code_for_node(alias.name)
@@ -111,6 +116,7 @@ class _TidyImports(cst.CSTTransformer):
         node.visit(collector)
         self._used_subpackages = collector.used
         self._imported_subpackages = collector.imported
+        self._uses_unknown_names = collector.unknown
 
     def leave_SimpleStatementLine(self, original: cst.SimpleStatementLine, updated: cst.SimpleStatementLine):
         if len(updated.body) != 1 or not isinstance(updated.body[0], cst.Import):
@@ -119,9 +125,9 @@ class _TidyImports(cst.CSTTransformer):
         for alias in updated.body[0].names:
             dotted = cst.Module([]).code_for_node(alias.name)
             if dotted == 'winter' and alias.asname is None:
-                wanted.extend(
-                    f'winter.{sub}' for sub in sorted(self._used_subpackages - self._imported_subpackages)
-                )
+                wanted.extend(f'winter.{sub}' for sub in sorted(self._used_subpackages - self._imported_subpackages))
+                if self._uses_unknown_names:
+                    wanted.append('winter')
             elif alias.asname is None:
                 wanted.append(dotted)
             else:
@@ -178,12 +184,17 @@ def migrate_source(source: str) -> str:
         if not _might_use(code, old_name):
             continue
         result = transform_module(RenameCommand(CodemodContext(), old_name=old_name, new_name=new_name), code)
-        if not isinstance(result, TransformSuccess):
+        if not isinstance(result, TransformSuccess):  # pragma: no cover
             raise RuntimeError(f'{old_name} -> {new_name}: {result}')
         code = result.code
-    if code != source:
+    if code != source or _has_bare_winter_import(code):
         code = cst.parse_module(code).visit(_TidyImports()).code
     return code
+
+
+def _has_bare_winter_import(code: str) -> bool:
+    """`import winter` used to bind winter.web; as a namespace package it binds nothing, so it needs tidying."""
+    return any(line.strip() == 'import winter' for line in code.splitlines())
 
 
 def python_files(paths: Iterable[str]) -> Iterable[pathlib.Path]:

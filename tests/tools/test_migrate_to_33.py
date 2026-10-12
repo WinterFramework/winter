@@ -1,30 +1,60 @@
-"""The codemod runs as a script; these tests drive it the way a consumer does, through the CLI."""
+"""tools/migrate_to_33.py is a script, not a package; the tests load it from its path and drive `main`."""
+import importlib.util
 import pathlib
-import subprocess
-import sys
 
 import pytest
 
 CODEMOD = pathlib.Path(__file__).parents[2] / 'tools' / 'migrate_to_33.py'
+_spec = importlib.util.spec_from_file_location('migrate_to_33', CODEMOD)
+migrate_to_33 = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(migrate_to_33)
 
 
 def _migrate(tmp_path: pathlib.Path, source: str) -> str:
     target = tmp_path / 'module.py'
     target.write_text(source)
-    subprocess.run([sys.executable, str(CODEMOD), str(target)], check=True, capture_output=True)
+    migrate_to_33.main([str(target)])
     return target.read_text()
 
 
 @pytest.mark.parametrize('source, expected', [
     (
-        'import winter\n\n@winter.route_get("x/")\ndef f(): ...\n',
-        'import winter.web\n\n@winter.web.route_get("x/")\ndef f(): ...\n',
+        'import os\nimport winter\n\n\n@winter.route_get("x/")\ndef f():\n    return os.getcwd()\n',
+        'import os\nimport winter.web\n\n\n@winter.web.route_get("x/")\ndef f():\n    return os.getcwd()\n',
+    ),
+    (
+        'import winter\n\nname = winter.__name__\n',
+        'import winter\n\nname = winter.__name__\n',
+    ),
+    (
+        'import winter\nimport winter.web\n\nx = winter.web.route_get\n',
+        'import winter.web\n\nx = winter.web.route_get\n',
     ),
     (
         'from winter_django import create_django_urls\nfrom winter.core import get_injector\n\n'
         'urls = create_django_urls(get_injector())\n',
         'from winter.django import create_django_urls\nfrom winter.application import get_injector\n\n'
         'urls = create_django_urls(get_injector())\n',
+    ),
+    (
+        'from winter.core.utils.typing import is_optional\n\nimport winter\n\nx = winter.ResponseEntity\n',
+        'from winter.typing import is_optional\n\nimport winter.web\n\nx = winter.web.ResponseEntity\n',
+    ),
+    (
+        'import winter\n\nx = winter.web.route_get\ny = winter.messaging.EventPublisher\n',
+        'import winter.messaging\nimport winter.web\n\nx = winter.web.route_get\ny = winter.messaging.EventPublisher\n',
+    ),
+    (
+        'import winter\n\nx = winter.web.route_get\nname = winter.__name__\n',
+        'import winter\nimport winter.web\n\nx = winter.web.route_get\nname = winter.__name__\n',
+    ),
+    (
+        'import winter.web as web\nimport winter_ddd\n\nx = web.route_get\ny = winter_ddd.AggregateRoot\n',
+        'import winter.web as web\nimport winter.ddd\n\nx = web.route_get\ny = winter.ddd.AggregateRoot\n',
+    ),
+    (
+        'import winter.core as core\n\nx = core.get_injector\n',
+        'import winter.application\n\nx = winter.application.get_injector\n',
     ),
     (
         'from winter.web.routing import reverse\n\nurl = reverse(f)\n',
@@ -56,12 +86,14 @@ def test_migration_is_idempotent(tmp_path):
     assert _migrate(tmp_path, source) == source
 
 
-def test_check_mode_reports_without_writing(tmp_path):
-    target = tmp_path / 'module.py'
-    target.write_text('import winter_ddd\n')
+def test_check_mode_reports_without_writing(tmp_path, capsys):
+    old = tmp_path / 'old.py'
+    old.write_text('import winter_ddd\n')
+    unrelated = tmp_path / 'unrelated.py'
+    unrelated.write_text('import os\n')
 
-    result = subprocess.run([sys.executable, str(CODEMOD), '--check', str(target)], capture_output=True, text=True)
+    exit_code = migrate_to_33.main(['--check', str(tmp_path)])
 
-    assert result.returncode == 1
-    assert result.stdout.strip() == str(target)
-    assert target.read_text() == 'import winter_ddd\n'
+    assert exit_code == 1
+    assert capsys.readouterr().out.strip() == str(old)
+    assert old.read_text() == 'import winter_ddd\n'
