@@ -2,8 +2,6 @@ import datetime
 from typing import Optional
 from typing import Type
 
-import pytz
-
 from .response_header_serializer import ResponseHeaderSerializer
 
 
@@ -25,4 +23,4 @@ class LastModifiedResponseHeaderSerializer(ResponseHeaderSerializer):
     def serialize(self, value, header_name: str) -> str:
         assert header_name == self.HEADER_NAME
         assert isinstance(value, datetime.datetime)
-        return value.astimezone(pytz.utc).strftime('%a, %d %b %Y %X GMT')
+        return value.astimezone(datetime.timezone.utc).strftime('%a, %d %b %Y %X GMT')
