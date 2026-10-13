@@ -9,13 +9,14 @@ from typing import Type
 
 
 def get_all_classes(package: str) -> Generator[Tuple[str, Type], None, None]:
+    """Classes defined in the modules of a package, or in a single module."""
     classes_set = set()
     for module in import_recursively(package):
         try:
             for class_name, class_ in inspect.getmembers(module, inspect.isclass):
                 if class_ in classes_set:
                     continue
-                if not class_.__module__.startswith(package):
+                if class_.__module__ != package and not class_.__module__.startswith(package + '.'):
                     continue
                 yield class_name, class_
                 classes_set.add(class_)
@@ -41,6 +42,10 @@ def get_all_subclasses(supertype: Type) -> Generator[Tuple[str, Type], None, Non
 
 
 def import_recursively(package: str) -> Generator[ModuleType, None, None]:
+    """Imports and yields the modules of a package and its subpackages, or a single module itself."""
     package = importlib.import_module(package)
+    if not hasattr(package, '__path__'):
+        yield package
+        return
     for loader, name, is_pkg in pkgutil.walk_packages(package.__path__, package.__name__ + '.'):
         yield importlib.import_module(name)
