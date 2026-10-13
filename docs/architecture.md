@@ -16,6 +16,7 @@ block-beta
     openapi["winter.openapi"]
     sqlalchemy["winter.sqlalchemy"]
     redis["winter.redis"]
+    wsgi["winter.wsgi"]
     asgi["winter.asgi"]
     rabbitmq["winter.rabbitmq"]
   end
@@ -25,6 +26,7 @@ block-beta
     web["winter.web"]
     ddd["winter.ddd"]
     messaging["winter.messaging"]
+    space
     space
     space
     space
@@ -38,10 +40,12 @@ block-beta
     pagination["winter.pagination"]
     typing["winter.typing"]
     space
+    space
   end
   style la fill:none,stroke:none
   style lm fill:none,stroke:none
   style lf fill:none,stroke:none
+  style wsgi stroke-dasharray: 5 5
   style asgi stroke-dasharray: 5 5
   style rabbitmq stroke-dasharray: 5 5
 ```
@@ -51,7 +55,7 @@ independent of each other. Dashed packages are planned and do not exist yet.
 
 | Layer | Rule | Packages |
 |---|---|---|
-| Adapters | Bind the models to external technologies and standards. Independent of each other. | `django`, `openapi`, `sqlalchemy`, `redis`, `asgi` (planned), `rabbitmq` (planned) |
+| Adapters | Bind the models to external technologies and standards. Independent of each other. | `django`, `openapi`, `sqlalchemy`, `redis`, `wsgi` (planned), `asgi` (planned), `rabbitmq` (planned) |
 | Models | Framework-agnostic descriptions of what an application does. Independent of each other. | `web` (HTTP), `ddd` (domain: aggregates, repositories, domain events), `messaging` (events) |
 | Foundations | Shared vocabulary and mechanisms. Unaware of the layers above. May use each other. | `components` (declarative metadata), `application` (scope, injector, discovery), `json`, `pagination`, `typing` (what the stdlib `typing` lacks) |
 
@@ -80,8 +84,8 @@ at least two of them.
   service locator, and the behavioural registries of `winter.web` and `winter.openapi` are module
   singletons. `tests/test_application_scope.py` states the intended behaviour and is marked
   `xfail` until an `Application` instance owns that state.
-- **`winter.asgi` and `winter.rabbitmq` do not exist yet.** HTTP is served through `winter.django`
-  only, and `winter.messaging` has no transport adapter.
+- **`winter.wsgi`, `winter.asgi` and `winter.rabbitmq` do not exist yet.** HTTP is served through
+  `winter.django` only, and `winter.messaging` has no transport adapter.
 - **All dependencies are mandatory.** Django, SQLAlchemy, Redis and pydantic are installed with
   `winter` even when their adapter is not used; extras are the intended shape.
 - **`winter.openapi` recognises Django's `HttpResponseBase`** as a raw response type when Django
