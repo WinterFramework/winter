@@ -4,19 +4,13 @@ from dataclasses import asdict
 from dataclasses import dataclass
 from dataclasses import is_dataclass
 from typing import Dict
-from typing import Iterable
-from typing import Set
 from typing import Type
 
-
-from winter.components import Component
 from .beautify_string import camel_to_human
 from winter.web import ResponseHeader
 from .exception_handler_generator import ExceptionHandlerGenerator
 from .exception_mapper import ExceptionMapper
-from .handlers import ExceptionHandler
-from .handlers import exception_handlers_registry
-from .problem_annotation import ProblemAnnotation
+from .handlers import exception_handler
 from .problem_handling_info import ProblemHandlingInfo
 from .. import MediaType
 from ..request import Request
@@ -27,18 +21,19 @@ class ProblemExceptionHandlerGenerator(ExceptionHandlerGenerator):
     def __init__(self, exception_mapper: ExceptionMapper):
         self._exception_mapper = exception_mapper
 
-    def generate(self, exception_class: Type[Exception], handling_info: ProblemHandlingInfo) -> Type[ExceptionHandler]:
+    def generate(self, exception_class: Type[Exception], handling_info: ProblemHandlingInfo) -> Type:
         from ..response_status_annotation import response_status
 
         return_type_class = self._build_exception_dataclass(exception_class)
         exception_mapper = self._exception_mapper
 
+        @exception_handler
         @response_status(handling_info.status)
         @response_header('Content-Type', 'content_type_header')
-        def handle_method(
+        def handle(
             self,
-            request: Request,
             exception: exception_class,
+            request: Request,
             content_type_header: ResponseHeader[str],
             **kwargs,
         ) -> return_type_class:
@@ -46,8 +41,7 @@ class ProblemExceptionHandlerGenerator(ExceptionHandlerGenerator):
             return exception_mapper.to_response_body(request, exception, handling_info)
 
         handler_class_name = exception_class.__name__ + 'Handler'
-        handler_class = type(handler_class_name, (ExceptionHandler,), {'handle': handle_method})
-        return handler_class
+        return type(handler_class_name, (), {'handle': handle})
 
     def _build_exception_dataclass(self, exception_class: Type[Exception]) -> Type:
         class_name = exception_class.__name__
@@ -93,19 +87,3 @@ class ProblemExceptionMapper(ExceptionMapper):
     @classmethod
     def _try_cut_exception_name_postfix(cls, exception_cls: Type[Exception]) -> str:
         return re.sub('Exception$', '', exception_cls.__name__)
-
-
-_problems_with_handlers: Set[Type[Exception]] = set()
-
-
-def add_problem_handlers(definitions: Iterable, handler_generator: ProblemExceptionHandlerGenerator):
-    """Registers a handler for each @problem exception among the definitions that has none yet."""
-    components = Component.get_all()
-    for definition in definitions:
-        component = components.get(definition)
-        problem_annotation = component and component.annotations.get_one_or_none(ProblemAnnotation)
-        if problem_annotation is None or definition in _problems_with_handlers:
-            continue
-        handler_class = handler_generator.generate(definition, problem_annotation.handling_info)
-        exception_handlers_registry.add_handler(definition, handler_class, auto_handle=True)
-        _problems_with_handlers.add(definition)

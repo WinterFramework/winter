@@ -1,12 +1,10 @@
 """
 Isolation test for docs/architecture.md, principle 2: framework behaviour is never process-global.
 Two applications in one process must not share behaviour: the handler of a @problem exception of one application
-does not handle that exception in another. Marked xfail(strict=True) while the exception handlers are
-process-global; strict forces the marker to be removed the moment the test passes.
+does not handle that exception in another.
 """
 from http import HTTPStatus
 
-import pytest
 from django.test import RequestFactory
 
 import winter.django
@@ -26,11 +24,6 @@ class _API:
         raise _ErrorA()
 
 
-@pytest.mark.xfail(
-    strict=True,
-    raises=AssertionError,
-    reason='Isolation: exception handlers are scoped to an Application instance',
-)
 def test_problem_handler_of_one_application_does_not_handle_exceptions_in_another():
     app_1 = Application(modules=[], injector=get_injector())
     app_1.add(_ErrorA)

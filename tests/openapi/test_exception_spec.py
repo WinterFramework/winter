@@ -3,7 +3,10 @@ from http import HTTPStatus
 
 import pytest
 
+import winter.openapi
 import winter.web
+from winter.application import Application
+from winter.application import get_injector
 from winter.web.routing import get_route
 from winter.openapi.generator import generate_openapi_for_routes
 from winter.openapi.annotations import global_exception
@@ -38,7 +41,7 @@ def test_global_exception_annotated_on_method():
                     'deprecated': False,
                     'operationId': '_TestAPI.get_resource',
                     'parameters': [],
-                    'responses': {'200': {'description': ''}},
+                    'responses': {'200': {'description': ''}, '500': {'description': ''}},
                     'tags': ['resource'],
                 },
             },
@@ -83,33 +86,32 @@ class ProblemExistsExceptionDTO:
         (None, {'description': ''}, {'parameters': {}, 'responses': {}, 'schemas': {}}),
     ],
 )
-def test_exception_annotated_on_method_with_custom_handler_with_dto(
+def test_response_of_raised_exception_is_that_of_its_handler_in_application(
     handler_return_type,
     handler_spec,
     expected_components,
 ):
-    @winter.web.problem(status=HTTPStatus.FORBIDDEN)
     class ProblemExistsException(Exception):
         pass
 
-    class ProblemExistsExceptionHandler(winter.web.ExceptionHandler):
+    class _Handlers:
+        @winter.web.exception_handler
         @winter.web.response_status(HTTPStatus.FORBIDDEN)
-        def handle(self, exception: ProblemExistsException, **kwargs) -> handler_return_type:  # pragma: no cover
+        def handle(self, exception: ProblemExistsException) -> handler_return_type:  # pragma: no cover
             pass
 
     class _TestAPI:
-        @winter.web.raises(ProblemExistsException, ProblemExistsExceptionHandler)
+        @winter.web.raises(ProblemExistsException)
         @winter.web.route_get('resource')
         def get_resource(self):  # pragma: no cover
             pass
 
-    route = get_route(_TestAPI.get_resource)
+    app = Application(modules=[], injector=get_injector())
+    app.add(_Handlers)
+    app.add(_TestAPI)
+
     # Act
-    result = generate_openapi_for_routes(
-        title='title',
-        version='1.0.0',
-        routes=[route],
-    )
+    result = winter.openapi.generate_openapi(app, title='title', version='1.0.0')
     # Assert
     assert result == {
         'components': expected_components,

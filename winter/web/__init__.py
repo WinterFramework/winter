@@ -3,8 +3,7 @@ from . import pagination
 from .argument_resolver import ArgumentResolver
 from .argument_resolver import ArgumentsResolver
 from .argument_resolver import arguments_resolver
-from .exceptions import ExceptionHandler
-from .exceptions import exception_handlers_registry
+from .exceptions import exception_handler
 from .exceptions import problem
 from .exceptions.raises import raises
 from .interceptor import Interceptor

@@ -16,6 +16,8 @@ from winter.web import handle_request
 from winter.web import register_native_response_type
 from winter.web import set_throttling_identity_resolver
 from winter.web.autodiscovery import find_routes
+from winter.web.exception_handlers import find_exception_handlers
+from winter.web.exceptions import ExceptionHandlers
 from winter.web.routing import Route
 from winter.web.urls import rewrite_uritemplate_with_regexps
 from .http_request_argument_resolver import HttpRequestArgumentResolver
@@ -28,9 +30,9 @@ if TYPE_CHECKING:
 
 def create_urls(app: Application) -> List[URLPattern]:
     """URL patterns of the routes of an application, relative to where they are included in the urlpatterns."""
-    winter.web.initialization.initialize(app)
+    winter.web.initialization.initialize()
     _initialize_process()
-    return _create_urls_from_routes(find_routes(app))
+    return _create_urls_from_routes(find_routes(app), find_exception_handlers(app))
 
 
 _process_initialized = False
@@ -46,7 +48,7 @@ def _initialize_process():
         _process_initialized = True
 
 
-def _create_urls_from_routes(routes: List[Route]) -> List[URLPattern]:
+def _create_urls_from_routes(routes: List[Route], exception_handlers: ExceptionHandlers) -> List[URLPattern]:
     django_urls = []
     grouped_routes = defaultdict(list)
 
@@ -54,7 +56,7 @@ def _create_urls_from_routes(routes: List[Route]) -> List[URLPattern]:
         grouped_routes[route.url_path].append(route)
 
     for url_path, routes in grouped_routes.items():
-        django_view = _create_django_view_from_routes(routes).as_view()
+        django_view = _create_django_view_from_routes(routes, exception_handlers).as_view()
         winter_url_path = f'^{url_path}$'
         methods = [route.method for route in routes]
         django_url_path = rewrite_uritemplate_with_regexps(winter_url_path, methods)
@@ -66,7 +68,7 @@ def _create_urls_from_routes(routes: List[Route]) -> List[URLPattern]:
     return django_urls
 
 
-def _create_django_view_from_routes(routes: List[Route]) -> 'View':
+def _create_django_view_from_routes(routes: List[Route], exception_handlers: ExceptionHandlers) -> 'View':
     from django.views.generic import View
 
     class WinterView(View):
@@ -75,7 +77,7 @@ def _create_django_view_from_routes(routes: List[Route]) -> 'View':
             return super().as_view(**initkwargs)
 
     for route in routes:
-        dispatch = _create_dispatch_function(route)
+        dispatch = _create_dispatch_function(route, exception_handlers)
         dispatch.route = route
         dispatch_method_name = route.http_method.lower()
         setattr(WinterView, dispatch_method_name, dispatch)
@@ -83,10 +85,10 @@ def _create_django_view_from_routes(routes: List[Route]) -> 'View':
     return WinterView()
 
 
-def _create_dispatch_function(route: Route):
+def _create_dispatch_function(route: Route, exception_handlers: ExceptionHandlers):
     @wraps(route.method.func)
     def dispatch(winter_view, request: django.http.HttpRequest, **path_parameters):
-        response = handle_request(route, DjangoRequest(request, path_parameters))
+        response = handle_request(route, DjangoRequest(request, path_parameters), exception_handlers)
         return to_django_response(response)
 
     return dispatch

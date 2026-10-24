@@ -1,6 +1,4 @@
-from typing import Dict
-from typing import Optional
-from typing import TYPE_CHECKING
+from typing import Tuple
 from typing import Type
 
 import dataclasses
@@ -8,26 +6,16 @@ import dataclasses
 from winter.components import ComponentMethod
 from winter.components import annotate
 
-if TYPE_CHECKING:
-    from .handlers import ExceptionHandler  # noqa: F401
-
 
 @dataclasses.dataclass
 class ExceptionAnnotation:
     exception_cls: Type[Exception]
-    handler: Optional['ExceptionHandler'] = None
 
 
-def raises(exception_cls: Type[Exception], handler_cls: Optional[Type['ExceptionHandler']] = None):
-    """Decorator to use on methods."""
-    if handler_cls is not None:
-        handler = handler_cls()
-    else:
-        handler = None
-
-    return annotate(ExceptionAnnotation(exception_cls, handler), unique=True)
+def raises(exception_cls: Type[Exception]):
+    """Declares an exception that the method raises, for its OpenAPI responses. Its handler is the application's."""
+    return annotate(ExceptionAnnotation(exception_cls), unique=True)
 
 
-def get_raises(method: ComponentMethod) -> Dict[Type[Exception], 'ExceptionHandler']:
-    annotations = method.annotations.get(ExceptionAnnotation)
-    return {annotation.exception_cls: annotation.handler for annotation in annotations}
+def get_raises(method: ComponentMethod) -> Tuple[Type[Exception], ...]:
+    return tuple(annotation.exception_cls for annotation in method.annotations.get(ExceptionAnnotation))

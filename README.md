@@ -36,8 +36,25 @@ app = Application(modules=[service_a], injector=injector)  # several application
 urlpatterns = winter.django.create_urls(app)
 ```
 
-- A `@problem` exception gets its handler only when it belongs to an application: define it in a scanned
-  module or add it, e.g. `app.add(winter.web.problem(status=404)(NotFoundException))`.
+- An exception handler is a method marked with `@winter.web.exception_handler` whose first argument is
+  annotated with the exceptions it handles; the class is created by the injector. `ExceptionHandler`,
+  `exception_handlers_registry` with `add_handler` and `set_default_handler`, and the handler argument of
+  `@raises` are gone: `@raises(Exc)` only declares the response for OpenAPI.
+
+  ```python
+  class FileStorageExceptionHandlers:
+      @winter.web.exception_handler
+      @winter.web.response_status(HTTPStatus.BAD_GATEWAY)
+      def handle_download(self, exception: FileStorageDownloadException) -> ErrorDTO:
+          ...
+  ```
+
+- Exception handlers belong to applications: a handler, like a `@problem` exception, handles exceptions in the
+  applications whose definitions include it, in every endpoint, whether declared with `@raises` or not. Define it
+  in a scanned module or add it, e.g. `app.add(winter.web.problem(status=404)(NotFoundException))`.
+  The handler of the nearest class in the exception's MRO handles it; two handlers of one exception class in an
+  application fail on startup. A handler of the application replaces the built-in handler of the same exception
+  class: a handler of `Exception` replaces the default 500 response.
 - `winter.django.create_urls` installs the Django throttling identity on its first call: replace it with
   `winter.web.set_throttling_identity_resolver` after that.
 - OpenAPI: `generate_openapi(app, title=..., version=...)` returns the spec and checks `@raises` annotations
@@ -227,8 +244,6 @@ from dataclasses import dataclass
 from http import HTTPStatus
 from typing import List
 
-from django.http import HttpRequest
-
 import winter.web
 
 
@@ -249,32 +264,41 @@ class TodoNotFoundException(Exception):
 class TodoNotFoundException(Exception):
     invalid_index: int
 
-# When we want to override global handler and customize response body. Expected output below:
-# {index: 1, 'message': 'Access denied'}
+# When we want to build the response body ourselves. Expected output below:
+# {'index': 1, 'message': 'Access denied'}
+class TodoAccessDeniedException(Exception):
+    def __init__(self, index: int):
+        self.index = index
+
+
 @dataclass
 class ErrorDTO:
     index: int
     message: str
 
 
-class TodoNotFoundExceptionCustomHandler(winter.web.ExceptionHandler):
-    @winter.web.response_status(HTTPStatus.NOT_FOUND)
-    def handle(self, request: HttpRequest, exception: TodoNotFoundException) -> ErrorDTO:
-        return ErrorDTO(index=exception.invalid_index, message='Access denied')
+class TodoExceptionHandlers:
+    # Handles the exception its first argument is annotated with, and its subclasses, everywhere in the
+    # application. The class is created by the injector. A handler of Exception replaces the default 500 response.
+    @winter.web.exception_handler
+    @winter.web.response_status(HTTPStatus.FORBIDDEN)
+    def handle_access_denied(self, exception: TodoAccessDeniedException) -> ErrorDTO:
+        return ErrorDTO(index=exception.index, message='Access denied')
 
 
 todo_list: List[str] = []
 
 
 class TodoProblemExistsExampleAPI:
-    @winter.web.route_get('global/{todo_index}/')
-    def get_todo_with_global_handling(self, todo_index: int):
+    @winter.web.route_get('problem/{todo_index}/')
+    @winter.web.raises(TodoNotFoundException)  # Declares the response in the OpenAPI spec
+    def get_todo(self, todo_index: int):
         raise TodoNotFoundException(invalid_index=todo_index)
 
-    @winter.web.route_get('custom/{todo_index}/')
-    @winter.web.raises(TodoNotFoundException, handler_cls=TodoNotFoundExceptionCustomHandler)
-    def get_todo_with_custom_handling(self, todo_index: int):
-        raise TodoNotFoundException(invalid_index=todo_index)
+    @winter.web.route_get('denied/{todo_index}/')
+    @winter.web.raises(TodoAccessDeniedException)
+    def get_denied_todo(self, todo_index: int):
+        raise TodoAccessDeniedException(index=todo_index)
 
 ```
 

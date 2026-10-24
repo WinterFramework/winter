@@ -33,7 +33,10 @@ from winter.application import Application
 from winter.components import ComponentMethod
 from winter.web import MediaType
 from winter.web.default_response_status import get_response_status
-from winter.web.exceptions import MethodExceptionsManager
+from winter.web.exception_handlers import built_in_exception_handlers
+from winter.web.exception_handlers import find_exception_handlers
+from winter.web.exceptions import ExceptionHandlers
+from winter.web.exceptions.raises import get_raises
 from winter.web.request_body_annotation import RequestBodyAnnotation
 from winter.web.routing import Route
 from winter.web.routing import RouteAnnotation
@@ -156,6 +159,7 @@ def generate_openapi(
         title=title,
         version=version,
         routes=find_routes(app),
+        exception_handlers=find_exception_handlers(app),
         description=description,
         tags=tags,
         validate=validate,
@@ -167,12 +171,16 @@ def generate_openapi_for_routes(
     title: str,
     version: str,
     routes: Sequence[Route],
+    exception_handlers: Optional[ExceptionHandlers] = None,
     description: Optional[str] = None,
     tags: Optional[List[Dict[str, Any]]] = None,
     validate: bool = True,
     add_url_segment_as_tag: bool = True,
 ) -> Dict[str, Any]:
+    """The responses of the raised exceptions come from the exception handlers, the built-in ones by default."""
     initialize()
+    if exception_handlers is None:
+        exception_handlers = built_in_exception_handlers()
     routes = list(routes)
     routes.sort(key=lambda r: r.url_path)
     schema_registry = SchemaRegistry()
@@ -199,6 +207,7 @@ def generate_openapi_for_routes(
             operation_ids=operation_ids,
             tag_names=path_tag_names,
             schema_registry=schema_registry,
+            exception_handlers=exception_handlers,
         )
         paths[url_path_without_prefix] = path_item
 
@@ -222,6 +231,7 @@ def _get_openapi_path(
     operation_ids: Set[str],
     tag_names: Iterable[str],
     schema_registry: SchemaRegistry,
+    exception_handlers: ExceptionHandlers,
 ) -> PathItem:
     path = {}
     for route in routes:
@@ -236,6 +246,7 @@ def _get_openapi_path(
                 operation_id=operation_id,
                 tag_names=tag_names,
                 schema_registry=schema_registry,
+                exception_handlers=exception_handlers,
             )
         except InspectorNotFound as e:
             raise CanNotInspectType(route.method, str(e))
@@ -250,12 +261,13 @@ def _get_openapi_operation(
     operation_id: str,
     tag_names: Iterable[str],
     schema_registry: SchemaRegistry,
+    exception_handlers: ExceptionHandlers,
 ) -> Operation:
     summary = route.method.docstring.short_description
     description = route.method.docstring.long_description
     operation_parameters = get_route_parameters(route, schema_registry)
     operation_request_body = get_request_body_parameters(route, schema_registry)
-    operation_responses = get_responses_schemas(route, schema_registry)
+    operation_responses = get_responses_schemas(route, schema_registry, exception_handlers)
     return Operation(
         tags=tag_names,
         summary=summary,
@@ -343,17 +355,19 @@ def get_request_body_parameters(route: Route, schema_registry: SchemaRegistry) -
     return RequestBody(description=description, content=content)
 
 
-def get_responses_schemas(route: Route, schema_registry: SchemaRegistry) -> Responses:
+def get_responses_schemas(
+    route: Route,
+    schema_registry: SchemaRegistry,
+    exception_handlers: ExceptionHandlers,
+) -> Responses:
     responses: Responses = {}
     http_method = route.http_method
     response_status = str(get_response_status(http_method, route.method))
 
     responses[response_status] = _build_response_schema(route.method, schema_registry)
-    method_exceptions_manager = MethodExceptionsManager(route.method)
 
-    for exception_cls in method_exceptions_manager.declared_exception_classes:
-        handler = method_exceptions_manager.get_handler(exception_cls)
-        handle_method = ComponentMethod.get_or_create(handler.__class__.handle)
+    for exception_cls in get_raises(route.method):
+        handle_method = exception_handlers.get(exception_cls)
         response_status = str(get_response_status(http_method, handle_method))
         responses[response_status] = _build_response_exception_handler_schema(handle_method, schema_registry)
     return responses
