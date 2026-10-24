@@ -32,8 +32,9 @@ def initialize(app: Application):
     """
     Prepares winter.web to handle the requests of an application. Adapters call it before building their routes.
 
-    The registries are still process-global: the standard resolvers are registered on the first call,
-    the handlers of the application's @problem exceptions on every call.
+    The standard resolvers are registered on the first call, the handlers of the application's @problem
+    exceptions on every call.
+    Process-global until the registries move into Application: docs/architecture.md, Current deviations.
     """
     global _process_initialized
     if not _process_initialized:

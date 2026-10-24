@@ -85,6 +85,15 @@ at least two of them.
   are module singletons, and the application installs its injector as the service locator
   `winter.application.get_injector`. `tests/test_application_scope.py` states the intended behaviour
   and is marked `xfail` until an `Application` instance owns that state.
+- **Models are initialised once per process.** `winter.web.initialization.initialize`, the Django
+  adapter's `_initialize_process` and `winter.openapi.initialization.initialize` fill those module
+  singletons with the standard resolvers, inspectors and handlers on first use, and add the handlers
+  of each application's `@problem` exceptions to the same global registry. In the target, each
+  `Application` owns these registries in an injector of its own, a child of the injector it is given,
+  and they start with the standard entries. Building from an application, an adapter adds its own
+  entries (the Django request resolver, the native response type, the throttling identity) to that
+  application only, and the `@problem` handlers go to the application's registry. The `initialize`
+  functions then disappear.
 - **`winter.wsgi`, `winter.asgi` and `winter.rabbitmq` do not exist yet.** HTTP is served through
   `winter.django` only, and `winter.messaging` has no transport adapter.
 - **All dependencies are mandatory.** Django, SQLAlchemy, Redis and pydantic are installed with

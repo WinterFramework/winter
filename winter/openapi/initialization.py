@@ -16,7 +16,10 @@ _initialized = False
 
 
 def initialize():
-    """Registers the standard inspectors and global exceptions once per process, before the first spec is generated."""
+    """
+    Registers the standard inspectors and global exceptions once per process, before the first spec is generated.
+    Process-global until the registries move into Application: docs/architecture.md, Current deviations.
+    """
     global _initialized
     if _initialized:
         return

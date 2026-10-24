@@ -36,6 +36,7 @@ _process_initialized = False
 
 
 def _initialize_process():
+    """Process-global until the registries move into Application: docs/architecture.md, Current deviations."""
     global _process_initialized
     if not _process_initialized:
         arguments_resolver.add_argument_resolver(HttpRequestArgumentResolver())
