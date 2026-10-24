@@ -37,7 +37,7 @@ from winter.web.exceptions import MethodExceptionsManager
 from winter.web.request_body_annotation import RequestBodyAnnotation
 from winter.web.routing import Route
 from winter.web.routing import RouteAnnotation
-from winter.web import find_routes
+from winter.web.autodiscovery import find_routes
 from winter.openapi.inspection.inspection import inspect_type
 from .inspection import DataTypes
 from .inspection import TypeInfo

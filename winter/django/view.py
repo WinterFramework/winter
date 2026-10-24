@@ -15,6 +15,7 @@ from winter.web import arguments_resolver
 from winter.web import handle_request
 from winter.web import register_native_response_type
 from winter.web import set_throttling_identity_resolver
+from winter.web.autodiscovery import find_routes
 from winter.web.routing import Route
 from winter.web.urls import rewrite_uritemplate_with_regexps
 from .http_request_argument_resolver import HttpRequestArgumentResolver
@@ -29,7 +30,7 @@ def create_urls(app: Application) -> List[URLPattern]:
     """URL patterns of the routes of an application, relative to where they are included in the urlpatterns."""
     winter.web.initialization.initialize(app)
     _initialize_process()
-    return _create_urls_from_routes(winter.web.find_routes(app))
+    return _create_urls_from_routes(find_routes(app))
 
 
 _process_initialized = False

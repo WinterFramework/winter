@@ -3,7 +3,6 @@ from . import pagination
 from .argument_resolver import ArgumentResolver
 from .argument_resolver import ArgumentsResolver
 from .argument_resolver import arguments_resolver
-from .autodiscovery import find_routes
 from .exceptions import ExceptionHandler
 from .exceptions import exception_handlers_registry
 from .exceptions import problem
