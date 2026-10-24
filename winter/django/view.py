@@ -8,17 +8,43 @@ from django.http.response import HttpResponseBase
 from django.urls import URLPattern
 from django.urls import re_path
 
+import winter.web.initialization
+from winter.application import Application
 from winter.web import Response
+from winter.web import arguments_resolver
 from winter.web import handle_request
+from winter.web import register_native_response_type
+from winter.web import set_throttling_identity_resolver
 from winter.web.routing import Route
 from winter.web.urls import rewrite_uritemplate_with_regexps
+from .http_request_argument_resolver import HttpRequestArgumentResolver
 from .request import DjangoRequest
+from .throttling import django_user_identity
 
 if TYPE_CHECKING:
     from django.views.generic import View
 
 
-def create_django_urls_from_routes(routes: List[Route]) -> List[URLPattern]:
+def create_urls(app: Application) -> List[URLPattern]:
+    """URL patterns of the routes of an application, relative to where they are included in the urlpatterns."""
+    winter.web.initialization.initialize(app)
+    _initialize_process()
+    return _create_urls_from_routes(winter.web.find_routes(app))
+
+
+_process_initialized = False
+
+
+def _initialize_process():
+    global _process_initialized
+    if not _process_initialized:
+        arguments_resolver.add_argument_resolver(HttpRequestArgumentResolver())
+        register_native_response_type(HttpResponseBase)
+        set_throttling_identity_resolver(django_user_identity)
+        _process_initialized = True
+
+
+def _create_urls_from_routes(routes: List[Route]) -> List[URLPattern]:
     django_urls = []
     grouped_routes = defaultdict(list)
 

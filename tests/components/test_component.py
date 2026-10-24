@@ -3,7 +3,6 @@ import pytest
 
 import winter.components
 from winter.components import Component
-from winter.application import WinterApplication
 
 
 @dataclasses.dataclass(frozen=True)
@@ -16,12 +15,10 @@ def simple_annotation(param: str):
 
 
 def test_is_component():
-    winter_app = WinterApplication()
-
     class SimpleComponent:
         pass
 
-    winter_app.add_component(SimpleComponent)
+    winter.components.component(SimpleComponent)
     assert winter.components.is_component(SimpleComponent)
 
 
@@ -75,3 +72,16 @@ def test_register_with_instance():
 
     assert str(exception.value) == f'Need class. Got: {instance}'
     assert exception.value.args == (f'Need class. Got: {instance}',)
+
+
+def test_register_returns_existing_component():
+    class SimpleComponent:
+        pass
+
+    component = Component.register(SimpleComponent)
+
+    # Act
+    registered_again = Component.register(SimpleComponent)
+
+    # Assert
+    assert registered_again is component

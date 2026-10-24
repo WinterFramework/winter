@@ -24,7 +24,7 @@ from winter.json import Undefined
 from winter.typing import TypeWrapper
 from winter.pagination import Page
 from winter.web.routing import get_route
-from winter.openapi import generate_openapi
+from winter.openapi.generator import generate_openapi_for_routes
 from winter.openapi.generator import CanNotInspectType
 
 
@@ -464,7 +464,7 @@ def test_response_return_type(type_hint, expected_response_info, expected_compon
         'tags': ['types'],
     }
     # Act
-    result = generate_openapi(title='title', version='1.0.0', routes=[route])
+    result = generate_openapi_for_routes(title='title', version='1.0.0', routes=[route])
 
     # Assert
     method_info = result['paths']['/types/']['get']
@@ -482,7 +482,7 @@ def test_response_with_invalid_return_type():
 
     with pytest.raises(CanNotInspectType) as e:
         # Act
-        generate_openapi(title='title', version='1.0.0', routes=[route])
+        generate_openapi_for_routes(title='title', version='1.0.0', routes=[route])
 
     assert repr(e.value) == (
         "CanNotInspectType(test_api_request_and_response_spec._TestAPI.with_invalid_return_type: "
@@ -567,7 +567,7 @@ def test_request_type(type_hint, expected_request_body_spec, expected_components
     route = get_route(_TestAPI.simple_method)
 
     # Act
-    result = generate_openapi(title='title', version='1.0.0', routes=[route])
+    result = generate_openapi_for_routes(title='title', version='1.0.0', routes=[route])
 
     # Assert
     method_info = result['paths']['/types/']['post']['requestBody']
@@ -612,7 +612,7 @@ def test_request_type_with_union_undefined():
     route = get_route(_TestAPI.simple_method)
 
     # Act
-    result = generate_openapi(title='title', version='1.0.0', routes=[route])
+    result = generate_openapi_for_routes(title='title', version='1.0.0', routes=[route])
 
     # Assert
     method_info = result['paths']['/types/']['post']['requestBody']
@@ -673,7 +673,7 @@ def test_reuse_dataclass_schema():
         def method_request_body_undefined_2(self, data: DataclassWithUndefined):
             pass
 
-    result = generate_openapi(
+    result = generate_openapi_for_routes(
         title='title',
         version='1.0.0',
         routes=[
@@ -992,7 +992,7 @@ def test_reuse_page_schema():
         def method_2(self) -> Page[str]:
             pass
 
-    result = generate_openapi(
+    result = generate_openapi_for_routes(
         title='title',
         version='1.0.0',
         routes=[
@@ -1091,7 +1091,7 @@ def test_raises_for_type_duplicates():
             pass
 
     with pytest.raises(ValueError) as e:
-        generate_openapi(
+        generate_openapi_for_routes(
             title='title',
             version='1.0.0',
             routes=[

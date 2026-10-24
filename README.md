@@ -20,6 +20,32 @@ Web Framework with focus on python typing, dataclasses and modular design
 
 Package structure and layer rules: [docs/architecture.md](docs/architecture.md).
 
+## Upgrading to Winter 34
+
+An application is composed explicitly in a `winter.application.Application`, which imports every module of
+the given packages on construction (by default, those of the directory of the module that creates it), and
+adapters build from it. `find_package_routes`, `create_django_urls_from_routes`, `WinterApplication` and the
+`setup()` functions of `winter.web`, `winter.django` and `winter.openapi` are gone.
+
+```python
+import service_a
+import winter.django
+from winter.application import Application
+
+app = Application(modules=[service_a], injector=injector)  # several applications may share one injector
+urlpatterns = winter.django.create_urls(app)
+```
+
+- A `@problem` exception gets its handler only when it belongs to an application: define it in a scanned
+  module or add it, e.g. `app.add(winter.web.problem(status=404)(NotFoundException))`.
+- `winter.django.create_urls` installs the Django throttling identity on its first call: replace it with
+  `winter.web.set_throttling_identity_resolver` after that.
+- OpenAPI: `generate_openapi(app, title=..., version=...)` returns the spec and checks `@raises` annotations
+  of the application (`allow_missing_raises_annotation=True` skips the check).
+  `winter.openapi.serve_spec(app, spec, url='openapi.json')` and
+  `winter.openapi.serve_swagger_ui(app, spec_url='openapi.json', url='docs/')` add the routes that serve them;
+  the served spec and Swagger UI work under whatever prefix the application is included at.
+
 ## Upgrading to Winter 33
 
 `winter` is a namespace package now: the `import winter` facade is gone, use `winter.web` instead
@@ -67,14 +93,15 @@ class HelloWorld:
         return 'Hello, world!'
 ```
 
-To use it with Django:
+To use it with Django, in `urls.py`:
 ```python
-from winter.web.autodiscovery import find_package_routes
+import some_package
 import winter.django
+from winter.application import Application
 
-routes = find_package_routes('some_package.sub_package')
+app = Application(modules=[some_package])
 urlpatterns = [
-    *winter.django.create_django_urls_from_routes(routes),
+    *winter.django.create_urls(app),
 ]
 ```
 

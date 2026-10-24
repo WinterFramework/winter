@@ -29,6 +29,7 @@ from openapi_pydantic.v3.v3_0 import Schema
 from openapi_pydantic.v3.v3_0 import Server
 from openapi_pydantic.v3.v3_0 import Tag
 
+from winter.application import Application
 from winter.components import ComponentMethod
 from winter.web import MediaType
 from winter.web.default_response_status import get_response_status
@@ -36,11 +37,14 @@ from winter.web.exceptions import MethodExceptionsManager
 from winter.web.request_body_annotation import RequestBodyAnnotation
 from winter.web.routing import Route
 from winter.web.routing import RouteAnnotation
+from winter.web import find_routes
 from winter.openapi.inspection.inspection import inspect_type
 from .inspection import DataTypes
 from .inspection import TypeInfo
 from .inspection.inspection import InspectorNotFound
+from .initialization import initialize
 from .inspectors import get_route_parameters_inspectors
+from .validators import validate_missing_raises_annotations
 
 
 class SchemaRegistry:
@@ -134,6 +138,32 @@ class SchemaRegistry:
 
 
 def generate_openapi(
+    app: Application,
+    *,
+    title: str,
+    version: str,
+    description: Optional[str] = None,
+    tags: Optional[List[Dict[str, Any]]] = None,
+    validate: bool = True,
+    add_url_segment_as_tag: bool = True,
+    allow_missing_raises_annotation: bool = False,
+) -> Dict[str, Any]:
+    """OpenAPI specification of the routes of an application, as a JSON-compatible dict."""
+    initialize()
+    if not allow_missing_raises_annotation:
+        validate_missing_raises_annotations(app)
+    return generate_openapi_for_routes(
+        title=title,
+        version=version,
+        routes=find_routes(app),
+        description=description,
+        tags=tags,
+        validate=validate,
+        add_url_segment_as_tag=add_url_segment_as_tag,
+    )
+
+
+def generate_openapi_for_routes(
     title: str,
     version: str,
     routes: Sequence[Route],
@@ -142,6 +172,7 @@ def generate_openapi(
     validate: bool = True,
     add_url_segment_as_tag: bool = True,
 ) -> Dict[str, Any]:
+    initialize()
     routes = list(routes)
     routes.sort(key=lambda r: r.url_path)
     schema_registry = SchemaRegistry()

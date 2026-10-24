@@ -1,6 +1,6 @@
 import winter.web
 from winter.web.routing import get_route
-from winter.openapi import generate_openapi
+from winter.openapi.generator import generate_openapi_for_routes
 
 
 def test_add_url_segment_as_tag_false():
@@ -11,7 +11,7 @@ def test_add_url_segment_as_tag_false():
 
     route = get_route(_TestAPI.get_resource)
     # Act
-    result = generate_openapi(
+    result = generate_openapi_for_routes(
         title='title',
         version='1.0.0',
         description='description',

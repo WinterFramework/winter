@@ -3,7 +3,7 @@ from . import pagination
 from .argument_resolver import ArgumentResolver
 from .argument_resolver import ArgumentsResolver
 from .argument_resolver import arguments_resolver
-from .autodiscovery import find_package_routes
+from .autodiscovery import find_routes
 from .exceptions import ExceptionHandler
 from .exceptions import exception_handlers_registry
 from .exceptions import problem
@@ -42,38 +42,3 @@ from .throttling import set_throttling_identity_resolver
 from .throttling import set_throttling_storage
 from .throttling import throttling
 from .urls import register_url_regexp
-
-
-def setup():
-    from .exceptions import RedirectException
-    from .exceptions.problem_handling import autodiscover_problem_annotations
-    from .exceptions.problem_handling import ProblemExceptionHandlerGenerator
-    from .exceptions.problem_handling import ProblemExceptionMapper
-    from .exceptions.problem_handling_info import ProblemHandlingInfo
-    from .exception_handlers import RedirectExceptionHandler
-    from .pagination.page_processor_resolver import PageOutputProcessorResolver
-    from .pagination.page_position_argument_resolver import PagePositionArgumentResolver
-    from .path_parameters_argument_resolver import PathParametersArgumentResolver
-    from .query_parameters.query_parameter_argument_resolver import QueryParameterArgumentResolver
-    from .query_parameters.query_parameters_argument_resolver import QueryParametersArgumentResolver
-    from .request_argument_resolver import RequestArgumentResolver
-    from .request_header_resolver import RequestHeaderArgumentResolver
-    from .response_header_serializers import DateTimeResponseHeaderSerializer
-    from .response_header_serializers import LastModifiedResponseHeaderSerializer
-
-    register_output_processor_resolver(PageOutputProcessorResolver())
-    response_headers_serializer.add_serializer(DateTimeResponseHeaderSerializer())
-    response_headers_serializer.add_serializer(LastModifiedResponseHeaderSerializer())
-    arguments_resolver.add_argument_resolver(QueryParameterArgumentResolver())
-    arguments_resolver.add_argument_resolver(QueryParametersArgumentResolver())
-    arguments_resolver.add_argument_resolver(PathParametersArgumentResolver())
-    arguments_resolver.add_argument_resolver(RequestBodyArgumentResolver())
-    arguments_resolver.add_argument_resolver(ResponseHeaderArgumentResolver())
-    arguments_resolver.add_argument_resolver(PagePositionArgumentResolver())
-    arguments_resolver.add_argument_resolver(RequestHeaderArgumentResolver())
-    arguments_resolver.add_argument_resolver(RequestArgumentResolver())
-
-    exception_mapper = ProblemExceptionMapper()
-    exception_handler_generator = ProblemExceptionHandlerGenerator(exception_mapper)
-    autodiscover_problem_annotations(exception_handler_generator)
-    exception_handlers_registry.add_handler(RedirectException, RedirectExceptionHandler, auto_handle=True)

@@ -3,10 +3,12 @@ from typing import Set
 from typing import Type
 
 
+from winter.application import Application
 from winter.openapi.annotations import GlobalExceptionAnnotation
 
 
-def validate_missing_raises_annotations():
+def validate_missing_raises_annotations(app: Application):
+    """Every @problem exception of the application is declared with @raises by one of its API methods or is global."""
     from winter.web.exceptions.problem_annotation import ProblemAnnotation
     from winter.web.exceptions.raises import ExceptionAnnotation
     from winter.components import Component
@@ -14,7 +16,11 @@ def validate_missing_raises_annotations():
     all_problem_exception: Set[Type[Exception]] = set()
     global_exceptions: Set[Type[Exception]] = set()
     declared_raises_exceptions: Set[Type[Exception]] = set()
-    for cls, component in Component.get_all().items():
+    components = Component.get_all()
+    for cls in app.definitions:
+        component = components.get(cls)
+        if component is None:
+            continue
         if component.annotations.get_one_or_none(ProblemAnnotation):
             all_problem_exception.add(cls)
         if component.annotations.get_one_or_none(GlobalExceptionAnnotation):
