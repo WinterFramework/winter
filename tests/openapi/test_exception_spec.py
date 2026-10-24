@@ -5,7 +5,7 @@ import pytest
 
 import winter.web
 from winter.web.routing import get_route
-from winter.openapi import generate_openapi
+from winter.openapi.generator import generate_openapi_for_routes
 from winter.openapi.annotations import global_exception
 
 
@@ -22,7 +22,7 @@ def test_global_exception_annotated_on_method():
 
     route = get_route(_TestAPI.get_resource)
     # Act
-    result = generate_openapi(
+    result = generate_openapi_for_routes(
         title='title',
         version='1.0.0',
         routes=[route],
@@ -105,7 +105,7 @@ def test_exception_annotated_on_method_with_custom_handler_with_dto(
 
     route = get_route(_TestAPI.get_resource)
     # Act
-    result = generate_openapi(
+    result = generate_openapi_for_routes(
         title='title',
         version='1.0.0',
         routes=[route],

@@ -1,36 +1,46 @@
 """
-North-star test for docs/architecture.md, principle 2: framework behaviour is never
-process-global. Two Application instances in one process must not share behavioural
-registries. Marked xfail(strict=True): it turns green when the Application scope lands,
-and strict forces the marker to be removed at that moment. `raises` limits the expected failure to
-`Application` not existing yet or the registries still being shared; any other error is a real failure.
+Isolation test for docs/architecture.md, principle 2: framework behaviour is never process-global.
+Two applications in one process must not share behaviour: the handler of a @problem exception of one application
+does not handle that exception in another. Marked xfail(strict=True) while the exception handlers are
+process-global; strict forces the marker to be removed the moment the test passes.
 """
+from http import HTTPStatus
+
 import pytest
+from django.test import RequestFactory
+
+import winter.django
+import winter.web
+from winter.application import Application
+from winter.application import get_injector
 
 
+@winter.web.problem(status=HTTPStatus.CONFLICT)
 class _ErrorA(Exception):
     pass
 
 
+class _API:
+    @winter.web.route_get('raise-a/')
+    def raise_a(self):
+        raise _ErrorA()
+
+
 @pytest.mark.xfail(
     strict=True,
-    raises=(ImportError, AssertionError),
-    reason='North star: behavioural registries are scoped to an Application instance',
+    raises=AssertionError,
+    reason='Isolation: exception handlers are scoped to an Application instance',
 )
-def test_two_applications_do_not_share_exception_handlers():  # pragma: no cover
-    from winter.application import Application
-    from winter.web.exceptions.handlers import DefaultExceptionHandler
-    from winter.web.exceptions.handlers import ExceptionHandler
-    from winter.web.exceptions.handlers import ExceptionHandlersRegistry
+def test_problem_handler_of_one_application_does_not_handle_exceptions_in_another():
+    app_1 = Application(modules=[], injector=get_injector())
+    app_1.add(_ErrorA)
+    app_2 = Application(modules=[], injector=get_injector())
+    app_2.add(_API)
+    winter.django.create_urls(app_1)
+    [url] = winter.django.create_urls(app_2)
 
-    class HandlerA(ExceptionHandler):
-        def handle(self, exception: Exception, **kwargs):
-            return 'a'
+    # Act
+    response = url.callback(RequestFactory().get('/raise-a/'))
 
-    app_1 = Application()
-    app_2 = Application()
-
-    app_1.get(ExceptionHandlersRegistry).add_handler(_ErrorA, HandlerA)
-
-    assert isinstance(app_1.get(ExceptionHandlersRegistry).get_handler(_ErrorA), HandlerA)
-    assert isinstance(app_2.get(ExceptionHandlersRegistry).get_handler(_ErrorA), DefaultExceptionHandler)
+    # Assert
+    assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR

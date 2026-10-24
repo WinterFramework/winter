@@ -1,24 +1,18 @@
 from typing import List
 
+from winter.application import Application
 from winter.components import Component
-from winter.application.module_discovery import get_all_classes
-from winter.application.module_discovery import import_recursively
 from .routing import Route
 from .routing import get_route
 
 
-def find_package_routes(package_name: str) -> List[Route]:
-    """Routes of the API classes in a package and its subpackages, or in a single module."""
-    import_recursively(package_name)
-    routes = []
-
-    for class_name, cls in get_all_classes(package_name):
-        component = Component.get_by_cls(cls)
-
-        for method in component.methods:
-            route = get_route(method)
-
-            if route is not None:
-                routes.append(route)
-
-    return routes
+def find_routes(app: Application) -> List[Route]:
+    """Routes of the API classes among the definitions of an application."""
+    components = Component.get_all()
+    return [
+        route
+        for definition in app.definitions
+        if definition in components
+        for method in components[definition].methods
+        if (route := get_route(method)) is not None
+    ]

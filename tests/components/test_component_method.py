@@ -1,13 +1,12 @@
 import inspect
 
+from winter.components import Component
 from winter.components import ComponentMethod
 from winter.components import ComponentMethodArgument
-from winter.application import WinterApplication
 from winter.components import component_method
 
 
 def test_all_attributes():
-    winter_app = WinterApplication()
     argument_type = int
     argument_name = 'number'
     method_name = 'method'
@@ -18,12 +17,11 @@ def test_all_attributes():
         def method(self, number: argument_type):
             return self, number
 
-    winter_app.add_component(SimpleComponent)
     simple_component = SimpleComponent()
 
     cls_method = SimpleComponent.method
 
-    assert cls_method.component == winter_app.components[SimpleComponent]
+    assert cls_method.component == Component.get_by_cls(SimpleComponent)
     assert cls_method.name == method_name
     assert inspect.ismethod(simple_component.method)
     assert cls_method.func == simple_component.method.__func__

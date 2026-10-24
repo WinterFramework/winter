@@ -80,10 +80,20 @@ at least two of them.
 
 ## Current deviations
 
-- **Framework behaviour is still process-global.** `winter.application.get_injector` is a
-  service locator, and the behavioural registries of `winter.web` and `winter.openapi` are module
-  singletons. `tests/test_application_scope.py` states the intended behaviour and is marked
-  `xfail` until an `Application` instance owns that state.
+- **Framework behaviour is still process-global.** An `Application` holds the code of an
+  application and its injector, but the behavioural registries of `winter.web` and `winter.openapi`
+  are module singletons, and the application installs its injector as the service locator
+  `winter.application.get_injector`. `tests/test_application_scope.py` states the intended behaviour
+  and is marked `xfail` until an `Application` instance owns that state.
+- **Models are initialised once per process.** `winter.web.initialization.initialize`, the Django
+  adapter's `_initialize_process` and `winter.openapi.initialization.initialize` fill those module
+  singletons with the standard resolvers, inspectors and handlers on first use, and add the handlers
+  of each application's `@problem` exceptions to the same global registry. In the target, each
+  `Application` owns these registries in an injector of its own, a child of the injector it is given,
+  and they start with the standard entries. Building from an application, an adapter adds its own
+  entries (the Django request resolver, the native response type, the throttling identity) to that
+  application only, and the `@problem` handlers go to the application's registry. The `initialize`
+  functions then disappear.
 - **`winter.wsgi`, `winter.asgi` and `winter.rabbitmq` do not exist yet.** HTTP is served through
   `winter.django` only, and `winter.messaging` has no transport adapter.
 - **All dependencies are mandatory.** Django, SQLAlchemy, Redis and pydantic are installed with
@@ -95,8 +105,9 @@ at least two of them.
 
 - **import-linter** (`lint-imports`, configured in `pyproject.toml`) checks the layer rules.
   There are no `ignore_imports`, and none may be added.
-- **North-star test** `tests/test_application_scope.py` is marked `xfail(strict=True)`. It
-  creates two `Application` instances with different exception handlers and asserts they do
-  not see each other. `strict` forces the marker to be removed the moment it passes.
+- **Isolation test** `tests/test_application_scope.py` is marked `xfail(strict=True)`. It
+  builds two applications in one process and asserts that the handler of a `@problem` exception
+  of one does not handle that exception in the other. `strict` forces the marker to be removed
+  the moment it passes.
 - **This document** describes intent and is updated when the intent changes, not when the code
   moves. Deviations are listed above while they exist.

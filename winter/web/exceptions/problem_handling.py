@@ -4,6 +4,8 @@ from dataclasses import asdict
 from dataclasses import dataclass
 from dataclasses import is_dataclass
 from typing import Dict
+from typing import Iterable
+from typing import Set
 from typing import Type
 
 
@@ -93,16 +95,17 @@ class ProblemExceptionMapper(ExceptionMapper):
         return re.sub('Exception$', '', exception_cls.__name__)
 
 
-def autodiscover_problem_annotations(handler_generator: ProblemExceptionHandlerGenerator):
-    handled_problems: Dict[Type[Exception], ProblemAnnotation] = {
-        cls: component.annotations.get_one(ProblemAnnotation)
-        for cls, component in Component.get_all().items()
-        if component.annotations.get_one_or_none(ProblemAnnotation)
-    }
-    for exception_class, problem_annotation in handled_problems.items():
-        handler_class = handler_generator.generate(exception_class, problem_annotation.handling_info)
-        exception_handlers_registry.add_handler(
-            exception_class,
-            handler_class,
-            auto_handle=True,
-        )
+_problems_with_handlers: Set[Type[Exception]] = set()
+
+
+def add_problem_handlers(definitions: Iterable, handler_generator: ProblemExceptionHandlerGenerator):
+    """Registers a handler for each @problem exception among the definitions that has none yet."""
+    components = Component.get_all()
+    for definition in definitions:
+        component = components.get(definition)
+        problem_annotation = component and component.annotations.get_one_or_none(ProblemAnnotation)
+        if problem_annotation is None or definition in _problems_with_handlers:
+            continue
+        handler_class = handler_generator.generate(definition, problem_annotation.handling_info)
+        exception_handlers_registry.add_handler(definition, handler_class, auto_handle=True)
+        _problems_with_handlers.add(definition)
