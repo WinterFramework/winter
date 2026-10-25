@@ -10,10 +10,6 @@ class CustomException(Exception):
         self.message = message
 
 
-class WithUnknownArgumentException(Exception):
-    pass
-
-
 class ExceptionWithoutHandler(Exception):
     pass
 
@@ -28,15 +24,6 @@ class ExceptionHandlers:
     @response_status(400)
     def handle_custom(self, exception: CustomException) -> CustomExceptionDTO:
         return CustomExceptionDTO(exception.message)
-
-    @winter.web.exception_handler
-    @response_status(400)
-    def handle_with_unknown_argument(
-        self,
-        exception: WithUnknownArgumentException,
-        unknown_argument: int,
-    ) -> str:  # pragma: no cover
-        pass
 
 
 class ChildCustomException(CustomException):
@@ -69,9 +56,3 @@ class APIWithExceptions:
     @raises(ExceptionWithoutHandler)
     def declared_but_no_handler(self) -> str:
         raise ExceptionWithoutHandler()
-
-    @raises(WithUnknownArgumentException)
-    @raises(CustomException)  # second "raises" just for 100% test coverage
-    @route_get('with_unknown_argument_exception/')
-    def with_unknown_argument_handler(self) -> str:
-        raise WithUnknownArgumentException()

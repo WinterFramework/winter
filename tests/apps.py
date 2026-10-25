@@ -10,10 +10,11 @@ class TestAppConfig(AppConfig):
     name = 'tests'
 
     def ready(self):
+        # Before the URL patterns, which check the arguments of the interceptors on startup
+        interceptor_registry.add_interceptor(HelloWorldInterceptor())
+
         # Importing the URLs creates the application and its URL patterns
         from .urls import urlpatterns   # noqa: F401
-
-        interceptor_registry.add_interceptor(HelloWorldInterceptor())
 
         # The Redis storage is covered in tests/redis; the sample application throttles in memory.
         winter.web.set_throttling_storage(InMemoryThrottlingStorage())

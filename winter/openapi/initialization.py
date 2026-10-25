@@ -2,7 +2,7 @@ from winter.pagination import Page
 from winter.web.exceptions import RequestDataDecodeException
 from winter.web.exceptions import ThrottleException
 from winter.web.exceptions import UnsupportedMediaTypeException
-from winter.web.pagination import PagePositionArgumentResolver
+from winter.web.pagination.page_position_argument_resolver import PagePositionArgumentResolver
 from winter.web.pagination.limits import MaximumLimitValueExceeded
 from .annotations import register_global_exception
 from .inspection.inspection import register_type_inspector

@@ -1,11 +1,13 @@
 """
 Isolation test for docs/architecture.md, principle 2: framework behaviour is never process-global.
 Two applications in one process must not share behaviour: the handler of a @problem exception of one application
-does not handle that exception in another.
+does not handle that exception in another, and the arguments of an API method come from the injector of the
+application that serves it.
 """
 from http import HTTPStatus
 
 from django.test import RequestFactory
+from injector import Injector
 
 import winter.django
 import winter.web
@@ -37,3 +39,33 @@ def test_problem_handler_of_one_application_does_not_handle_exceptions_in_anothe
 
     # Assert
     assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+
+
+class _Name:
+    def __init__(self, value: str):
+        self.value = value
+
+
+class _NameAPI:
+    @winter.web.route_get('name/')
+    def get(self, name: _Name) -> str:
+        return name.value
+
+
+def _application_with_name(value: str) -> Application:
+    app = Application(modules=[], injector=Injector([lambda binder: binder.bind(_Name, to=_Name(value))]))
+    app.add(_NameAPI)
+    return app
+
+
+def test_argument_of_api_method_comes_from_injector_of_its_application():
+    [url_1] = winter.django.create_urls(_application_with_name('one'))
+    [url_2] = winter.django.create_urls(_application_with_name('two'))
+
+    # Act
+    response_1 = url_1.callback(RequestFactory().get('/name/'))
+    response_2 = url_2.callback(RequestFactory().get('/name/'))
+
+    # Assert
+    assert response_1.content == b'"one"'
+    assert response_2.content == b'"two"'

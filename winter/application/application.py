@@ -10,7 +10,6 @@ from typing import Literal
 
 from injector import Injector
 
-from .injection import set_injector
 from .module_discovery import import_recursively
 
 Definition = type | types.FunctionType
@@ -41,8 +40,6 @@ class Application:
             for module in _import_recursively(module_name):
                 for definition in _defined_in(module):
                     self.add(definition)
-        # The request pipeline still takes the injector from winter.application.get_injector
-        set_injector(self.injector)
 
     @property
     def definitions(self) -> tuple[Definition, ...]:

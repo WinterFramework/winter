@@ -2,7 +2,6 @@ from http import HTTPStatus
 
 import pytest
 
-from winter.web.argument_resolver import ArgumentNotSupported
 from tests.api.api_with_exceptions import CustomException
 from tests.api.api_with_exceptions import ExceptionWithoutHandler
 
@@ -29,7 +28,6 @@ def test_api_with_exceptions(api_client, url_path, expected_status, expected_bod
 @pytest.mark.parametrize(
     'url_path', (
         '/with_exceptions/declared_but_no_handler/',
-        '/with_exceptions/with_unknown_argument_exception/',
     ),
 )
 def test_api_with_exceptions_throws_500(api_client, url_path):

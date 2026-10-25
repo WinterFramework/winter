@@ -7,20 +7,20 @@ import django.http
 from django.http.response import HttpResponseBase
 from django.urls import URLPattern
 from django.urls import re_path
+from injector import Injector
 
 import winter.web.initialization
 from winter.application import Application
 from winter.web import Response
-from winter.web import arguments_resolver
 from winter.web import handle_request
 from winter.web import register_native_response_type
 from winter.web import set_throttling_identity_resolver
 from winter.web.autodiscovery import find_routes
 from winter.web.exception_handlers import find_exception_handlers
 from winter.web.exceptions import ExceptionHandlers
+from winter.web.request_handler import check_arguments
 from winter.web.routing import Route
 from winter.web.urls import rewrite_uritemplate_with_regexps
-from .http_request_argument_resolver import HttpRequestArgumentResolver
 from .request import DjangoRequest
 from .throttling import django_user_identity
 
@@ -32,7 +32,11 @@ def create_urls(app: Application) -> List[URLPattern]:
     """URL patterns of the routes of an application, relative to where they are included in the urlpatterns."""
     winter.web.initialization.initialize()
     _initialize_process()
-    return _create_urls_from_routes(find_routes(app), find_exception_handlers(app))
+    routes = find_routes(app)
+    exception_handlers = find_exception_handlers(app)
+    # Each request binds the Django request, see _create_dispatch_function
+    check_arguments(routes, exception_handlers, app.injector, request_types=[django.http.HttpRequest])
+    return _create_urls_from_routes(routes, exception_handlers, app.injector)
 
 
 _process_initialized = False
@@ -42,13 +46,16 @@ def _initialize_process():
     """Process-global until the registries move into Application: docs/architecture.md, Current deviations."""
     global _process_initialized
     if not _process_initialized:
-        arguments_resolver.add_argument_resolver(HttpRequestArgumentResolver())
         register_native_response_type(HttpResponseBase)
         set_throttling_identity_resolver(django_user_identity)
         _process_initialized = True
 
 
-def _create_urls_from_routes(routes: List[Route], exception_handlers: ExceptionHandlers) -> List[URLPattern]:
+def _create_urls_from_routes(
+    routes: List[Route],
+    exception_handlers: ExceptionHandlers,
+    injector: Injector,
+) -> List[URLPattern]:
     django_urls = []
     grouped_routes = defaultdict(list)
 
@@ -56,7 +63,7 @@ def _create_urls_from_routes(routes: List[Route], exception_handlers: ExceptionH
         grouped_routes[route.url_path].append(route)
 
     for url_path, routes in grouped_routes.items():
-        django_view = _create_django_view_from_routes(routes, exception_handlers).as_view()
+        django_view = _create_django_view_from_routes(routes, exception_handlers, injector).as_view()
         winter_url_path = f'^{url_path}$'
         methods = [route.method for route in routes]
         django_url_path = rewrite_uritemplate_with_regexps(winter_url_path, methods)
@@ -68,7 +75,11 @@ def _create_urls_from_routes(routes: List[Route], exception_handlers: ExceptionH
     return django_urls
 
 
-def _create_django_view_from_routes(routes: List[Route], exception_handlers: ExceptionHandlers) -> 'View':
+def _create_django_view_from_routes(
+    routes: List[Route],
+    exception_handlers: ExceptionHandlers,
+    injector: Injector,
+) -> 'View':
     from django.views.generic import View
 
     class WinterView(View):
@@ -77,7 +88,7 @@ def _create_django_view_from_routes(routes: List[Route], exception_handlers: Exc
             return super().as_view(**initkwargs)
 
     for route in routes:
-        dispatch = _create_dispatch_function(route, exception_handlers)
+        dispatch = _create_dispatch_function(route, exception_handlers, injector)
         dispatch.route = route
         dispatch_method_name = route.http_method.lower()
         setattr(WinterView, dispatch_method_name, dispatch)
@@ -85,10 +96,12 @@ def _create_django_view_from_routes(routes: List[Route], exception_handlers: Exc
     return WinterView()
 
 
-def _create_dispatch_function(route: Route, exception_handlers: ExceptionHandlers):
+def _create_dispatch_function(route: Route, exception_handlers: ExceptionHandlers, injector: Injector):
     @wraps(route.method.func)
     def dispatch(winter_view, request: django.http.HttpRequest, **path_parameters):
-        response = handle_request(route, DjangoRequest(request, path_parameters), exception_handlers)
+        winter_request = DjangoRequest(request, path_parameters)
+        request_values = {django.http.HttpRequest: request}
+        response = handle_request(route, winter_request, exception_handlers, injector, request_values)
         return to_django_response(response)
 
     return dispatch

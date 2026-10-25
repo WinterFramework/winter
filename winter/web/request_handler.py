@@ -1,32 +1,84 @@
 import json
 from typing import Any
+from typing import Collection
+from typing import Iterable
+from typing import Mapping
 
-from winter.application import get_injector
+from injector import Injector
+
 from winter.components import ComponentMethod
 from winter.json import JSONEncoder
-from .argument_resolver import arguments_resolver
+from .argument_resolver import ArgumentsResolver
 from .default_response_status import get_response_status
 from .exceptions import ExceptionHandlers
 from .exceptions import ThrottleException
 from .exceptions.handlers import exception_argument_name
 from .interceptor import interceptor_registry
 from .output_processor import get_output_processor
+from .pagination.page_position_argument_resolver import PagePositionArgumentResolver
+from .path_parameters_argument_resolver import PathParametersArgumentResolver
+from .query_parameters.query_parameter_argument_resolver import QueryParameterArgumentResolver
+from .query_parameters.query_parameters_argument_resolver import QueryParametersArgumentResolver
 from .request import Request
+from .request_body_resolver import RequestBodyArgumentResolver
+from .request_header_resolver import RequestHeaderArgumentResolver
+from .request_scope import create_request_injector
 from .response import Response
 from .response_entity import ResponseEntity
+from .response_header_resolver import ResponseHeaderArgumentResolver
 from .response_header_serializer import response_headers_serializer
 from .routing import Route
 from .throttling import create_throttle_class
 
+# The arguments mapped from the request; any other argument comes from the injector of the request
+_arguments_resolver = ArgumentsResolver([
+    QueryParameterArgumentResolver(),
+    QueryParametersArgumentResolver(),
+    PathParametersArgumentResolver(),
+    RequestBodyArgumentResolver(),
+    ResponseHeaderArgumentResolver(),
+    PagePositionArgumentResolver(),
+    RequestHeaderArgumentResolver(),
+])
 
-def handle_request(route: Route, request: Request, exception_handlers: ExceptionHandlers) -> Response:
+
+def check_arguments(
+    routes: Iterable[Route],
+    exception_handlers: ExceptionHandlers,
+    app_injector: Injector,
+    request_types: Collection[type],
+):
+    """
+    Fails on startup for an argument of an API method, an interceptor or an exception handler that is not mapped
+    from the request and whose type the injector does not bind. Adapters bind the request types in each request.
+    """
+    request_types = {Request, *request_types}
+    for route in routes:
+        _arguments_resolver.check_arguments(route.method, app_injector, request_types)
+    for interceptor in interceptor_registry:
+        pre_handle = ComponentMethod.get_or_create(interceptor.__class__.pre_handle)
+        _arguments_resolver.check_arguments(pre_handle, app_injector, request_types, {'method'})
+    for method in exception_handlers:
+        _arguments_resolver.check_arguments(method, app_injector, request_types, {exception_argument_name(method)})
+
+
+def handle_request(
+    route: Route,
+    request: Request,
+    exception_handlers: ExceptionHandlers,
+    app_injector: Injector,
+    request_values: Mapping[type, object],
+) -> Response:
     """
     Run the whole handling pipeline for a matched route: throttling, interceptors, argument resolution,
     the API method, the application's exception handlers, output processing and JSON encoding.
     Framework-agnostic: adapters build the Request from their own request object and send the returned Response.
+    The request is handled in an injector of its own, a child of the application's one, that binds the Request
+    and the request values of the adapter, such as its own request object. Request-scoped values live in it.
     """
     method = route.method
     response_headers: dict[str, Any] = {}
+    injector = create_request_injector(app_injector, request, request_values)
 
     throttle = create_throttle_class(route)
     try:
@@ -35,20 +87,21 @@ def handle_request(route: Route, request: Request, exception_handlers: Exception
 
         for interceptor in interceptor_registry:
             pre_handle = ComponentMethod.get_or_create(interceptor.__class__.pre_handle)
-            arguments = arguments_resolver.resolve_arguments(pre_handle, request, response_headers, {'method': method})
+            context = {'method': method}
+            arguments = _arguments_resolver.resolve_arguments(pre_handle, request, response_headers, injector, context)
             pre_handle(interceptor, **arguments)
 
-        arguments = arguments_resolver.resolve_arguments(method, request, response_headers)
-        api_instance = get_injector().get(method.component.component_cls)
+        arguments = _arguments_resolver.resolve_arguments(method, request, response_headers, injector)
+        api_instance = injector.get(method.component.component_cls)
         result = method(api_instance, **arguments)
     except Exception as exception:
         method = exception_handlers.get(type(exception))
         try:
-            result = _handle_exception(method, exception, request, response_headers)
+            result = _handle_exception(method, exception, request, response_headers, injector)
         except Exception as handler_exception:
             # A failing handler is not retried: its exception goes to the handler of Exception
             method = exception_handlers.get(Exception)
-            result = _handle_exception(method, handler_exception, request, response_headers)
+            result = _handle_exception(method, handler_exception, request, response_headers, injector)
 
     return _to_response(request, result, method, response_headers)
 
@@ -58,10 +111,11 @@ def _handle_exception(
     exception: Exception,
     request: Request,
     response_headers: dict[str, Any],
+    injector: Injector,
 ) -> Any:
-    context = {exception_argument_name(method): exception, 'response_headers': response_headers}
-    arguments = arguments_resolver.resolve_arguments(method, request, response_headers, context)
-    handler = get_injector().get(method.component.component_cls)
+    context = {exception_argument_name(method): exception}
+    arguments = _arguments_resolver.resolve_arguments(method, request, response_headers, injector, context)
+    handler = injector.get(method.component.component_cls)
     return method(handler, **arguments)
 
 

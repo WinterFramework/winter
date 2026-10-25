@@ -109,6 +109,42 @@ def test_handler_annotated_with_union_handles_each_exception(exception, expected
     assert response.content == expected_content
 
 
+class _FailingHandlers:
+    @winter.web.exception_handler
+    def handle_other(self, exception: _OtherError):
+        raise _BaseError()
+
+    @winter.web.exception_handler
+    def handle_base(self, exception: _BaseError) -> str:  # pragma: no cover
+        return 'base'
+
+
+def test_exception_of_failing_handler_goes_to_handler_of_exception():
+    # Act
+    response = _get(_raising(_OtherError()), _FailingHandlers)
+
+    # Assert
+    assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+    assert response.content == b'Server Error (500)'
+
+
+class _RetryHandler:
+    @winter.web.exception_handler
+    @winter.web.response_header('Retry-After', 'retry_after')
+    @winter.web.response_status(HTTPStatus.SERVICE_UNAVAILABLE)
+    def handle(self, exception: _OtherError, retry_after: winter.web.ResponseHeader[int]):
+        retry_after.set(30)
+
+
+def test_handler_sets_response_header():
+    # Act
+    response = _get(_raising(_OtherError()), _RetryHandler)
+
+    # Assert
+    assert response.status_code == HTTPStatus.SERVICE_UNAVAILABLE
+    assert response['Retry-After'] == '30'
+
+
 def test_two_handlers_of_same_exception_in_application_fail_startup():
     class _OtherHandlers:
         @winter.web.exception_handler

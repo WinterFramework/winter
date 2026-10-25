@@ -7,15 +7,6 @@ from injector import Injector
 
 from winter.application import Application
 from winter.application import get_injector
-from winter.application import set_injector
-
-
-@pytest.fixture(autouse=True)
-def restore_injector():
-    # Application installs its injector globally; the rest of the suite runs with the one from conftest
-    injector = get_injector()
-    yield
-    set_injector(injector)
 
 
 class Defined:
@@ -103,13 +94,13 @@ def test_add():
     assert app.definitions == (Defined, defined)
 
 
-def test_new_injector_is_installed():
+def test_new_injector_is_not_installed_globally():
     # Act
     app = Application(modules=[])
 
     # Assert
     assert isinstance(app.injector, Injector)
-    assert get_injector() is app.injector
+    assert get_injector() is not app.injector
 
 
 def test_given_injector_is_shared():
