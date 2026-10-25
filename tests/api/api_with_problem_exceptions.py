@@ -1,12 +1,11 @@
 from http import HTTPStatus
-from typing import Dict
 
 import dataclasses
 
 import winter.web
 from winter.ddd.exceptions import NotFoundException
 from winter.web.exceptions import RequestDataDecodeException
-from winter.web import route_get, route, raises, response_status
+from winter.web import route_get, route, raises
 
 
 @winter.web.problem(status=HTTPStatus.FORBIDDEN)
@@ -38,25 +37,8 @@ class AllFieldConstProblemExistsException(Exception):
     pass
 
 
-class ProblemExistsExceptionHandler(winter.web.ExceptionHandler):
-    @response_status(HTTPStatus.FORBIDDEN)
-    def handle(self, exception: ProblemExistsException, **kwargs) -> Dict:  # pragma: no cover
-        pass
-
-
-@dataclasses.dataclass
-class CustomExceptionDTO:
-    message: str
-
-
 class MyEntity:
     pass
-
-
-class ProblemExistsExceptionCustomHandler(winter.web.ExceptionHandler):
-    @response_status(HTTPStatus.BAD_REQUEST)
-    def handle(self, exception: ProblemExistsException) -> CustomExceptionDTO:
-        return CustomExceptionDTO(message=str(exception))
 
 
 @route('with-problem-exceptions/')
@@ -80,11 +62,6 @@ class APIWithProblemExceptions:
     @route_get('inherited_problem_exists_exception/')
     def problem_exists_auto_handle_exception(self) -> str:
         raise InheritorOfProblemExistsException()
-
-    @raises(ProblemExistsException, ProblemExistsExceptionCustomHandler)
-    @route_get('custom_handler_problem_exists_exception/')
-    def custom_handler_problem_exists_exception(self) -> str:
-        raise ProblemExistsException()
 
     @route_get('not_found_exception/')
     def not_found_exception(self) -> str:

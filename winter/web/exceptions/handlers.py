@@ -1,93 +1,74 @@
-import abc
-from http import HTTPStatus
+import inspect
+from dataclasses import dataclass
 from typing import Dict
+from typing import Iterable
 from typing import Tuple
 from typing import Type
-from typing import Union
 
-
+from winter.components import Component
 from winter.components import ComponentMethod
-from .raises import get_raises
-from ..response import Response
-
-NotHandled = object()
-
-
-class ExceptionHandler(abc.ABC):
-    @abc.abstractmethod
-    def handle(self, exception: Exception, **kwargs):  # pragma: no cover
-        pass
+from winter.components import annotate_method
+from winter.typing import get_union_args
+from winter.typing import is_union
 
 
-class DefaultExceptionHandler(ExceptionHandler):
-    def handle(self, exception: Exception, **kwargs) -> Response:
-        return Response(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, body=b'Server Error (500)')
+@dataclass(frozen=True)
+class ExceptionHandlerAnnotation:
+    pass
 
 
-class ExceptionHandlersRegistry:
-    HandlersMap = Dict[Type[Exception], ExceptionHandler]
-
-    def __init__(self):
-        self._handlers: ExceptionHandlersRegistry.HandlersMap = {}
-        self._auto_handle_exceptions = set()
-        self._default_handler = DefaultExceptionHandler()
-        super().__init__()
-
-    def add_handler(
-        self,
-        exception_cls: Type[Exception],
-        handler_cls: Type[ExceptionHandler],
-        *,
-        auto_handle: bool = False,
-    ):
-        assert exception_cls not in self._handlers, exception_cls
-        self._handlers[exception_cls] = handler_cls()
-
-        if auto_handle:
-            self._auto_handle_exceptions.add(exception_cls)
-
-    def get_handler(
-        self,
-        exception: Union[Type[Exception], Exception],
-        auto_handled_only: bool = False,
-    ) -> ExceptionHandler:
-        exception_type = type(exception) if isinstance(exception, Exception) else exception
-
-        for exception_cls, handler in self._handlers.items():
-            if issubclass(exception_type, exception_cls) and (
-                not auto_handled_only or exception_cls in self._auto_handle_exceptions
-            ):
-                return handler
-
-        return self._default_handler
-
-    def get_default_handler(self) -> ExceptionHandler:
-        return self._default_handler
-
-    def set_default_handler(self, handler_cls: Type[ExceptionHandler]):
-        self._default_handler = handler_cls()
+def exception_handler(method):
+    """
+    Marks a method as an exception handler. It handles the exceptions its first argument is annotated with,
+    `UploadError | DownloadError` for several, in the applications whose definitions include its class.
+    """
+    return annotate_method(ExceptionHandlerAnnotation(), single=True)(method)
 
 
-class MethodExceptionsManager:
-    def __init__(self, method: ComponentMethod):
-        super().__init__()
-        self._method = method
-        self._handlers_by_exception = get_raises(self._method)
+class ExceptionHandlers:
+    """The exception handlers of an application. The handler of the nearest class in its MRO handles an exception."""
 
-    @property
-    def declared_exception_classes(self) -> Tuple[Type[Exception], ...]:
-        return tuple(self._handlers_by_exception.keys())
+    def __init__(self, handlers: Dict[Type[Exception], ComponentMethod]):
+        assert Exception in handlers, 'Every exception must have a handler'
+        self._handlers = dict(handlers)
 
-    def get_handler(self, exception: Union[Type[Exception], Exception]) -> ExceptionHandler:
-        exception_type = type(exception) if isinstance(exception, Exception) else exception
-
-        for exception_cls, handler in self._handlers_by_exception.items():
-            if issubclass(exception_type, exception_cls):
-                if handler is not None:
-                    return handler
-                return exception_handlers_registry.get_handler(exception)
-
-        return exception_handlers_registry.get_handler(exception, auto_handled_only=True)
+    def get(self, exception_cls: Type[Exception]) -> ComponentMethod:
+        return next(self._handlers[cls] for cls in exception_cls.__mro__ if cls in self._handlers)
 
 
-exception_handlers_registry = ExceptionHandlersRegistry()
+def find_handlers(classes: Iterable[type]) -> Dict[Type[Exception], ComponentMethod]:
+    """The handlers marked with @exception_handler in the classes, by the exception they handle."""
+    handlers: Dict[Type[Exception], ComponentMethod] = {}
+    components = Component.get_all()
+    for cls in classes:
+        component = components.get(cls)
+        methods = component.methods if component is not None else ()
+        for method in methods:
+            if method.annotations.get_one_or_none(ExceptionHandlerAnnotation) is None:
+                continue
+            for exception_cls in handled_exceptions(method):
+                if exception_cls in handlers:
+                    raise ValueError(
+                        f'{exception_cls.__name__} has two handlers: {handlers[exception_cls].full_name} '
+                        f'and {method.full_name}',
+                    )
+                handlers[exception_cls] = method
+    return handlers
+
+
+def handled_exceptions(method: ComponentMethod) -> Tuple[Type[Exception], ...]:
+    argument = method.get_argument(exception_argument_name(method))
+    type_ = argument.type_ if argument is not None else None
+    exception_classes = tuple(get_union_args(type_)) if is_union(type_) else (type_,)
+    if not all(inspect.isclass(cls) and issubclass(cls, Exception) for cls in exception_classes):
+        raise TypeError(
+            f'{method.full_name}: the first argument of an exception handler must be annotated '
+            f'with the exceptions it handles',
+        )
+    return exception_classes
+
+
+def exception_argument_name(method: ComponentMethod) -> str:
+    """The name of the argument that receives the exception: the first one after self."""
+    parameters = list(method.signature.parameters)
+    return parameters[1] if len(parameters) > 1 else ''

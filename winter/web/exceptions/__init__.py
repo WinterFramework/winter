@@ -4,8 +4,7 @@ from .exceptions import RedirectException
 from .exceptions import ThrottleException
 from .exceptions import UnsupportedMediaTypeException
 from .exceptions import RequestDataDecodeException
-from .handlers import ExceptionHandler
-from .handlers import MethodExceptionsManager
-from .handlers import exception_handlers_registry
+from .handlers import ExceptionHandlers
+from .handlers import exception_handler
 from .problem import problem
 from .problem_handling_info import ProblemHandlingInfo

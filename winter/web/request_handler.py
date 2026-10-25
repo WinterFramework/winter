@@ -6,9 +6,9 @@ from winter.components import ComponentMethod
 from winter.json import JSONEncoder
 from .argument_resolver import arguments_resolver
 from .default_response_status import get_response_status
-from .exceptions import MethodExceptionsManager
+from .exceptions import ExceptionHandlers
 from .exceptions import ThrottleException
-from .exceptions import exception_handlers_registry
+from .exceptions.handlers import exception_argument_name
 from .interceptor import interceptor_registry
 from .output_processor import get_output_processor
 from .request import Request
@@ -19,14 +19,13 @@ from .routing import Route
 from .throttling import create_throttle_class
 
 
-def handle_request(route: Route, request: Request) -> Response:
+def handle_request(route: Route, request: Request, exception_handlers: ExceptionHandlers) -> Response:
     """
     Run the whole handling pipeline for a matched route: throttling, interceptors, argument resolution,
-    the API method, exception handlers, output processing and JSON encoding. Framework-agnostic: adapters
-    build the Request from their own request object and send the returned Response.
+    the API method, the application's exception handlers, output processing and JSON encoding.
+    Framework-agnostic: adapters build the Request from their own request object and send the returned Response.
     """
     method = route.method
-    method_exceptions_manager = MethodExceptionsManager(method)
     response_headers: dict[str, Any] = {}
 
     throttle = create_throttle_class(route)
@@ -43,22 +42,27 @@ def handle_request(route: Route, request: Request) -> Response:
         api_instance = get_injector().get(method.component.component_cls)
         result = method(api_instance, **arguments)
     except Exception as exception:
-        handler = method_exceptions_manager.get_handler(exception)
-        method = ComponentMethod.get_or_create(handler.__class__.handle)
+        method = exception_handlers.get(type(exception))
         try:
-            arguments = arguments_resolver.resolve_arguments(
-                method, request, response_headers, {'exception': exception, 'response_headers': response_headers},
-            )
-            result = method(handler, **arguments)
-        except Exception as inner_exception:
-            handler = exception_handlers_registry.get_default_handler()
-            method = ComponentMethod.get_or_create(handler.__class__.handle)
-            arguments = arguments_resolver.resolve_arguments(
-                method, request, response_headers, {'exception': inner_exception, 'response_headers': response_headers},
-            )
-            result = method(handler, **arguments)
+            result = _handle_exception(method, exception, request, response_headers)
+        except Exception as handler_exception:
+            # A failing handler is not retried: its exception goes to the handler of Exception
+            method = exception_handlers.get(Exception)
+            result = _handle_exception(method, handler_exception, request, response_headers)
 
     return _to_response(request, result, method, response_headers)
+
+
+def _handle_exception(
+    method: ComponentMethod,
+    exception: Exception,
+    request: Request,
+    response_headers: dict[str, Any],
+) -> Any:
+    context = {exception_argument_name(method): exception, 'response_headers': response_headers}
+    arguments = arguments_resolver.resolve_arguments(method, request, response_headers, context)
+    handler = get_injector().get(method.component.component_cls)
+    return method(handler, **arguments)
 
 
 def _to_response(request: Request, result: Any, method: ComponentMethod, response_headers: dict[str, Any]) -> Response:
