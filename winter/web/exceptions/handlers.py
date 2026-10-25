@@ -2,6 +2,7 @@ import inspect
 from dataclasses import dataclass
 from typing import Dict
 from typing import Iterable
+from typing import Iterator
 from typing import Tuple
 from typing import Type
 
@@ -34,6 +35,10 @@ class ExceptionHandlers:
 
     def get(self, exception_cls: Type[Exception]) -> ComponentMethod:
         return next(self._handlers[cls] for cls in exception_cls.__mro__ if cls in self._handlers)
+
+    def __iter__(self) -> Iterator[ComponentMethod]:
+        """Each handler once, also the one of several exceptions."""
+        return iter(dict.fromkeys(self._handlers.values()))
 
 
 def find_handlers(classes: Iterable[type]) -> Dict[Type[Exception], ComponentMethod]:

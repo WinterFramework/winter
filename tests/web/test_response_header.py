@@ -77,11 +77,3 @@ def test_two_response_headers(api_client):
     assert response.json() == 'OK'
     assert response.headers['x-header1'] == 'header1'
     assert response.headers['x-header2'] == 'header2'
-
-
-def test_header_without_annotation(api_client):
-    # Act
-    response = api_client.get('/with-response-headers/header-without-annotation/')
-
-    # Assert
-    assert response.status_code == 500  # It's better to be replaced with something more human readable

@@ -68,8 +68,9 @@ at least two of them.
    subpackage can later ship as its own distribution from its own repository without any
    import path changing.
 2. **Framework behaviour is never process-global.** Every behavioural registry (exception
-   handlers, interceptors, argument resolvers, throttling configuration, OpenAPI inspectors)
-   belongs to an `Application` instance, so two applications can live in one process.
+   handlers, interceptors, output processors, throttling configuration, OpenAPI inspectors)
+   belongs to an `Application` instance, and the values that its methods receive come from its
+   injector, so two applications can live in one process.
    Declarative metadata about types (component annotations, JSON encoders for a type) may be
    global, like the classes it describes.
 3. **Glue between models, or between adapters, is application code.** Mapping a domain
@@ -81,18 +82,19 @@ at least two of them.
 ## Current deviations
 
 - **Framework behaviour is still process-global.** An `Application` holds the code of an
-  application and its injector, and the adapters derive its exception handlers from its definitions.
-  The other behavioural registries of `winter.web` and `winter.openapi` (interceptors, argument
-  resolvers, output processors, response header serializers, native response types, throttling,
-  OpenAPI inspectors) are module singletons, and the application installs its injector as the
-  service locator `winter.application.get_injector`.
+  application and its injector. The adapters derive its exception handlers from its definitions and
+  handle each of its requests in a child of its injector. The other behavioural registries of
+  `winter.web` and `winter.openapi` (interceptors, output processors, response header serializers,
+  native response types, throttling, OpenAPI inspectors) are module singletons, and
+  `winter.sqlalchemy`, `winter.ddd` and `winter.messaging` take the injector from the service
+  locator `winter.application.get_injector`.
 - **Models are initialised once per process.** `winter.web.initialization.initialize`, the Django
   adapter's `_initialize_process` and `winter.openapi.initialization.initialize` fill those module
-  singletons with the standard resolvers and inspectors on first use. In the target, each
-  `Application` owns these registries in an injector of its own, a child of the injector it is given,
-  and they start with the standard entries. Building from an application, an adapter adds its own
-  entries (the Django request resolver, the native response type, the throttling identity) to that
-  application only. The `initialize` functions then disappear.
+  singletons with the standard output processors, serializers and inspectors on first use. In the
+  target, each `Application` owns these registries in an injector of its own, a child of the injector
+  it is given, and they start with the standard entries. Building from an application, an adapter adds
+  its own entries (the native response type, the throttling identity) to that application only. The
+  `initialize` functions then disappear.
 - **`winter.wsgi`, `winter.asgi` and `winter.rabbitmq` do not exist yet.** HTTP is served through
   `winter.django` only, and `winter.messaging` has no transport adapter.
 - **All dependencies are mandatory.** Django, SQLAlchemy, Redis and pydantic are installed with
@@ -106,6 +108,7 @@ at least two of them.
   There are no `ignore_imports`, and none may be added.
 - **Isolation test** `tests/test_application_scope.py` builds two applications in one process
   and asserts that the handler of a `@problem` exception of one does not handle that exception in
-  the other. Each registry that moves into `Application` adds its case there.
+  the other, and that the arguments of an API method come from the injector of the application
+  that serves it. Each registry that moves into `Application` adds its case there.
 - **This document** describes intent and is updated when the intent changes, not when the code
   moves. Deviations are listed above while they exist.

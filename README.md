@@ -55,6 +55,17 @@ urlpatterns = winter.django.create_urls(app)
   The handler of the nearest class in the exception's MRO handles it; two handlers of one exception class in an
   application fail on startup. A handler of the application replaces the built-in handler of the same exception
   class: a handler of `Exception` replaces the default 500 response.
+- Arguments come from the request or from the injector of the application, see
+  [Values from the injector](#values-from-the-injector). Custom argument resolvers are gone: `ArgumentResolver`,
+  `ArgumentsResolver`, `arguments_resolver`, `RequestBodyArgumentResolver`, `ResponseHeaderArgumentResolver`,
+  `winter.web.pagination.PagePositionArgumentResolver` and `winter.django.HttpRequestArgumentResolver`. A resolver
+  of a type becomes a provider of that type marked `@winter.web.request_scope`. An argument of an API method, an
+  interceptor or an exception handler that is neither mapped from the request nor bound in the injector fails on
+  startup instead of on the first request.
+- An argument named `response_headers` of an exception handler no longer receives the headers of the response:
+  declare a `ResponseHeader[T]` with `@winter.web.response_header`, as in an API method.
+- The request pipeline takes the injector from the application. `winter.application.set_injector` is needed only
+  by `winter.sqlalchemy`, `winter.ddd` and `winter.messaging`.
 - `winter.django.create_urls` installs the Django throttling identity on its first call: replace it with
   `winter.web.set_throttling_identity_resolver` after that.
 - OpenAPI: `generate_openapi(app, title=..., version=...)` returns the spec and checks `@raises` annotations
@@ -328,7 +339,8 @@ class HelloWorldInterceptor(Interceptor):
 
 The only way now to register an interceptor is to add it to InterceptorRegistry singleton.
 
-Don't forget to import this adding during app initialization.
+Don't forget to import this adding during app initialization, before the URL patterns are created: they check
+the arguments of the registered interceptors on startup.
 ```python
 from winter.web import interceptor_registry
 from .interceptors import HelloWorldInterceptor
@@ -338,6 +350,42 @@ class SomeInitializationClassInMyApplication:
         interceptor_registry.add_interceptor(HelloWorldInterceptor())
 
 ```
+
+## Values from the injector
+An argument that is not mapped from the request (path and query parameters, `@request_body`, `@request_header`,
+`@response_header`, `PagePosition`) comes from the injector of the application, which must bind its type:
+otherwise the application fails on startup. The dependencies of the class itself go to `__init__`, where the
+injector creates them without bindings. A provider marked `@winter.web.request_scope` is called once per request,
+and its value exists only while Winter handles a request. Every request binds `winter.web.Request` and, under
+Django, `django.http.HttpRequest`.
+```python
+import injector
+import winter.web
+from django.http import HttpRequest
+from winter.application import Application
+
+
+class AccountModule(injector.Module):
+    @injector.provider
+    @winter.web.request_scope
+    def account(self, request: HttpRequest, accounts: AccountQueries) -> Account:
+        return accounts.get(request.user.pk)
+
+
+class ProfileAPI:
+    @injector.inject
+    def __init__(self, profiles: ProfileQueries):
+        self._profiles = profiles
+
+    @winter.web.route_get('profile/')
+    def get(self, account: Account) -> ProfileDTO:
+        return self._profiles.get(account)
+
+
+app = Application(modules=[profiles], injector=injector.Injector([AccountModule()]))
+```
+
+Interceptors and exception handlers of a request get the same request-scoped values as its API method.
 
 ## Undefined JSON fields
 
