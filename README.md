@@ -22,17 +22,17 @@ Package structure and layer rules: [docs/architecture.md](docs/architecture.md).
 
 ## Upgrading to Winter 34
 
-An application is composed explicitly in a `winter.application.Application`, which imports every module of
-the given packages on construction (by default, those of the directory of the module that creates it), and
-adapters build from it. `find_package_routes`, `create_django_urls_from_routes`, `WinterApplication` and the
-`setup()` functions of `winter.web`, `winter.django` and `winter.openapi` are gone.
+A web application is composed explicitly in a `winter.web.WebApplication`, which imports every module of the
+given packages and their subpackages on construction, and adapters build from it. `find_package_routes`,
+`create_django_urls_from_routes`, `WinterApplication` and the `setup()` functions of `winter.web`, `winter.django`
+and `winter.openapi` are gone.
 
 ```python
 import service_a
 import winter.django
-from winter.application import Application
+import winter.web
 
-app = Application(modules=[service_a], injector=injector)  # several applications may share one injector
+app = winter.web.WebApplication(modules=[service_a], injector=injector)  # applications may share one injector
 urlpatterns = winter.django.create_urls(app)
 ```
 
@@ -64,6 +64,9 @@ urlpatterns = winter.django.create_urls(app)
   startup instead of on the first request.
 - An argument named `response_headers` of an exception handler no longer receives the headers of the response:
   declare a `ResponseHeader[T]` with `@winter.web.response_header`, as in an API method.
+- Interceptors belong to applications: `WebApplication(..., interceptors=[AuthorizationInterceptor, AuditInterceptor])`
+  lists their classes in the order they run. The injector of each request creates them, so their dependencies go
+  to `__init__`. `interceptor_registry` and `InterceptorRegistry` are gone.
 - The request pipeline takes the injector from the application. `winter.application.set_injector` is needed only
   by `winter.sqlalchemy`, `winter.ddd` and `winter.messaging`.
 - `winter.django.create_urls` installs the Django throttling identity on its first call: replace it with
@@ -125,9 +128,9 @@ To use it with Django, in `urls.py`:
 ```python
 import some_package
 import winter.django
-from winter.application import Application
+import winter.web
 
-app = Application(modules=[some_package])
+app = winter.web.WebApplication(modules=[some_package])
 urlpatterns = [
     *winter.django.create_urls(app),
 ]
@@ -316,7 +319,8 @@ class TodoProblemExistsExampleAPI:
 
 ## Interceptors
 You can define interceptors to pre-handle a web request before it gets to an endpoint code.
-The pre_handle method arguments will be injected the same way as it's done in methods with winter.web.route annotation.
+The pre_handle method arguments are resolved the same way as those of an API method, and `method` receives the API
+method of the request.
 It's not supported to return any response from interceptors.
 However, the exceptions thrown from within an interceptor will be handled automatically.
 ```python
@@ -336,19 +340,10 @@ class HelloWorldInterceptor(Interceptor):
 
 ```
 
-
-The only way now to register an interceptor is to add it to InterceptorRegistry singleton.
-
-Don't forget to import this adding during app initialization, before the URL patterns are created: they check
-the arguments of the registered interceptors on startup.
+An application lists the classes of its interceptors in the order they run. The injector of each request creates
+them, so their dependencies go to `__init__`:
 ```python
-from winter.web import interceptor_registry
-from .interceptors import HelloWorldInterceptor
-
-class SomeInitializationClassInMyApplication:
-    def initialize_my_app(self):
-        interceptor_registry.add_interceptor(HelloWorldInterceptor())
-
+app = winter.web.WebApplication(modules=[some_package], interceptors=[HelloWorldInterceptor])
 ```
 
 ## Values from the injector
@@ -362,7 +357,6 @@ Django, `django.http.HttpRequest`.
 import injector
 import winter.web
 from django.http import HttpRequest
-from winter.application import Application
 
 
 class AccountModule(injector.Module):
@@ -382,7 +376,7 @@ class ProfileAPI:
         return self._profiles.get(account)
 
 
-app = Application(modules=[profiles], injector=injector.Injector([AccountModule()]))
+app = winter.web.WebApplication(modules=[profiles], injector=injector.Injector([AccountModule()]))
 ```
 
 Interceptors and exception handlers of a request get the same request-scoped values as its API method.

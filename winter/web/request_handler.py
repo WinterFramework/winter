@@ -13,7 +13,6 @@ from .default_response_status import get_response_status
 from .exceptions import ExceptionHandlers
 from .exceptions import ThrottleException
 from .exceptions.handlers import exception_argument_name
-from .interceptor import interceptor_registry
 from .output_processor import get_output_processor
 from .pagination.page_position_argument_resolver import PagePositionArgumentResolver
 from .path_parameters_argument_resolver import PathParametersArgumentResolver
@@ -29,6 +28,7 @@ from .response_header_resolver import ResponseHeaderArgumentResolver
 from .response_header_serializer import response_headers_serializer
 from .routing import Route
 from .throttling import create_throttle_class
+from .web_application import WebApplication
 
 # The arguments mapped from the request; any other argument comes from the injector of the request
 _arguments_resolver = ArgumentsResolver([
@@ -43,9 +43,9 @@ _arguments_resolver = ArgumentsResolver([
 
 
 def check_arguments(
+    app: WebApplication,
     routes: Iterable[Route],
     exception_handlers: ExceptionHandlers,
-    app_injector: Injector,
     request_types: Collection[type],
 ):
     """
@@ -54,42 +54,42 @@ def check_arguments(
     """
     request_types = {Request, *request_types}
     for route in routes:
-        _arguments_resolver.check_arguments(route.method, app_injector, request_types)
-    for interceptor in interceptor_registry:
-        pre_handle = ComponentMethod.get_or_create(interceptor.__class__.pre_handle)
-        _arguments_resolver.check_arguments(pre_handle, app_injector, request_types, {'method'})
+        _arguments_resolver.check_arguments(route.method, app.injector, request_types)
+    for interceptor in app.interceptors:
+        pre_handle = ComponentMethod.get_or_create(interceptor.pre_handle)
+        _arguments_resolver.check_arguments(pre_handle, app.injector, request_types, {'method'})
     for method in exception_handlers:
-        _arguments_resolver.check_arguments(method, app_injector, request_types, {exception_argument_name(method)})
+        _arguments_resolver.check_arguments(method, app.injector, request_types, {exception_argument_name(method)})
 
 
 def handle_request(
+    app: WebApplication,
     route: Route,
     request: Request,
     exception_handlers: ExceptionHandlers,
-    app_injector: Injector,
     request_values: Mapping[type, object],
 ) -> Response:
     """
-    Run the whole handling pipeline for a matched route: throttling, interceptors, argument resolution,
-    the API method, the application's exception handlers, output processing and JSON encoding.
+    Run the whole handling pipeline for a matched route of the application: throttling, its interceptors, argument
+    resolution, the API method, its exception handlers, output processing and JSON encoding.
     Framework-agnostic: adapters build the Request from their own request object and send the returned Response.
     The request is handled in an injector of its own, a child of the application's one, that binds the Request
     and the request values of the adapter, such as its own request object. Request-scoped values live in it.
     """
     method = route.method
     response_headers: dict[str, Any] = {}
-    injector = create_request_injector(app_injector, request, request_values)
+    injector = create_request_injector(app.injector, request, request_values)
 
     throttle = create_throttle_class(route)
     try:
         if throttle and not throttle.allow_request(request):
             raise ThrottleException()
 
-        for interceptor in interceptor_registry:
-            pre_handle = ComponentMethod.get_or_create(interceptor.__class__.pre_handle)
+        for interceptor_cls in app.interceptors:
+            pre_handle = ComponentMethod.get_or_create(interceptor_cls.pre_handle)
             context = {'method': method}
             arguments = _arguments_resolver.resolve_arguments(pre_handle, request, response_headers, injector, context)
-            pre_handle(interceptor, **arguments)
+            pre_handle(injector.get(interceptor_cls), **arguments)
 
         arguments = _arguments_resolver.resolve_arguments(method, request, response_headers, injector)
         api_instance = injector.get(method.component.component_cls)

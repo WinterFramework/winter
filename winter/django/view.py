@@ -7,11 +7,10 @@ import django.http
 from django.http.response import HttpResponseBase
 from django.urls import URLPattern
 from django.urls import re_path
-from injector import Injector
 
 import winter.web.initialization
-from winter.application import Application
 from winter.web import Response
+from winter.web import WebApplication
 from winter.web import handle_request
 from winter.web import register_native_response_type
 from winter.web import set_throttling_identity_resolver
@@ -28,22 +27,22 @@ if TYPE_CHECKING:
     from django.views.generic import View
 
 
-def create_urls(app: Application) -> List[URLPattern]:
+def create_urls(app: WebApplication) -> List[URLPattern]:
     """URL patterns of the routes of an application, relative to where they are included in the urlpatterns."""
     winter.web.initialization.initialize()
     _initialize_process()
     routes = find_routes(app)
     exception_handlers = find_exception_handlers(app)
     # Each request binds the Django request, see _create_dispatch_function
-    check_arguments(routes, exception_handlers, app.injector, request_types=[django.http.HttpRequest])
-    return _create_urls_from_routes(routes, exception_handlers, app.injector)
+    check_arguments(app, routes, exception_handlers, request_types=[django.http.HttpRequest])
+    return _create_urls_from_routes(app, routes, exception_handlers)
 
 
 _process_initialized = False
 
 
 def _initialize_process():
-    """Process-global until the registries move into Application: docs/architecture.md, Current deviations."""
+    """Process-global until these registries belong to an application: docs/architecture.md, Current deviations."""
     global _process_initialized
     if not _process_initialized:
         register_native_response_type(HttpResponseBase)
@@ -52,9 +51,9 @@ def _initialize_process():
 
 
 def _create_urls_from_routes(
+    app: WebApplication,
     routes: List[Route],
     exception_handlers: ExceptionHandlers,
-    injector: Injector,
 ) -> List[URLPattern]:
     django_urls = []
     grouped_routes = defaultdict(list)
@@ -63,7 +62,7 @@ def _create_urls_from_routes(
         grouped_routes[route.url_path].append(route)
 
     for url_path, routes in grouped_routes.items():
-        django_view = _create_django_view_from_routes(routes, exception_handlers, injector).as_view()
+        django_view = _create_django_view_from_routes(app, routes, exception_handlers).as_view()
         winter_url_path = f'^{url_path}$'
         methods = [route.method for route in routes]
         django_url_path = rewrite_uritemplate_with_regexps(winter_url_path, methods)
@@ -76,9 +75,9 @@ def _create_urls_from_routes(
 
 
 def _create_django_view_from_routes(
+    app: WebApplication,
     routes: List[Route],
     exception_handlers: ExceptionHandlers,
-    injector: Injector,
 ) -> 'View':
     from django.views.generic import View
 
@@ -88,7 +87,7 @@ def _create_django_view_from_routes(
             return super().as_view(**initkwargs)
 
     for route in routes:
-        dispatch = _create_dispatch_function(route, exception_handlers, injector)
+        dispatch = _create_dispatch_function(app, route, exception_handlers)
         dispatch.route = route
         dispatch_method_name = route.http_method.lower()
         setattr(WinterView, dispatch_method_name, dispatch)
@@ -96,12 +95,12 @@ def _create_django_view_from_routes(
     return WinterView()
 
 
-def _create_dispatch_function(route: Route, exception_handlers: ExceptionHandlers, injector: Injector):
+def _create_dispatch_function(app: WebApplication, route: Route, exception_handlers: ExceptionHandlers):
     @wraps(route.method.func)
     def dispatch(winter_view, request: django.http.HttpRequest, **path_parameters):
         winter_request = DjangoRequest(request, path_parameters)
         request_values = {django.http.HttpRequest: request}
-        response = handle_request(route, winter_request, exception_handlers, injector, request_values)
+        response = handle_request(app, route, winter_request, exception_handlers, request_values)
         return to_django_response(response)
 
     return dispatch

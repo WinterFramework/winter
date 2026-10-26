@@ -1,17 +1,13 @@
 import json
 from dataclasses import dataclass
-from http import HTTPStatus
 
 import injector
 import pytest
 from django.http import HttpRequest
 from django.test import RequestFactory
-from mock import patch
 
 import winter.django
 import winter.web
-from winter.application import Application
-from winter.web import interceptor_registry
 
 
 class _Visit:
@@ -37,8 +33,8 @@ class _VisitAPI:
         return {'number': visit.number, 'path': visit.path, 'same': visit is same_visit, 'method': request.method}
 
 
-def _create_urls(*definitions, app_injector=None):
-    app = Application(modules=[], injector=app_injector or injector.Injector())
+def _create_urls(*definitions, app_injector=None, interceptors=()):
+    app = winter.web.WebApplication(modules=[], injector=app_injector or injector.Injector(), interceptors=interceptors)
     for definition in definitions:
         app.add(definition)
     return winter.django.create_urls(app)
@@ -60,12 +56,17 @@ def test_request_scoped_value_is_created_once_per_request():
     assert json.loads(second_response.content) == {'number': 2, 'path': '/visit/', 'same': True, 'method': 'GET'}
 
 
+class _SeenVisits(list):
+    pass
+
+
 class _VisitInterceptor(winter.web.Interceptor):
-    def __init__(self):
-        self.visits = []
+    @injector.inject
+    def __init__(self, seen_visits: _SeenVisits):
+        self._seen_visits = seen_visits
 
     def pre_handle(self, visit: _Visit):
-        self.visits.append(visit)
+        self._seen_visits.append(visit)
 
 
 class _VisitNumberAPI:
@@ -75,16 +76,16 @@ class _VisitNumberAPI:
 
 
 def test_interceptor_and_api_method_get_same_request_scoped_value():
-    interceptor = _VisitInterceptor()
-    with patch.object(interceptor_registry, '_interceptors', [interceptor]):
-        [url] = _create_urls(_VisitNumberAPI, app_injector=injector.Injector([_VisitModule()]))
+    seen_visits = _SeenVisits()
+    app_injector = injector.Injector([_VisitModule(), lambda binder: binder.bind(_SeenVisits, to=seen_visits)])
+    [url] = _create_urls(_VisitNumberAPI, app_injector=app_injector, interceptors=[_VisitInterceptor])
 
-        # Act
-        response = _get(url, '/visit/')
+    # Act
+    response = _get(url, '/visit/')
 
     # Assert
     assert response.content == b'1'
-    assert [visit.number for visit in interceptor.visits] == [1]
+    assert [visit.number for visit in seen_visits] == [1]
 
 
 def test_request_scoped_value_does_not_exist_outside_request():
@@ -162,24 +163,12 @@ class _TodoInterceptor(winter.web.Interceptor):
 
 
 def test_interceptor_argument_neither_mapped_nor_bound_fails_startup():
-    with patch.object(interceptor_registry, '_interceptors', [_TodoInterceptor()]):
-        # Act
-        with pytest.raises(TypeError) as exception_info:
-            _create_urls()
+    # Act
+    with pytest.raises(TypeError) as exception_info:
+        _create_urls(interceptors=[_TodoInterceptor])
 
     # Assert
     assert str(exception_info.value) == (
         '_TodoInterceptor.pre_handle: argument todo (_NewTodo) is not mapped from the request '
         'and has no binding in the injector'
     )
-
-
-def test_interceptor_added_after_startup_does_not_get_unbound_argument():
-    [url] = _create_urls(_VisitNumberAPI, app_injector=injector.Injector([_VisitModule()]))
-
-    with patch.object(interceptor_registry, '_interceptors', [_TodoInterceptor()]):
-        # Act
-        response = _get(url, '/visit/')
-
-    # Assert
-    assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR

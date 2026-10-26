@@ -7,7 +7,6 @@ from django.test import RequestFactory
 import winter.django
 import winter.openapi
 import winter.web
-from winter.application import Application
 from winter.application import get_injector
 
 
@@ -26,14 +25,14 @@ class _API:
         return []
 
 
-def _application(*definitions) -> Application:
-    app = Application(modules=[], injector=get_injector())
+def _application(*definitions) -> winter.web.WebApplication:
+    app = winter.web.WebApplication(modules=[], injector=get_injector())
     for definition in definitions:
         app.add(definition)
     return app
 
 
-def _get(app: Application, route_name: str, path: str):
+def _get(app: winter.web.WebApplication, route_name: str, path: str):
     [url] = [url for url in winter.django.create_urls(app) if url.name == route_name]
     return url.callback(RequestFactory().get(path))
 

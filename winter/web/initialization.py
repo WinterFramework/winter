@@ -11,7 +11,7 @@ def initialize():
     """
     Registers the standard output processors and response header serializers of winter.web on the first call.
     Adapters call it before building their routes.
-    Process-global until the registries move into Application: docs/architecture.md, Current deviations.
+    Process-global until these registries belong to an application: docs/architecture.md, Current deviations.
     """
     global _process_initialized
     if not _process_initialized:
