@@ -349,11 +349,9 @@ class RequestBodyWithUndefined:
                     'properties': {
                         'limit': {'format': 'int32', 'nullable': True, 'type': 'integer'},
                         'offset': {'format': 'int32', 'nullable': True, 'type': 'integer'},
-                        'next': {'nullable': True, 'type': 'string'},
-                        'previous': {'nullable': True, 'type': 'string'},
                         'total_count': {'format': 'int32', 'type': 'integer'},
                     },
-                    'required': ['total_count', 'limit', 'offset', 'previous', 'next'],
+                    'required': ['total_count', 'limit', 'offset'],
                     'title': 'PageMetaOfNestedDataclass',
                     'type': 'object',
                 },
@@ -399,10 +397,8 @@ class RequestBodyWithUndefined:
                         'extra': {'type': 'string'},
                         'limit': {'format': 'int32', 'nullable': True, 'type': 'integer'},
                         'offset': {'format': 'int32', 'nullable': True, 'type': 'integer'},
-                        'next': {'nullable': True, 'type': 'string'},
-                        'previous': {'nullable': True, 'type': 'string'},
                         'total_count': {'format': 'int32', 'type': 'integer'}},
-                    'required': ['total_count', 'limit', 'offset', 'previous', 'next', 'extra'],
+                    'required': ['total_count', 'limit', 'offset', 'extra'],
                     'title': 'PageMetaOfInteger',
                     'type': 'object',
                 },
@@ -1008,12 +1004,10 @@ def test_reuse_page_schema():
                 'PageMetaOfString': {
                     'properties': {
                         'limit': {'format': 'int32', 'nullable': True, 'type': 'integer'},
-                        'next': {'nullable': True, 'type': 'string'},
                         'offset': {'format': 'int32', 'nullable': True, 'type': 'integer'},
-                        'previous': {'nullable': True, 'type': 'string'},
                         'total_count': {'format': 'int32', 'type': 'integer'},
                     },
-                    'required': ['total_count', 'limit', 'offset', 'previous', 'next'],
+                    'required': ['total_count', 'limit', 'offset'],
                     'title': 'PageMetaOfString',
                     'type': 'object'},
                 'PageOfString': {

@@ -13,7 +13,6 @@ from .default_response_status import get_response_status
 from .exceptions import ExceptionHandlers
 from .exceptions import ThrottleException
 from .exceptions.handlers import exception_argument_name
-from .output_processor import get_output_processor
 from .pagination.page_position_argument_resolver import PagePositionArgumentResolver
 from .path_parameters_argument_resolver import PathParametersArgumentResolver
 from .query_parameters.query_parameter_argument_resolver import QueryParameterArgumentResolver
@@ -133,12 +132,6 @@ def _to_response(request: Request, result: Any, method: ComponentMethod, respons
     else:
         body = result
         status_code = get_response_status(request.method, method)
-
-    output_processor = get_output_processor(method, body)
-    if output_processor is not None:
-        body = output_processor.process_output(body, request)
-    if isinstance(body, Response):
-        return Response(status_code=body.status_code, body=body.body, headers={**headers, **body.headers})
 
     if _is_native(body):
         return Response(status_code=status_code, body=body, headers=headers)

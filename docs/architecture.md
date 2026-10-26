@@ -68,7 +68,7 @@ at least two of them.
    subpackage can later ship as its own distribution from its own repository without any
    import path changing.
 2. **Framework behaviour is never process-global.** Every behavioural registry (exception
-   handlers, interceptors, output processors, throttling configuration, OpenAPI inspectors)
+   handlers, interceptors, response header serializers, throttling configuration, OpenAPI inspectors)
    belongs to the application object an adapter builds from, such as `winter.web.WebApplication`,
    and the values that its methods receive come from its injector, so two applications can live
    in one process.
@@ -85,13 +85,13 @@ at least two of them.
 - **Framework behaviour is still process-global.** A `winter.web.WebApplication` holds the code of
   a web application, its injector and its interceptors. The adapters derive its exception handlers
   from its definitions and handle each of its requests in a child of its injector. The other
-  behavioural registries of `winter.web` and `winter.openapi` (output processors, response header
-  serializers, native response types, throttling, OpenAPI inspectors) are module singletons, and
+  behavioural registries of `winter.web` and `winter.openapi` (response header serializers,
+  native response types, throttling, OpenAPI inspectors) are module singletons, and
   `winter.sqlalchemy`, `winter.ddd` and `winter.messaging` take the injector from the service
   locator `winter.application.get_injector`.
 - **Models are initialised once per process.** `winter.web.initialization.initialize`, the Django
   adapter's `_initialize_process` and `winter.openapi.initialization.initialize` fill those module
-  singletons with the standard output processors, serializers and inspectors on first use. In the
+  singletons with the standard serializers and inspectors on first use. In the
   target, a `WebApplication` is given these registries like its interceptors, and they start with the
   standard entries. Building from an application, an adapter adds
   its own entries (the native response type, the throttling identity) to that application only. The
