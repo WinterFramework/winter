@@ -3,7 +3,6 @@ from http import HTTPStatus
 from typing import Iterable
 from typing import Type
 
-from winter.application import Application
 from winter.components import Component
 from .exceptions import RedirectException
 from .exceptions import RequestDataDecodeException
@@ -21,6 +20,7 @@ from .response import Response
 from .response_header_annotation import ResponseHeader
 from .response_header_annotation import response_header
 from .response_status_annotation import response_status
+from .web_application import WebApplication
 
 
 class BuiltInExceptionHandlers:
@@ -47,7 +47,7 @@ _BUILT_IN = (
 _problem_handler_generator = ProblemExceptionHandlerGenerator(ProblemExceptionMapper())
 
 
-def find_exception_handlers(app: Application) -> ExceptionHandlers:
+def find_exception_handlers(app: WebApplication) -> ExceptionHandlers:
     """
     The exception handlers of an application: the @exception_handler methods and the handlers of the @problem
     exceptions among its definitions, over the built-in ones. A handler of the application replaces the built-in

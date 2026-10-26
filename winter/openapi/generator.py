@@ -29,9 +29,9 @@ from openapi_pydantic.v3.v3_0 import Schema
 from openapi_pydantic.v3.v3_0 import Server
 from openapi_pydantic.v3.v3_0 import Tag
 
-from winter.application import Application
 from winter.components import ComponentMethod
 from winter.web import MediaType
+from winter.web import WebApplication
 from winter.web.default_response_status import get_response_status
 from winter.web.exception_handlers import built_in_exception_handlers
 from winter.web.exception_handlers import find_exception_handlers
@@ -141,7 +141,7 @@ class SchemaRegistry:
 
 
 def generate_openapi(
-    app: Application,
+    app: WebApplication,
     *,
     title: str,
     version: str,

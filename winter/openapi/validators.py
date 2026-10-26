@@ -3,11 +3,11 @@ from typing import Set
 from typing import Type
 
 
-from winter.application import Application
+from winter.web import WebApplication
 from winter.openapi.annotations import GlobalExceptionAnnotation
 
 
-def validate_missing_raises_annotations(app: Application):
+def validate_missing_raises_annotations(app: WebApplication):
     """Every @problem exception of the application is declared with @raises by one of its API methods or is global."""
     from winter.web.exceptions.problem_annotation import ProblemAnnotation
     from winter.web.exceptions.raises import ExceptionAnnotation

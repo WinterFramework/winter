@@ -57,7 +57,7 @@ independent of each other. Dashed packages are planned and do not exist yet.
 |---|---|---|
 | Adapters | Bind the models to external technologies and standards. Independent of each other. | `django`, `openapi`, `sqlalchemy`, `redis`, `wsgi` (planned), `asgi` (planned), `rabbitmq` (planned) |
 | Models | Framework-agnostic descriptions of what an application does. Independent of each other. | `web` (HTTP), `ddd` (domain: aggregates, repositories, domain events), `messaging` (events) |
-| Foundations | Shared vocabulary and mechanisms. Unaware of the layers above. May use each other. | `components` (declarative metadata), `application` (scope, injector, discovery), `json`, `pagination`, `typing` (what the stdlib `typing` lacks) |
+| Foundations | Shared vocabulary and mechanisms. Unaware of the layers above. May use each other. | `components` (declarative metadata), `application` (discovery of definitions, injector), `json`, `pagination`, `typing` (what the stdlib `typing` lacks) |
 
 A package belongs to Foundations when it knows nothing about models or adapters and is used by
 at least two of them.
@@ -69,8 +69,9 @@ at least two of them.
    import path changing.
 2. **Framework behaviour is never process-global.** Every behavioural registry (exception
    handlers, interceptors, output processors, throttling configuration, OpenAPI inspectors)
-   belongs to an `Application` instance, and the values that its methods receive come from its
-   injector, so two applications can live in one process.
+   belongs to the application object an adapter builds from, such as `winter.web.WebApplication`,
+   and the values that its methods receive come from its injector, so two applications can live
+   in one process.
    Declarative metadata about types (component annotations, JSON encoders for a type) may be
    global, like the classes it describes.
 3. **Glue between models, or between adapters, is application code.** Mapping a domain
@@ -81,18 +82,18 @@ at least two of them.
 
 ## Current deviations
 
-- **Framework behaviour is still process-global.** An `Application` holds the code of an
-  application and its injector. The adapters derive its exception handlers from its definitions and
-  handle each of its requests in a child of its injector. The other behavioural registries of
-  `winter.web` and `winter.openapi` (interceptors, output processors, response header serializers,
-  native response types, throttling, OpenAPI inspectors) are module singletons, and
+- **Framework behaviour is still process-global.** A `winter.web.WebApplication` holds the code of
+  a web application, its injector and its interceptors. The adapters derive its exception handlers
+  from its definitions and handle each of its requests in a child of its injector. The other
+  behavioural registries of `winter.web` and `winter.openapi` (output processors, response header
+  serializers, native response types, throttling, OpenAPI inspectors) are module singletons, and
   `winter.sqlalchemy`, `winter.ddd` and `winter.messaging` take the injector from the service
   locator `winter.application.get_injector`.
 - **Models are initialised once per process.** `winter.web.initialization.initialize`, the Django
   adapter's `_initialize_process` and `winter.openapi.initialization.initialize` fill those module
   singletons with the standard output processors, serializers and inspectors on first use. In the
-  target, each `Application` owns these registries in an injector of its own, a child of the injector
-  it is given, and they start with the standard entries. Building from an application, an adapter adds
+  target, a `WebApplication` is given these registries like its interceptors, and they start with the
+  standard entries. Building from an application, an adapter adds
   its own entries (the native response type, the throttling identity) to that application only. The
   `initialize` functions then disappear.
 - **`winter.wsgi`, `winter.asgi` and `winter.rabbitmq` do not exist yet.** HTTP is served through
@@ -108,7 +109,8 @@ at least two of them.
   There are no `ignore_imports`, and none may be added.
 - **Isolation test** `tests/test_application_scope.py` builds two applications in one process
   and asserts that the handler of a `@problem` exception of one does not handle that exception in
-  the other, and that the arguments of an API method come from the injector of the application
-  that serves it. Each registry that moves into `Application` adds its case there.
+  the other, that the arguments of an API method come from the injector of the application that
+  serves it, and that an interceptor of one does not run in the other. Each registry that moves into
+  the application adds its case there.
 - **This document** describes intent and is updated when the intent changes, not when the code
   moves. Deviations are listed above while they exist.

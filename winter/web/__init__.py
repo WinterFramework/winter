@@ -4,8 +4,6 @@ from .exceptions import exception_handler
 from .exceptions import problem
 from .exceptions.raises import raises
 from .interceptor import Interceptor
-from .interceptor import InterceptorRegistry
-from .interceptor import interceptor_registry
 from .media_type import InvalidMediaTypeException
 from .media_type import MediaType
 from .output_processor import register_output_processor_resolver
@@ -36,3 +34,4 @@ from .throttling import set_throttling_identity_resolver
 from .throttling import set_throttling_storage
 from .throttling import throttling
 from .urls import register_url_regexp
+from .web_application import WebApplication

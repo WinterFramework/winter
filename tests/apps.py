@@ -1,18 +1,13 @@
 from django.apps import AppConfig
 
-from tests.web.interceptors import HelloWorldInterceptor
 import winter.web
 from winter.web import InMemoryThrottlingStorage
-from winter.web import interceptor_registry
 
 
 class TestAppConfig(AppConfig):
     name = 'tests'
 
     def ready(self):
-        # Before the URL patterns, which check the arguments of the interceptors on startup
-        interceptor_registry.add_interceptor(HelloWorldInterceptor())
-
         # Importing the URLs creates the application and its URL patterns
         from .urls import urlpatterns   # noqa: F401
 

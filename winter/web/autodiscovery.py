@@ -1,12 +1,12 @@
 from typing import List
 
-from winter.application import Application
 from winter.components import Component
 from .routing import Route
 from .routing import get_route
+from .web_application import WebApplication
 
 
-def find_routes(app: Application) -> List[Route]:
+def find_routes(app: WebApplication) -> List[Route]:
     """Routes of the API classes among the definitions of an application."""
     components = Component.get_all()
     return [

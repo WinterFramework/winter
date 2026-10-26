@@ -5,11 +5,11 @@ from typing import Any
 from typing import Dict
 
 import winter.web
-from winter.application import Application
+from winter.web import WebApplication
 from .swagger_ui import get_swagger_ui_html
 
 
-def serve_spec(app: Application, spec: Dict[str, Any], *, url: str):
+def serve_spec(app: WebApplication, spec: Dict[str, Any], *, url: str):
     """
     Adds a route that serves the spec to the application. `url` is relative to the application root, like the url
     of any route. The servers of the spec are prefixed with the path the application is mounted at, so the spec stays
@@ -31,7 +31,7 @@ def serve_spec(app: Application, spec: Dict[str, Any], *, url: str):
     app.add(OpenAPISpec)
 
 
-def serve_swagger_ui(app: Application, *, spec_url: str, url: str):
+def serve_swagger_ui(app: WebApplication, *, spec_url: str, url: str):
     """
     Adds a route with Swagger UI to the application, for the spec served at `spec_url`.
     Both urls are relative to the application root.
