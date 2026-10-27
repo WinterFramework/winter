@@ -84,17 +84,17 @@ at least two of them.
 
 - **Framework behaviour is still process-global.** A `winter.web.WebApplication` holds the code of
   a web application, its injector and its interceptors. The adapters derive its exception handlers
-  from its definitions and handle each of its requests in a child of its injector. The other
-  behavioural registries of `winter.web` and `winter.openapi` (native response types, throttling,
-  OpenAPI inspectors) are module singletons, and
+  from its definitions, handle each of its requests in a child of its injector and throttle in the
+  storage that its injector binds. The other behavioural registries of `winter.web` and
+  `winter.openapi` (native response types, OpenAPI inspectors) are module singletons, and
   `winter.sqlalchemy`, `winter.ddd` and `winter.messaging` take the injector from the service
   locator `winter.application.get_injector`.
 - **Models are initialised once per process.** The Django adapter's `_initialize_process` and
-  `winter.openapi.initialization.initialize` fill those module singletons with the Django entries and
-  the standard inspectors on first use. In the
+  `winter.openapi.initialization.initialize` fill those module singletons with the Django response type
+  and the standard inspectors on first use. In the
   target, a `WebApplication` is given these registries like its interceptors, and they start with the
   standard entries. Building from an application, an adapter adds
-  its own entries (the native response type, the throttling identity) to that application only. The
+  its own entries (the native response type) to that application only. The
   `initialize` functions then disappear.
 - **`winter.wsgi`, `winter.asgi` and `winter.rabbitmq` do not exist yet.** HTTP is served through
   `winter.django` only, and `winter.messaging` has no transport adapter.
@@ -110,7 +110,8 @@ at least two of them.
 - **Isolation test** `tests/test_application_scope.py` builds two applications in one process
   and asserts that the handler of a `@problem` exception of one does not handle that exception in
   the other, that the arguments of an API method come from the injector of the application that
-  serves it, and that an interceptor of one does not run in the other. Each registry that moves into
+  serves it, that an interceptor of one does not run in the other, and that each counts throttled
+  requests in the storage of its own injector. Each registry that moves into
   the application adds its case there.
 - **This document** describes intent and is updated when the intent changes, not when the code
   moves. Deviations are listed above while they exist.

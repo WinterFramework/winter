@@ -21,11 +21,17 @@ from .request import Request
 from .request_body_resolver import RequestBodyArgumentResolver
 from .request_header_resolver import RequestHeaderArgumentResolver
 from .request_scope import create_request_injector
+from .request_scope import is_bound
 from .response import Response
 from .response_entity import ResponseEntity
 from .response_header_resolver import ResponseHeaderArgumentResolver
 from .routing import Route
-from .throttling import create_throttle_class
+from .throttling import IdentityResolver
+from .throttling import Throttle
+from .throttling import ThrottlingMisconfigurationException
+from .throttling import ThrottlingStorage
+from .throttling import create_throttle
+from .throttling import get_throttling
 from .web_application import WebApplication
 
 # The arguments mapped from the request; any other argument comes from the injector of the request
@@ -48,11 +54,20 @@ def check_arguments(
 ):
     """
     Fails on startup for an argument of an API method, an interceptor or an exception handler that is not mapped
-    from the request and whose type the injector does not bind. Adapters bind the request types in each request.
+    from the request and whose type the injector does not bind, and for an API method with @throttling when the
+    injector binds no ThrottlingStorage. Adapters bind the request types in each request; an API method with
+    @throttling also receives its Throttle.
     """
     request_types = {Request, *request_types}
     for route in routes:
-        _arguments_resolver.check_arguments(route.method, app.injector, request_types)
+        if get_throttling(route.method) is None:
+            _arguments_resolver.check_arguments(route.method, app.injector, request_types)
+            continue
+        if not is_bound(app.injector, ThrottlingStorage):
+            raise ThrottlingMisconfigurationException(
+                f'{route.method.full_name}: @throttling needs a ThrottlingStorage bound in the injector',
+            )
+        _arguments_resolver.check_arguments(route.method, app.injector, {*request_types, Throttle})
     for interceptor in app.interceptors:
         pre_handle = ComponentMethod.get_or_create(interceptor.pre_handle)
         _arguments_resolver.check_arguments(pre_handle, app.injector, request_types, {'method'})
@@ -66,6 +81,7 @@ def handle_request(
     request: Request,
     exception_handlers: ExceptionHandlers,
     request_values: Mapping[type, object],
+    throttling_identity: IdentityResolver,
 ) -> Response:
     """
     Run the whole handling pipeline for a matched route of the application: throttling, its interceptors, argument
@@ -73,14 +89,18 @@ def handle_request(
     Framework-agnostic: adapters build the Request from their own request object and send the returned Response.
     The request is handled in an injector of its own, a child of the application's one, that binds the Request
     and the request values of the adapter, such as its own request object. Request-scoped values live in it.
+    Throttling counts the request in the storage of the application's injector for the identity that the adapter
+    resolves, since the adapter knows the users of its framework.
     """
     method = route.method
     response_headers: dict[str, str] = {}
+    throttle = create_throttle(method, request, app.injector, throttling_identity)
+    if throttle is not None:
+        request_values = {**request_values, Throttle: throttle}
     injector = create_request_injector(app.injector, request, request_values)
 
-    throttle = create_throttle_class(route)
     try:
-        if throttle and not throttle.allow_request(request):
+        if throttle is not None and not throttle.allow_request():
             raise ThrottleException()
 
         for interceptor_cls in app.interceptors:

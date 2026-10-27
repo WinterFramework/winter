@@ -1,8 +1,7 @@
 
 import winter.web
 from winter.web import route_post, route_get
-from winter.web import Request
-from winter.web.throttling import reset
+from winter.web import Throttle
 
 
 @route_get('with-throttling/')
@@ -33,7 +32,7 @@ class APIWithThrottling:
 
     @route_get('with-reset/{?is_reset}')
     @winter.web.throttling('5/s', 'reset_scope')
-    def simple_method_with_reset(self, request: Request, is_reset: bool) -> int:
+    def simple_method_with_reset(self, throttle: Throttle, is_reset: bool) -> int:
         if is_reset:
-            reset(request, 'reset_scope')
+            throttle.reset()
         return 1

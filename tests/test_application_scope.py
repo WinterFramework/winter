@@ -2,7 +2,8 @@
 Isolation test for docs/architecture.md, principle 2: framework behaviour is never process-global.
 Two applications in one process must not share behaviour: the handler of a @problem exception of one application
 does not handle that exception in another, the arguments of an API method come from the injector of the
-application that serves it, and an interceptor of one application does not run in another.
+application that serves it, an interceptor of one application does not run in another, and each application counts
+throttled requests in the storage of its own injector.
 """
 from http import HTTPStatus
 
@@ -96,3 +97,32 @@ def test_interceptor_of_one_application_does_not_run_in_another():
     # Assert
     assert response_1.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
     assert response_2.content == b'"ok"'
+
+
+class _ThrottledAPI:
+    @winter.web.route_get('throttled/')
+    @winter.web.throttling('1/m')
+    def get(self) -> str:
+        return 'ok'
+
+
+def _application_with_throttling() -> winter.web.WebApplication:
+    storage = winter.web.InMemoryThrottlingStorage()
+    app = winter.web.WebApplication(
+        modules=[],
+        injector=Injector([lambda binder: binder.bind(winter.web.ThrottlingStorage, to=storage)]),
+    )
+    app.add(_ThrottledAPI)
+    return app
+
+
+def test_throttled_requests_of_one_application_are_not_counted_in_another():
+    [url_1] = winter.django.create_urls(_application_with_throttling())
+    [url_2] = winter.django.create_urls(_application_with_throttling())
+    url_1.callback(RequestFactory().get('/throttled/'))
+
+    # Act
+    response = url_2.callback(RequestFactory().get('/throttled/'))
+
+    # Assert
+    assert response.status_code == HTTPStatus.OK
