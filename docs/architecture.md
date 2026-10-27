@@ -68,12 +68,12 @@ at least two of them.
    subpackage can later ship as its own distribution from its own repository without any
    import path changing.
 2. **Framework behaviour is never process-global.** Every behavioural registry (exception
-   handlers, interceptors, throttling configuration, OpenAPI inspectors)
-   belongs to the application object an adapter builds from, such as `winter.web.WebApplication`,
-   and the values that its methods receive come from its injector, so two applications can live
-   in one process.
-   Declarative metadata about types (component annotations, JSON encoders for a type) may be
-   global, like the classes it describes.
+   handlers, interceptors, throttling configuration) belongs to the application object an adapter
+   builds from, such as `winter.web.WebApplication`, and the values that its methods receive come
+   from its injector, so two applications can live in one process. What belongs to an adapter, such
+   as the response types of its framework, the adapter passes to `winter.web.handle_request` itself.
+   Declarative metadata about types (component annotations, JSON encoders and OpenAPI type
+   inspectors for a type) may be global, like the classes it describes.
 3. **Glue between models, or between adapters, is application code.** Mapping a domain
    `NotFoundException` to HTTP 404, or mounting the Swagger UI route, is done by the
    application that composes the pieces, not by the framework.
@@ -82,17 +82,9 @@ at least two of them.
 
 ## Current deviations
 
-- **Framework behaviour is still process-global.** A `winter.web.WebApplication` holds the code of
-  a web application, its injector and its interceptors. The adapters derive its exception handlers
-  from its definitions, handle each of its requests in a child of its injector and throttle in the
-  storage that its injector binds; what belongs to an adapter, such as the response types of its
-  framework, it passes to `handle_request` itself. The OpenAPI inspectors and global exceptions of
-  `winter.openapi` are module singletons, and `winter.sqlalchemy`, `winter.ddd` and
-  `winter.messaging` take the injector from the service locator `winter.application.get_injector`.
-- **`winter.openapi` is initialised once per process.** `winter.openapi.initialization.initialize`
-  fills those module singletons with the standard inspectors and global exceptions on first use. In
-  the target, `generate_openapi` is given them, starting with the standard entries, and `initialize`
-  disappears.
+- **`winter.sqlalchemy`, `winter.ddd` and `winter.messaging` take the injector from a service
+  locator,** `winter.application.get_injector`, instead of being given the injector of an
+  application.
 - **`winter.wsgi`, `winter.asgi` and `winter.rabbitmq` do not exist yet.** HTTP is served through
   `winter.django` only, and `winter.messaging` has no transport adapter.
 - **All dependencies are mandatory.** Django, SQLAlchemy, Redis and pydantic are installed with

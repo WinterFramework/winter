@@ -3,6 +3,3 @@ from .page_position_argument_inspector import PagePositionArgumentsInspector
 from .path_parameters_inspector import PathParametersInspector
 from .query_parameters_inspector import QueryParametersInspector
 from .route_parameters_inspector import RouteParametersInspector
-from .route_parameters_inspector import get_route_parameters_inspectors
-from .route_parameters_inspector import get_route_parameters_inspectors
-from .route_parameters_inspector import register_route_parameters_inspector

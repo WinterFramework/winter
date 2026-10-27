@@ -37,6 +37,7 @@ from winter.web.exception_handlers import built_in_exception_handlers
 from winter.web.exception_handlers import find_exception_handlers
 from winter.web.exceptions import ExceptionHandlers
 from winter.web.exceptions.raises import get_raises
+from winter.web.pagination.page_position_argument_resolver import PagePositionArgumentResolver
 from winter.web.request_body_annotation import RequestBodyAnnotation
 from winter.web.routing import Route
 from winter.web.routing import RouteAnnotation
@@ -45,8 +46,9 @@ from winter.openapi.inspection.inspection import inspect_type
 from .inspection import DataTypes
 from .inspection import TypeInfo
 from .inspection.inspection import InspectorNotFound
-from .initialization import initialize
-from .inspectors import get_route_parameters_inspectors
+from .inspectors import PagePositionArgumentsInspector
+from .inspectors import PathParametersInspector
+from .inspectors import QueryParametersInspector
 from .validators import validate_missing_raises_annotations
 
 
@@ -152,7 +154,6 @@ def generate_openapi(
     allow_missing_raises_annotation: bool = False,
 ) -> Dict[str, Any]:
     """OpenAPI specification of the routes of an application, as a JSON-compatible dict."""
-    initialize()
     if not allow_missing_raises_annotation:
         validate_missing_raises_annotations(app)
     return generate_openapi_for_routes(
@@ -178,7 +179,6 @@ def generate_openapi_for_routes(
     add_url_segment_as_tag: bool = True,
 ) -> Dict[str, Any]:
     """The responses of the raised exceptions come from the exception handlers, the built-in ones by default."""
-    initialize()
     if exception_handlers is None:
         exception_handlers = built_in_exception_handlers()
     routes = list(routes)
@@ -329,9 +329,17 @@ def get_url_path_tag(url_path: str, path_prefix: str) -> Optional[str]:
     return url_path_tag
 
 
+# The parameters of a route mirror the arguments that winter.web maps from the request
+_route_parameters_inspectors = (
+    PathParametersInspector(),
+    QueryParametersInspector(),
+    PagePositionArgumentsInspector(PagePositionArgumentResolver()),
+)
+
+
 def get_route_parameters(route: Route, schema_registry: SchemaRegistry) -> List[Parameter]:
     parameters = []
-    for inspector in get_route_parameters_inspectors():
+    for inspector in _route_parameters_inspectors:
         parameters += inspector.inspect_parameters(route, schema_registry)
     return parameters
 
