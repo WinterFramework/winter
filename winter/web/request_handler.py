@@ -82,6 +82,7 @@ def handle_request(
     exception_handlers: ExceptionHandlers,
     request_values: Mapping[type, object],
     throttling_identity: IdentityResolver,
+    native_response_types: tuple[type, ...],
 ) -> Response:
     """
     Run the whole handling pipeline for a matched route of the application: throttling, its interceptors, argument
@@ -90,7 +91,8 @@ def handle_request(
     The request is handled in an injector of its own, a child of the application's one, that binds the Request
     and the request values of the adapter, such as its own request object. Request-scoped values live in it.
     Throttling counts the request in the storage of the application's injector for the identity that the adapter
-    resolves, since the adapter knows the users of its framework.
+    resolves, since the adapter knows the users of its framework. An API method or an exception handler may return
+    an object of the native response types of the adapter, which reaches the adapter untouched.
     """
     method = route.method
     response_headers: dict[str, str] = {}
@@ -121,7 +123,7 @@ def handle_request(
             method = exception_handlers.get(Exception)
             result = _handle_exception(method, handler_exception, request, response_headers, injector)
 
-    return _to_response(request, result, method, response_headers)
+    return _to_response(request, result, method, response_headers, native_response_types)
 
 
 def _handle_exception(
@@ -137,7 +139,13 @@ def _handle_exception(
     return method(handler, **arguments)
 
 
-def _to_response(request: Request, result: Any, method: ComponentMethod, headers: dict[str, str]) -> Response:
+def _to_response(
+    request: Request,
+    result: Any,
+    method: ComponentMethod,
+    headers: dict[str, str],
+    native_response_types: tuple[type, ...],
+) -> Response:
     if isinstance(result, Response):
         return Response(status_code=result.status_code, body=result.body, headers={**headers, **result.headers})
 
@@ -148,25 +156,9 @@ def _to_response(request: Request, result: Any, method: ComponentMethod, headers
         body = result
         status_code = get_response_status(request.method, method)
 
-    if _is_native(body):
+    if isinstance(body, native_response_types):
         return Response(status_code=status_code, body=body, headers=headers)
 
     headers.setdefault('content-type', 'application/json')
     content = b'' if body is None else json.dumps(body, cls=JSONEncoder).encode()
     return Response(status_code=status_code, body=content, headers=headers)
-
-
-_native_response_types = ()
-
-
-def register_native_response_type(type_: type):
-    """
-    Adapters register the response types of their framework here. An API method may return such an object,
-    and it reaches the adapter untouched.
-    """
-    global _native_response_types
-    _native_response_types = _native_response_types + (type_,)
-
-
-def _is_native(body: Any) -> bool:
-    return isinstance(body, _native_response_types)

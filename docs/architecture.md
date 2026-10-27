@@ -85,17 +85,14 @@ at least two of them.
 - **Framework behaviour is still process-global.** A `winter.web.WebApplication` holds the code of
   a web application, its injector and its interceptors. The adapters derive its exception handlers
   from its definitions, handle each of its requests in a child of its injector and throttle in the
-  storage that its injector binds. The other behavioural registries of `winter.web` and
-  `winter.openapi` (native response types, OpenAPI inspectors) are module singletons, and
-  `winter.sqlalchemy`, `winter.ddd` and `winter.messaging` take the injector from the service
-  locator `winter.application.get_injector`.
-- **Models are initialised once per process.** The Django adapter's `_initialize_process` and
-  `winter.openapi.initialization.initialize` fill those module singletons with the Django response type
-  and the standard inspectors on first use. In the
-  target, a `WebApplication` is given these registries like its interceptors, and they start with the
-  standard entries. Building from an application, an adapter adds
-  its own entries (the native response type) to that application only. The
-  `initialize` functions then disappear.
+  storage that its injector binds; what belongs to an adapter, such as the response types of its
+  framework, it passes to `handle_request` itself. The OpenAPI inspectors and global exceptions of
+  `winter.openapi` are module singletons, and `winter.sqlalchemy`, `winter.ddd` and
+  `winter.messaging` take the injector from the service locator `winter.application.get_injector`.
+- **`winter.openapi` is initialised once per process.** `winter.openapi.initialization.initialize`
+  fills those module singletons with the standard inspectors and global exceptions on first use. In
+  the target, `generate_openapi` is given them, starting with the standard entries, and `initialize`
+  disappears.
 - **`winter.wsgi`, `winter.asgi` and `winter.rabbitmq` do not exist yet.** HTTP is served through
   `winter.django` only, and `winter.messaging` has no transport adapter.
 - **All dependencies are mandatory.** Django, SQLAlchemy, Redis and pydantic are installed with

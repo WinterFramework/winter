@@ -11,7 +11,6 @@ from django.urls import re_path
 from winter.web import Response
 from winter.web import WebApplication
 from winter.web import handle_request
-from winter.web import register_native_response_type
 from winter.web.autodiscovery import find_routes
 from winter.web.exception_handlers import find_exception_handlers
 from winter.web.exceptions import ExceptionHandlers
@@ -27,23 +26,11 @@ if TYPE_CHECKING:
 
 def create_urls(app: WebApplication) -> List[URLPattern]:
     """URL patterns of the routes of an application, relative to where they are included in the urlpatterns."""
-    _initialize_process()
     routes = find_routes(app)
     exception_handlers = find_exception_handlers(app)
     # Each request binds the Django request, see _create_dispatch_function
     check_arguments(app, routes, exception_handlers, request_types=[django.http.HttpRequest])
     return _create_urls_from_routes(app, routes, exception_handlers)
-
-
-_process_initialized = False
-
-
-def _initialize_process():
-    """Process-global until native response types belong to an application: docs/architecture.md, Current deviations."""
-    global _process_initialized
-    if not _process_initialized:
-        register_native_response_type(HttpResponseBase)
-        _process_initialized = True
 
 
 def _create_urls_from_routes(
@@ -96,7 +83,15 @@ def _create_dispatch_function(app: WebApplication, route: Route, exception_handl
     def dispatch(winter_view, request: django.http.HttpRequest, **path_parameters):
         winter_request = DjangoRequest(request, path_parameters)
         request_values = {django.http.HttpRequest: request}
-        response = handle_request(app, route, winter_request, exception_handlers, request_values, django_user_identity)
+        response = handle_request(
+            app,
+            route,
+            winter_request,
+            exception_handlers,
+            request_values,
+            throttling_identity=django_user_identity,
+            native_response_types=(HttpResponseBase,),
+        )
         return to_django_response(response)
 
     return dispatch
