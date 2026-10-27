@@ -1,12 +1,12 @@
 import dataclasses
 
-from winter.json import register_encoder
+from winter.json import json_encoder
 from winter.pagination import Page
 
 _PAGE_FIELDS = dataclasses.fields(Page)
 
 
-@register_encoder
+@json_encoder
 def page_encoder(page: Page) -> dict:
     """The fields that a subclass of Page adds go to the meta."""
     return {
