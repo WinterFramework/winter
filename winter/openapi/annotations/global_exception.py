@@ -11,10 +11,7 @@ class GlobalExceptionAnnotation:
 
 
 def global_exception(exception_class: Type[Exception]) -> Type[Exception]:
-    return register_global_exception(exception_class)
-
-
-def register_global_exception(exception_class: Type[Exception]) -> Type[Exception]:
+    """The exception may be raised by any API method, so the check of @raises does not require it to be declared."""
     assert issubclass(exception_class, Exception), f'Class "{exception_class}" must be a subclass of Exception'
     annotation = GlobalExceptionAnnotation(exception_cls=exception_class)
     annotation_decorator = annotate(annotation, unique=True)

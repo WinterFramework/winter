@@ -93,6 +93,12 @@ urlpatterns = winter.django.create_urls(app)
   `winter.openapi.serve_spec(app, spec, url='openapi.json')` and
   `winter.openapi.serve_swagger_ui(app, spec_url='openapi.json', url='docs/')` add the routes that serve them;
   the served spec and Swagger UI work under whatever prefix the application is included at.
+- OpenAPI: `@winter.openapi.type_inspector(Answer)` replaces `register_type_inspector` and is a decorator only; it
+  also describes the subclasses of the type. `register_global_exception` is gone: `@winter.openapi.global_exception`
+  remains. The parameters of a route come from its path, query and `PagePosition` arguments only:
+  `register_route_parameters_inspector`, `get_route_parameters_inspectors` and `winter.openapi.initialization` are
+  gone, and the inspectors and `inspect_page` are no longer exported. A parameter that no argument stands for, such
+  as a header read by a request-scoped provider, is added to the spec that `generate_openapi` returns.
 
 ## Upgrading to Winter 33
 

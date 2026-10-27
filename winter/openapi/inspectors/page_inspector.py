@@ -7,7 +7,7 @@ from typing import Type
 from winter.pagination import Page
 from winter.openapi.inspection.type_info import TypeInfo
 from winter.openapi.inspectors.standard_types_inspectors import inspect_type
-from winter.openapi.inspectors.standard_types_inspectors import register_type_inspector
+from winter.openapi.inspectors.standard_types_inspectors import type_inspector
 
 
 def create_dataclass(page_type: Type) -> Type:
@@ -52,7 +52,7 @@ page_to_dataclass_map: Dict[Type, Type] = {}
 
 
 # noinspection PyUnusedLocal
-@register_type_inspector(Page)
+@type_inspector(Page)
 def inspect_page(hint_class) -> TypeInfo:
     if hint_class not in page_to_dataclass_map:
         page_to_dataclass_map[hint_class] = create_dataclass(hint_class)
