@@ -18,7 +18,6 @@ from .response import Response
 from .response_entity import ResponseEntity
 from .response_header_annotation import ResponseHeader
 from .response_header_annotation import response_header
-from .response_header_serializer import response_headers_serializer
 from .response_status_annotation import response_status
 from .routing import route
 from .routing import route_delete

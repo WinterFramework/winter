@@ -37,7 +37,7 @@ class ProblemExceptionHandlerGenerator(ExceptionHandlerGenerator):
             content_type_header: ResponseHeader[str],
             **kwargs,
         ) -> return_type_class:
-            content_type_header.set(MediaType.APPLICATION_PROBLEM_JSON)
+            content_type_header.set(str(MediaType.APPLICATION_PROBLEM_JSON))
             return exception_mapper.to_response_body(request, exception, handling_info)
 
         handler_class_name = exception_class.__name__ + 'Handler'

@@ -24,7 +24,6 @@ from .request_scope import create_request_injector
 from .response import Response
 from .response_entity import ResponseEntity
 from .response_header_resolver import ResponseHeaderArgumentResolver
-from .response_header_serializer import response_headers_serializer
 from .routing import Route
 from .throttling import create_throttle_class
 from .web_application import WebApplication
@@ -76,7 +75,7 @@ def handle_request(
     and the request values of the adapter, such as its own request object. Request-scoped values live in it.
     """
     method = route.method
-    response_headers: dict[str, Any] = {}
+    response_headers: dict[str, str] = {}
     injector = create_request_injector(app.injector, request, request_values)
 
     throttle = create_throttle_class(route)
@@ -109,7 +108,7 @@ def _handle_exception(
     method: ComponentMethod,
     exception: Exception,
     request: Request,
-    response_headers: dict[str, Any],
+    response_headers: dict[str, str],
     injector: Injector,
 ) -> Any:
     context = {exception_argument_name(method): exception}
@@ -118,11 +117,7 @@ def _handle_exception(
     return method(handler, **arguments)
 
 
-def _to_response(request: Request, result: Any, method: ComponentMethod, response_headers: dict[str, Any]) -> Response:
-    headers = {
-        name: response_headers_serializer.serialize(value, name)
-        for name, value in response_headers.items()
-    }
+def _to_response(request: Request, result: Any, method: ComponentMethod, headers: dict[str, str]) -> Response:
     if isinstance(result, Response):
         return Response(status_code=result.status_code, body=result.body, headers={**headers, **result.headers})
 
