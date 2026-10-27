@@ -11,7 +11,11 @@ from winter.typing import get_origin_type
 _regexp = {}
 
 
-def register_url_regexp(func: types.FunctionType):
+def url_regexp(func: types.FunctionType):
+    """
+    The decorated function gives the regexp that a path variable matches when its type is the type of the only
+    argument of the function, or a subclass of it.
+    """
     annotations = func.__annotations__.copy()
     annotations.pop('return', None)
     assert len(annotations) == 1
@@ -48,18 +52,18 @@ def get_regexp(type_=None) -> str:
 
 
 # noinspection PyUnusedLocal
-@register_url_regexp
+@url_regexp
 def int_regexp(cls: int):
     return r'\d+'
 
 
 # noinspection PyUnusedLocal
-@register_url_regexp
+@url_regexp
 def uuid_regexp(cls: uuid.UUID):
     return r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 
 
-@register_url_regexp
+@url_regexp
 def enum_regexp(cls: enum.Enum):
     values = (f'({e.value})' for e in cls)
     return '(' + '|'.join(values) + ')'

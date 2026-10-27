@@ -29,5 +29,5 @@ from .throttling import Throttle
 from .throttling import ThrottlingMisconfigurationException
 from .throttling import ThrottlingStorage
 from .throttling import throttling
-from .urls import register_url_regexp
+from .urls import url_regexp
 from .web_application import WebApplication

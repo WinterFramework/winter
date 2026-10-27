@@ -73,7 +73,7 @@ urlpatterns = winter.django.create_urls(app)
   to `__init__`. `interceptor_registry` and `InterceptorRegistry` are gone.
 - Output processors are gone: `register_output_processor_resolver`, `IOutputProcessor`, `IOutputProcessorResolver`,
   `register_output_processor` and `winter.django.output_template`. An API method returns data, encoded as JSON
-  (`winter.json.register_encoder` adds the encoder of a type), or a `winter.web.Response`, e.g. a rendered template:
+  (`@winter.json.json_encoder` adds the encoder of a type), or a `winter.web.Response`, e.g. a rendered template:
   `Response(HTTPStatus.OK, render_to_string('report.html', context).encode(), {'content-type': 'text/html'})`.
 - The `meta` of a `Page` has no `previous` and `next` links any more, and `winter.web.pagination.utils` with
   `get_previous_page_url` and `get_next_page_url` is gone.
@@ -99,6 +99,8 @@ urlpatterns = winter.django.create_urls(app)
   `register_route_parameters_inspector`, `get_route_parameters_inspectors` and `winter.openapi.initialization` are
   gone, and the inspectors and `inspect_page` are no longer exported. A parameter that no argument stands for, such
   as a header read by a request-scoped provider, is added to the spec that `generate_openapi` returns.
+- Decorators name what they declare: `@winter.json.register_encoder` is `@winter.json.json_encoder`, like
+  `@winter.json.json_decoder`, and `@winter.web.register_url_regexp` is `@winter.web.url_regexp`.
 
 ## Upgrading to Winter 33
 
