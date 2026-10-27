@@ -8,7 +8,6 @@ from django.http.response import HttpResponseBase
 from django.urls import URLPattern
 from django.urls import re_path
 
-import winter.web.initialization
 from winter.web import Response
 from winter.web import WebApplication
 from winter.web import handle_request
@@ -29,7 +28,6 @@ if TYPE_CHECKING:
 
 def create_urls(app: WebApplication) -> List[URLPattern]:
     """URL patterns of the routes of an application, relative to where they are included in the urlpatterns."""
-    winter.web.initialization.initialize()
     _initialize_process()
     routes = find_routes(app)
     exception_handlers = find_exception_handlers(app)

@@ -64,6 +64,10 @@ urlpatterns = winter.django.create_urls(app)
   startup instead of on the first request.
 - An argument named `response_headers` of an exception handler no longer receives the headers of the response:
   declare a `ResponseHeader[T]` with `@winter.web.response_header`, as in an API method.
+- A response header is a `str`, an `int` or a `datetime`, the types HTTP has a format for: `ResponseHeader[T]` of
+  another type fails with `TypeError` on import, so a UUID or an enum is set as a `str` (`str(uid)`, `status.value`).
+  `set` checks the value against `T`. A `datetime` goes as an HTTP-date in GMT in every header, not as ISO 8601, and
+  needs a time zone. `response_headers_serializer` and `ResponseHeaderSerializer` are gone.
 - Interceptors belong to applications: `WebApplication(..., interceptors=[AuthorizationInterceptor, AuditInterceptor])`
   lists their classes in the order they run. The injector of each request creates them, so their dependencies go
   to `__init__`. `interceptor_registry` and `InterceptorRegistry` are gone.

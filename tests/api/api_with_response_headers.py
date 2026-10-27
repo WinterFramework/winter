@@ -1,7 +1,4 @@
 import datetime
-from uuid import UUID
-
-import pytz
 
 import winter.web
 from winter.web import ResponseHeader
@@ -23,21 +20,10 @@ class APIWithResponseHeaders:
         return 'OK'
 
     @winter.web.response_header('x-header', 'header')
-    @winter.web.route_get('datetime-isoformat-header/{?now}')
-    def datetime_isoformat_header(self, now: float, header: ResponseHeader[datetime.datetime]) -> str:
-        header.set(datetime.datetime.fromtimestamp(now))
-        return 'OK'
-
-    @winter.web.response_header('Last-Modified', 'header')
-    @winter.web.route_get('last-modified-header/{?now}')
-    def last_modified_header(self, now: float, header: ResponseHeader[datetime.datetime]) -> str:
-        header.set(datetime.datetime.fromtimestamp(now).astimezone(pytz.timezone('Asia/Novosibirsk')))
-        return 'OK'
-
-    @winter.web.response_header('x-header', 'header')
-    @winter.web.route_get('uuid-header/{?uid}')
-    def uuid_header(self, uid: UUID, header: ResponseHeader[UUID]) -> str:
-        header.set(uid)
+    @winter.web.route_get('datetime-header/')
+    def datetime_header(self, header: ResponseHeader[datetime.datetime]) -> str:
+        novosibirsk = datetime.timezone(datetime.timedelta(hours=7))
+        header.set(datetime.datetime(2026, 10, 27, 16, 54, 30, 123456, tzinfo=novosibirsk))
         return 'OK'
 
     @winter.web.response_header('x-header1', 'header1')
