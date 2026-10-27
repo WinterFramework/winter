@@ -5,7 +5,7 @@ import pytest
 
 import winter.openapi
 import winter.web
-from winter.application import get_injector
+from tests.injection import app_injector
 from winter.web.routing import get_route
 from winter.openapi.generator import generate_openapi_for_routes
 from winter.openapi.annotations import global_exception
@@ -105,7 +105,7 @@ def test_response_of_raised_exception_is_that_of_its_handler_in_application(
         def get_resource(self):  # pragma: no cover
             pass
 
-    app = winter.web.WebApplication(modules=[], injector=get_injector())
+    app = winter.web.WebApplication(modules=[], injector=app_injector)
     app.add(_Handlers)
     app.add(_TestAPI)
 

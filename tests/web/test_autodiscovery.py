@@ -1,12 +1,12 @@
 import winter.web
-from winter.application import get_injector
+from tests.injection import app_injector
 from winter.web.autodiscovery import find_routes
 
 
 def test_find_routes():
     import tests.api.package
 
-    app = winter.web.WebApplication(modules=[tests.api.package], injector=get_injector())
+    app = winter.web.WebApplication(modules=[tests.api.package], injector=app_injector)
 
     # Act
     routes = find_routes(app)

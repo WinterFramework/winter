@@ -1,10 +1,12 @@
+from injector import Injector
+
 from winter.ddd import DomainEventDispatcher
 from tests.ddd.test_domain_event_dispatcher_fixture.events import DomainEvent1
 from tests.ddd.test_domain_event_dispatcher_fixture.events import DomainEvent2
 
 
 def test_add_handlers_from_package():
-    dispatcher = DomainEventDispatcher()
+    dispatcher = DomainEventDispatcher(Injector())
     dispatcher.add_handlers_from_package('tests.ddd.test_domain_event_dispatcher_fixture')
     event1 = DomainEvent1()
     event2 = DomainEvent2()

@@ -12,7 +12,7 @@ from injector import Injector
 
 import winter.django
 import winter.web
-from winter.application import get_injector
+from tests.injection import app_injector
 
 
 @winter.web.problem(status=HTTPStatus.CONFLICT)
@@ -27,9 +27,9 @@ class _API:
 
 
 def test_problem_handler_of_one_application_does_not_handle_exceptions_in_another():
-    app_1 = winter.web.WebApplication(modules=[], injector=get_injector())
+    app_1 = winter.web.WebApplication(modules=[], injector=app_injector)
     app_1.add(_ErrorA)
-    app_2 = winter.web.WebApplication(modules=[], injector=get_injector())
+    app_2 = winter.web.WebApplication(modules=[], injector=app_injector)
     app_2.add(_API)
     winter.django.create_urls(app_1)
     [url] = winter.django.create_urls(app_2)

@@ -2,10 +2,10 @@ from typing import List
 from typing import Union
 
 from injector import ClassProvider
+from injector import Injector
 from injector import singleton
 
 from winter.components import annotate
-from winter.application import get_injector
 from winter.messaging import EventSubscriptionRegistry
 from winter.messaging import SimpleEventPublisher
 from winter.messaging import event_handler
@@ -76,7 +76,7 @@ class EventHandlers:
 
 
 def test_simple_event_publisher():
-    injector = get_injector()
+    injector = Injector()
     injector.binder.bind(EventHandlers, to=ClassProvider(EventHandlers), scope=singleton)
     injector.binder.bind(EventSubscriptionRegistry, to=ClassProvider(EventSubscriptionRegistry), scope=singleton)
 

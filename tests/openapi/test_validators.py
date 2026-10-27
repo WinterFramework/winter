@@ -4,7 +4,7 @@ import pytest
 
 import winter.openapi
 import winter.web
-from winter.application import get_injector
+from tests.injection import app_injector
 from winter.web import problem
 from winter.web.routing import get_route
 from winter.openapi.generator import generate_openapi_for_routes
@@ -15,7 +15,7 @@ def test_validate_missing_raises_annotations_with_missed_raises_and_not_global_e
     @problem(HTTPStatus.BAD_REQUEST)
     class MissingException(Exception):
         pass
-    app = winter.web.WebApplication(modules=[], injector=get_injector())
+    app = winter.web.WebApplication(modules=[], injector=app_injector)
     app.add(MissingException)
     expected_error_message = f'You are missing declaration for next exceptions: {MissingException.__name__}'
 
@@ -59,7 +59,7 @@ def test_validate_missing_raises_annotations_with_declared_and_global_exceptions
     def not_a_component():  # pragma: no cover
         pass
 
-    app = winter.web.WebApplication(modules=[], injector=get_injector())
+    app = winter.web.WebApplication(modules=[], injector=app_injector)
     for definition in [DeclaredException, GlobalException, _TestAPI, not_a_component]:
         app.add(definition)
 

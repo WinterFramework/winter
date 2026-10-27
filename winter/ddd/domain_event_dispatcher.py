@@ -4,9 +4,11 @@ from typing import Iterable
 from typing import List
 from typing import Type
 
+from injector import Injector
+from injector import inject
+
 from winter.components import Component
 from winter.components import ComponentMethod
-from winter.application import get_injector
 from winter.application.module_discovery import get_all_classes
 from winter.application.module_discovery import import_recursively
 from .domain_event import DomainEvent
@@ -15,7 +17,10 @@ from .domain_event_subscription import DomainEventSubscription
 
 
 class DomainEventDispatcher:
-    def __init__(self):
+    @inject
+    def __init__(self, injector: Injector):
+        """The handlers of the events are created by the injector."""
+        self._injector = injector
         self.event_type_to_subscription_map: Dict[Type[DomainEvent], List[DomainEventSubscription]] = {}
 
     def add_handler(self, handler: ComponentMethod):
@@ -43,10 +48,8 @@ class DomainEventDispatcher:
             for domain_event_subscription in domain_event_subscriptions:
                 events_grouped_by_subscription.setdefault(domain_event_subscription, []).append(event)
 
-        injector = get_injector()
-
         for domain_event_subscription, events in events_grouped_by_subscription.items():
-            handler_instance = injector.get(domain_event_subscription.handler_class)
+            handler_instance = self._injector.get(domain_event_subscription.handler_class)
             if domain_event_subscription.collection:
                 self._execute_handler(domain_event_subscription.handler_method, handler_instance, events)
             else:

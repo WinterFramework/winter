@@ -2,6 +2,7 @@ from typing import List
 from typing import Union
 
 import pytest
+from injector import Injector
 
 from winter.components import ComponentMethod
 from winter.ddd import DomainEvent
@@ -109,7 +110,7 @@ def test_process_domain_events():
     another_domain_event = AnotherCustomEvent()
     yet_another_domain_event = YetAnotherCustomEvent()
 
-    dispatcher = DomainEventDispatcher()
+    dispatcher = DomainEventDispatcher(Injector())
     dispatcher.add_handlers_from_class(_TestHandler)
 
     # Act
@@ -138,7 +139,7 @@ def test_order_process_domain_events():
     OrderHandler2.handled_domain_events = handled_events
     OrderHandler3.handled_domain_events = handled_events
 
-    dispatcher = DomainEventDispatcher()
+    dispatcher = DomainEventDispatcher(Injector())
     dispatcher.add_handlers_from_class(OrderHandler1)
     dispatcher.add_handlers_from_class(OrderHandler2)
     dispatcher.add_handlers_from_class(OrderHandler3)

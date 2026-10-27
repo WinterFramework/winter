@@ -57,7 +57,7 @@ independent of each other. Dashed packages are planned and do not exist yet.
 |---|---|---|
 | Adapters | Bind the models to external technologies and standards. Independent of each other. | `django`, `openapi`, `sqlalchemy`, `redis`, `wsgi` (planned), `asgi` (planned), `rabbitmq` (planned) |
 | Models | Framework-agnostic descriptions of what an application does. Independent of each other. | `web` (HTTP), `ddd` (domain: aggregates, repositories, domain events), `messaging` (events) |
-| Foundations | Shared vocabulary and mechanisms. Unaware of the layers above. May use each other. | `components` (declarative metadata), `application` (discovery of definitions, injector), `json`, `pagination`, `typing` (what the stdlib `typing` lacks) |
+| Foundations | Shared vocabulary and mechanisms. Unaware of the layers above. May use each other. | `components` (declarative metadata), `application` (discovery of definitions), `json`, `pagination`, `typing` (what the stdlib `typing` lacks) |
 
 A package belongs to Foundations when it knows nothing about models or adapters and is used by
 at least two of them.
@@ -82,9 +82,6 @@ at least two of them.
 
 ## Current deviations
 
-- **`winter.sqlalchemy`, `winter.ddd` and `winter.messaging` take the injector from a service
-  locator,** `winter.application.get_injector`, instead of being given the injector of an
-  application.
 - **`winter.wsgi`, `winter.asgi` and `winter.rabbitmq` do not exist yet.** HTTP is served through
   `winter.django` only, and `winter.messaging` has no transport adapter.
 - **All dependencies are mandatory.** Django, SQLAlchemy, Redis and pydantic are installed with

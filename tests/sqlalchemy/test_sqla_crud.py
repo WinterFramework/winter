@@ -5,6 +5,7 @@ from typing import Optional
 import pytest
 import sqlalchemy as sa
 from injector import ClassProvider
+from injector import Injector
 from injector import inject
 from sqlalchemy import Column
 from sqlalchemy import Integer
@@ -14,7 +15,7 @@ from sqlalchemy import Table
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import mapper
 
-from winter.application import get_injector
+from tests.injection import app_injector
 from winter.ddd import CRUDRepository
 from winter.ddd.exceptions import NotFoundException
 from winter.ddd import AggregateRoot
@@ -97,14 +98,13 @@ class DomainEventHandlers:
 
 @pytest.fixture()
 def fixture():
-    return get_injector().get(Fixture)
+    return app_injector.get(Fixture)
 
 
 class Fixture:
     @inject
-    def __init__(self, engine: Engine):
-        injector = get_injector()
-        domain_event_dispatcher = DomainEventDispatcher()
+    def __init__(self, engine: Engine, injector: Injector):
+        domain_event_dispatcher = DomainEventDispatcher(injector)
         domain_event_dispatcher.add_handlers_from_class(DomainEventHandlers)
         injector.binder.bind(DomainEventDispatcher, domain_event_dispatcher)
         injector.binder.bind(MyRepository, to=ClassProvider(sqla_crud(MyRepository)))
