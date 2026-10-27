@@ -1,5 +1,4 @@
 from . import json_encoders  # noqa: F401  registers the Django lazy string encoder
-from .output_template import output_template
 from .request import DjangoRequest
 from .reverse import reverse
 from .throttling import django_user_identity

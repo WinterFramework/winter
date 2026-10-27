@@ -22,13 +22,11 @@ def test_get_response_entity(api_client):
     }
 
 
-@pytest.mark.parametrize(('limit', 'offset', 'expected_previous', 'expected_next'), (
-    (1, 1, '/winter-simple/page-response/?limit=1', '/winter-simple/page-response/?limit=1&offset=2'),
-    (None, None, None, None),
-    (2, 3, '/winter-simple/page-response/?limit=2&offset=1', '/winter-simple/page-response/?limit=2&offset=5'),
-    (9, 3, '/winter-simple/page-response/?limit=9', None),
+@pytest.mark.parametrize(('limit', 'offset'), (
+    (1, 1),
+    (None, None),
 ))
-def test_page_response(api_client, limit, offset, expected_previous, expected_next):
+def test_page_response(api_client, limit, offset):
     url = f'/winter-simple/page-response/?'
     query_params = []
     if limit is not None:
@@ -42,8 +40,6 @@ def test_page_response(api_client, limit, offset, expected_previous, expected_ne
         'meta': {
             'limit': limit,
             'offset': offset,
-            'next': expected_next,
-            'previous': expected_previous,
             'total_count': 10,
         },
     }
@@ -62,8 +58,6 @@ def test_custom_page_response(api_client):
         'meta': {
             'limit': 2,
             'offset': 2,
-            'next': '/winter-simple/custom-page-response/?limit=2&offset=4',
-            'previous': '/winter-simple/custom-page-response/?limit=2',
             'total_count': 10,
             'extra': 456,
         },

@@ -67,6 +67,12 @@ urlpatterns = winter.django.create_urls(app)
 - Interceptors belong to applications: `WebApplication(..., interceptors=[AuthorizationInterceptor, AuditInterceptor])`
   lists their classes in the order they run. The injector of each request creates them, so their dependencies go
   to `__init__`. `interceptor_registry` and `InterceptorRegistry` are gone.
+- Output processors are gone: `register_output_processor_resolver`, `IOutputProcessor`, `IOutputProcessorResolver`,
+  `register_output_processor` and `winter.django.output_template`. An API method returns data, encoded as JSON
+  (`winter.json.register_encoder` adds the encoder of a type), or a `winter.web.Response`, e.g. a rendered template:
+  `Response(HTTPStatus.OK, render_to_string('report.html', context).encode(), {'content-type': 'text/html'})`.
+- The `meta` of a `Page` has no `previous` and `next` links any more, and `winter.web.pagination.utils` with
+  `get_previous_page_url` and `get_next_page_url` is gone.
 - The request pipeline takes the injector from the application. `winter.application.set_injector` is needed only
   by `winter.sqlalchemy`, `winter.ddd` and `winter.messaging`.
 - `winter.django.create_urls` installs the Django throttling identity on its first call: replace it with

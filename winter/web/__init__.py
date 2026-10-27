@@ -6,7 +6,6 @@ from .exceptions.raises import raises
 from .interceptor import Interceptor
 from .media_type import InvalidMediaTypeException
 from .media_type import MediaType
-from .output_processor import register_output_processor_resolver
 from .query_parameters import map_query_parameter
 from .query_parameters import query_parameters
 from .request_body_annotation import request_body

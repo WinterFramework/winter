@@ -26,8 +26,6 @@ def create_dataclass(page_type: Type) -> Type:
                     'total_count': int,
                     'limit': Optional[int],
                     'offset': Optional[int],
-                    'previous': Optional[str],
-                    'next': Optional[str],
                     **{extra_field.name: extra_field.type for extra_field in extra_fields},
                 },
             },

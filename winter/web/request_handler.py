@@ -13,7 +13,6 @@ from .default_response_status import get_response_status
 from .exceptions import ExceptionHandlers
 from .exceptions import ThrottleException
 from .exceptions.handlers import exception_argument_name
-from .output_processor import get_output_processor
 from .pagination.page_position_argument_resolver import PagePositionArgumentResolver
 from .path_parameters_argument_resolver import PathParametersArgumentResolver
 from .query_parameters.query_parameter_argument_resolver import QueryParameterArgumentResolver
@@ -71,7 +70,7 @@ def handle_request(
 ) -> Response:
     """
     Run the whole handling pipeline for a matched route of the application: throttling, its interceptors, argument
-    resolution, the API method, its exception handlers, output processing and JSON encoding.
+    resolution, the API method, its exception handlers and JSON encoding.
     Framework-agnostic: adapters build the Request from their own request object and send the returned Response.
     The request is handled in an injector of its own, a child of the application's one, that binds the Request
     and the request values of the adapter, such as its own request object. Request-scoped values live in it.
@@ -134,12 +133,6 @@ def _to_response(request: Request, result: Any, method: ComponentMethod, respons
         body = result
         status_code = get_response_status(request.method, method)
 
-    output_processor = get_output_processor(method, body)
-    if output_processor is not None:
-        body = output_processor.process_output(body, request)
-    if isinstance(body, Response):
-        return Response(status_code=body.status_code, body=body.body, headers={**headers, **body.headers})
-
     if _is_native(body):
         return Response(status_code=status_code, body=body, headers=headers)
 
@@ -153,8 +146,8 @@ _native_response_types = ()
 
 def register_native_response_type(type_: type):
     """
-    Adapters register the response types of their framework here. An API method or an output processor
-    may return such an object, and it reaches the adapter untouched.
+    Adapters register the response types of their framework here. An API method may return such an object,
+    and it reaches the adapter untouched.
     """
     global _native_response_types
     _native_response_types = _native_response_types + (type_,)
