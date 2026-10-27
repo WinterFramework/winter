@@ -12,8 +12,10 @@ _regexp = {}
 
 
 def url_regexp(func: types.FunctionType):
-    """The decorated function gives the regexp that a path variable of the type of its only argument, or of a subclass,
-    matches."""
+    """
+    The decorated function gives the regexp that a path variable matches when its type is the type of the only
+    argument of the function, or a subclass of it.
+    """
     annotations = func.__annotations__.copy()
     annotations.pop('return', None)
     assert len(annotations) == 1
