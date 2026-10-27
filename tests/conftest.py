@@ -8,6 +8,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 
 from winter.application import set_injector
+from winter.web import InMemoryThrottlingStorage
+from winter.web import ThrottlingStorage
 
 
 def pytest_configure():
@@ -44,6 +46,8 @@ def pytest_configure():
 class Configuration(Module):
     def configure(self, binder):
         binder.bind(Engine, to=CallableProvider(make_engine), scope=singleton)
+        # The Redis storage is covered in tests/redis; the sample application throttles in memory
+        binder.bind(ThrottlingStorage, to=InMemoryThrottlingStorage, scope=singleton)
 
 
 def make_engine():

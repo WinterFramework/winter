@@ -79,8 +79,13 @@ urlpatterns = winter.django.create_urls(app)
   `get_previous_page_url` and `get_next_page_url` is gone.
 - The request pipeline takes the injector from the application. `winter.application.set_injector` is needed only
   by `winter.sqlalchemy`, `winter.ddd` and `winter.messaging`.
-- `winter.django.create_urls` installs the Django throttling identity on its first call: replace it with
-  `winter.web.set_throttling_identity_resolver` after that.
+- Throttling counts in the storage that the injector of the application binds,
+  e.g. `binder.bind(ThrottlingStorage, to=RedisThrottlingStorage(configuration))`; an application with `@throttling`
+  and no storage fails on startup. The Django adapter throttles by the Django user, by the client address otherwise.
+  `set_throttling_storage` and `set_throttling_identity_resolver` are gone.
+- `winter.web.throttling.reset(request, scope)` is gone: an API method with `@throttling` declares a
+  `throttle: winter.web.Throttle` argument, and `throttle.reset()` forgets what the scope has counted for the sender:
+  for the identity that the request was counted for, even if the method has logged the user in since.
 - OpenAPI: `generate_openapi(app, title=..., version=...)` returns the spec and checks `@raises` annotations
   of the application (`allow_missing_raises_annotation=True` skips the check).
   `winter.openapi.serve_spec(app, spec, url='openapi.json')` and

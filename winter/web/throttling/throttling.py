@@ -1,16 +1,14 @@
 import dataclasses
 from typing import Optional
-from typing import TYPE_CHECKING
 from typing import Tuple
 
+from injector import Injector
 
 from winter.web.request import Request
+from winter.components import ComponentMethod
 from winter.components import annotate_method
-from .identity import get_throttling_identity
-from .storage import get_throttling_storage
-
-if TYPE_CHECKING:
-    from winter.web.routing import Route  # noqa: F401
+from .identity import IdentityResolver
+from .storage import ThrottlingStorage
 
 
 @dataclasses.dataclass
@@ -30,26 +28,36 @@ def throttling(rate: Optional[str], scope: Optional[str] = None):
     return annotate_method(ThrottlingAnnotation(rate, scope), single=True)
 
 
-class BaseRateThrottle:
-    def __init__(self, throttling_: Throttling):
+class Throttle:
+    """
+    The throttling of one request in the scope of its API method. An API method with @throttling receives it as an
+    argument to reset what is counted for whoever sends the request.
+    """
+
+    def __init__(
+        self,
+        throttling_: Throttling,
+        storage: ThrottlingStorage,
+        request: Request,
+        identity: IdentityResolver,
+    ):
         self._throttling = throttling_
-        self._storage = get_throttling_storage()
+        self._storage = storage
+        self._request = request
+        self._identity = identity
+        self._key: Optional[str] = None
 
-    def allow_request(self, request: Request) -> bool:
-        ident = get_throttling_identity(request)
-        key = _get_cache_key(self._throttling.scope, ident)
+    def allow_request(self) -> bool:
+        """Count the request unless the scope has reached its rate for whoever sends it."""
+        self._key = _get_cache_key(self._throttling.scope, self._identity(self._request))
+        return self._storage.is_request_allowed(self._key, self._throttling.duration, self._throttling.num_requests)
 
-        return self._storage.is_request_allowed(key, self._throttling.duration, self._throttling.num_requests)
-
-
-def reset(request: Request, scope: str):
-    """
-        This function allows to reset the accumulated throttling state
-        for a specific user and scope
-    """
-    ident = get_throttling_identity(request)
-    key = _get_cache_key(scope, ident)
-    get_throttling_storage().delete(key)
+    def reset(self):
+        """
+        Forget the requests counted in the scope for whoever sends the request, this one included. The identity is
+        the one the request was counted for, even if the API method has logged the user in since.
+        """
+        self._storage.delete(self._key)
 
 
 CACHE_KEY_FORMAT = 'throttle_{scope}_{ident}'
@@ -70,14 +78,25 @@ def _parse_rate(rate: str) -> Tuple[int, int]:
     return num_requests, duration
 
 
-def create_throttle_class(route: 'Route') -> Optional[BaseRateThrottle]:
-    throttling_annotation = route.method.annotations.get_one_or_none(ThrottlingAnnotation)
+def get_throttling(method: ComponentMethod) -> Optional[Throttling]:
+    throttling_annotation = method.annotations.get_one_or_none(ThrottlingAnnotation)
 
     if getattr(throttling_annotation, 'rate', None) is None:
         return None
 
     num_requests, duration = _parse_rate(throttling_annotation.rate)
-    throttling_scope = throttling_annotation.scope or route.method.full_name
-    throttling_ = Throttling(num_requests, duration, throttling_scope)
+    throttling_scope = throttling_annotation.scope or method.full_name
+    return Throttling(num_requests, duration, throttling_scope)
 
-    return BaseRateThrottle(throttling_)
+
+def create_throttle(
+    method: ComponentMethod,
+    request: Request,
+    app_injector: Injector,
+    identity: IdentityResolver,
+) -> Optional[Throttle]:
+    """The throttle of a request to the method, counting in the storage that the injector of the application binds."""
+    throttling_ = get_throttling(method)
+    if throttling_ is None:
+        return None
+    return Throttle(throttling_, app_injector.get(ThrottlingStorage), request, identity)

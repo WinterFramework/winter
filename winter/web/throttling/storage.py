@@ -4,13 +4,11 @@ import time
 from collections import defaultdict
 from collections import deque
 
-from .exceptions import ThrottlingMisconfigurationException
-
 
 class ThrottlingStorage(abc.ABC):
     """
-    Sliding-window request counter. Implementations live in adapters (see winter.redis.throttling);
-    InMemoryThrottlingStorage below is for single-process deployments and tests.
+    Sliding-window request counter, bound in the injector of an application that throttles. Implementations live in
+    adapters (see winter.redis.throttling); InMemoryThrottlingStorage below is for single-process deployments and tests.
     """
 
     @abc.abstractmethod
@@ -41,17 +39,3 @@ class InMemoryThrottlingStorage(ThrottlingStorage):
     def delete(self, key: str):
         with self._lock:
             self._timestamps.pop(key, None)
-
-
-_throttling_storage: ThrottlingStorage | None = None
-
-
-def set_throttling_storage(storage: ThrottlingStorage):
-    global _throttling_storage
-    _throttling_storage = storage
-
-
-def get_throttling_storage() -> ThrottlingStorage:
-    if _throttling_storage is None:
-        raise ThrottlingMisconfigurationException('Throttling storage must be set before using the throttling')
-    return _throttling_storage

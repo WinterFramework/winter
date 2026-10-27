@@ -26,10 +26,9 @@ from .routing import route_patch
 from .routing import route_post
 from .routing import route_put
 from .throttling import InMemoryThrottlingStorage
+from .throttling import Throttle
 from .throttling import ThrottlingMisconfigurationException
 from .throttling import ThrottlingStorage
-from .throttling import set_throttling_identity_resolver
-from .throttling import set_throttling_storage
 from .throttling import throttling
 from .urls import register_url_regexp
 from .web_application import WebApplication

@@ -3,12 +3,13 @@ from http import HTTPStatus
 
 import freezegun
 import pytest
-from mock import patch
 
+import winter.django
+import winter.web
 from winter.web import ThrottlingMisconfigurationException
 from winter.web.throttling import InMemoryThrottlingStorage
-from winter.web.throttling import get_throttling_storage
-from winter.web.throttling import storage
+from winter.web.throttling import Throttle
+from winter.web.throttling.throttling import Throttling
 
 expected_error_response = {
     'status': 429,
@@ -71,12 +72,60 @@ def test_get_throttling_with_conditional_reset(api_client):
             assert response.status_code == HTTPStatus.OK, i
 
 
-@patch.object(storage, '_throttling_storage', None)
-def test_get_throttling_storage_without_configuration():
-    with pytest.raises(ThrottlingMisconfigurationException) as exc_info:
-        get_throttling_storage()
+class _ThrottledAPI:
+    @winter.web.route_get('throttled/')
+    @winter.web.throttling('5/s')
+    def get(self):  # pragma: no cover
+        pass
 
-    assert 'Throttling storage must be set' in str(exc_info.value)
+
+def test_throttling_without_storage_in_injector_fails_startup():
+    app = winter.web.WebApplication(modules=[])
+    app.add(_ThrottledAPI)
+
+    # Act
+    with pytest.raises(ThrottlingMisconfigurationException) as exception_info:
+        winter.django.create_urls(app)
+
+    # Assert
+    assert str(exception_info.value) == (
+        '_ThrottledAPI.get: @throttling needs a ThrottlingStorage bound in the injector'
+    )
+
+
+class _NotThrottledAPI:
+    @winter.web.route_get('not-throttled/')
+    def get(self, throttle: Throttle):  # pragma: no cover
+        pass
+
+
+def test_throttle_argument_without_throttling_fails_startup():
+    app = winter.web.WebApplication(modules=[])
+    app.add(_NotThrottledAPI)
+
+    # Act
+    with pytest.raises(TypeError) as exception_info:
+        winter.django.create_urls(app)
+
+    # Assert
+    assert str(exception_info.value) == (
+        '_NotThrottledAPI.get: argument throttle (Throttle) '
+        'is not mapped from the request and has no binding in the injector'
+    )
+
+
+def test_throttle_resets_identity_it_counted_the_request_for():
+    storage = InMemoryThrottlingStorage()
+    identities = iter(['10.0.0.1', '42'])
+    throttling = Throttling(num_requests=1, duration=60, scope='login')
+    throttle = Throttle(throttling, storage, None, lambda request: next(identities))
+    throttle.allow_request()
+
+    # Act
+    throttle.reset()
+
+    # Assert
+    assert storage.is_request_allowed('throttle_login_10.0.0.1', duration=60, num_requests=1)
 
 
 def test_in_memory_storage_sliding_window():

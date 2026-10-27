@@ -12,7 +12,6 @@ from winter.web import Response
 from winter.web import WebApplication
 from winter.web import handle_request
 from winter.web import register_native_response_type
-from winter.web import set_throttling_identity_resolver
 from winter.web.autodiscovery import find_routes
 from winter.web.exception_handlers import find_exception_handlers
 from winter.web.exceptions import ExceptionHandlers
@@ -40,11 +39,10 @@ _process_initialized = False
 
 
 def _initialize_process():
-    """Process-global until these registries belong to an application: docs/architecture.md, Current deviations."""
+    """Process-global until native response types belong to an application: docs/architecture.md, Current deviations."""
     global _process_initialized
     if not _process_initialized:
         register_native_response_type(HttpResponseBase)
-        set_throttling_identity_resolver(django_user_identity)
         _process_initialized = True
 
 
@@ -98,7 +96,7 @@ def _create_dispatch_function(app: WebApplication, route: Route, exception_handl
     def dispatch(winter_view, request: django.http.HttpRequest, **path_parameters):
         winter_request = DjangoRequest(request, path_parameters)
         request_values = {django.http.HttpRequest: request}
-        response = handle_request(app, route, winter_request, exception_handlers, request_values)
+        response = handle_request(app, route, winter_request, exception_handlers, request_values, django_user_identity)
         return to_django_response(response)
 
     return dispatch
