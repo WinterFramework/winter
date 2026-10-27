@@ -70,7 +70,7 @@ def handle_request(
 ) -> Response:
     """
     Run the whole handling pipeline for a matched route of the application: throttling, its interceptors, argument
-    resolution, the API method, its exception handlers, output processing and JSON encoding.
+    resolution, the API method, its exception handlers and JSON encoding.
     Framework-agnostic: adapters build the Request from their own request object and send the returned Response.
     The request is handled in an injector of its own, a child of the application's one, that binds the Request
     and the request values of the adapter, such as its own request object. Request-scoped values live in it.
@@ -146,8 +146,8 @@ _native_response_types = ()
 
 def register_native_response_type(type_: type):
     """
-    Adapters register the response types of their framework here. An API method or an output processor
-    may return such an object, and it reaches the adapter untouched.
+    Adapters register the response types of their framework here. An API method may return such an object,
+    and it reaches the adapter untouched.
     """
     global _native_response_types
     _native_response_types = _native_response_types + (type_,)
