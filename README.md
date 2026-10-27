@@ -86,6 +86,8 @@ urlpatterns = winter.django.create_urls(app)
 - `winter.web.throttling.reset(request, scope)` is gone: an API method with `@throttling` declares a
   `throttle: winter.web.Throttle` argument, and `throttle.reset()` forgets what the scope has counted for the sender:
   for the identity that the request was counted for, even if the method has logged the user in since.
+- `register_native_response_type` is gone: an adapter passes the response types of its framework to `handle_request`.
+  An API method may still return a Django response.
 - OpenAPI: `generate_openapi(app, title=..., version=...)` returns the spec and checks `@raises` annotations
   of the application (`allow_missing_raises_annotation=True` skips the check).
   `winter.openapi.serve_spec(app, spec, url='openapi.json')` and

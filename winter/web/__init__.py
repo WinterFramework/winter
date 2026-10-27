@@ -11,7 +11,6 @@ from .query_parameters import query_parameters
 from .request_body_annotation import request_body
 from .request import Request
 from .request_handler import handle_request
-from .request_handler import register_native_response_type
 from .request_scope import request_scope
 from .request_header_annotation import request_header
 from .response import Response
