@@ -2,7 +2,6 @@ import pytest
 from injector import Injector
 
 import winter.web
-from winter.application import get_injector
 
 
 class _Defined:
@@ -37,13 +36,14 @@ def test_add():
     assert app.definitions == (_Defined, _defined)
 
 
-def test_new_injector_is_not_installed_globally():
+def test_new_injector_is_own_injector_of_application():
     # Act
-    app = winter.web.WebApplication(modules=[])
+    app_1 = winter.web.WebApplication(modules=[])
+    app_2 = winter.web.WebApplication(modules=[])
 
     # Assert
-    assert isinstance(app.injector, Injector)
-    assert get_injector() is not app.injector
+    assert isinstance(app_1.injector, Injector)
+    assert app_1.injector is not app_2.injector
 
 
 def test_given_injector_is_shared():

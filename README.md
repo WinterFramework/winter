@@ -76,9 +76,13 @@ urlpatterns = winter.django.create_urls(app)
   (`@winter.json.json_encoder` adds the encoder of a type), or a `winter.web.Response`, e.g. a rendered template:
   `Response(HTTPStatus.OK, render_to_string('report.html', context).encode(), {'content-type': 'text/html'})`.
 - The `meta` of a `Page` has no `previous` and `next` links any more, and `winter.web.pagination.utils` with
-  `get_previous_page_url` and `get_next_page_url` is gone.
-- The request pipeline takes the injector from the application. `winter.application.set_injector` is needed only
-  by `winter.sqlalchemy`, `winter.ddd` and `winter.messaging`.
+  `get_previous_page_url` and `get_next_page_url` is gone. A subclass of `Page` adds them where clients need them,
+  see [Extending Page class](#extending-page-class).
+- `winter.application.set_injector` and `get_injector` are gone: nothing in Winter takes the injector from a global.
+  The request pipeline takes it from the application, and `winter.messaging`, `winter.ddd` and `winter.sqlalchemy`
+  from the injector that creates their objects. `DomainEventDispatcher` takes the injector that creates the handlers:
+  `DomainEventDispatcher(injector)`, or let the injector create it. Code that called `get_injector()` declares an
+  `injector: Injector` argument of its `@inject` constructor instead.
 - Throttling counts in the storage that the injector of the application binds,
   e.g. `binder.bind(ThrottlingStorage, to=RedisThrottlingStorage(configuration))`; an application with `@throttling`
   and no storage fails on startup. The Django adapter throttles by the Django user, by the client address otherwise.
@@ -274,6 +278,60 @@ class Example:
             # Custom fields
             extra_field=456,
         )
+```
+
+The fields of a subclass go to the meta of the JSON and of the OpenAPI spec, so a subclass can add links
+to the previous and the next pages, built from the request:
+```python
+from dataclasses import dataclass
+from typing import Generic
+from typing import Optional
+from typing import TypeVar
+
+from furl import furl
+
+import winter.web
+from winter.pagination import Page
+from winter.pagination import PagePosition
+
+
+T = TypeVar('T')
+
+@dataclass(frozen=True)
+class LinkedPage(Page, Generic[T]):
+    previous: Optional[str]
+    next: Optional[str]
+
+    @classmethod
+    def of(cls, page: Page[T], request: winter.web.Request) -> 'LinkedPage[T]':
+        limit = page.position.limit
+        offset = page.position.offset or 0
+        has_previous = limit is not None and offset > 0
+        has_next = limit is not None and offset + limit < page.total_count
+        return cls(
+            total_count=page.total_count,
+            items=page.items,
+            position=page.position,
+            previous=_page_url(request, limit, max(offset - limit, 0)) if has_previous else None,
+            next=_page_url(request, limit, offset + limit) if has_next else None,
+        )
+
+
+def _page_url(request: winter.web.Request, limit: int, offset: int) -> str:
+    url = furl(request.full_path)
+    url.args['limit'] = limit
+    if offset:
+        url.args['offset'] = offset
+    else:
+        url.args.pop('offset', None)
+    return url.tostr()
+
+
+class TodoAPI:
+    @winter.web.route_get('todos/')
+    def get_todos(self, request: winter.web.Request, page_position: PagePosition) -> LinkedPage[int]:
+        page = Page(total_count=3, items=[1, 2, 3], position=page_position)
+        return LinkedPage.of(page, request)
 ```
 
 
