@@ -57,6 +57,10 @@ def _migrate(tmp_path: pathlib.Path, source: str) -> str:
         'import winter.application\n\nx = winter.application.get_injector\n',
     ),
     (
+        'import winter\nimport winter.messaging\n\nx = winter.messaging.EventPublisher\n',
+        'import winter.messaging\n\nx = winter.messaging.EventPublisher\n',
+    ),
+    (
         'import winter  # noqa: F401\n\nx = winter.web.route_get\n',
         'import winter.web  # noqa: F401\n\nx = winter.web.route_get\n',
     ),
@@ -111,9 +115,56 @@ def _migrate(tmp_path: pathlib.Path, source: str) -> str:
         'from winter.web import set_throttling_storage\n\n'
         'set_throttling_storage(RedisThrottlingStorage(config))\n',
     ),
+    (
+        'import winter\n\n\ndef f():\n    from main import injector\n    return injector, winter.route_get\n\n\n'
+        'def g():\n    from main import injector\n    return injector\n',
+        'import winter.web\n\n\ndef f():\n    from main import injector\n    return injector, winter.web.route_get\n'
+        '\n\ndef g():\n    from main import injector\n    return injector\n',
+    ),
+    (
+        'from typing import TYPE_CHECKING\n\nimport winter_ddd\n\nif TYPE_CHECKING:\n    from models import Model\n\n\n'
+        'def f() -> "Model":\n    from models import Model\n    return Model(winter_ddd)\n',
+        'from typing import TYPE_CHECKING\n\nimport winter.ddd\n\nif TYPE_CHECKING:\n    from models import Model\n\n\n'
+        'def f() -> "Model":\n    from models import Model\n    return Model(winter.ddd)\n',
+    ),
+    (
+        'def f():\n    from winter_django import reverse\n    from winter.django import reverse\n    return reverse\n',
+        'def f():\n    from winter.django import reverse\n    return reverse\n',
+    ),
+    (
+        'from winter.django import reverse\n# TODO deprecate\nfrom winter_django import reverse\n\nx = reverse\n',
+        'from winter.django import reverse\n# TODO deprecate\n\nx = reverse\n',
+    ),
+    (
+        'from winter.django import reverse\nfrom winter_django import reverse\n',
+        'from winter.django import reverse\n',
+    ),
+    (
+        'from winter.django import reverse\n# TODO deprecate\nfrom winter_django import reverse\n',
+        'from winter.django import reverse\n# TODO deprecate\nfrom winter.django import reverse\n',
+    ),
+    (
+        'def f():\n    from winter.core.json import (\n        JSONEncoder,\n    )\n    return JSONEncoder\n',
+        'def f():\n    from winter.json import (\n        JSONEncoder,\n    )\n    return JSONEncoder\n',
+    ),
+    (
+        'import os\nfrom winter.web import routing\n\nurl = routing.reverse(os.sep)\n',
+        'import os\nimport winter.django\n\nurl = winter.django.reverse(os.sep)\n',
+    ),
+    (
+        'from winter.web import routing as winter_routing\nfrom . import urls\n\n'
+        'url = winter_routing.reverse(f)\nroute = winter_routing.Route\n',
+        'from winter.web import routing as winter_routing\nimport winter.django\nfrom . import urls\n\n'
+        'url = winter.django.reverse(f)\nroute = winter_routing.Route\n',
+    ),
 ])
 def test_migrate(tmp_path, source, expected):
     assert _migrate(tmp_path, source) == expected
+
+
+def test_name_in_string_is_not_rewritten(tmp_path):
+    source = "message = 'set_redis_throttling_configuration is gone'\n"
+    assert _migrate(tmp_path, f'import winter.web\n{source}') == f'import winter.web\n{source}'
 
 
 def test_migration_is_idempotent(tmp_path):
