@@ -34,6 +34,8 @@ python tools/migrate_to_33.py path/to/your/project
 
 `winter.web` does not depend on Django any more. What the codemod cannot do for you:
 
+- It rewrites `.py` files only. Look for the old paths in the other files too, such as templates that generate
+  Python code: `grep -rnE 'winter_(openapi|django|sqlalchemy|ddd)|winter\.(core|data)' --exclude='*.py' .`
 - Custom `ArgumentResolver`, `IOutputProcessor`, `ExceptionMapper` and `Interceptor` implementations receive
   `winter.web.Request` instead of `django.http.HttpRequest`: `request.query_parameters`, `request.headers`,
   `request.body`, `request.path_parameters`, `request.full_path`. API methods that declare a `HttpRequest`
