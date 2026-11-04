@@ -62,6 +62,9 @@ urlpatterns = winter.django.create_urls(app)
   of a type becomes a provider of that type marked `@winter.web.request_scope`. An argument of an API method, an
   interceptor or an exception handler that is neither mapped from the request nor bound in the injector fails on
   startup instead of on the first request.
+- Winter needs `injector` 0.21 or later. Each request has an injector of its own, a child of the injector of the
+  application, and older versions create a `@singleton` class without a binding anew in every child injector, that
+  is in every request.
 - An argument named `response_headers` of an exception handler no longer receives the headers of the response:
   declare a `ResponseHeader[T]` with `@winter.web.response_header`, as in an API method.
 - A response header is a `str`, an `int` or a `datetime`, the types HTTP has a format for: `ResponseHeader[T]` of

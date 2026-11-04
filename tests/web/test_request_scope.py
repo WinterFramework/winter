@@ -56,6 +56,34 @@ def test_request_scoped_value_is_created_once_per_request():
     assert json.loads(second_response.content) == {'number': 2, 'path': '/visit/', 'same': True, 'method': 'GET'}
 
 
+@injector.singleton
+class _Counter:
+    def __init__(self):
+        self.count = 0
+
+
+class _CounterAPI:
+    @injector.inject
+    def __init__(self, counter: _Counter):
+        self._counter = counter
+
+    @winter.web.route_get('count/')
+    def get(self) -> int:
+        self._counter.count += 1
+        return self._counter.count
+
+
+def test_singleton_without_binding_is_shared_by_requests():
+    [url] = _create_urls(_CounterAPI)
+
+    # Act
+    _get(url, '/count/')
+    response = _get(url, '/count/')
+
+    # Assert
+    assert response.content == b'2'
+
+
 class _SeenVisits(list):
     pass
 
