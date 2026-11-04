@@ -158,6 +158,27 @@ def test_two_handlers_of_same_exception_in_application_fail_startup():
     assert str(exception_info.value) == '_BaseError has two handlers: _Handlers.handle_base and _OtherHandlers.handle'
 
 
+@winter.web.problem(status=HTTPStatus.CONFLICT)
+class _ProblemError(Exception):
+    pass
+
+
+def test_handler_of_problem_exception_in_application_fails_startup():
+    class _ProblemErrorHandler:
+        @winter.web.exception_handler
+        def handle(self, exception: _ProblemError):  # pragma: no cover
+            pass
+
+    # Act
+    with pytest.raises(ValueError) as exception_info:
+        _get(_raising(_ProblemError()), _ProblemError, _ProblemErrorHandler)
+
+    # Assert
+    assert str(exception_info.value) == (
+        '_ProblemError has two handlers: @problem(_ProblemError).handle and _ProblemErrorHandler.handle'
+    )
+
+
 def _not_annotated(self, exception):  # pragma: no cover
     pass
 

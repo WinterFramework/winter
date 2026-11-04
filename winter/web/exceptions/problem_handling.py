@@ -40,7 +40,8 @@ class ProblemExceptionHandlerGenerator(ExceptionHandlerGenerator):
             content_type_header.set(str(MediaType.APPLICATION_PROBLEM_JSON))
             return exception_mapper.to_response_body(request, exception, handling_info)
 
-        handler_class_name = exception_class.__name__ + 'Handler'
+        # Named after the decorator, so that messages tell it from a handler class of the application
+        handler_class_name = f'@problem({exception_class.__name__})'
         return type(handler_class_name, (), {'handle': handle})
 
     def _build_exception_dataclass(self, exception_class: Type[Exception]) -> Type:
