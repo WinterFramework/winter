@@ -13,14 +13,20 @@ What it does:
 - `winter.data` is split into `winter.pagination` and `winter.ddd`.
 - Redis throttling configuration moves to `winter.redis.throttling`, `reverse` to `winter.django`.
 - `set_redis_throttling_configuration(c)` becomes `set_throttling_storage(RedisThrottlingStorage(c))`.
-Touched files get one name per import line, duplicates removed, comments kept, and their `winter`
-imports grouped where the first of them was. None of the old paths exist in 33.0.
+- A moved name used through its imported module, `from winter.web import routing` and `routing.reverse`,
+  becomes the full new name, `winter.django.reverse`.
+Touched files get one name per import line, repeated `winter` imports of a block removed, comments kept,
+and their `winter` imports grouped where the first of them was. Only `.py` files are rewritten.
+None of the old paths exist in 33.0.
 """
 import argparse
 import pathlib
 import sys
+from typing import Dict
 from typing import Iterable
 from typing import List
+from typing import Optional
+from typing import Sequence
 from typing import Set
 from typing import Tuple
 
@@ -92,6 +98,10 @@ def _import_statement(line: cst.BaseStatement):
     return None
 
 
+def _is_bare_winter(alias: cst.ImportAlias) -> bool:
+    return _dotted(alias.name) == 'winter' and alias.asname is None
+
+
 def _is_winter_import(line: cst.BaseStatement) -> bool:
     statement = _import_statement(line)
     if isinstance(statement, cst.Import):
@@ -101,17 +111,40 @@ def _is_winter_import(line: cst.BaseStatement) -> bool:
     return False
 
 
+def _without_repeated_winter_imports(body: Sequence[cst.BaseStatement]) -> List[cst.BaseStatement]:
+    """
+    A `winter` import that a block repeats goes, its comments go to the next line. Other imports are left
+    alone: a repeat in another block, such as a function or `if TYPE_CHECKING:`, binds a name of its own.
+    A repeat that ends the block under comments stays, there is no next line for them.
+    """
+    seen: Set[str] = set()
+    lines: List[cst.BaseStatement] = []
+    carried: List[cst.EmptyLine] = []
+    for index, line in enumerate(body):
+        if _is_winter_import(line):
+            key = cst.Module([]).code_for_node(_import_statement(line))
+            ends_block_under_comments = index + 1 == len(body) and any(empty.comment for empty in line.leading_lines)
+            if key in seen and not ends_block_under_comments:
+                carried.extend(line.leading_lines)
+                continue
+            seen.add(key)
+        if carried:
+            line = line.with_changes(leading_lines=[*carried, *line.leading_lines])
+            carried = []
+        lines.append(line)
+    return lines
+
+
 class _TidyImports(cst.CSTTransformer):
     """
-    One name per import line, duplicates removed, trailing comments kept. The bare `import winter`
-    (a namespace package now) becomes imports of the subpackages the module uses; a `winter.x` the
-    codemod does not know keeps the bare import, so that nothing silently disappears. The `winter`
-    imports of the module's import block are grouped where the first of them was, so that imports
-    the renames added do not end up after the project's own.
+    One name per import line, repeated `winter` imports of a block removed, comments kept. The bare
+    `import winter` (a namespace package now) becomes imports of the subpackages the module uses; a
+    `winter.x` the codemod does not know keeps the bare import, so that nothing silently disappears.
+    The `winter` imports of the module's import block are grouped where the first of them was, so that
+    imports the renames added do not end up after the project's own.
     """
 
     def __init__(self):
-        self._emitted: Set[str] = set()
         self._used_subpackages: Set[str] = set()
         self._imported_subpackages: Set[str] = set()
         self._uses_unknown_names = False
@@ -148,12 +181,14 @@ class _TidyImports(cst.CSTTransformer):
         statement = _import_statement(updated)
         if statement is None or isinstance(statement.names, cst.ImportStar):
             return updated
+        if len(statement.names) == 1 and not _is_bare_winter(statement.names[0]):
+            return updated  # Already one name, its parentheses and line breaks are kept
         singles: List[cst.BaseSmallStatement] = []
         for alias in statement.names:
             alias = alias.with_changes(comma=cst.MaybeSentinel.DEFAULT)
             if isinstance(statement, cst.ImportFrom):
                 singles.append(statement.with_changes(names=[alias], lpar=None, rpar=None))
-            elif _dotted(alias.name) == 'winter' and alias.asname is None:
+            elif _is_bare_winter(alias):
                 singles.extend(
                     cst.Import(names=[cst.ImportAlias(name=cst.parse_expression(f'winter.{sub}'))])
                     for sub in sorted(self._used_subpackages - self._imported_subpackages)
@@ -164,10 +199,6 @@ class _TidyImports(cst.CSTTransformer):
                 singles.append(cst.Import(names=[alias]))
         lines = []
         for single in singles:
-            key = cst.Module([]).code_for_node(single)
-            if key in self._emitted:
-                continue
-            self._emitted.add(key)
             line = cst.SimpleStatementLine(body=[single])
             if not lines:
                 line = line.with_changes(
@@ -178,8 +209,11 @@ class _TidyImports(cst.CSTTransformer):
             return cst.RemoveFromParent()
         return cst.FlattenSentinel(lines)
 
+    def leave_IndentedBlock(self, original: cst.IndentedBlock, updated: cst.IndentedBlock) -> cst.IndentedBlock:
+        return updated.with_changes(body=_without_repeated_winter_imports(updated.body))
+
     def leave_Module(self, original: cst.Module, updated: cst.Module) -> cst.Module:
-        body = list(updated.body)
+        body = _without_repeated_winter_imports(updated.body)
         block_end = 0
         for index, line in enumerate(body):
             is_docstring = index == 0 and isinstance(line, cst.SimpleStatementLine) and isinstance(
@@ -191,7 +225,7 @@ class _TidyImports(cst.CSTTransformer):
         block = body[:block_end]
         winter_positions = [index for index, line in enumerate(block) if _is_winter_import(line)]
         if len(winter_positions) < 2:
-            return updated
+            return updated.with_changes(body=body)
         first = winter_positions[0]
         gaps = [index for index in range(first, block_end) if index not in winter_positions]
         moved_from = gaps[0] if gaps else block_end
@@ -209,6 +243,9 @@ _REDIS_SETTER = 'set_redis_throttling_configuration'
 class _RedisSetterCalls(cst.CSTTransformer):
     """`set_redis_throttling_configuration(c)` -> `set_throttling_storage(RedisThrottlingStorage(c))`."""
 
+    def __init__(self):
+        self.rewritten = False
+
     def leave_Call(self, original: cst.Call, updated: cst.Call) -> cst.Call:
         func = updated.func
         is_setter = (
@@ -217,6 +254,7 @@ class _RedisSetterCalls(cst.CSTTransformer):
         )
         if not is_setter:
             return updated
+        self.rewritten = True
         storage = cst.Call(func=cst.Name('RedisThrottlingStorage'), args=updated.args)
         return updated.with_changes(func=cst.Name('set_throttling_storage'), args=[cst.Arg(storage)])
 
@@ -224,8 +262,11 @@ class _RedisSetterCalls(cst.CSTTransformer):
 def _rewrite_redis_setter(code: str) -> str:
     if _REDIS_SETTER not in code:
         return code
+    calls = _RedisSetterCalls()
+    module = cst.parse_module(code).visit(calls)
+    if not calls.rewritten:
+        return code  # The name is only mentioned, e.g. in a string
     context = CodemodContext()
-    module = cst.parse_module(code).visit(_RedisSetterCalls())
     AddImportsVisitor.add_needed_import(context, 'winter.web', 'set_throttling_storage')
     AddImportsVisitor.add_needed_import(context, 'winter.redis.throttling', 'RedisThrottlingStorage')
     for old_module in ('winter.web', 'winter.web.throttling'):
@@ -235,8 +276,67 @@ def _rewrite_redis_setter(code: str) -> str:
     return module.code
 
 
+class _ImportedModules(cst.CSTVisitor):
+    """The moved names that the imported modules give: `routing.reverse` -> (`winter.django.reverse`, the import)."""
+
+    def __init__(self):
+        self.moved: Dict[str, Tuple[str, str, str, Optional[str]]] = {}
+
+    def visit_ImportFrom(self, node: cst.ImportFrom) -> None:
+        if node.relative or node.module is None or isinstance(node.names, cst.ImportStar):
+            return
+        module = _dotted(node.module)
+        for alias in node.names:
+            name = _dotted(alias.name)
+            asname = alias.asname and _dotted(alias.asname.name)
+            prefix = f'{module}.{name}.'
+            for old_name, new_name in RENAMES:
+                if old_name.startswith(prefix):
+                    attribute = old_name[len(prefix):]
+                    self.moved[f'{asname or name}.{attribute}'] = (new_name, module, name, asname)
+
+
+class _ModuleAttributes(cst.CSTTransformer):
+    """
+    RenameCommand renames what an import names, not the attributes of an imported module:
+    `from winter.web import routing` and `routing.reverse(...)` become `winter.django.reverse(...)`.
+    """
+
+    def __init__(self, context: CodemodContext, moved: Dict[str, Tuple[str, str, str, Optional[str]]]):
+        self._context = context
+        self._moved = moved
+
+    def visit_Import(self, node: cst.Import) -> bool:
+        return False
+
+    def visit_ImportFrom(self, node: cst.ImportFrom) -> bool:
+        return False
+
+    def leave_Attribute(self, original: cst.Attribute, updated: cst.Attribute) -> cst.BaseExpression:
+        moved = self._moved.get(_dotted(updated))
+        if moved is None:
+            return updated
+        new_name, module, name, asname = moved
+        AddImportsVisitor.add_needed_import(self._context, new_name.rpartition('.')[0])
+        RemoveImportsVisitor.remove_unused_import(self._context, module, name, asname)
+        return cst.parse_expression(new_name)
+
+
+def _rewrite_module_attributes(code: str) -> str:
+    module = cst.parse_module(code)
+    imported_modules = _ImportedModules()
+    module.visit(imported_modules)
+    if not imported_modules.moved:
+        return code
+    context = CodemodContext()
+    module = module.visit(_ModuleAttributes(context, imported_modules.moved))
+    module = AddImportsVisitor(context).transform_module(module)
+    module = RemoveImportsVisitor(context).transform_module(module)
+    return module.code
+
+
 def migrate_source(source: str) -> str:
-    code = _rewrite_redis_setter(source)
+    code = _rewrite_module_attributes(_rewrite_redis_setter(source))
     for old_name, new_name in RENAMES:
         if not _might_use(code, old_name):
             continue
