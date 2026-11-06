@@ -1,12 +1,18 @@
+import inspect
 from collections import defaultdict
 from functools import wraps
+from typing import Dict
 from typing import List
-from typing import TYPE_CHECKING
+from typing import Optional
 
 import django.http
 from django.http.response import HttpResponseBase
+from django.urls import Resolver404
+from django.urls import ResolverMatch
 from django.urls import URLPattern
 from django.urls import re_path
+from django.urls import resolve
+from django.views import View
 
 from winter.web import Response
 from winter.web import WebApplication
@@ -21,8 +27,10 @@ from winter.web.urls import rewrite_uritemplate_with_regexps
 from .request import DjangoRequest
 from .throttling import django_user_identity
 
-if TYPE_CHECKING:
-    from django.views.generic import View
+
+class _WinterView(View):
+    """The view of the routes of one URL path, by their HTTP methods."""
+    routes: Dict[str, Route]
 
 
 def create_urls(app: WebApplication, prefix: str = '') -> List[URLPattern]:
@@ -36,6 +44,26 @@ def create_urls(app: WebApplication, prefix: str = '') -> List[URLPattern]:
     check_arguments(app, routes, exception_handlers, request_types=[django.http.HttpRequest])
     check_raises(routes, exception_handlers)
     return _create_urls_from_routes(app, routes, exception_handlers)
+
+
+def route_of(request: django.http.HttpRequest) -> Optional[Route]:
+    """
+    The route that Winter serves the request with, None for a request that Winter does not serve. The URL is resolved
+    here when Django has not resolved it yet, so that a middleware may ask before calling the view. A HEAD request is
+    served with the GET route, as Django does.
+    """
+    match = request.resolver_match or _resolve(request)
+    view_class = getattr(match.func, 'view_class', None) if match is not None else None
+    if not (inspect.isclass(view_class) and issubclass(view_class, _WinterView)):
+        return None
+    return view_class.routes.get('GET' if request.method == 'HEAD' else request.method)
+
+
+def _resolve(request: django.http.HttpRequest) -> Optional[ResolverMatch]:
+    try:
+        return resolve(request.path_info, urlconf=getattr(request, 'urlconf', None))
+    except Resolver404:
+        return None
 
 
 def _create_urls_from_routes(
@@ -66,21 +94,11 @@ def _create_django_view_from_routes(
     app: WebApplication,
     routes: List[Route],
     exception_handlers: ExceptionHandlers,
-) -> 'View':
-    from django.views.generic import View
-
-    class WinterView(View):
-        @classmethod
-        def as_view(cls, **initkwargs):
-            return super().as_view(**initkwargs)
-
+) -> type[_WinterView]:
+    view_class = type('WinterView', (_WinterView,), {'routes': {route.http_method: route for route in routes}})
     for route in routes:
-        dispatch = _create_dispatch_function(app, route, exception_handlers)
-        dispatch.route = route
-        dispatch_method_name = route.http_method.lower()
-        setattr(WinterView, dispatch_method_name, dispatch)
-
-    return WinterView()
+        setattr(view_class, route.http_method.lower(), _create_dispatch_function(app, route, exception_handlers))
+    return view_class
 
 
 def _create_dispatch_function(app: WebApplication, route: Route, exception_handlers: ExceptionHandlers):
