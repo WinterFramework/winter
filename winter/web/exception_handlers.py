@@ -15,11 +15,13 @@ from .exceptions.problem_annotation import ProblemAnnotation
 from .exceptions.problem_handling import ProblemExceptionHandlerGenerator
 from .exceptions.problem_handling import ProblemExceptionMapper
 from .exceptions.problem_handling_info import ProblemHandlingInfo
+from .exceptions.raises import get_raises
 from .pagination.limits import MaximumLimitValueExceeded
 from .response import Response
 from .response_header_annotation import ResponseHeader
 from .response_header_annotation import response_header
 from .response_status_annotation import response_status
+from .routing import Route
 from .web_application import WebApplication
 
 
@@ -54,6 +56,20 @@ def find_exception_handlers(app: WebApplication) -> ExceptionHandlers:
     handler of the same exception class.
     """
     return ExceptionHandlers({**_handlers_in(_BUILT_IN), **_handlers_in(app.definitions)})
+
+
+def check_raises(routes: Iterable[Route], exception_handlers: ExceptionHandlers):
+    """
+    Fails on startup for an exception declared with @raises that only the handler of Exception would handle, such as
+    a @problem exception whose module the application does not include.
+    """
+    for route in routes:
+        for exception_cls in get_raises(route.method):
+            if not exception_handlers.has_specific_handler(exception_cls):
+                raise ValueError(
+                    f'{exception_cls.__name__} is declared with @raises in {route.method.full_name} '
+                    f'and has no handler in the application',
+                )
 
 
 def built_in_exception_handlers() -> ExceptionHandlers:

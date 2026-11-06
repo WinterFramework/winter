@@ -54,7 +54,9 @@ urlpatterns = winter.django.create_urls(app)
   in a scanned module or add it, e.g. `app.add(winter.web.problem(status=404)(NotFoundException))`.
   The handler of the nearest class in the exception's MRO handles it; two handlers of one exception class in an
   application fail on startup. A handler of the application replaces the built-in handler of the same exception
-  class: a handler of `Exception` replaces the default 500 response.
+  class: a handler of `Exception` replaces the default 500 response. An exception declared with `@raises` that
+  only a handler of `Exception` would handle fails on startup, such as a `@problem` exception from a module the
+  application does not include.
 - Arguments come from the request or from the injector of the application, see
   [Values from the injector](#values-from-the-injector). Custom argument resolvers are gone: `ArgumentResolver`,
   `ArgumentsResolver`, `arguments_resolver`, `RequestBodyArgumentResolver`, `ResponseHeaderArgumentResolver`,
@@ -391,7 +393,8 @@ todo_list: List[str] = []
 
 class TodoProblemExistsExampleAPI:
     @winter.web.route_get('problem/{todo_index}/')
-    @winter.web.raises(TodoNotFoundException)  # Declares the response in the OpenAPI spec
+    # Declares the response in the OpenAPI spec. The application must have a handler of the exception.
+    @winter.web.raises(TodoNotFoundException)
     def get_todo(self, todo_index: int):
         raise TodoNotFoundException(invalid_index=todo_index)
 

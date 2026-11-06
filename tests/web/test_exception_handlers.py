@@ -179,6 +179,33 @@ def test_handler_of_problem_exception_in_application_fails_startup():
     )
 
 
+class _DeclaringAPI:
+    @winter.web.route_get('raise/')
+    @winter.web.raises(_GrandChildError)
+    def raise_(self):
+        raise _GrandChildError()
+
+
+def test_exception_declared_with_raises_is_handled_by_handler_of_its_base_class():
+    # Act
+    response = _get(_DeclaringAPI, _Handlers)
+
+    # Assert
+    assert response.content == b'"child"'
+
+
+@pytest.mark.parametrize('definitions', [(), (_ExceptionHandler,)])
+def test_exception_declared_with_raises_without_handler_fails_startup(definitions):
+    # Act
+    with pytest.raises(ValueError) as exception_info:
+        _get(_DeclaringAPI, *definitions)
+
+    # Assert
+    assert str(exception_info.value) == (
+        '_GrandChildError is declared with @raises in _DeclaringAPI.raise_ and has no handler in the application'
+    )
+
+
 def _not_annotated(self, exception):  # pragma: no cover
     pass
 

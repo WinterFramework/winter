@@ -10,10 +10,6 @@ class CustomException(Exception):
         self.message = message
 
 
-class ExceptionWithoutHandler(Exception):
-    pass
-
-
 @dataclasses.dataclass
 class CustomExceptionDTO:
     message: str
@@ -51,8 +47,3 @@ class APIWithExceptions:
     @route_get('not_declared_but_thrown/')
     def not_declared_but_thrown(self) -> str:
         raise CustomException('not_declared_but_thrown')
-
-    @route_get('declared_but_no_handler/')
-    @raises(ExceptionWithoutHandler)
-    def declared_but_no_handler(self) -> str:
-        raise ExceptionWithoutHandler()
