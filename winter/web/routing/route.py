@@ -25,6 +25,10 @@ class Route:
         self.method = method
         self.http_method = http_method
 
+    def with_prefix(self, prefix: str) -> 'Route':
+        """The same route under a path prefix, such as the one an adapter serves an application under."""
+        return Route(self.http_method, prefix + self._url_path_with_query_parameters, self.method)
+
     @property
     def url_path(self):
         return _remove_query_params_regexp.sub('', self._url_path_with_query_parameters)
