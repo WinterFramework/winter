@@ -3,4 +3,5 @@ from .request import DjangoRequest
 from .reverse import reverse
 from .throttling import django_user_identity
 from .view import create_urls
+from .view import route_of
 from .view import to_django_response
