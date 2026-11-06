@@ -36,6 +36,8 @@ app = winter.web.WebApplication(modules=[service_a], injector=injector)  # appli
 urlpatterns = winter.django.create_urls(app)
 ```
 
+- `winter.django.create_urls(app, prefix='public-api/v1/')` serves an application under a path prefix. The routes
+  of its requests carry the prefix, unlike the prefix of a Django `include`, which Winter does not see.
 - An exception handler is a method marked with `@winter.web.exception_handler` whose first argument is
   annotated with the exceptions it handles; the class is created by the injector. `ExceptionHandler`,
   `exception_handlers_registry` with `add_handler` and `set_default_handler`, and the handler argument of

@@ -1,6 +1,14 @@
 from http import HTTPStatus
 from uuid import uuid4
 
+from django.test import RequestFactory
+from django.urls.resolvers import RegexPattern
+from django.urls.resolvers import URLResolver
+
+import winter.django
+import winter.web
+from winter.web.autodiscovery import find_routes
+
 
 def test_create_django_urls_from_routes(api_client):
     url = f"/notes/?note_id={uuid4()}"
@@ -12,3 +20,40 @@ def test_create_django_urls_from_routes(api_client):
     assert get_http_response.status_code == HTTPStatus.OK
     assert post_http_response.status_code == HTTPStatus.OK
     assert patch_http_response.status_code == HTTPStatus.OK
+
+
+class _OrderAPI:
+    @winter.web.route_get('orders/{order_id}/{?q}')
+    def get(self, order_id: int, q: str = '') -> str:
+        return f'{order_id}{q}'
+
+
+def test_urls_are_created_under_prefix():
+    urls = winter.django.create_urls(_application_with(_OrderAPI), prefix='api/v1/')
+    resolver = URLResolver(RegexPattern(r'^/'), urls)
+    match = resolver.resolve('/api/v1/orders/5/')
+
+    # Act
+    response = match.func(RequestFactory().get('/api/v1/orders/5/?q=x'), **match.kwargs)
+
+    # Assert
+    assert response.content == b'"5x"'
+
+
+def test_route_with_prefix_keeps_query_parameters():
+    [route] = find_routes(_application_with(_OrderAPI))
+
+    # Act
+    prefixed_route = route.with_prefix('api/v1/')
+
+    # Assert
+    assert prefixed_route.url_path == 'api/v1/orders/{order_id}/'
+    assert [parameter.name for parameter in prefixed_route.get_query_parameters()] == ['q']
+    assert prefixed_route.method is route.method
+    assert prefixed_route.http_method == 'GET'
+
+
+def _application_with(definition) -> winter.web.WebApplication:
+    app = winter.web.WebApplication(modules=[])
+    app.add(definition)
+    return app

@@ -25,9 +25,12 @@ if TYPE_CHECKING:
     from django.views.generic import View
 
 
-def create_urls(app: WebApplication) -> List[URLPattern]:
-    """URL patterns of the routes of an application, relative to where they are included in the urlpatterns."""
-    routes = find_routes(app)
+def create_urls(app: WebApplication, prefix: str = '') -> List[URLPattern]:
+    """
+    URL patterns of the routes of an application under the path prefix, such as `public-api/v1/`. The routes of the
+    requests carry the prefix, unlike the prefix of a Django include, which Winter does not see.
+    """
+    routes = [route.with_prefix(prefix) for route in find_routes(app)]
     exception_handlers = find_exception_handlers(app)
     # Each request binds the Django request, see _create_dispatch_function
     check_arguments(app, routes, exception_handlers, request_types=[django.http.HttpRequest])
