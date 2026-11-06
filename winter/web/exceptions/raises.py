@@ -13,7 +13,10 @@ class ExceptionAnnotation:
 
 
 def raises(exception_cls: Type[Exception]):
-    """Declares an exception that the method raises, for its OpenAPI responses. Its handler is the application's."""
+    """
+    Declares an exception that the method raises, for its OpenAPI responses. The application must have a handler of
+    it other than the one of Exception.
+    """
     return annotate(ExceptionAnnotation(exception_cls), unique=True)
 
 

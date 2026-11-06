@@ -34,7 +34,14 @@ class ExceptionHandlers:
         self._handlers = dict(handlers)
 
     def get(self, exception_cls: Type[Exception]) -> ComponentMethod:
-        return next(self._handlers[cls] for cls in exception_cls.__mro__ if cls in self._handlers)
+        return self._handlers[self._nearest_handled_class(exception_cls)]
+
+    def has_specific_handler(self, exception_cls: Type[Exception]) -> bool:
+        """Whether a handler of the exception class or of a base class other than Exception handles it."""
+        return self._nearest_handled_class(exception_cls) is not Exception
+
+    def _nearest_handled_class(self, exception_cls: Type[Exception]) -> Type[Exception]:
+        return next(cls for cls in exception_cls.__mro__ if cls in self._handlers)
 
     def __iter__(self) -> Iterator[ComponentMethod]:
         """Each handler once, also the one of several exceptions."""

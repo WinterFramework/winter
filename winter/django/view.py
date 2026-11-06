@@ -12,6 +12,7 @@ from winter.web import Response
 from winter.web import WebApplication
 from winter.web import handle_request
 from winter.web.autodiscovery import find_routes
+from winter.web.exception_handlers import check_raises
 from winter.web.exception_handlers import find_exception_handlers
 from winter.web.exceptions import ExceptionHandlers
 from winter.web.request_handler import check_arguments
@@ -30,6 +31,7 @@ def create_urls(app: WebApplication) -> List[URLPattern]:
     exception_handlers = find_exception_handlers(app)
     # Each request binds the Django request, see _create_dispatch_function
     check_arguments(app, routes, exception_handlers, request_types=[django.http.HttpRequest])
+    check_raises(routes, exception_handlers)
     return _create_urls_from_routes(app, routes, exception_handlers)
 
 

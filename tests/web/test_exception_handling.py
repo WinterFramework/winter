@@ -2,9 +2,6 @@ from http import HTTPStatus
 
 import pytest
 
-from tests.api.api_with_exceptions import CustomException
-from tests.api.api_with_exceptions import ExceptionWithoutHandler
-
 
 @pytest.mark.parametrize(
     ['url_path', 'expected_status', 'expected_body'], (
@@ -23,18 +20,6 @@ def test_api_with_exceptions(api_client, url_path, expected_status, expected_bod
     # Assert
     assert response.status_code == expected_status
     assert response.json() == expected_body
-
-
-@pytest.mark.parametrize(
-    'url_path', (
-        '/with_exceptions/declared_but_no_handler/',
-    ),
-)
-def test_api_with_exceptions_throws_500(api_client, url_path):
-    response = api_client.get(url_path)
-
-    assert response.status_code == 500
-    assert response.content == b'Server Error (500)'
 
 
 @pytest.mark.parametrize(
