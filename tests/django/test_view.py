@@ -1,6 +1,7 @@
 from http import HTTPStatus
 from uuid import uuid4
 
+import pytest
 from django.middleware.csrf import CsrfViewMiddleware
 from django.test import RequestFactory
 from django.urls.resolvers import RegexPattern
@@ -53,6 +54,20 @@ def test_route_with_prefix_keeps_query_parameters():
     assert [parameter.name for parameter in prefixed_route.get_query_parameters()] == ['q']
     assert prefixed_route.method is route.method
     assert prefixed_route.http_method == 'GET'
+
+
+@pytest.mark.parametrize('prefix', ['api/v1', '/api/v1/'])
+def test_prefix_is_path_like_paths_of_routes(prefix):
+    app = web_application(_OrderAPI)
+
+    # Act
+    with pytest.raises(ValueError) as exception_info:
+        winter.django.create_urls(app, prefix=prefix)
+
+    # Assert
+    assert str(exception_info.value) == (
+        f"A prefix has no leading slash and ends with a slash, like 'public-api/v1/': {prefix!r}"
+    )
 
 
 class _ItemAPI:
