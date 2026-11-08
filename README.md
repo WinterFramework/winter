@@ -136,6 +136,9 @@ urlpatterns = winter.django.create_urls(app)
   as a header read by a request-scoped provider, is added to the spec that `generate_openapi` returns.
 - Decorators name what they declare: `@winter.json.register_encoder` is `@winter.json.json_encoder`, like
   `@winter.json.json_decoder`, and `@winter.web.register_url_regexp` is `@winter.web.url_regexp`.
+- `@winter.web.query_parameters`: a missing parameter takes the default of its field, or None for an `Optional`
+  field, and the request fails with 400 for a missing required parameter or a value that does not decode, as for a
+  query parameter of an argument. It was a 500.
 
 ## Upgrading to Winter 33
 
@@ -363,6 +366,32 @@ class TodoAPI:
     def get_todos(self, request: winter.web.Request, page_position: PagePosition) -> LinkedPage[int]:
         page = Page(total_count=3, items=[1, 2, 3], position=page_position)
         return LinkedPage.of(page, request)
+```
+
+`PagePosition` comes from `limit`, `offset` and `order_by`. Other parameters of a page are a dataclass of query
+parameters, which the route declares for the request and for the OpenAPI spec alike:
+```python
+from dataclasses import dataclass
+
+import winter.web
+from winter.pagination import Page
+from winter.pagination import PagePosition
+
+
+@dataclass
+class PageNumber:
+    page_size: int = 20
+    page_number: int = 1
+
+    def position(self) -> PagePosition:
+        return PagePosition(limit=self.page_size, offset=(self.page_number - 1) * self.page_size)
+
+
+class TodoAPI:
+    @winter.web.route_get('todos/{?page_size,page_number}')
+    @winter.web.query_parameters('page')
+    def get_todos(self, page: PageNumber) -> Page[int]:
+        return Page(total_count=3, items=[1, 2, 3], position=page.position())
 ```
 
 
