@@ -104,9 +104,27 @@ urlpatterns = winter.django.create_urls(app)
   An API method may still return a Django response.
 - OpenAPI: `generate_openapi(app, title=..., version=...)` returns the spec and checks `@raises` annotations
   of the application (`allow_missing_raises_annotation=True` skips the check).
-  `winter.openapi.serve_spec(app, spec, url='openapi.json')` and
-  `winter.openapi.serve_swagger_ui(app, spec_url='openapi.json', url='docs/')` add the routes that serve them;
-  the served spec and Swagger UI work under whatever prefix the application is included at.
+  An API method of the application serves it, with the route and the annotations the application needs, such as
+  its own authentication ones. `winter.openapi.swagger_ui_response(spec_url=...)` replaces `get_swagger_ui_html`
+  and returns the page of Swagger UI. `serve_spec` and `serve_swagger_ui` are gone. The `servers` of the spec are
+  relative to where the routes are served, so an application served under a prefix adds it:
+
+  ```python
+  @functools.cache
+  def _spec() -> dict:
+      spec = winter.openapi.generate_openapi(app, title='Public API', version='1')
+      return {**spec, 'servers': [{'url': '/public-api' + server['url']} for server in spec['servers']]}
+
+  class DocsAPI:
+      @winter.web.route_get('openapi.json')
+      def spec(self) -> dict:
+          return _spec()  # generated on the first request
+
+      @winter.web.route_get('docs/')
+      def ui(self) -> winter.web.Response:
+          return winter.openapi.swagger_ui_response(spec_url='/public-api/openapi.json')
+  ```
+
 - OpenAPI: `@winter.openapi.type_inspector(Answer)` replaces `register_type_inspector` and is a decorator only; it
   also describes the subclasses of the type. `register_global_exception` is gone: `@winter.openapi.global_exception`
   remains. The parameters of a route come from its path, query and `PagePosition` arguments only:

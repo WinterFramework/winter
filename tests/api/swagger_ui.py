@@ -1,21 +1,15 @@
-from django.http import HttpResponse
-
-import winter.web
 import winter.openapi
+import winter.web
 
 
 class SwaggerUI:
     @winter.web.route_get('swagger-ui/')
-    def get_swagger_ui(self):
-        html = winter.openapi.get_swagger_ui_html(
-            openapi_url='http://testserver/openapi.yml',
-        )
-        return HttpResponse(html, content_type='text/html')
+    def get_swagger_ui(self) -> winter.web.Response:
+        return winter.openapi.swagger_ui_response(spec_url='http://testserver/openapi.yml')
 
     @winter.web.route_get('swagger-ui-with-params/')
-    def get_swagger_ui_with_custom_parameters(self):
-        html = winter.openapi.get_swagger_ui_html(
-            openapi_url='http://testserver/openapi.yml',
+    def get_swagger_ui_with_custom_parameters(self) -> winter.web.Response:
+        return winter.openapi.swagger_ui_response(
+            spec_url='http://testserver/openapi.yml',
             swagger_ui_parameters={'deepLinking': False},
         )
-        return HttpResponse(html, content_type='text/html')
