@@ -1,7 +1,9 @@
+import types
 from typing import Callable
 from typing import Dict
 from typing import Iterable
 from typing import List
+from typing import Sequence
 from typing import Type
 
 from injector import Injector
@@ -9,8 +11,7 @@ from injector import inject
 
 from winter.components import Component
 from winter.components import ComponentMethod
-from winter.application.module_discovery import get_all_classes
-from winter.application.module_discovery import import_recursively
+from winter.application import find_definitions
 from .domain_event import DomainEvent
 from .domain_event_handler import DomainEventHandlerAnnotation
 from .domain_event_subscription import DomainEventSubscription
@@ -28,10 +29,13 @@ class DomainEventDispatcher:
         for event_type in subscription.event_filter:
             self.event_type_to_subscription_map.setdefault(event_type, []).append(subscription)
 
-    def add_handlers_from_package(self, package_name: str):
-        import_recursively(package_name)
-        for class_name, class_ in get_all_classes(package_name):
-            self.add_handlers_from_class(class_)
+    def add_handlers_from_modules(self, modules: Sequence[types.ModuleType]):
+        """Adds the handlers of the classes defined in the modules and their submodules, as WebApplication does."""
+        definitions = find_definitions(modules)  # Importing the modules registers their components
+        components = Component.get_all()
+        for definition in definitions:
+            if definition in components:
+                self.add_handlers_from_class(definition)
 
     def add_handlers_from_class(self, handler_class: Type):
         component = Component.get_by_cls(handler_class)
