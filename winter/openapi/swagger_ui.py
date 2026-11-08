@@ -1,19 +1,25 @@
 import json
+from http import HTTPStatus
 from typing import Any
 from typing import Dict
 from typing import Optional
 
+import winter.web
 
-def get_swagger_ui_html(
+
+def swagger_ui_response(
     *,
-    openapi_url: str,
+    spec_url: str,
     title: str = 'Swagger UI',
     swagger_js_url: str = "https://cdn.jsdelivr.net/npm/swagger-ui-dist@4/swagger-ui-bundle.js",
     swagger_css_url: str = "https://cdn.jsdelivr.net/npm/swagger-ui-dist@4/swagger-ui.css",
     swagger_favicon_url: str = "https://static1.smartbear.co/swagger/media/assets/swagger_fav.png",
     swagger_ui_parameters: Optional[Dict[str, Any]] = None,
-) -> str:
-    """Stolen from FastAPI"""
+) -> winter.web.Response:
+    """
+    The page of Swagger UI for the spec at `spec_url`, for an API method to return. The method declares the route and
+    whatever else the application needs, such as its own annotations. Stolen from FastAPI.
+    """
     current_swagger_ui_parameters = {
         "dom_id": "#swagger-ui",
         "layout": "BaseLayout",
@@ -39,7 +45,7 @@ def get_swagger_ui_html(
     <!-- `SwaggerUIBundle` is now available on the page -->
     <script>
     const ui = SwaggerUIBundle({{
-        url: '{openapi_url}',
+        url: '{spec_url}',
     """
 
     for key, value in current_swagger_ui_parameters.items():
@@ -57,4 +63,4 @@ def get_swagger_ui_html(
     </body>
     </html>
     """
-    return html
+    return winter.web.Response(HTTPStatus.OK, html.encode(), {'content-type': 'text/html'})
