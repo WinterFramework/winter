@@ -58,8 +58,9 @@ urlpatterns = winter.django.create_urls(app)
   ```
 
 - Exception handlers belong to applications: a handler, like a `@problem` exception, handles exceptions in the
-  applications whose definitions include it, in every endpoint, whether declared with `@raises` or not. Define it
-  in a scanned module or add it, e.g. `app.add(winter.web.problem(status=404)(NotFoundException))`.
+  applications whose definitions include it, in every endpoint, whether declared with `@raises` or not. An
+  exception of another package belongs to the applications whose modules include its module, e.g.
+  `winter.web.problem(status=404)(NotFoundException)` with `modules=[api, winter.ddd.exceptions]`.
   The handler of the nearest class in the exception's MRO handles it; two handlers of one exception class in an
   application fail on startup. A handler of the application replaces the built-in handler of the same exception
   class: a handler of `Exception` replaces the default 500 response. An exception declared with `@raises` that

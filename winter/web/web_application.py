@@ -31,16 +31,9 @@ class WebApplication:
                 raise TypeError(f'{interceptor.__qualname__} is not an Interceptor')
         self.injector = Injector() if injector == 'new' else injector
         self.interceptors = tuple(interceptors)
-        self._definitions = dict.fromkeys(find_definitions(modules))
+        self._definitions = find_definitions(modules)
 
     @property
     def definitions(self) -> tuple[Definition, ...]:
-        """Classes and functions of the application, in the order they were scanned or added."""
-        return tuple(self._definitions)
-
-    def add(self, definition: Definition) -> None:
-        """
-        Adds a class or a function that is not defined in the modules, such as a generated one. Adapters take the
-        definitions when they build from the application, so one added afterwards is not served.
-        """
-        self._definitions.setdefault(definition, None)
+        """Classes and functions of the application, in the order they were scanned."""
+        return self._definitions

@@ -4,6 +4,7 @@ from django.test import RequestFactory
 
 import winter.django
 import winter.web
+from tests.web_application import web_application
 
 
 @pytest.mark.parametrize(
@@ -49,12 +50,11 @@ class _CallsAPI:
 
 def test_interceptors_run_in_given_order_before_api_method():
     calls = _Calls()
-    app = winter.web.WebApplication(
-        modules=[],
+    app = web_application(
+        _CallsAPI,
         injector=injector.Injector([lambda binder: binder.bind(_Calls, to=calls)]),
         interceptors=[_InterceptorB, _InterceptorA],
     )
-    app.add(_CallsAPI)
     [url] = winter.django.create_urls(app)
 
     # Act
