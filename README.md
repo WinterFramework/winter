@@ -139,6 +139,9 @@ urlpatterns = winter.django.create_urls(app)
 - `@winter.web.query_parameters`: a missing parameter takes the default of its field, or None for an `Optional`
   field, and the request fails with 400 for a missing required parameter or a value that does not decode, as for a
   query parameter of an argument. It was a 500.
+- Event handlers are found in modules, as by `WebApplication`: `add_handlers_from_modules([myproject])` of
+  `DomainEventDispatcher` replaces `add_handlers_from_package('myproject')`, and of `EventSubscriptionRegistry`
+  replaces `autodiscover('myproject')`. `winter.application.module_discovery.get_all_classes` is gone.
 
 ## Upgrading to Winter 33
 

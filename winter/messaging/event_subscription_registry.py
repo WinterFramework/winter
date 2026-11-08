@@ -1,11 +1,12 @@
+import types
 from typing import Dict
 from typing import Iterable
 from typing import List
+from typing import Sequence
 from typing import Type
 
 from winter.components import Component
-from winter.application.module_discovery import get_all_classes
-from winter.application.module_discovery import import_recursively
+from winter.application import find_definitions
 from .event import Event
 from .event_handler import EventHandlerAnnotation
 from .event_subscription import EventSubscription
@@ -25,10 +26,13 @@ class EventSubscriptionRegistry:
     def get_subscriptions(self, event_type: Type[Event]) -> Iterable[EventSubscription]:
         return self._event_type_to_subscription_map.get(event_type, [])
 
-    def autodiscover(self, package_name: str):
-        import_recursively(package_name)
-        for class_name, class_ in get_all_classes(package_name):
-            component = Component.get_by_cls(class_)
-            for component_method in component.methods:
+    def add_handlers_from_modules(self, modules: Sequence[types.ModuleType]):
+        """Adds the handlers of the classes defined in the modules and their submodules, as WebApplication does."""
+        definitions = find_definitions(modules)  # Importing the modules registers their components
+        components = Component.get_all()
+        for definition in definitions:
+            if definition not in components:
+                continue
+            for component_method in components[definition].methods:
                 if component_method.annotations.get_one_or_none(EventHandlerAnnotation):
                     self.register_subscription(component_method)

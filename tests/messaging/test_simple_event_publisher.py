@@ -5,6 +5,7 @@ from injector import ClassProvider
 from injector import Injector
 from injector import singleton
 
+import tests.messaging
 from winter.components import annotate
 from winter.messaging import EventSubscriptionRegistry
 from winter.messaging import SimpleEventPublisher
@@ -82,7 +83,7 @@ def test_simple_event_publisher():
 
     simple_event_publisher = injector.get(SimpleEventPublisher)
     registry = injector.get(EventSubscriptionRegistry)
-    registry.autodiscover('tests.messaging')
+    registry.add_handlers_from_modules([tests.messaging])
     event_handlers = injector.get(EventHandlers)
     event_handlers.result = {'handlers': [], 'x': 0}
 
