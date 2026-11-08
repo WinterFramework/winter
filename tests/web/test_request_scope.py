@@ -8,6 +8,7 @@ from django.test import RequestFactory
 
 import winter.django
 import winter.web
+from winter.components import annotate_method
 
 
 class _Visit:
@@ -54,6 +55,35 @@ def test_request_scoped_value_is_created_once_per_request():
     # Assert
     assert json.loads(first_response.content) == {'number': 1, 'path': '/visit/', 'same': True, 'method': 'GET'}
     assert json.loads(second_response.content) == {'number': 2, 'path': '/visit/', 'same': True, 'method': 'GET'}
+
+
+@dataclass(frozen=True)
+class _CacheSettings:
+    seconds: int
+
+
+class _CacheSettingsModule(injector.Module):
+    @injector.provider
+    @winter.web.request_scope
+    def cache_settings(self, route: winter.web.Route) -> _CacheSettings:
+        return route.method.annotations.get_one(_CacheSettings)
+
+
+class _CachedAPI:
+    @winter.web.route_get('cached/')
+    @annotate_method(_CacheSettings(seconds=60), single=True)
+    def get(self, cache_settings: _CacheSettings, route: winter.web.Route) -> dict:
+        return {'seconds': cache_settings.seconds, 'route': route.url_path}
+
+
+def test_request_scoped_provider_reads_annotation_of_api_method_from_route():
+    [url] = _create_urls(_CachedAPI, app_injector=injector.Injector([_CacheSettingsModule()]))
+
+    # Act
+    response = _get(url, '/cached/')
+
+    # Assert
+    assert json.loads(response.content) == {'seconds': 60, 'route': 'cached/'}
 
 
 @injector.singleton

@@ -20,7 +20,7 @@ def _resolver(is_supported: bool, value=None):
 
 
 def _resolve(arguments_resolver: ArgumentsResolver, func, app_injector=None, context=None):
-    request_injector = create_request_injector(app_injector or Injector(), Mock(spec=Request), {})
+    request_injector = create_request_injector(app_injector or Injector(), Mock(spec=Request), Mock(), {})
     return arguments_resolver.resolve_arguments(ComponentMethod(func), Mock(), {}, request_injector, context)
 
 

@@ -466,8 +466,8 @@ An argument that is not mapped from the request (path and query parameters, `@re
 `@response_header`, `PagePosition`) comes from the injector of the application, which must bind its type:
 otherwise the application fails on startup. The dependencies of the class itself go to `__init__`, where the
 injector creates them without bindings. A provider marked `@winter.web.request_scope` is called once per request,
-and its value exists only while Winter handles a request. Every request binds `winter.web.Request` and, under
-Django, `django.http.HttpRequest`.
+and its value exists only while Winter handles a request. Every request binds `winter.web.Request`, its
+`winter.web.Route`, whose `method` is the API method with its annotations, and, under Django, `django.http.HttpRequest`.
 ```python
 import injector
 import winter.web
