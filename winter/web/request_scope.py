@@ -4,6 +4,7 @@ from typing import Mapping
 import injector
 
 from .request import Request
+from .routing import Route
 
 
 class _RequestValues(dict):
@@ -41,12 +42,17 @@ class _RequestScopedProvider(injector.Provider):
 def create_request_injector(
     app_injector: injector.Injector,
     request: Request,
+    route: Route,
     request_values: Mapping[type, object],
 ) -> injector.Injector:
-    """The injector of one request: a child of the application's injector that binds the request."""
+    """
+    The injector of one request: a child of the application's injector that binds the request and its route, so
+    that a request-scoped provider knows the API method of the request, e.g. to read its annotations.
+    """
 
     def configure(binder: injector.Binder):
-        for type_, value in {Request: request, **request_values, _RequestValues: _RequestValues()}.items():
+        values = {Request: request, Route: route, **request_values, _RequestValues: _RequestValues()}
+        for type_, value in values.items():
             binder.bind(type_, to=injector.InstanceProvider(value))
 
     return app_injector.create_child_injector([configure])

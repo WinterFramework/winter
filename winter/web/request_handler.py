@@ -55,10 +55,10 @@ def check_arguments(
     """
     Fails on startup for an argument of an API method, an interceptor or an exception handler that is not mapped
     from the request and whose type the injector does not bind, and for an API method with @throttling when the
-    injector binds no ThrottlingStorage. Adapters bind the request types in each request; an API method with
-    @throttling also receives its Throttle.
+    injector binds no ThrottlingStorage. Every request binds the Request and its Route, adapters bind their request
+    types; an API method with @throttling also receives its Throttle.
     """
-    request_types = {Request, *request_types}
+    request_types = {Request, Route, *request_types}
     for route in routes:
         if get_throttling(route.method) is None:
             _arguments_resolver.check_arguments(route.method, app.injector, request_types)
@@ -99,7 +99,7 @@ def handle_request(
     throttle = create_throttle(method, request, app.injector, throttling_identity)
     if throttle is not None:
         request_values = {**request_values, Throttle: throttle}
-    injector = create_request_injector(app.injector, request, request_values)
+    injector = create_request_injector(app.injector, request, route, request_values)
 
     try:
         if throttle is not None and not throttle.allow_request():
