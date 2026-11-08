@@ -41,6 +41,9 @@ urlpatterns = winter.django.create_urls(app)
   `winter.django.route_of(request)` gives the route of a request, e.g. for a middleware to log
   `route.url_path`, `public-api/v1/orders/{order_id}/`, and None for a request that Winter does not serve. The
   `route` attribute of the view methods is gone.
+- Django does not check CSRF on the views of Winter any more, as when Winter was built on DRF: CSRF matters only for
+  a request authenticated by a cookie, and the application authenticates. An application authenticated by a Django
+  session checks CSRF itself, in its authentication interceptor.
 - An exception handler is a method marked with `@winter.web.exception_handler` whose first argument is
   annotated with the exceptions it handles; the class is created by the injector. `ExceptionHandler`,
   `exception_handlers_registry` with `add_handler` and `set_default_handler`, and the handler argument of
