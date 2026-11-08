@@ -6,6 +6,7 @@ from django.test import RequestFactory
 import winter.django
 import winter.web
 from tests.injection import app_injector
+from tests.web_application import web_application
 from winter.web.exceptions import RedirectException
 
 
@@ -35,10 +36,7 @@ def _raising(exception: Exception):
 
 
 def _get(*definitions):
-    app = winter.web.WebApplication(modules=[], injector=app_injector)
-    for definition in definitions:
-        app.add(definition)
-    [url] = winter.django.create_urls(app)
+    [url] = winter.django.create_urls(web_application(*definitions, injector=app_injector))
     return url.callback(RequestFactory().get('/raise/'))
 
 

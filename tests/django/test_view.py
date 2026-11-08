@@ -1,6 +1,7 @@
 from http import HTTPStatus
 from uuid import uuid4
 
+import pytest
 from django.middleware.csrf import CsrfViewMiddleware
 from django.test import RequestFactory
 from django.urls.resolvers import RegexPattern
@@ -9,6 +10,7 @@ from django.urls.resolvers import URLResolver
 import winter.django
 import winter.web
 from winter.web.autodiscovery import find_routes
+from tests.web_application import web_application
 
 
 def test_create_django_urls_from_routes(api_client):
@@ -30,7 +32,7 @@ class _OrderAPI:
 
 
 def test_urls_are_created_under_prefix():
-    urls = winter.django.create_urls(_application_with(_OrderAPI), prefix='api/v1/')
+    urls = winter.django.create_urls(web_application(_OrderAPI), prefix='api/v1/')
     resolver = URLResolver(RegexPattern(r'^/'), urls)
     match = resolver.resolve('/api/v1/orders/5/')
 
@@ -42,7 +44,7 @@ def test_urls_are_created_under_prefix():
 
 
 def test_route_with_prefix_keeps_query_parameters():
-    [route] = find_routes(_application_with(_OrderAPI))
+    [route] = find_routes(web_application(_OrderAPI))
 
     # Act
     prefixed_route = route.with_prefix('api/v1/')
@@ -54,10 +56,18 @@ def test_route_with_prefix_keeps_query_parameters():
     assert prefixed_route.http_method == 'GET'
 
 
-def _application_with(definition) -> winter.web.WebApplication:
-    app = winter.web.WebApplication(modules=[])
-    app.add(definition)
-    return app
+@pytest.mark.parametrize('prefix', ['api/v1', '/api/v1/'])
+def test_prefix_is_path_like_paths_of_routes(prefix):
+    app = web_application(_OrderAPI)
+
+    # Act
+    with pytest.raises(ValueError) as exception_info:
+        winter.django.create_urls(app, prefix=prefix)
+
+    # Assert
+    assert str(exception_info.value) == (
+        f"A prefix has no leading slash and ends with a slash, like 'public-api/v1/': {prefix!r}"
+    )
 
 
 class _ItemAPI:
@@ -67,7 +77,7 @@ class _ItemAPI:
 
 
 def test_django_does_not_check_csrf_of_winter_views():
-    [url] = winter.django.create_urls(_application_with(_ItemAPI))
+    [url] = winter.django.create_urls(web_application(_ItemAPI))
     middleware = CsrfViewMiddleware(lambda request: None)
 
     # Act

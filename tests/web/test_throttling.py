@@ -6,6 +6,7 @@ import pytest
 
 import winter.django
 import winter.web
+from tests.web_application import web_application
 from winter.web import ThrottlingMisconfigurationException
 from winter.web.throttling import InMemoryThrottlingStorage
 from winter.web.throttling import Throttle
@@ -80,8 +81,7 @@ class _ThrottledAPI:
 
 
 def test_throttling_without_storage_in_injector_fails_startup():
-    app = winter.web.WebApplication(modules=[])
-    app.add(_ThrottledAPI)
+    app = web_application(_ThrottledAPI)
 
     # Act
     with pytest.raises(ThrottlingMisconfigurationException) as exception_info:
@@ -100,8 +100,7 @@ class _NotThrottledAPI:
 
 
 def test_throttle_argument_without_throttling_fails_startup():
-    app = winter.web.WebApplication(modules=[])
-    app.add(_NotThrottledAPI)
+    app = web_application(_NotThrottledAPI)
 
     # Act
     with pytest.raises(TypeError) as exception_info:

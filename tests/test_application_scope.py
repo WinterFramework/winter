@@ -13,6 +13,7 @@ from injector import Injector
 import winter.django
 import winter.web
 from tests.injection import app_injector
+from tests.web_application import web_application
 
 
 @winter.web.problem(status=HTTPStatus.CONFLICT)
@@ -27,10 +28,8 @@ class _API:
 
 
 def test_problem_handler_of_one_application_does_not_handle_exceptions_in_another():
-    app_1 = winter.web.WebApplication(modules=[], injector=app_injector)
-    app_1.add(_ErrorA)
-    app_2 = winter.web.WebApplication(modules=[], injector=app_injector)
-    app_2.add(_API)
+    app_1 = web_application(_ErrorA, injector=app_injector)
+    app_2 = web_application(_API, injector=app_injector)
     winter.django.create_urls(app_1)
     [url] = winter.django.create_urls(app_2)
 
@@ -53,9 +52,7 @@ class _NameAPI:
 
 
 def _application_with_name(value: str) -> winter.web.WebApplication:
-    app = winter.web.WebApplication(modules=[], injector=Injector([lambda binder: binder.bind(_Name, to=_Name(value))]))
-    app.add(_NameAPI)
-    return app
+    return web_application(_NameAPI, injector=Injector([lambda binder: binder.bind(_Name, to=_Name(value))]))
 
 
 def test_argument_of_api_method_comes_from_injector_of_its_application():
@@ -83,10 +80,8 @@ class _OKAPI:
 
 
 def test_interceptor_of_one_application_does_not_run_in_another():
-    app_1 = winter.web.WebApplication(modules=[], interceptors=[_RejectingInterceptor])
-    app_1.add(_OKAPI)
-    app_2 = winter.web.WebApplication(modules=[])
-    app_2.add(_OKAPI)
+    app_1 = web_application(_OKAPI, interceptors=[_RejectingInterceptor])
+    app_2 = web_application(_OKAPI)
     [url_1] = winter.django.create_urls(app_1)
     [url_2] = winter.django.create_urls(app_2)
 
@@ -108,12 +103,10 @@ class _ThrottledAPI:
 
 def _application_with_throttling() -> winter.web.WebApplication:
     storage = winter.web.InMemoryThrottlingStorage()
-    app = winter.web.WebApplication(
-        modules=[],
+    return web_application(
+        _ThrottledAPI,
         injector=Injector([lambda binder: binder.bind(winter.web.ThrottlingStorage, to=storage)]),
     )
-    app.add(_ThrottledAPI)
-    return app
 
 
 def test_throttled_requests_of_one_application_are_not_counted_in_another():

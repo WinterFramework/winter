@@ -4,6 +4,7 @@ from django.urls import path
 
 import winter.django
 import winter.web
+from tests.web_application import web_application
 
 
 class OrderAPI:
@@ -12,9 +13,7 @@ class OrderAPI:
         return order_id
 
 
-app = winter.web.WebApplication(modules=[])
-app.add(OrderAPI)
 urlpatterns = [
-    *winter.django.create_urls(app, prefix='api/v1/'),
+    *winter.django.create_urls(web_application(OrderAPI), prefix='api/v1/'),
     path('health/', lambda request: HttpResponse()),
 ]

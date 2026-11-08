@@ -5,6 +5,7 @@ import pytest
 import winter.openapi
 import winter.web
 from tests.injection import app_injector
+from tests.web_application import web_application
 
 
 @winter.web.problem(status=HTTPStatus.CONFLICT)
@@ -23,10 +24,7 @@ class _API:
 
 
 def _application(*definitions) -> winter.web.WebApplication:
-    app = winter.web.WebApplication(modules=[], injector=app_injector)
-    for definition in definitions:
-        app.add(definition)
-    return app
+    return web_application(*definitions, injector=app_injector)
 
 
 def test_generate_openapi_of_application():

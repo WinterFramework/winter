@@ -8,6 +8,7 @@ from django.test import RequestFactory
 
 import winter.django
 import winter.web
+from tests.web_application import web_application
 from winter.components import annotate_method
 
 
@@ -35,9 +36,7 @@ class _VisitAPI:
 
 
 def _create_urls(*definitions, app_injector=None, interceptors=()):
-    app = winter.web.WebApplication(modules=[], injector=app_injector or injector.Injector(), interceptors=interceptors)
-    for definition in definitions:
-        app.add(definition)
+    app = web_application(*definitions, injector=app_injector or injector.Injector(), interceptors=interceptors)
     return winter.django.create_urls(app)
 
 

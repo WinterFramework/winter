@@ -36,11 +36,11 @@ app = winter.web.WebApplication(modules=[service_a], injector=injector)  # appli
 urlpatterns = winter.django.create_urls(app)
 ```
 
-- `winter.django.create_urls(app, prefix='public-api/v1/')` serves an application under a path prefix. The routes
-  of its requests carry the prefix, unlike the prefix of a Django `include`, which Winter does not see.
-  `winter.django.route_of(request)` gives the route of a request, e.g. for a middleware to log
-  `route.url_path`, `public-api/v1/orders/{order_id}/`, and None for a request that Winter does not serve. The
-  `route` attribute of the view methods is gone.
+- `winter.django.create_urls(app, prefix='public-api/v1/')` serves an application under a path prefix, a path
+  without a leading slash and with a trailing one, like the paths of routes. The routes of its requests carry the
+  prefix, unlike the prefix of a Django `include`, which Winter does not see. `winter.django.route_of(request)`
+  gives the route of a request, e.g. for a middleware to log `route.url_path`, `public-api/v1/orders/{order_id}/`,
+  and None for a request that Winter does not serve. The `route` attribute of the view methods is gone.
 - Django does not check CSRF on the views of Winter any more, as when Winter was built on DRF: CSRF matters only for
   a request authenticated by a cookie, and the application authenticates. An application authenticated by a Django
   session checks CSRF itself, in its authentication interceptor.
@@ -58,8 +58,9 @@ urlpatterns = winter.django.create_urls(app)
   ```
 
 - Exception handlers belong to applications: a handler, like a `@problem` exception, handles exceptions in the
-  applications whose definitions include it, in every endpoint, whether declared with `@raises` or not. Define it
-  in a scanned module or add it, e.g. `app.add(winter.web.problem(status=404)(NotFoundException))`.
+  applications whose definitions include it, in every endpoint, whether declared with `@raises` or not. An
+  exception of another package belongs to the applications whose modules include its module, e.g.
+  `winter.web.problem(status=404)(NotFoundException)` with `modules=[api, winter.ddd.exceptions]`.
   The handler of the nearest class in the exception's MRO handles it; two handlers of one exception class in an
   application fail on startup. A handler of the application replaces the built-in handler of the same exception
   class: a handler of `Exception` replaces the default 500 response. An exception declared with `@raises` that

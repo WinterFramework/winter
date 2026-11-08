@@ -8,10 +8,6 @@ class _Defined:
     pass
 
 
-def _defined():  # pragma: no cover
-    pass
-
-
 def test_definitions_are_those_of_modules():
     import tests.application.scanned.api
     from tests.application.scanned.api import API
@@ -22,18 +18,6 @@ def test_definitions_are_those_of_modules():
 
     # Assert
     assert app.definitions == (API, function)
-
-
-def test_add():
-    app = winter.web.WebApplication(modules=[])
-
-    # Act
-    app.add(_Defined)
-    app.add(_defined)
-    app.add(_Defined)
-
-    # Assert
-    assert app.definitions == (_Defined, _defined)
 
 
 def test_new_injector_is_own_injector_of_application():
