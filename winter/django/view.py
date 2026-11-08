@@ -13,6 +13,7 @@ from django.urls import URLPattern
 from django.urls import re_path
 from django.urls import resolve
 from django.views import View
+from django.views.decorators.csrf import csrf_exempt
 
 from winter.web import Response
 from winter.web import WebApplication
@@ -78,7 +79,8 @@ def _create_urls_from_routes(
         grouped_routes[route.url_path].append(route)
 
     for url_path, routes in grouped_routes.items():
-        django_view = _create_django_view_from_routes(app, routes, exception_handlers).as_view()
+        # CSRF matters only for a request authenticated by a cookie, and authentication is the application's
+        django_view = csrf_exempt(_create_django_view_from_routes(app, routes, exception_handlers).as_view())
         winter_url_path = f'^{url_path}$'
         methods = [route.method for route in routes]
         django_url_path = rewrite_uritemplate_with_regexps(winter_url_path, methods)

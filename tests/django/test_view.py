@@ -1,6 +1,7 @@
 from http import HTTPStatus
 from uuid import uuid4
 
+from django.middleware.csrf import CsrfViewMiddleware
 from django.test import RequestFactory
 from django.urls.resolvers import RegexPattern
 from django.urls.resolvers import URLResolver
@@ -57,3 +58,20 @@ def _application_with(definition) -> winter.web.WebApplication:
     app = winter.web.WebApplication(modules=[])
     app.add(definition)
     return app
+
+
+class _ItemAPI:
+    @winter.web.route_post('items/')
+    def create(self):  # pragma: no cover
+        pass
+
+
+def test_django_does_not_check_csrf_of_winter_views():
+    [url] = winter.django.create_urls(_application_with(_ItemAPI))
+    middleware = CsrfViewMiddleware(lambda request: None)
+
+    # Act
+    response = middleware.process_view(RequestFactory().post('/items/'), url.callback, (), {})
+
+    # Assert
+    assert response is None
