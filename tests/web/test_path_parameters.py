@@ -1,13 +1,17 @@
+import datetime
+import enum
 import uuid
 
 import pytest
 
+import winter.web
 from tests.utils import get_request
 from tests.api.api_with_path_parameters import APIWithPathParameters
 from tests.api.api_with_path_parameters import OneTwoEnum
 from tests.api.api_with_path_parameters import OneTwoEnumWithInt
 from winter.components import Component
 from winter.web.argument_resolver import ArgumentNotSupported
+from winter.web.exceptions import RequestDataDecodeException
 from winter.web.path_parameters_argument_resolver import PathParametersArgumentResolver
 
 uuid_ = uuid.uuid4()
@@ -69,3 +73,37 @@ def test_with_raises_argument_not_supported():
         resolver.resolve_argument(argument, request, {})
 
     assert str(exception.value) == 'Unable to resolve argument param6: str'
+
+
+class _Level(enum.IntEnum):
+    LOW = 1
+
+
+@winter.web.route_get('{level}/{day}/')
+def _method(level: _Level, day: datetime.date):  # pragma: no cover
+    pass
+
+
+@pytest.mark.parametrize('arg_name, expected_value', [
+    ('level', _Level.LOW),
+    ('day', datetime.date(2024, 1, 5)),
+])
+def test_path_parameter_is_decoded_as_query_parameter(arg_name, expected_value):
+    request = get_request(path_parameters={'level': '1', 'day': '2024-01-05'})
+
+    # Act
+    result = PathParametersArgumentResolver().resolve_argument(_method.get_argument(arg_name), request, {})
+
+    # Assert
+    assert result == expected_value
+
+
+def test_path_parameter_of_wrong_form_fails_decoding():
+    request = get_request(path_parameters={'level': '7'})
+
+    # Act
+    with pytest.raises(RequestDataDecodeException) as exception_info:
+        PathParametersArgumentResolver().resolve_argument(_method.get_argument('level'), request, {})
+
+    # Assert
+    assert exception_info.value.errors == {'error': 'Value not in allowed values("1"): "7"'}

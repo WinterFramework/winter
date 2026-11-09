@@ -1,14 +1,17 @@
 from typing import MutableMapping
 
-
 from winter.web.request import Request
 from winter.components import ComponentMethodArgument
+from winter.json import JSONDecodeException
+from winter.json import json_decode
 from .argument_resolver import ArgumentNotSupported
 from .argument_resolver import ArgumentResolver
+from .exceptions import RequestDataDecodeException
 from .routing import get_route
 
 
 class PathParametersArgumentResolver(ArgumentResolver):
+    """Decodes a path parameter as a query parameter is decoded, so a value of a wrong form is a 400."""
 
     def __init__(self):
         super().__init__()
@@ -35,4 +38,7 @@ class PathParametersArgumentResolver(ArgumentResolver):
         if argument.name not in request.path_parameters:
             raise ArgumentNotSupported(argument)
 
-        return argument.type_(request.path_parameters[argument.name])
+        try:
+            return json_decode(request.path_parameters[argument.name], argument.type_)
+        except JSONDecodeException as e:
+            raise RequestDataDecodeException(e.errors)
