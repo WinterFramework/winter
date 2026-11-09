@@ -154,6 +154,7 @@ urlpatterns = winter.django.create_urls(app)
 - Event handlers are found in modules, as by `WebApplication`: `add_handlers_from_modules([myproject])` of
   `DomainEventDispatcher` replaces `add_handlers_from_package('myproject')`, and of `EventSubscriptionRegistry`
   replaces `autodiscover('myproject')`. `winter.application.module_discovery.get_all_classes` is gone.
+- `EventDispatcher` is imported from `winter.messaging`: the module `winter.messaging.event_dispacher` is gone.
 
 ## Upgrading to Winter 33
 
