@@ -7,6 +7,7 @@ throttled requests in the storage of its own injector.
 """
 from http import HTTPStatus
 
+import pytest
 from django.test import RequestFactory
 from injector import Injector
 
@@ -34,10 +35,8 @@ def test_problem_handler_of_one_application_does_not_handle_exceptions_in_anothe
     [url] = winter.django.create_urls(app_2)
 
     # Act
-    response = url.callback(RequestFactory().get('/raise-a/'))
-
-    # Assert
-    assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+    with pytest.raises(_ErrorA):
+        url.callback(RequestFactory().get('/raise-a/'))
 
 
 class _Name:
@@ -86,12 +85,12 @@ def test_interceptor_of_one_application_does_not_run_in_another():
     [url_2] = winter.django.create_urls(app_2)
 
     # Act
-    response_1 = url_1.callback(RequestFactory().get('/ok/'))
-    response_2 = url_2.callback(RequestFactory().get('/ok/'))
+    response = url_2.callback(RequestFactory().get('/ok/'))
 
     # Assert
-    assert response_1.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-    assert response_2.content == b'"ok"'
+    assert response.content == b'"ok"'
+    with pytest.raises(_ErrorA):
+        url_1.callback(RequestFactory().get('/ok/'))
 
 
 class _ThrottledAPI:

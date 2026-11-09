@@ -116,11 +116,15 @@ def handle_request(
         result = method(api_instance, **arguments)
     except Exception as exception:
         method = exception_handlers.get(type(exception))
+        if method is None:
+            raise
         try:
             result = _handle_exception(method, exception, request, response_headers, injector)
         except Exception as handler_exception:
-            # A failing handler is not retried: its exception goes to the handler of Exception
+            # A failing handler is not retried: its exception goes to the handler of Exception, if there is one
             method = exception_handlers.get(Exception)
+            if method is None:
+                raise
             result = _handle_exception(method, handler_exception, request, response_headers, injector)
 
     return _to_response(request, result, method, response_headers, native_response_types)

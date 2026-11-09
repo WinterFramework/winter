@@ -47,7 +47,13 @@ class _ExceptionHandler:
         return 'handled by the application'
 
 
-def test_handler_of_application_replaces_built_in_handler_of_same_exception():
+def test_exception_without_handler_goes_to_host():
+    # Act
+    with pytest.raises(_OtherError):
+        _get(_raising(_OtherError()))
+
+
+def test_handler_of_exception_handles_exception_without_handler_of_its_own():
     # Act
     response = _get(_raising(_OtherError()), _ExceptionHandler)
 
@@ -116,13 +122,18 @@ class _FailingHandlers:
         return 'base'
 
 
+def test_exception_of_failing_handler_goes_to_host():
+    # Act
+    with pytest.raises(_BaseError):
+        _get(_raising(_OtherError()), _FailingHandlers)
+
+
 def test_exception_of_failing_handler_goes_to_handler_of_exception():
     # Act
-    response = _get(_raising(_OtherError()), _FailingHandlers)
+    response = _get(_raising(_OtherError()), _FailingHandlers, _ExceptionHandler)
 
     # Assert
-    assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
-    assert response.content == b'Server Error (500)'
+    assert response.status_code == HTTPStatus.SERVICE_UNAVAILABLE
 
 
 class _RetryHandler:

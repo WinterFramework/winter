@@ -1,4 +1,5 @@
 import inspect
+from http import HTTPStatus
 import warnings
 from itertools import groupby
 from typing import Any
@@ -376,6 +377,10 @@ def get_responses_schemas(
 
     for exception_cls in get_raises(route.method):
         handle_method = exception_handlers.get(exception_cls)
+        if handle_method is None:
+            # An exception without a handler goes to the host, which answers 500 with a body of its own
+            responses[str(HTTPStatus.INTERNAL_SERVER_ERROR.value)] = Response(description='')
+            continue
         response_status = str(get_response_status(http_method, handle_method))
         responses[response_status] = _build_response_exception_handler_schema(handle_method, schema_registry)
     return responses

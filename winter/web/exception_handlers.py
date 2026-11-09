@@ -17,7 +17,6 @@ from .exceptions.problem_handling import ProblemExceptionMapper
 from .exceptions.problem_handling_info import ProblemHandlingInfo
 from .exceptions.raises import get_raises
 from .pagination.limits import MaximumLimitValueExceeded
-from .response import Response
 from .response_header_annotation import ResponseHeader
 from .response_header_annotation import response_header
 from .response_status_annotation import response_status
@@ -27,18 +26,14 @@ from .web_application import WebApplication
 
 class BuiltInExceptionHandlers:
     @exception_handler
-    @response_status(HTTPStatus.INTERNAL_SERVER_ERROR)
-    def handle(self, exception: Exception) -> Response:
-        return Response(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, body=b'Server Error (500)')
-
-    @exception_handler
     @response_status(HTTPStatus.FOUND)
     @response_header('Location', 'location_header')
     def handle_redirect(self, exception: RedirectException, location_header: ResponseHeader[str]):
         location_header.set(exception.redirect_to)
 
 
-# The exceptions that winter.web itself raises, and the last resort for any other one
+# The exceptions that winter.web itself raises. Any other one without a handler goes to the host, such as Django or
+# a WSGI server, which logs it and answers 500
 _BUILT_IN = (
     BuiltInExceptionHandlers,
     ThrottleException,
@@ -60,7 +55,7 @@ def find_exception_handlers(app: WebApplication) -> ExceptionHandlers:
 
 def check_raises(routes: Iterable[Route], exception_handlers: ExceptionHandlers):
     """
-    Fails on startup for an exception declared with @raises that only the handler of Exception would handle, such as
+    Fails on startup for an exception declared with @raises that no handler handles but the one of Exception, such as
     a @problem exception whose module the application does not include.
     """
     for route in routes:

@@ -63,9 +63,13 @@ urlpatterns = winter.django.create_urls(app)
   `winter.web.problem(status=404)(NotFoundException)` with `modules=[api, winter.ddd.exceptions]`.
   The handler of the nearest class in the exception's MRO handles it; two handlers of one exception class in an
   application fail on startup. A handler of the application replaces the built-in handler of the same exception
-  class: a handler of `Exception` replaces the default 500 response. An exception declared with `@raises` that
-  only a handler of `Exception` would handle fails on startup, such as a `@problem` exception from a module the
-  application does not include.
+  class. An exception declared with `@raises` that only a handler of `Exception` would handle fails on startup,
+  such as a `@problem` exception from a module the application does not include.
+- Winter no longer answers 500 itself: an exception that no handler handles, also one raised by a handler, goes to
+  the host, which logs it with its traceback and answers 500. Under Django, that is Django, as for any of its views:
+  `got_request_exception` is sent, so Sentry sees the exception, `DEBUG` shows its page, and the test client raises
+  it in the test. A WSGI server such as gunicorn does the same. A handler of `Exception` gives an application its
+  own response instead.
 - Arguments come from the request or from the injector of the application, see
   [Values from the injector](#values-from-the-injector). Custom argument resolvers are gone: `ArgumentResolver`,
   `ArgumentsResolver`, `arguments_resolver`, `RequestBodyArgumentResolver`, `ResponseHeaderArgumentResolver`,
@@ -443,7 +447,8 @@ class ErrorDTO:
 
 class TodoExceptionHandlers:
     # Handles the exception its first argument is annotated with, and its subclasses, everywhere in the
-    # application. The class is created by the injector. A handler of Exception replaces the default 500 response.
+    # application. The class is created by the injector. An exception without a handler goes to the host, such as
+    # Django or a WSGI server, which logs it and answers 500; a handler of Exception gives a response of its own.
     @winter.web.exception_handler
     @winter.web.response_status(HTTPStatus.FORBIDDEN)
     def handle_access_denied(self, exception: TodoAccessDeniedException) -> ErrorDTO:

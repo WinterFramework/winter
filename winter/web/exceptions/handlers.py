@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Dict
 from typing import Iterable
 from typing import Iterator
+from typing import Optional
 from typing import Tuple
 from typing import Type
 
@@ -27,21 +28,24 @@ def exception_handler(method):
 
 
 class ExceptionHandlers:
-    """The exception handlers of an application. The handler of the nearest class in its MRO handles an exception."""
+    """
+    The exception handlers of an application. The handler of the nearest class in its MRO handles an exception; an
+    exception without one is not handled.
+    """
 
     def __init__(self, handlers: Dict[Type[Exception], ComponentMethod]):
-        assert Exception in handlers, 'Every exception must have a handler'
         self._handlers = dict(handlers)
 
-    def get(self, exception_cls: Type[Exception]) -> ComponentMethod:
-        return self._handlers[self._nearest_handled_class(exception_cls)]
+    def get(self, exception_cls: Type[Exception]) -> Optional[ComponentMethod]:
+        handled_class = self._nearest_handled_class(exception_cls)
+        return self._handlers[handled_class] if handled_class is not None else None
 
     def has_specific_handler(self, exception_cls: Type[Exception]) -> bool:
         """Whether a handler of the exception class or of a base class other than Exception handles it."""
-        return self._nearest_handled_class(exception_cls) is not Exception
+        return self._nearest_handled_class(exception_cls) not in (None, Exception)
 
-    def _nearest_handled_class(self, exception_cls: Type[Exception]) -> Type[Exception]:
-        return next(cls for cls in exception_cls.__mro__ if cls in self._handlers)
+    def _nearest_handled_class(self, exception_cls: Type[Exception]) -> Optional[Type[Exception]]:
+        return next((cls for cls in exception_cls.__mro__ if cls in self._handlers), None)
 
     def __iter__(self) -> Iterator[ComponentMethod]:
         """Each handler once, also the one of several exceptions."""
