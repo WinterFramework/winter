@@ -88,7 +88,8 @@ urlpatterns = winter.django.create_urls(app)
   needs a time zone. `response_headers_serializer` and `ResponseHeaderSerializer` are gone.
 - Interceptors belong to applications: `WebApplication(..., interceptors=[AuthorizationInterceptor, AuditInterceptor])`
   lists their classes in the order they run. The injector of each request creates them, so their dependencies go
-  to `__init__`. `interceptor_registry` and `InterceptorRegistry` are gone.
+  to `__init__`. `interceptor_registry` and `InterceptorRegistry` are gone. An argument named `method` of
+  `pre_handle` no longer receives the API method: declare `route: winter.web.Route` and read `route.method`.
 - Output processors are gone: `register_output_processor_resolver`, `IOutputProcessor`, `IOutputProcessorResolver`,
   `register_output_processor` and `winter.django.output_template`. An API method returns data, encoded as JSON
   (`@winter.json.json_encoder` adds the encoder of a type), or a `winter.web.Response`, e.g. a rendered template:
@@ -476,22 +477,22 @@ class TodoProblemExistsExampleAPI:
 
 ## Interceptors
 You can define interceptors to pre-handle a web request before it gets to an endpoint code.
-The pre_handle method arguments are resolved the same way as those of an API method, and `method` receives the API
-method of the request.
+The pre_handle method arguments are resolved the same way as those of an API method: a `winter.web.Route` argument
+gets the route of the request, whose `method` is the API method with its annotations.
 It's not supported to return any response from interceptors.
 However, the exceptions thrown from within an interceptor will be handled automatically.
 ```python
 import winter.web
-from winter.components import ComponentMethod
 from winter.web import Interceptor
 from winter.web import Request
 from winter.web import ResponseHeader
+from winter.web import Route
 
 
 class HelloWorldInterceptor(Interceptor):
     @winter.web.response_header('x-hello-world', 'hello_world_header')
-    def pre_handle(self, method: ComponentMethod, request: Request, hello_world_header: ResponseHeader[str]):
-        print(f'Method: {method.name}')
+    def pre_handle(self, route: Route, request: Request, hello_world_header: ResponseHeader[str]):
+        print(f'Method: {route.method.name}')
         if 'hello_world' in request.query_parameters:
             hello_world_header.set('Hello, World!')
 

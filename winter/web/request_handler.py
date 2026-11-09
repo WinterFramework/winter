@@ -70,7 +70,7 @@ def check_arguments(
         _arguments_resolver.check_arguments(route.method, app.injector, {*request_types, Throttle})
     for interceptor in app.interceptors:
         pre_handle = ComponentMethod.get_or_create(interceptor.pre_handle)
-        _arguments_resolver.check_arguments(pre_handle, app.injector, request_types, {'method'})
+        _arguments_resolver.check_arguments(pre_handle, app.injector, request_types)
     for method in exception_handlers:
         _arguments_resolver.check_arguments(method, app.injector, request_types, {exception_argument_name(method)})
 
@@ -107,8 +107,7 @@ def handle_request(
 
         for interceptor_cls in app.interceptors:
             pre_handle = ComponentMethod.get_or_create(interceptor_cls.pre_handle)
-            context = {'method': method}
-            arguments = _arguments_resolver.resolve_arguments(pre_handle, request, response_headers, injector, context)
+            arguments = _arguments_resolver.resolve_arguments(pre_handle, request, response_headers, injector)
             pre_handle(injector.get(interceptor_cls), **arguments)
 
         arguments = _arguments_resolver.resolve_arguments(method, request, response_headers, injector)
