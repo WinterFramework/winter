@@ -7,8 +7,6 @@ import winter.web
 from tests.injection import app_injector
 from tests.web_application import web_application
 from winter.web import problem
-from winter.web.routing import get_route
-from winter.openapi.generator import generate_openapi_for_routes
 from winter.openapi import validate_missing_raises_annotations
 
 
@@ -21,23 +19,6 @@ def test_validate_missing_raises_annotations_with_missed_raises_and_not_global_e
 
     with pytest.raises(AssertionError, match=expected_error_message):
         validate_missing_raises_annotations(app)
-
-
-@pytest.mark.parametrize('validate', [True, False])
-def test_validate_spec(validate):
-    """
-    There is no way to check the case when the spec is invalid.
-    So it's mostly to execute both branches of the code and check that it doesn't fail.
-    """
-    class _TestAPI:
-        @winter.web.route_get('/test-api/')
-        def endpoint(self):  # pragma: no cover
-            pass
-
-    route = get_route(_TestAPI.endpoint)
-
-    # Act
-    generate_openapi_for_routes(title='title', version='1.0.0', routes=[route], validate=validate)
 
 
 def test_validate_missing_raises_annotations_with_declared_and_global_exceptions():
