@@ -65,11 +65,11 @@ urlpatterns = winter.django.create_urls(app)
   application fail on startup. A handler of the application replaces the built-in handler of the same exception
   class. An exception declared with `@raises` that only a handler of `Exception` would handle fails on startup,
   such as a `@problem` exception from a module the application does not include.
-- Winter no longer answers 500 itself: an exception that no handler handles, also one raised by a handler, goes to
-  the host, which logs it with its traceback and answers 500. Under Django, that is Django, as for any of its views:
-  `got_request_exception` is sent, so Sentry sees the exception, `DEBUG` shows its page, and the test client raises
-  it in the test. A WSGI server such as gunicorn does the same. A handler of `Exception` gives an application its
-  own response instead.
+- Winter no longer answers 500 itself: an exception that no handler handles goes to the host, which logs it with its
+  traceback and answers 500. Under Django, that is Django, as for any of its views: `got_request_exception` is sent,
+  so Sentry sees the exception, `DEBUG` shows its page, and the test client raises it in the test. A WSGI server
+  such as gunicorn does the same. A handler of `Exception` gives an application its own response instead. An
+  exception raised by a handler is not handled again and goes to the host.
 - Arguments come from the request or from the injector of the application, see
   [Values from the injector](#values-from-the-injector). Custom argument resolvers are gone: `ArgumentResolver`,
   `ArgumentsResolver`, `arguments_resolver`, `RequestBodyArgumentResolver`, `ResponseHeaderArgumentResolver`,
@@ -110,12 +110,13 @@ urlpatterns = winter.django.create_urls(app)
   for the identity that the request was counted for, even if the method has logged the user in since.
 - `register_native_response_type` is gone: an adapter passes the response types of its framework to `handle_request`.
   An API method may still return a Django response.
-- OpenAPI: `generate_openapi(app, title=..., version=...)` returns the spec and checks `@raises` annotations
-  of the application (`allow_missing_raises_annotation=True` skips the check).
-  An API method of the application serves it, with the route and the annotations the application needs, such as
-  its own authentication ones. `winter.openapi.swagger_ui_response(spec_url=...)` replaces `get_swagger_ui_html`
-  and returns the page of Swagger UI. `serve_spec` and `serve_swagger_ui` are gone. The `servers` of the spec are
-  relative to where the routes are served, so an application served under a prefix adds it:
+- OpenAPI: `generate_openapi(app, title=..., version=...)` returns the spec and checks `@raises` annotations of the
+  application (`allow_missing_raises_annotation=True` skips the check). An exception declared with `@raises` and without
+  a handler fails it, as it fails `create_urls`. An API method of the application serves it, with the route and the
+  annotations the application needs, such as its own authentication ones.
+  `winter.openapi.swagger_ui_response(spec_url=...)` replaces `get_swagger_ui_html` and returns the page of Swagger UI.
+  `serve_spec` and `serve_swagger_ui` are gone. The `servers` of the spec are relative to where the routes are served,
+  so an application served under a prefix adds it:
 
   ```python
   @functools.cache

@@ -125,15 +125,7 @@ class _FailingHandlers:
 def test_exception_of_failing_handler_goes_to_host():
     # Act
     with pytest.raises(_BaseError):
-        _get(_raising(_OtherError()), _FailingHandlers)
-
-
-def test_exception_of_failing_handler_goes_to_handler_of_exception():
-    # Act
-    response = _get(_raising(_OtherError()), _FailingHandlers, _ExceptionHandler)
-
-    # Assert
-    assert response.status_code == HTTPStatus.SERVICE_UNAVAILABLE
+        _get(_raising(_OtherError()), _FailingHandlers, _ExceptionHandler)
 
 
 class _RetryHandler:

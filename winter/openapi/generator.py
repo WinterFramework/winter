@@ -1,5 +1,4 @@
 import inspect
-from http import HTTPStatus
 import warnings
 from itertools import groupby
 from typing import Any
@@ -35,6 +34,7 @@ from winter.web import MediaType
 from winter.web import WebApplication
 from winter.web.default_response_status import get_response_status
 from winter.web.exception_handlers import built_in_exception_handlers
+from winter.web.exception_handlers import check_raises
 from winter.web.exception_handlers import find_exception_handlers
 from winter.web.exceptions import ExceptionHandlers
 from winter.web.exceptions.raises import get_raises
@@ -179,10 +179,14 @@ def generate_openapi_for_routes(
     validate: bool = True,
     add_url_segment_as_tag: bool = True,
 ) -> Dict[str, Any]:
-    """The responses of the raised exceptions come from the exception handlers, the built-in ones by default."""
+    """
+    The responses of the raised exceptions come from the exception handlers, the built-in ones by default. An
+    exception declared with @raises and without a handler fails, as on the startup of an application.
+    """
     if exception_handlers is None:
         exception_handlers = built_in_exception_handlers()
     routes = list(routes)
+    check_raises(routes, exception_handlers)
     routes.sort(key=lambda r: r.url_path)
     schema_registry = SchemaRegistry()
     tags_ = [Tag(**tag) for tag in tags or []]
@@ -377,10 +381,6 @@ def get_responses_schemas(
 
     for exception_cls in get_raises(route.method):
         handle_method = exception_handlers.get(exception_cls)
-        if handle_method is None:
-            # An exception without a handler goes to the host, which answers 500 with a body of its own
-            responses[str(HTTPStatus.INTERNAL_SERVER_ERROR.value)] = Response(description='')
-            continue
         response_status = str(get_response_status(http_method, handle_method))
         responses[response_status] = _build_response_exception_handler_schema(handle_method, schema_registry)
     return responses

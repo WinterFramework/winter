@@ -28,17 +28,15 @@ def exception_handler(method):
 
 
 class ExceptionHandlers:
-    """
-    The exception handlers of an application. The handler of the nearest class in its MRO handles an exception; an
-    exception without one is not handled.
-    """
+    """The exception handlers of an application. The handler of the nearest class in its MRO handles an exception."""
 
     def __init__(self, handlers: Dict[Type[Exception], ComponentMethod]):
         self._handlers = dict(handlers)
+        # For an except clause: an exception of no other class is not caught
+        self.handled = tuple(handlers)
 
-    def get(self, exception_cls: Type[Exception]) -> Optional[ComponentMethod]:
-        handled_class = self._nearest_handled_class(exception_cls)
-        return self._handlers[handled_class] if handled_class is not None else None
+    def get(self, exception_cls: Type[Exception]) -> ComponentMethod:
+        return self._handlers[self._nearest_handled_class(exception_cls)]
 
     def has_specific_handler(self, exception_cls: Type[Exception]) -> bool:
         """Whether a handler of the exception class or of a base class other than Exception handles it."""
