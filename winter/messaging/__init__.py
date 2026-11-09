@@ -1,4 +1,5 @@
 from .event import Event
+from .event_dispatcher import EventDispatcher
 from .event_handler import event_handler
 from .event_subscription_registry import EventSubscriptionRegistry
 from .event_publisher import EventPublisher
