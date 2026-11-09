@@ -12,7 +12,6 @@ from typing import Tuple
 from typing import Type
 from typing import Union
 
-from openapi_pydantic import schema_validate
 from openapi_pydantic.v3.v3_0 import Components
 from openapi_pydantic.v3.v3_0 import Info
 from openapi_pydantic.v3.v3_0 import MediaType as MediaTypeModel
@@ -150,13 +149,13 @@ def generate_openapi(
     version: str,
     description: Optional[str] = None,
     tags: Optional[List[Dict[str, Any]]] = None,
-    validate: bool = True,
     add_url_segment_as_tag: bool = True,
-    allow_missing_raises_annotation: bool = False,
 ) -> Dict[str, Any]:
-    """OpenAPI specification of the routes of an application, as a JSON-compatible dict."""
-    if not allow_missing_raises_annotation:
-        validate_missing_raises_annotations(app)
+    """
+    OpenAPI specification of the routes of an application, as a JSON-compatible dict. Fails unless every @problem
+    exception of the application is declared with @raises by one of its API methods or is a global exception.
+    """
+    validate_missing_raises_annotations(app)
     return generate_openapi_for_routes(
         title=title,
         version=version,
@@ -164,7 +163,6 @@ def generate_openapi(
         exception_handlers=find_exception_handlers(app),
         description=description,
         tags=tags,
-        validate=validate,
         add_url_segment_as_tag=add_url_segment_as_tag,
     )
 
@@ -176,7 +174,6 @@ def generate_openapi_for_routes(
     exception_handlers: Optional[ExceptionHandlers] = None,
     description: Optional[str] = None,
     tags: Optional[List[Dict[str, Any]]] = None,
-    validate: bool = True,
     add_url_segment_as_tag: bool = True,
 ) -> Dict[str, Any]:
     """
@@ -224,10 +221,7 @@ def generate_openapi_for_routes(
         parameters={},
     )
     openapi = OpenAPI(openapi="3.0.3", info=info, servers=servers_, paths=paths, components=components, tags=tags_)
-    openapi_dict = openapi.dict(by_alias=True, exclude_none=True)
-    if validate:
-        schema_validate(openapi_dict)
-    return openapi_dict
+    return openapi.dict(by_alias=True, exclude_none=True)
 
 
 def _get_openapi_path(

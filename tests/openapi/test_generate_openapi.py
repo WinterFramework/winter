@@ -44,13 +44,3 @@ def test_generate_openapi_requires_raises_annotations():
     # Act
     with pytest.raises(AssertionError, match='_UndeclaredException'):
         winter.openapi.generate_openapi(app, title='title', version='1.0.0')
-
-
-def test_generate_openapi_allows_missing_raises_annotations():
-    app = _application(_API, _UndeclaredException)
-
-    # Act
-    spec = winter.openapi.generate_openapi(app, title='title', version='1.0.0', allow_missing_raises_annotation=True)
-
-    # Assert
-    assert list(spec['paths']) == ['/items/', '/orders/']
