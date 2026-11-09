@@ -17,38 +17,45 @@ def test_global_exception_annotated_on_method():
     class GlobalException(Exception):
         pass
 
+    class _Handlers:
+        @winter.web.exception_handler
+        @winter.web.response_status(HTTPStatus.CONFLICT)
+        def handle(self, exception: GlobalException):  # pragma: no cover
+            pass
+
     class _TestAPI:
         @winter.web.raises(GlobalException)
         @winter.web.route_get('resource')
         def get_resource(self):  # pragma: no cover
             pass
 
-    route = get_route(_TestAPI.get_resource)
+    app = web_application(GlobalException, _Handlers, _TestAPI, injector=app_injector)
+
     # Act
-    result = generate_openapi_for_routes(
-        title='title',
-        version='1.0.0',
-        routes=[route],
-    )
+    result = winter.openapi.generate_openapi(app, title='title', version='1.0.0')
+
     # Assert
-    assert result == {
-        'components': {'parameters': {}, 'responses': {}, 'schemas': {}},
-        'info': {'title': 'title', 'version': '1.0.0'},
-        'openapi': '3.0.3',
-        'paths': {
-            '/resource': {
-                'get': {
-                    'deprecated': False,
-                    'operationId': '_TestAPI.get_resource',
-                    'parameters': [],
-                    'responses': {'200': {'description': ''}, '500': {'description': ''}},
-                    'tags': ['resource'],
-                },
-            },
-        },
-        'servers': [{'url': '/'}],
-        'tags': [],
-    }
+    assert result['paths']['/resource']['get']['responses'] == {'200': {'description': ''}, '409': {'description': ''}}
+
+
+def test_exception_declared_with_raises_without_handler_fails():
+    class _Error(Exception):
+        pass
+
+    class _TestAPI:
+        @winter.web.raises(_Error)
+        @winter.web.route_get('resource')
+        def get_resource(self):  # pragma: no cover
+            pass
+
+    # Act
+    with pytest.raises(ValueError) as exception_info:
+        generate_openapi_for_routes(title='title', version='1.0.0', routes=[get_route(_TestAPI.get_resource)])
+
+    # Assert
+    assert str(exception_info.value) == (
+        '_Error is declared with @raises in _TestAPI.get_resource and has no handler in the application'
+    )
 
 
 @dataclass
