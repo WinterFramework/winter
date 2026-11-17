@@ -31,6 +31,14 @@ def _migrate(tmp_path: pathlib.Path, source: str) -> str:
         'import winter.web\n\nx = winter.web.route_get\n',
     ),
     (
+        'import winter\nfrom winter import route_post\n\n\n@route_post("x/")\ndef f():\n    pass\n',
+        'from winter.web import route_post\n\n\n@route_post("x/")\ndef f():\n    pass\n',
+    ),
+    (
+        'import winter.web\nfrom winter import route_post\n\n\n@route_post("x/")\ndef f():\n    pass\n',
+        'import winter.web\nfrom winter.web import route_post\n\n\n@route_post("x/")\ndef f():\n    pass\n',
+    ),
+    (
         'from winter_django import create_django_urls\nfrom winter.core import get_injector\n\n'
         'urls = create_django_urls(get_injector())\n',
         'from winter.django import create_django_urls\nfrom winter.application import get_injector\n\n'

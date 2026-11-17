@@ -144,7 +144,8 @@ class _TidyImports(cst.CSTTransformer):
     imports the renames added do not end up after the project's own.
     """
 
-    def __init__(self):
+    def __init__(self, source_imports: Set[str]):
+        self._source_imports = source_imports
         self._used_subpackages: Set[str] = set()
         self._imported_subpackages: Set[str] = set()
         self._uses_unknown_names = False
@@ -166,10 +167,12 @@ class _TidyImports(cst.CSTTransformer):
                     else:
                         inner.unknown = True
 
-            def visit_ImportAlias(inner, alias: cst.ImportAlias) -> None:
-                dotted = _dotted(alias.name)
-                if dotted.startswith('winter.'):
-                    inner.imported.add(dotted.split('.')[1])
+            def visit_Import(inner, import_: cst.Import) -> bool:
+                for alias in import_.names:
+                    dotted = _dotted(alias.name)
+                    if dotted.startswith('winter.'):
+                        inner.imported.add(dotted.split('.')[1])
+                return False  # `import winter.x` itself is not a use of `winter.x`
 
         collector = Collector()
         node.visit(collector)
@@ -182,6 +185,8 @@ class _TidyImports(cst.CSTTransformer):
         if statement is None or isinstance(statement.names, cst.ImportStar):
             return updated
         if len(statement.names) == 1 and not _is_bare_winter(statement.names[0]):
+            if self._is_unused_import_of_rename(statement):
+                return cst.RemoveFromParent()
             return updated  # Already one name, its parentheses and line breaks are kept
         singles: List[cst.BaseSmallStatement] = []
         for alias in statement.names:
@@ -208,6 +213,19 @@ class _TidyImports(cst.CSTTransformer):
         if not lines:
             return cst.RemoveFromParent()
         return cst.FlattenSentinel(lines)
+
+    def _is_unused_import_of_rename(self, statement) -> bool:
+        """
+        `import winter.web` that a rename made of the bare `import winter` of `from winter import route_get`, though
+        the module uses no `winter.web.` name.
+        """
+        if not isinstance(statement, cst.Import) or statement.names[0].asname is not None:
+            return False
+        dotted = _dotted(statement.names[0].name)
+        return (
+            dotted.startswith('winter.') and dotted not in self._source_imports
+            and dotted.split('.')[1] not in self._used_subpackages
+        )
 
     def leave_IndentedBlock(self, original: cst.IndentedBlock, updated: cst.IndentedBlock) -> cst.IndentedBlock:
         return updated.with_changes(body=_without_repeated_winter_imports(updated.body))
@@ -345,8 +363,22 @@ def migrate_source(source: str) -> str:
             raise RuntimeError(f'{old_name} -> {new_name}: {result}')
         code = result.code
     if code != source or _has_bare_winter_import(code):
-        code = cst.parse_module(code).visit(_TidyImports()).code
+        code = cst.parse_module(code).visit(_TidyImports(_imported_modules(source))).code
     return code
+
+
+def _imported_modules(code: str) -> Set[str]:
+    """The modules that the `import` statements of the code import, such as `winter.web`."""
+    class Collector(cst.CSTVisitor):
+        def __init__(self):
+            self.modules: Set[str] = set()
+
+        def visit_Import(self, node: cst.Import) -> None:
+            self.modules.update(_dotted(alias.name) for alias in node.names)
+
+    collector = Collector()
+    cst.parse_module(code).visit(collector)
+    return collector.modules
 
 
 def _has_bare_winter_import(code: str) -> bool:
