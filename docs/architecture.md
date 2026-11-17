@@ -72,8 +72,9 @@ at least two of them.
    builds from, such as `winter.web.WebApplication`, and the values that its methods receive come
    from its injector, so two applications can live in one process. What belongs to an adapter, such
    as the response types of its framework, the adapter passes to `winter.web.handle_request` itself.
-   Declarative metadata about types (component annotations, JSON encoders and OpenAPI type
-   inspectors for a type) may be global, like the classes it describes.
+   Declarative metadata about types (component annotations, JSON encoders, OpenAPI type
+   inspectors for a type and the `@problem` response of an exception) may be global, like the
+   classes it describes.
 3. **Glue between models, or between adapters, is application code.** Mapping a domain
    `NotFoundException` to HTTP 404, or mounting the Swagger UI route, is done by the
    application that composes the pieces, not by the framework.
@@ -94,8 +95,8 @@ at least two of them.
 - **import-linter** (`lint-imports`, configured in `pyproject.toml`) checks the layer rules.
   There are no `ignore_imports`, and none may be added.
 - **Isolation test** `tests/test_application_scope.py` builds two applications in one process
-  and asserts that the handler of a `@problem` exception of one does not handle that exception in
-  the other, that the arguments of an API method come from the injector of the application that
+  and asserts that an exception handler of one does not handle exceptions in the other, that the
+  arguments of an API method come from the injector of the application that
   serves it, that an interceptor of one does not run in the other, and that each counts throttled
   requests in the storage of its own injector. Each registry that moves into
   the application adds its case there.

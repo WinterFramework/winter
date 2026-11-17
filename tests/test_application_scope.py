@@ -1,7 +1,7 @@
 """
 Isolation test for docs/architecture.md, principle 2: framework behaviour is never process-global.
-Two applications in one process must not share behaviour: the handler of a @problem exception of one application
-does not handle that exception in another, the arguments of an API method come from the injector of the
+Two applications in one process must not share behaviour: an exception handler of one application does not handle
+exceptions in another, the arguments of an API method come from the injector of the
 application that serves it, an interceptor of one application does not run in another, and each application counts
 throttled requests in the storage of its own injector.
 """
@@ -17,9 +17,14 @@ from tests.injection import app_injector
 from tests.web_application import web_application
 
 
-@winter.web.problem(status=HTTPStatus.CONFLICT)
 class _ErrorA(Exception):
     pass
+
+
+class _Handlers:
+    @winter.web.exception_handler
+    def handle(self, exception: _ErrorA) -> str:  # pragma: no cover
+        return 'handled'
 
 
 class _API:
@@ -28,8 +33,8 @@ class _API:
         raise _ErrorA()
 
 
-def test_problem_handler_of_one_application_does_not_handle_exceptions_in_another():
-    app_1 = web_application(_ErrorA, injector=app_injector)
+def test_exception_handler_of_one_application_does_not_handle_exceptions_in_another():
+    app_1 = web_application(_Handlers, injector=app_injector)
     app_2 = web_application(_API, injector=app_injector)
     winter.django.create_urls(app_1)
     [url] = winter.django.create_urls(app_2)

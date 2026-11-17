@@ -164,20 +164,46 @@ class _ProblemError(Exception):
     pass
 
 
-def test_handler_of_problem_exception_in_application_fails_startup():
-    class _ProblemErrorHandler:
-        @winter.web.exception_handler
-        def handle(self, exception: _ProblemError):  # pragma: no cover
-            pass
+class _DeclaringProblemAPI:
+    @winter.web.route_get('raise/')
+    @winter.web.raises(_ProblemError)
+    def raise_(self):
+        raise _ProblemError()
 
+
+def test_problem_exception_is_handled_in_application_without_its_class():
     # Act
-    with pytest.raises(ValueError) as exception_info:
-        _get(_raising(_ProblemError()), _ProblemError, _ProblemErrorHandler)
+    response = _get(_DeclaringProblemAPI)
 
     # Assert
-    assert str(exception_info.value) == (
-        '_ProblemError has two handlers: @problem(_ProblemError).handle and _ProblemErrorHandler.handle'
-    )
+    assert response.status_code == HTTPStatus.CONFLICT
+    assert response['Content-Type'] == 'application/problem+json'
+
+
+@winter.web.problem(status=HTTPStatus.FORBIDDEN)
+class _ProblemChildError(_BaseError):
+    pass
+
+
+def test_problem_exception_is_handled_by_its_problem_over_handler_of_its_base_class():
+    # Act
+    response = _get(_raising(_ProblemChildError()), _Handlers)
+
+    # Assert
+    assert response.status_code == HTTPStatus.FORBIDDEN
+
+
+def test_handler_of_application_replaces_problem_handler():
+    class _ProblemErrorHandler:
+        @winter.web.exception_handler
+        def handle(self, exception: _ProblemError) -> str:
+            return 'handled by the application'
+
+    # Act
+    response = _get(_raising(_ProblemError()), _ProblemErrorHandler)
+
+    # Assert
+    assert response.content == b'"handled by the application"'
 
 
 class _DeclaringAPI:

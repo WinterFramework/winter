@@ -10,7 +10,7 @@ from winter.components import ComponentMethod
 from winter.json import JSONEncoder
 from .argument_resolver import ArgumentsResolver
 from .default_response_status import get_response_status
-from .exceptions import ExceptionHandlers
+from .exception_handlers import ExceptionHandlers
 from .exceptions import ThrottleException
 from .exceptions.handlers import exception_argument_name
 from .pagination.page_position_argument_resolver import PagePositionArgumentResolver
@@ -113,8 +113,10 @@ def handle_request(
         arguments = _arguments_resolver.resolve_arguments(method, request, response_headers, injector)
         api_instance = injector.get(method.component.component_cls)
         result = method(api_instance, **arguments)
-    except exception_handlers.handled as exception:
+    except Exception as exception:
         method = exception_handlers.get(type(exception))
+        if method is None:
+            raise
         result = _handle_exception(method, exception, request, response_headers, injector)
 
     return _to_response(request, result, method, response_headers, native_response_types)

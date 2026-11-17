@@ -35,14 +35,13 @@ urlpatterns = winter.django.create_urls(app)
           ...
   ```
 
-- Exception handlers belong to applications: a handler, like a `@problem` exception, handles exceptions in the
-  applications whose definitions include it, in every endpoint, whether declared with `@raises` or not. An
-  exception of another package belongs to the applications whose modules include its module, e.g.
-  `winter.web.problem(status=404)(NotFoundException)` with `modules=[api, winter.ddd.exceptions]`.
-  The handler of the nearest class in the exception's MRO handles it; two handlers of one exception class in an
-  application fail on startup. A handler of the application replaces the built-in handler of the same exception
-  class. An exception declared with `@raises` that only a handler of `Exception` would handle fails on startup,
-  such as a `@problem` exception from a module the application does not include.
+- Exception handlers belong to applications: a handler handles exceptions in the applications whose definitions
+  include its class, in every endpoint, whether declared with `@raises` or not. A `@problem` exception is a property
+  of its class, as before: it gives its response in every application. The handler of the nearest class in the
+  exception's MRO handles it, or the `@problem` of that class; two handlers of one exception class in an application
+  fail on startup. A handler of the application replaces the built-in handler, or the `@problem` response, of the
+  same exception class. An exception declared with `@raises` that only a handler of `Exception` would handle fails
+  on startup.
 - Winter no longer answers 500 itself: an exception that no handler handles goes to the host, which logs it with its
   traceback and answers 500. Under Django, that is Django, as for any of its views: `got_request_exception` is sent,
   so Sentry sees the exception, `DEBUG` shows its page, and the test client raises it in the test. A WSGI server
@@ -89,11 +88,11 @@ urlpatterns = winter.django.create_urls(app)
   for the identity that the request was counted for, even if the method has logged the user in since.
 - `register_native_response_type` is gone: an adapter passes the response types of its framework to `handle_request`.
   An API method may still return a Django response.
-- OpenAPI: `generate_openapi(app, title=..., version=...)` returns the spec. It fails unless every `@problem` exception
-  of the application is declared with `@raises` by one of its API methods or is a `@global_exception`, since Python does
-  not declare the exceptions of a function; `allow_missing_raises_annotation` is gone. An exception declared with
-  `@raises` and without a handler fails it, as it fails `create_urls`. The `validate` argument is gone: the spec is
-  built of validated models, so validating it again could not fail. An API method of the application serves it, with the
+- OpenAPI: `generate_openapi(app, title=..., version=...)` returns the spec. It no longer requires a `@problem`
+  exception to be declared with `@raises`: `allow_missing_raises_annotation`, `@winter.openapi.global_exception`,
+  `register_global_exception` and `validate_missing_raises_annotations` are gone. An exception declared with `@raises`
+  and without a handler fails it, as it fails `create_urls`. The `validate` argument is gone: the spec is built of
+  validated models, so validating it again could not fail. An API method of the application serves it, with the
   route and the annotations the application needs, such as its own authentication ones.
   `winter.openapi.swagger_ui_response(spec_url=...)` replaces `get_swagger_ui_html` and returns the page of Swagger UI.
   `serve_spec` and `serve_swagger_ui` are gone. The `servers` of the spec are relative to where the routes are served,
@@ -115,12 +114,11 @@ urlpatterns = winter.django.create_urls(app)
           return winter.openapi.swagger_ui_response(spec_url='/public-api/openapi.json')
   ```
 
-- OpenAPI: `@winter.openapi.type_inspector(Answer)` replaces `register_type_inspector` and is a decorator only; it
-  also describes the subclasses of the type. `register_global_exception` is gone: `@winter.openapi.global_exception`
-  remains. The parameters of a route come from its path, query and `PagePosition` arguments only:
-  `register_route_parameters_inspector`, `get_route_parameters_inspectors` and `winter.openapi.initialization` are
-  gone, and the inspectors and `inspect_page` are no longer exported. A parameter that no argument stands for, such
-  as a header read by a request-scoped provider, is added to the spec that `generate_openapi` returns.
+- OpenAPI: `@winter.openapi.type_inspector(Answer)` replaces `register_type_inspector` and is a decorator only; it also
+  describes the subclasses of the type. The parameters of a route come from its path, query and `PagePosition` arguments
+  only: `register_route_parameters_inspector`, `get_route_parameters_inspectors` and `winter.openapi.initialization` are
+  gone, and the inspectors and `inspect_page` are no longer exported. A parameter that no argument stands for, such as a
+  header read by a request-scoped provider, is added to the spec that `generate_openapi` returns.
 - Decorators name what they declare: `@winter.json.register_encoder` is `@winter.json.json_encoder`, like
   `@winter.json.json_decoder`, and `@winter.web.register_url_regexp` is `@winter.web.url_regexp`.
 - `@winter.web.query_parameters`: a missing parameter takes the default of its field, or None for an `Optional`

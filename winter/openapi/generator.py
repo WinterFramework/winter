@@ -32,10 +32,10 @@ from winter.components import ComponentMethod
 from winter.web import MediaType
 from winter.web import WebApplication
 from winter.web.default_response_status import get_response_status
+from winter.web.exception_handlers import ExceptionHandlers
 from winter.web.exception_handlers import built_in_exception_handlers
 from winter.web.exception_handlers import check_raises
 from winter.web.exception_handlers import find_exception_handlers
-from winter.web.exceptions import ExceptionHandlers
 from winter.web.exceptions.raises import get_raises
 from winter.web.pagination.page_position_argument_resolver import PagePositionArgumentResolver
 from winter.web.request_body_annotation import RequestBodyAnnotation
@@ -49,7 +49,6 @@ from .inspection.inspection import InspectorNotFound
 from .inspectors import PagePositionArgumentsInspector
 from .inspectors import PathParametersInspector
 from .inspectors import QueryParametersInspector
-from .validators import validate_missing_raises_annotations
 
 
 class SchemaRegistry:
@@ -151,11 +150,7 @@ def generate_openapi(
     tags: Optional[List[Dict[str, Any]]] = None,
     add_url_segment_as_tag: bool = True,
 ) -> Dict[str, Any]:
-    """
-    OpenAPI specification of the routes of an application, as a JSON-compatible dict. Fails unless every @problem
-    exception of the application is declared with @raises by one of its API methods or is a global exception.
-    """
-    validate_missing_raises_annotations(app)
+    """OpenAPI specification of the routes of an application, as a JSON-compatible dict."""
     return generate_openapi_for_routes(
         title=title,
         version=version,

@@ -9,27 +9,25 @@ from tests.injection import app_injector
 from tests.web_application import web_application
 from winter.web.routing import get_route
 from winter.openapi.generator import generate_openapi_for_routes
-from winter.openapi.annotations import global_exception
 
 
-def test_global_exception_annotated_on_method():
-    @global_exception
-    class GlobalException(Exception):
+def test_response_of_declared_exception_comes_from_handler_of_application():
+    class _Error(Exception):
         pass
 
     class _Handlers:
         @winter.web.exception_handler
         @winter.web.response_status(HTTPStatus.CONFLICT)
-        def handle(self, exception: GlobalException):  # pragma: no cover
+        def handle(self, exception: _Error):  # pragma: no cover
             pass
 
     class _TestAPI:
-        @winter.web.raises(GlobalException)
+        @winter.web.raises(_Error)
         @winter.web.route_get('resource')
         def get_resource(self):  # pragma: no cover
             pass
 
-    app = web_application(GlobalException, _Handlers, _TestAPI, injector=app_injector)
+    app = web_application(_Handlers, _TestAPI, injector=app_injector)
 
     # Act
     result = winter.openapi.generate_openapi(app, title='title', version='1.0.0')

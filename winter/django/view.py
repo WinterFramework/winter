@@ -20,8 +20,8 @@ from winter.web import WebApplication
 from winter.web import handle_request
 from winter.web.autodiscovery import find_routes
 from winter.web.exception_handlers import check_raises
+from winter.web.exception_handlers import ExceptionHandlers
 from winter.web.exception_handlers import find_exception_handlers
-from winter.web.exceptions import ExceptionHandlers
 from winter.web.request_handler import check_arguments
 from winter.web.routing import Route
 from winter.web.urls import rewrite_uritemplate_with_regexps

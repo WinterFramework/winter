@@ -2,8 +2,6 @@ import inspect
 from dataclasses import dataclass
 from typing import Dict
 from typing import Iterable
-from typing import Iterator
-from typing import Optional
 from typing import Tuple
 from typing import Type
 
@@ -25,29 +23,6 @@ def exception_handler(method):
     `UploadError | DownloadError` for several, in the applications whose definitions include its class.
     """
     return annotate_method(ExceptionHandlerAnnotation(), single=True)(method)
-
-
-class ExceptionHandlers:
-    """The exception handlers of an application. The handler of the nearest class in its MRO handles an exception."""
-
-    def __init__(self, handlers: Dict[Type[Exception], ComponentMethod]):
-        self._handlers = dict(handlers)
-        # For an except clause: an exception of no other class is not caught
-        self.handled = tuple(handlers)
-
-    def get(self, exception_cls: Type[Exception]) -> ComponentMethod:
-        return self._handlers[self._nearest_handled_class(exception_cls)]
-
-    def has_specific_handler(self, exception_cls: Type[Exception]) -> bool:
-        """Whether a handler of the exception class or of a base class other than Exception handles it."""
-        return self._nearest_handled_class(exception_cls) not in (None, Exception)
-
-    def _nearest_handled_class(self, exception_cls: Type[Exception]) -> Optional[Type[Exception]]:
-        return next((cls for cls in exception_cls.__mro__ if cls in self._handlers), None)
-
-    def __iter__(self) -> Iterator[ComponentMethod]:
-        """Each handler once, also the one of several exceptions."""
-        return iter(dict.fromkeys(self._handlers.values()))
 
 
 def find_handlers(classes: Iterable[type]) -> Dict[Type[Exception], ComponentMethod]:

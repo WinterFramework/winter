@@ -7,13 +7,13 @@ from typing import Dict
 from typing import Type
 
 from .beautify_string import camel_to_human
-from winter.web import ResponseHeader
 from .exception_handler_generator import ExceptionHandlerGenerator
 from .exception_mapper import ExceptionMapper
 from .handlers import exception_handler
 from .problem_handling_info import ProblemHandlingInfo
-from .. import MediaType
+from ..media_type import MediaType
 from ..request import Request
+from ..response_header_annotation import ResponseHeader
 from ..response_header_annotation import response_header
 
 
