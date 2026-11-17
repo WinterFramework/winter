@@ -13,13 +13,16 @@ from winter.openapi.inspectors.standard_types_inspectors import type_inspector
 def create_dataclass(page_type: Type) -> Type:
     args = getattr(page_type, '__args__', None)
     child_class = args[0] if args else str
-    extra_fields = set(dataclasses.fields(page_type.__origin__)) - set(dataclasses.fields(Page))
+    page_class = page_type.__origin__
+    page_field_names = {field.name for field in dataclasses.fields(Page)}
+    # In the order the class declares them, so that the spec is the same from run to run
+    extra_fields = [field for field in dataclasses.fields(page_class) if field.name not in page_field_names]
     child_type_info = inspect_type(child_class)
     title = child_type_info.title or child_type_info.type_.capitalize()
 
     PageMetaDataclass = dataclasses.dataclass(
         type(
-            f'PageMetaOf{title}',
+            f'{page_class.__name__}MetaOf{title}',
             (),
             {
                 '__annotations__': {
@@ -34,7 +37,7 @@ def create_dataclass(page_type: Type) -> Type:
     PageMetaDataclass.__doc__ = ''
     PageDataclass = dataclasses.dataclass(
         type(
-            f'PageOf{title}',
+            f'{page_class.__name__}Of{title}',
             (),
             {
                 '__annotations__': {

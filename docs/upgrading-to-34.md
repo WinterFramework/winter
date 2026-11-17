@@ -56,7 +56,9 @@ urlpatterns = winter.django.create_urls(app)
   on the first request.
 - Winter needs `injector` 0.21 or later. Each request has an injector of its own, a child of the injector of the
   application, and older versions create a `@singleton` class without a binding anew in every child injector, that
-  is in every request.
+  is in every request. A project that comes from `injector` older than 0.16 passes the arguments of
+  `super().__init__()` itself: since 0.16, `@inject` on the constructor of a base class no longer injects the
+  arguments that a subclass does not pass, and the call fails with `missing 1 required positional argument`.
 - An argument named `response_headers` of an exception handler no longer receives the headers of the response:
   declare a `ResponseHeader[T]` with `@winter.web.response_header`, as in an API method.
 - A response header is a `str`, an `int` or a `datetime`, the types HTTP has a format for: `ResponseHeader[T]` of
@@ -73,7 +75,9 @@ urlpatterns = winter.django.create_urls(app)
   `Response(HTTPStatus.OK, render_to_string('report.html', context).encode(), {'content-type': 'text/html'})`.
 - The `meta` of a `Page` has no `previous` and `next` links any more, and `winter.web.pagination.utils` with
   `get_previous_page_url` and `get_next_page_url` is gone. A subclass of `Page` adds them where clients need them,
-  see [Extending Page class](../README.md#extending-page-class).
+  see [Extending Page class](../README.md#extending-page-class). Its links keep the other query parameters of the
+  request, such as filters, which the links of Winter 32 dropped. The schemas of a subclass of `Page` in the spec
+  are named after it, `LinkedPageOfX` and `LinkedPageMetaOfX`, so that it and `Page[X]` can be in one spec.
 - `winter.application.set_injector` and `get_injector` are gone: nothing in Winter takes the injector from a global.
   The request pipeline takes it from the application, and `winter.messaging`, `winter.ddd` and `winter.sqlalchemy`
   from the injector that creates their objects. `DomainEventDispatcher` takes the injector that creates the handlers:
@@ -102,7 +106,8 @@ urlpatterns = winter.django.create_urls(app)
   @functools.cache
   def _spec() -> dict:
       spec = winter.openapi.generate_openapi(app, title='Public API', version='1')
-      return {**spec, 'servers': [{'url': '/public-api' + server['url']} for server in spec['servers']]}
+      # '/public-api' for the servers '/' of routes without a common prefix, no slash at the end
+      return {**spec, 'servers': [{'url': ('/public-api' + server['url']).rstrip('/')} for server in spec['servers']]}
 
   class DocsAPI:
       @winter.web.route_get('openapi.json')
@@ -129,5 +134,7 @@ urlpatterns = winter.django.create_urls(app)
   needs a `@winter.json.json_decoder`, as in a query parameter.
 - Event handlers are found in modules, as by `WebApplication`: `add_handlers_from_modules([myproject])` of
   `DomainEventDispatcher` replaces `add_handlers_from_package('myproject')`, and of `EventSubscriptionRegistry`
-  replaces `autodiscover('myproject')`. `winter.application.module_discovery.get_all_classes` is gone.
+  replaces `autodiscover('myproject')`. `winter.application.module_discovery.get_all_classes` is gone:
+  `winter.application.find_definitions([myproject])` gives the classes and functions of the modules and their
+  subpackages.
 - `EventDispatcher` is imported from `winter.messaging`: the module `winter.messaging.event_dispacher` is gone.

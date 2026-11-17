@@ -93,6 +93,12 @@ class CustomPage(Page, Generic[CustomPageItem]):
     extra: str
 
 
+@dataclass(frozen=True)
+class LinkedPage(Page, Generic[CustomPageItem]):
+    previous: str
+    next: str
+
+
 TypeVarItem = TypeVar('TypeVarItem')
 
 
@@ -385,32 +391,32 @@ class RequestBodyWithUndefined:
         CustomPage[int],
         {
             'schema': {
-                '$ref': '#/components/schemas/PageOfInteger',
+                '$ref': '#/components/schemas/CustomPageOfInteger',
             },
         },
         {
             'parameters': {},
             'responses': {},
             'schemas': {
-                'PageMetaOfInteger': {
+                'CustomPageMetaOfInteger': {
                     'properties': {
                         'extra': {'type': 'string'},
                         'limit': {'format': 'int32', 'nullable': True, 'type': 'integer'},
                         'offset': {'format': 'int32', 'nullable': True, 'type': 'integer'},
                         'total_count': {'format': 'int32', 'type': 'integer'}},
                     'required': ['total_count', 'limit', 'offset', 'extra'],
-                    'title': 'PageMetaOfInteger',
+                    'title': 'CustomPageMetaOfInteger',
                     'type': 'object',
                 },
-                'PageOfInteger': {
+                'CustomPageOfInteger': {
                     'properties': {
                         'meta': {
-                            '$ref': '#/components/schemas/PageMetaOfInteger',
+                            '$ref': '#/components/schemas/CustomPageMetaOfInteger',
                         },
                         'objects': {'items': {'format': 'int32', 'type': 'integer'}, 'type': 'array'},
                     },
                     'required': ['meta', 'objects'],
-                    'title': 'PageOfInteger',
+                    'title': 'CustomPageOfInteger',
                     'type': 'object',
                 }
             },
@@ -1067,6 +1073,29 @@ def test_reuse_page_schema():
         'servers': [{'url': '/'}],
         'tags': [],
     }
+
+
+def test_page_subclass_has_schemas_of_its_own():
+    class _TestAPI:  # pragma: no cover
+        @winter.web.route_get('/page/')
+        def get_page(self) -> Page[str]:
+            pass
+
+        @winter.web.route_get('/linked-page/')
+        def get_linked_page(self) -> LinkedPage[str]:
+            pass
+
+    # Act
+    result = generate_openapi_for_routes(
+        title='title',
+        version='1.0.0',
+        routes=[get_route(_TestAPI.get_page), get_route(_TestAPI.get_linked_page)],
+    )
+
+    # Assert
+    schemas = result['components']['schemas']
+    assert set(schemas) == {'PageOfString', 'PageMetaOfString', 'LinkedPageOfString', 'LinkedPageMetaOfString'}
+    assert schemas['LinkedPageMetaOfString']['required'] == ['total_count', 'limit', 'offset', 'previous', 'next']
 
 
 def test_raises_for_type_duplicates():
