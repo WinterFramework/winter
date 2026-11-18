@@ -3,7 +3,7 @@ from typing import List
 from injector import inject
 
 from .event import Event
-from .event_dispacher import EventDispatcher
+from .event_dispatcher import EventDispatcher
 from .event_publisher import EventPublisher
 
 

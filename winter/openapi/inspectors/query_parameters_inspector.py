@@ -6,6 +6,7 @@ from typing import Tuple
 from openapi_pydantic.v3.v3_0 import Parameter
 
 from winter.components import ComponentMethodArgument
+from winter.typing import is_optional
 from winter.web.query_parameters import QueryParameter
 from winter.web.query_parameters.query_parameters_annotation import QueryParametersAnnotation
 from winter.web.routing import Route
@@ -69,7 +70,11 @@ class QueryParametersInspector(RouteParametersInspector):
         return Parameter(
             name=query_parameter.name,
             description='',
-            required=field.default is dataclasses.MISSING,
+            required=(
+                field.default is dataclasses.MISSING
+                and field.default_factory is dataclasses.MISSING
+                and not is_optional(field.type)
+            ),
             param_in='query',
             param_schema=schema,
             explode=query_parameter.explode,

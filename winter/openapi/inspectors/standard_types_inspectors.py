@@ -21,84 +21,84 @@ from winter.typing import is_union
 from winter.openapi.inspection.data_formats import DataFormat
 from winter.openapi.inspection.data_types import DataTypes
 from winter.openapi.inspection.inspection import inspect_type
-from winter.openapi.inspection.inspection import register_type_inspector
+from winter.openapi.inspection.inspection import type_inspector
 from winter.openapi.inspection.type_info import TypeInfo
 
 
 # noinspection PyUnusedLocal
-@register_type_inspector(bool)
+@type_inspector(bool)
 def inspect_bool(hint_class) -> TypeInfo:
     return TypeInfo(type_=DataTypes.BOOLEAN, hint_class=hint_class)
 
 
 # noinspection PyUnusedLocal
-@register_type_inspector(int)
+@type_inspector(int)
 def inspect_int(hint_class) -> TypeInfo:
     return TypeInfo(type_=DataTypes.INTEGER, hint_class=hint_class, format_=DataFormat.INT32)
 
 
 # noinspection PyUnusedLocal
-@register_type_inspector(bytes)
+@type_inspector(bytes)
 def inspect_bytes(hint_class) -> TypeInfo:
     return TypeInfo(type_=DataTypes.STRING, hint_class=hint_class, format_=DataFormat.BASE64)
 
 
 # noinspection PyUnusedLocal
-@register_type_inspector(str)
+@type_inspector(str)
 def inspect_str(hint_class) -> TypeInfo:
     return TypeInfo(type_=DataTypes.STRING, hint_class=hint_class)
 
 
 # noinspection PyUnusedLocal
-@register_type_inspector(float)
+@type_inspector(float)
 def inspect_float(hint_class) -> TypeInfo:
     return TypeInfo(type_=DataTypes.NUMBER, format_=DataFormat.FLOAT, hint_class=hint_class)
 
 
 # noinspection PyUnusedLocal
-@register_type_inspector(dict)
+@type_inspector(dict)
 def inspect_dict(hint_class) -> TypeInfo:
     return TypeInfo(type_=DataTypes.OBJECT, hint_class=hint_class)
 
 
 # noinspection PyUnusedLocal
-@register_type_inspector(object, checker=is_type_var)
+@type_inspector(object, checker=is_type_var)
 def inspect_type_var(hint_class) -> TypeInfo:
     return TypeInfo(type_=DataTypes.ANY, hint_class=hint_class)
 
 
 # noinspection PyUnusedLocal
-@register_type_inspector(object, checker=is_any)
+@type_inspector(object, checker=is_any)
 def inspect_any(hint_class) -> TypeInfo:
     return TypeInfo(type_=DataTypes.ANY, hint_class=hint_class)
 
 
 # noinspection PyUnusedLocal
-@register_type_inspector(decimal.Decimal)
+@type_inspector(decimal.Decimal)
 def inspect_decimal(hint_class) -> TypeInfo:
     return TypeInfo(type_=DataTypes.STRING, hint_class=hint_class, format_=DataFormat.DECIMAL)
 
 
 # noinspection PyUnusedLocal
-@register_type_inspector(uuid.UUID)
+@type_inspector(uuid.UUID)
 def inspect_uuid(hint_class) -> TypeInfo:
     return TypeInfo(type_=DataTypes.STRING, hint_class=hint_class, format_=DataFormat.UUID)
 
 
 # noinspection PyUnusedLocal
-@register_type_inspector(datetime.datetime)
+@type_inspector(datetime.datetime)
 def inspect_datetime(hint_class) -> TypeInfo:
     return TypeInfo(type_=DataTypes.STRING, hint_class=hint_class, format_=DataFormat.DATETIME)
 
 
 # noinspection PyUnusedLocal
-@register_type_inspector(datetime.date)
+@type_inspector(datetime.date)
 def inspect_date(hint_class) -> TypeInfo:
     return TypeInfo(type_=DataTypes.STRING, hint_class=hint_class, format_=DataFormat.DATE)
 
 
 # noinspection PyUnusedLocal
-@register_type_inspector(list, tuple, set, Iterable)
+@type_inspector(list, tuple, set, Iterable)
 def inspect_iterable(hint_class) -> TypeInfo:
     args = typing.get_args(hint_class)
     if not args:
@@ -112,7 +112,7 @@ def inspect_iterable(hint_class) -> TypeInfo:
     return TypeInfo(type_=DataTypes.ARRAY, hint_class=hint_class, child=child_schema)
 
 
-@register_type_inspector(enum.IntEnum, StrEnum, enum.Enum)
+@type_inspector(enum.IntEnum, StrEnum, enum.Enum)
 def inspect_enum(enum_class: Type[enum.Enum]) -> TypeInfo:
     enum_values = [entry.value for entry in enum_class]
     # Try to infer type_ based on enum values
@@ -127,7 +127,7 @@ def inspect_enum(enum_class: Type[enum.Enum]) -> TypeInfo:
     return schema
 
 
-@register_type_inspector(object, checker=is_optional)
+@type_inspector(object, checker=is_optional)
 def inspect_optional(hint_class) -> TypeInfo:
     child_type = hint_class.__args__[0]
     schema = inspect_type(child_type)
@@ -135,7 +135,7 @@ def inspect_optional(hint_class) -> TypeInfo:
     return schema
 
 
-@register_type_inspector(object, checker=dataclasses.is_dataclass)
+@type_inspector(object, checker=dataclasses.is_dataclass)
 def inspect_dataclass(hint_class) -> TypeInfo:
     cls = hint_class if isinstance(hint_class, type) else type(hint_class)
     title = cls.__name__
@@ -165,14 +165,14 @@ def inspect_dataclass(hint_class) -> TypeInfo:
     )
 
 
-@register_type_inspector(object, checker=has_nested_type)
+@type_inspector(object, checker=has_nested_type)
 def inspect_type_wrapper(hint_class) -> TypeInfo:
     nested_type = hint_class._nested_type
     schema = inspect_type(nested_type)
     return schema
 
 
-@register_type_inspector(
+@type_inspector(
     typing.NewType,
     checker=lambda instance: getattr(instance, '__supertype__', None) is not None,
 )
@@ -184,7 +184,7 @@ def can_be_undefined(type_):
     return is_union(type_) and Undefined in get_union_args(type_)
 
 
-@register_type_inspector(object, checker=can_be_undefined)
+@type_inspector(object, checker=can_be_undefined)
 def inspect_can_be_undefined(hint_class) -> TypeInfo:
     union_args = get_union_args(hint_class)
     assert len(union_args) == 2, 'Union with Undefined must have 2 args'

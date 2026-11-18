@@ -1,36 +1,125 @@
 """
-North-star test for docs/architecture.md, principle 2: framework behaviour is never
-process-global. Two Application instances in one process must not share behavioural
-registries. Marked xfail(strict=True): it turns green when the Application scope lands,
-and strict forces the marker to be removed at that moment. `raises` limits the expected failure to
-`Application` not existing yet or the registries still being shared; any other error is a real failure.
+Isolation test for docs/architecture.md, principle 2: framework behaviour is never process-global.
+Two applications in one process must not share behaviour: an exception handler of one application does not handle
+exceptions in another, the arguments of an API method come from the injector of the
+application that serves it, an interceptor of one application does not run in another, and each application counts
+throttled requests in the storage of its own injector.
 """
+from http import HTTPStatus
+
 import pytest
+from django.test import RequestFactory
+from injector import Injector
+
+import winter.django
+import winter.web
+from tests.injection import app_injector
+from tests.web_application import web_application
 
 
 class _ErrorA(Exception):
     pass
 
 
-@pytest.mark.xfail(
-    strict=True,
-    raises=(ImportError, AssertionError),
-    reason='North star: behavioural registries are scoped to an Application instance',
-)
-def test_two_applications_do_not_share_exception_handlers():  # pragma: no cover
-    from winter.application import Application
-    from winter.web.exceptions.handlers import DefaultExceptionHandler
-    from winter.web.exceptions.handlers import ExceptionHandler
-    from winter.web.exceptions.handlers import ExceptionHandlersRegistry
+class _Handlers:
+    @winter.web.exception_handler
+    def handle(self, exception: _ErrorA) -> str:  # pragma: no cover
+        return 'handled'
 
-    class HandlerA(ExceptionHandler):
-        def handle(self, exception: Exception, **kwargs):
-            return 'a'
 
-    app_1 = Application()
-    app_2 = Application()
+class _API:
+    @winter.web.route_get('raise-a/')
+    def raise_a(self):
+        raise _ErrorA()
 
-    app_1.get(ExceptionHandlersRegistry).add_handler(_ErrorA, HandlerA)
 
-    assert isinstance(app_1.get(ExceptionHandlersRegistry).get_handler(_ErrorA), HandlerA)
-    assert isinstance(app_2.get(ExceptionHandlersRegistry).get_handler(_ErrorA), DefaultExceptionHandler)
+def test_exception_handler_of_one_application_does_not_handle_exceptions_in_another():
+    app_1 = web_application(_Handlers, injector=app_injector)
+    app_2 = web_application(_API, injector=app_injector)
+    winter.django.create_urls(app_1)
+    [url] = winter.django.create_urls(app_2)
+
+    # Act
+    with pytest.raises(_ErrorA):
+        url.callback(RequestFactory().get('/raise-a/'))
+
+
+class _Name:
+    def __init__(self, value: str):
+        self.value = value
+
+
+class _NameAPI:
+    @winter.web.route_get('name/')
+    def get(self, name: _Name) -> str:
+        return name.value
+
+
+def _application_with_name(value: str) -> winter.web.WebApplication:
+    return web_application(_NameAPI, injector=Injector([lambda binder: binder.bind(_Name, to=_Name(value))]))
+
+
+def test_argument_of_api_method_comes_from_injector_of_its_application():
+    [url_1] = winter.django.create_urls(_application_with_name('one'))
+    [url_2] = winter.django.create_urls(_application_with_name('two'))
+
+    # Act
+    response_1 = url_1.callback(RequestFactory().get('/name/'))
+    response_2 = url_2.callback(RequestFactory().get('/name/'))
+
+    # Assert
+    assert response_1.content == b'"one"'
+    assert response_2.content == b'"two"'
+
+
+class _RejectingInterceptor(winter.web.Interceptor):
+    def pre_handle(self):
+        raise _ErrorA()
+
+
+class _OKAPI:
+    @winter.web.route_get('ok/')
+    def get(self) -> str:
+        return 'ok'
+
+
+def test_interceptor_of_one_application_does_not_run_in_another():
+    app_1 = web_application(_OKAPI, interceptors=[_RejectingInterceptor])
+    app_2 = web_application(_OKAPI)
+    [url_1] = winter.django.create_urls(app_1)
+    [url_2] = winter.django.create_urls(app_2)
+
+    # Act
+    response = url_2.callback(RequestFactory().get('/ok/'))
+
+    # Assert
+    assert response.content == b'"ok"'
+    with pytest.raises(_ErrorA):
+        url_1.callback(RequestFactory().get('/ok/'))
+
+
+class _ThrottledAPI:
+    @winter.web.route_get('throttled/')
+    @winter.web.throttling('1/m')
+    def get(self) -> str:
+        return 'ok'
+
+
+def _application_with_throttling() -> winter.web.WebApplication:
+    storage = winter.web.InMemoryThrottlingStorage()
+    return web_application(
+        _ThrottledAPI,
+        injector=Injector([lambda binder: binder.bind(winter.web.ThrottlingStorage, to=storage)]),
+    )
+
+
+def test_throttled_requests_of_one_application_are_not_counted_in_another():
+    [url_1] = winter.django.create_urls(_application_with_throttling())
+    [url_2] = winter.django.create_urls(_application_with_throttling())
+    url_1.callback(RequestFactory().get('/throttled/'))
+
+    # Act
+    response = url_2.callback(RequestFactory().get('/throttled/'))
+
+    # Assert
+    assert response.status_code == HTTPStatus.OK

@@ -1,3 +1,4 @@
+import dataclasses
 import datetime
 from http import HTTPStatus
 from typing import List
@@ -14,6 +15,7 @@ from winter.components.annotations import AlreadyAnnotated
 from winter.web.argument_resolver import ArgumentNotSupported
 from winter.web.exceptions import RequestDataDecodeException
 from winter.web.query_parameters.query_parameter_argument_resolver import QueryParameterArgumentResolver
+from winter.web.query_parameters.query_parameters_argument_resolver import QueryParametersArgumentResolver
 
 
 @pytest.mark.parametrize(
@@ -168,6 +170,51 @@ def test_orphan_map_query_parameter_fails():
 
     assert str(exception_info.value) == 'Failed to decode request data'
     assert exception_info.value.errors == {'error': 'Missing required query parameter "x"'}
+
+
+@dataclasses.dataclass
+class _Search:
+    page_size: int
+    sort: Optional[str]
+    page_number: int = 1
+    tags: List[str] = dataclasses.field(default_factory=list)
+
+
+class _SearchAPI:
+    @winter.web.route_get('{?page_size,sort,page_number,tags}')
+    @winter.web.query_parameters('search')
+    def search(self, search: _Search):  # pragma: no cover
+        pass
+
+
+@pytest.mark.parametrize(
+    ('query_string', 'expected_search'), (
+        ('page_size=10&sort=name&page_number=3&tags=a,b', _Search(10, 'name', 3, ['a', 'b'])),
+        ('page_size=10', _Search(10, None, 1, [])),
+    ),
+)
+def test_query_parameters_resolver(query_string, expected_search):
+    resolver = QueryParametersArgumentResolver()
+    argument = _SearchAPI.search.get_argument('search')
+
+    assert resolver.resolve_argument(argument, get_request(query_string), {}) == expected_search
+
+
+@pytest.mark.parametrize(
+    ('query_string', 'expected_errors'), (
+        ('page_number=3', {'error': 'Missing required query parameter "page_size"'}),
+        ('page_size=abc', {'error': 'Cannot decode "abc" to integer'}),
+    ),
+)
+def test_query_parameters_resolver_with_raises_parse_error(query_string, expected_errors):
+    resolver = QueryParametersArgumentResolver()
+    argument = _SearchAPI.search.get_argument('search')
+
+    with pytest.raises(RequestDataDecodeException) as exception_info:
+        resolver.resolve_argument(argument, get_request(query_string), {})
+
+    assert str(exception_info.value) == 'Failed to decode request data'
+    assert exception_info.value.errors == expected_errors
 
 
 @pytest.mark.parametrize(

@@ -1,71 +1,147 @@
 import json
 from typing import Any
+from typing import Collection
+from typing import Iterable
+from typing import Mapping
 
-from winter.application import get_injector
+from injector import Injector
+
 from winter.components import ComponentMethod
 from winter.json import JSONEncoder
-from .argument_resolver import arguments_resolver
+from .argument_resolver import ArgumentsResolver
 from .default_response_status import get_response_status
-from .exceptions import MethodExceptionsManager
+from .exception_handlers import ExceptionHandlers
 from .exceptions import ThrottleException
-from .exceptions import exception_handlers_registry
-from .interceptor import interceptor_registry
-from .output_processor import get_output_processor
+from .exceptions.handlers import exception_argument_name
+from .pagination.page_position_argument_resolver import PagePositionArgumentResolver
+from .path_parameters_argument_resolver import PathParametersArgumentResolver
+from .query_parameters.query_parameter_argument_resolver import QueryParameterArgumentResolver
+from .query_parameters.query_parameters_argument_resolver import QueryParametersArgumentResolver
 from .request import Request
+from .request_body_resolver import RequestBodyArgumentResolver
+from .request_header_resolver import RequestHeaderArgumentResolver
+from .request_scope import create_request_injector
+from .request_scope import is_bound
 from .response import Response
 from .response_entity import ResponseEntity
-from .response_header_serializer import response_headers_serializer
+from .response_header_resolver import ResponseHeaderArgumentResolver
 from .routing import Route
-from .throttling import create_throttle_class
+from .throttling import IdentityResolver
+from .throttling import Throttle
+from .throttling import ThrottlingMisconfigurationException
+from .throttling import ThrottlingStorage
+from .throttling import create_throttle
+from .throttling import get_throttling
+from .web_application import WebApplication
+
+# The arguments mapped from the request; any other argument comes from the injector of the request
+_arguments_resolver = ArgumentsResolver([
+    QueryParameterArgumentResolver(),
+    QueryParametersArgumentResolver(),
+    PathParametersArgumentResolver(),
+    RequestBodyArgumentResolver(),
+    ResponseHeaderArgumentResolver(),
+    PagePositionArgumentResolver(),
+    RequestHeaderArgumentResolver(),
+])
 
 
-def handle_request(route: Route, request: Request) -> Response:
+def check_arguments(
+    app: WebApplication,
+    routes: Iterable[Route],
+    exception_handlers: ExceptionHandlers,
+    request_types: Collection[type],
+):
     """
-    Run the whole handling pipeline for a matched route: throttling, interceptors, argument resolution,
-    the API method, exception handlers, output processing and JSON encoding. Framework-agnostic: adapters
-    build the Request from their own request object and send the returned Response.
+    Fails on startup for an argument of an API method, an interceptor or an exception handler that is not mapped
+    from the request and whose type the injector does not bind, and for an API method with @throttling when the
+    injector binds no ThrottlingStorage. Every request binds the Request and its Route, adapters bind their request
+    types; an API method with @throttling also receives its Throttle.
+    """
+    request_types = {Request, Route, *request_types}
+    for route in routes:
+        if get_throttling(route.method) is None:
+            _arguments_resolver.check_arguments(route.method, app.injector, request_types)
+            continue
+        if not is_bound(app.injector, ThrottlingStorage):
+            raise ThrottlingMisconfigurationException(
+                f'{route.method.full_name}: @throttling needs a ThrottlingStorage bound in the injector',
+            )
+        _arguments_resolver.check_arguments(route.method, app.injector, {*request_types, Throttle})
+    for interceptor in app.interceptors:
+        pre_handle = ComponentMethod.get_or_create(interceptor.pre_handle)
+        _arguments_resolver.check_arguments(pre_handle, app.injector, request_types)
+    for method in exception_handlers:
+        _arguments_resolver.check_arguments(method, app.injector, request_types, {exception_argument_name(method)})
+
+
+def handle_request(
+    app: WebApplication,
+    route: Route,
+    request: Request,
+    exception_handlers: ExceptionHandlers,
+    request_values: Mapping[type, object],
+    throttling_identity: IdentityResolver,
+    native_response_types: tuple[type, ...],
+) -> Response:
+    """
+    Run the whole handling pipeline for a matched route of the application: throttling, its interceptors, argument
+    resolution, the API method, its exception handlers and JSON encoding.
+    Framework-agnostic: adapters build the Request from their own request object and send the returned Response.
+    The request is handled in an injector of its own, a child of the application's one, that binds the Request
+    and the request values of the adapter, such as its own request object. Request-scoped values live in it.
+    Throttling counts the request in the storage of the application's injector for the identity that the adapter
+    resolves, since the adapter knows the users of its framework. An API method or an exception handler may return
+    an object of the native response types of the adapter, which reaches the adapter untouched.
     """
     method = route.method
-    method_exceptions_manager = MethodExceptionsManager(method)
-    response_headers: dict[str, Any] = {}
+    response_headers: dict[str, str] = {}
+    throttle = create_throttle(method, request, app.injector, throttling_identity)
+    if throttle is not None:
+        request_values = {**request_values, Throttle: throttle}
+    injector = create_request_injector(app.injector, request, route, request_values)
 
-    throttle = create_throttle_class(route)
     try:
-        if throttle and not throttle.allow_request(request):
+        if throttle is not None and not throttle.allow_request():
             raise ThrottleException()
 
-        for interceptor in interceptor_registry:
-            pre_handle = ComponentMethod.get_or_create(interceptor.__class__.pre_handle)
-            arguments = arguments_resolver.resolve_arguments(pre_handle, request, response_headers, {'method': method})
-            pre_handle(interceptor, **arguments)
+        for interceptor_cls in app.interceptors:
+            pre_handle = ComponentMethod.get_or_create(interceptor_cls.pre_handle)
+            arguments = _arguments_resolver.resolve_arguments(pre_handle, request, response_headers, injector)
+            pre_handle(injector.get(interceptor_cls), **arguments)
 
-        arguments = arguments_resolver.resolve_arguments(method, request, response_headers)
-        api_instance = get_injector().get(method.component.component_cls)
+        arguments = _arguments_resolver.resolve_arguments(method, request, response_headers, injector)
+        api_instance = injector.get(method.component.component_cls)
         result = method(api_instance, **arguments)
     except Exception as exception:
-        handler = method_exceptions_manager.get_handler(exception)
-        method = ComponentMethod.get_or_create(handler.__class__.handle)
-        try:
-            arguments = arguments_resolver.resolve_arguments(
-                method, request, response_headers, {'exception': exception, 'response_headers': response_headers},
-            )
-            result = method(handler, **arguments)
-        except Exception as inner_exception:
-            handler = exception_handlers_registry.get_default_handler()
-            method = ComponentMethod.get_or_create(handler.__class__.handle)
-            arguments = arguments_resolver.resolve_arguments(
-                method, request, response_headers, {'exception': inner_exception, 'response_headers': response_headers},
-            )
-            result = method(handler, **arguments)
+        method = exception_handlers.get(type(exception))
+        if method is None:
+            raise
+        result = _handle_exception(method, exception, request, response_headers, injector)
 
-    return _to_response(request, result, method, response_headers)
+    return _to_response(request, result, method, response_headers, native_response_types)
 
 
-def _to_response(request: Request, result: Any, method: ComponentMethod, response_headers: dict[str, Any]) -> Response:
-    headers = {
-        name: response_headers_serializer.serialize(value, name)
-        for name, value in response_headers.items()
-    }
+def _handle_exception(
+    method: ComponentMethod,
+    exception: Exception,
+    request: Request,
+    response_headers: dict[str, str],
+    injector: Injector,
+) -> Any:
+    context = {exception_argument_name(method): exception}
+    arguments = _arguments_resolver.resolve_arguments(method, request, response_headers, injector, context)
+    handler = injector.get(method.component.component_cls)
+    return method(handler, **arguments)
+
+
+def _to_response(
+    request: Request,
+    result: Any,
+    method: ComponentMethod,
+    headers: dict[str, str],
+    native_response_types: tuple[type, ...],
+) -> Response:
     if isinstance(result, Response):
         return Response(status_code=result.status_code, body=result.body, headers={**headers, **result.headers})
 
@@ -76,31 +152,9 @@ def _to_response(request: Request, result: Any, method: ComponentMethod, respons
         body = result
         status_code = get_response_status(request.method, method)
 
-    output_processor = get_output_processor(method, body)
-    if output_processor is not None:
-        body = output_processor.process_output(body, request)
-    if isinstance(body, Response):
-        return Response(status_code=body.status_code, body=body.body, headers={**headers, **body.headers})
-
-    if _is_native(body):
+    if isinstance(body, native_response_types):
         return Response(status_code=status_code, body=body, headers=headers)
 
     headers.setdefault('content-type', 'application/json')
     content = b'' if body is None else json.dumps(body, cls=JSONEncoder).encode()
     return Response(status_code=status_code, body=content, headers=headers)
-
-
-_native_response_types = ()
-
-
-def register_native_response_type(type_: type):
-    """
-    Adapters register the response types of their framework here. An API method or an output processor
-    may return such an object, and it reaches the adapter untouched.
-    """
-    global _native_response_types
-    _native_response_types = _native_response_types + (type_,)
-
-
-def _is_native(body: Any) -> bool:
-    return isinstance(body, _native_response_types)

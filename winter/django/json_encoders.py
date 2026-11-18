@@ -1,8 +1,8 @@
 from django.utils.functional import Promise
 
-from winter.json.encoder import register_encoder
+from winter.json.encoder import json_encoder
 
 
-@register_encoder
+@json_encoder
 def promise_encoder(promise: Promise):
     return str(promise)

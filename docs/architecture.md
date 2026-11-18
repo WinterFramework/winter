@@ -57,7 +57,7 @@ independent of each other. Dashed packages are planned and do not exist yet.
 |---|---|---|
 | Adapters | Bind the models to external technologies and standards. Independent of each other. | `django`, `openapi`, `sqlalchemy`, `redis`, `wsgi` (planned), `asgi` (planned), `rabbitmq` (planned) |
 | Models | Framework-agnostic descriptions of what an application does. Independent of each other. | `web` (HTTP), `ddd` (domain: aggregates, repositories, domain events), `messaging` (events) |
-| Foundations | Shared vocabulary and mechanisms. Unaware of the layers above. May use each other. | `components` (declarative metadata), `application` (scope, injector, discovery), `json`, `pagination`, `typing` (what the stdlib `typing` lacks) |
+| Foundations | Shared vocabulary and mechanisms. Unaware of the layers above. May use each other. | `components` (declarative metadata), `application` (discovery of definitions), `json`, `pagination`, `typing` (what the stdlib `typing` lacks) |
 
 A package belongs to Foundations when it knows nothing about models or adapters and is used by
 at least two of them.
@@ -68,10 +68,13 @@ at least two of them.
    subpackage can later ship as its own distribution from its own repository without any
    import path changing.
 2. **Framework behaviour is never process-global.** Every behavioural registry (exception
-   handlers, interceptors, argument resolvers, throttling configuration, OpenAPI inspectors)
-   belongs to an `Application` instance, so two applications can live in one process.
-   Declarative metadata about types (component annotations, JSON encoders for a type) may be
-   global, like the classes it describes.
+   handlers, interceptors, throttling configuration) belongs to the application object an adapter
+   builds from, such as `winter.web.WebApplication`, and the values that its methods receive come
+   from its injector, so two applications can live in one process. What belongs to an adapter, such
+   as the response types of its framework, the adapter passes to `winter.web.handle_request` itself.
+   Declarative metadata about types (component annotations, JSON encoders, OpenAPI type
+   inspectors for a type and the `@problem` response of an exception) may be global, like the
+   classes it describes.
 3. **Glue between models, or between adapters, is application code.** Mapping a domain
    `NotFoundException` to HTTP 404, or mounting the Swagger UI route, is done by the
    application that composes the pieces, not by the framework.
@@ -80,10 +83,6 @@ at least two of them.
 
 ## Current deviations
 
-- **Framework behaviour is still process-global.** `winter.application.get_injector` is a
-  service locator, and the behavioural registries of `winter.web` and `winter.openapi` are module
-  singletons. `tests/test_application_scope.py` states the intended behaviour and is marked
-  `xfail` until an `Application` instance owns that state.
 - **`winter.wsgi`, `winter.asgi` and `winter.rabbitmq` do not exist yet.** HTTP is served through
   `winter.django` only, and `winter.messaging` has no transport adapter.
 - **All dependencies are mandatory.** Django, SQLAlchemy, Redis and pydantic are installed with
@@ -95,8 +94,11 @@ at least two of them.
 
 - **import-linter** (`lint-imports`, configured in `pyproject.toml`) checks the layer rules.
   There are no `ignore_imports`, and none may be added.
-- **North-star test** `tests/test_application_scope.py` is marked `xfail(strict=True)`. It
-  creates two `Application` instances with different exception handlers and asserts they do
-  not see each other. `strict` forces the marker to be removed the moment it passes.
+- **Isolation test** `tests/test_application_scope.py` builds two applications in one process
+  and asserts that an exception handler of one does not handle exceptions in the other, that the
+  arguments of an API method come from the injector of the application that
+  serves it, that an interceptor of one does not run in the other, and that each counts throttled
+  requests in the storage of its own injector. Each registry that moves into
+  the application adds its case there.
 - **This document** describes intent and is updated when the intent changes, not when the code
   moves. Deviations are listed above while they exist.

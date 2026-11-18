@@ -2,12 +2,13 @@ import dataclasses
 from enum import Enum
 from enum import IntEnum
 from typing import List
+from typing import Optional
 
 import pytest
 
 import winter.web
 from winter.web.routing import get_route
-from winter.openapi import generate_openapi
+from winter.openapi.generator import generate_openapi_for_routes
 from winter.openapi.generator import CanNotInspectType
 
 
@@ -74,7 +75,9 @@ def test_query_parameter_inspector(type_hint, expected_parameter_properties):
     }
     route = get_route(_TestAPI.simple_method)
     # Act
-    result = generate_openapi(title='title', version='1.0.0', description='Winter api description', routes=[route])
+    result = generate_openapi_for_routes(
+        title='title', version='1.0.0', description='Winter api description', routes=[route],
+    )
 
     # Assert
     parameters = result["paths"]["/resource/"]["get"]["parameters"]
@@ -108,7 +111,7 @@ def test_query_parameter_inspector_with_explode(type_hint, expected_parameter_pr
     }
     route = get_route(_TestAPI.simple_method)
     # Act
-    result = generate_openapi(title='title', version='1.0.0', routes=[route])
+    result = generate_openapi_for_routes(title='title', version='1.0.0', routes=[route])
 
     # Assert
     parameters = result["paths"]["/resource/"]["get"]["parameters"]
@@ -149,7 +152,9 @@ def test_query_parameter_inspector_with_default_value(type_hint, default_value, 
     }
     route = get_route(_TestAPI.simple_method)
     # Act
-    result = generate_openapi(title='title', version='1.0.0', description='Winter api description', routes=[route])
+    result = generate_openapi_for_routes(
+        title='title', version='1.0.0', description='Winter api description', routes=[route],
+    )
 
     # Assert
     parameters = result["paths"]["/resource/"]["get"]["parameters"]
@@ -182,7 +187,7 @@ def test_path_parameter_different_types(type_hint, expected_parameter_properties
     }
 
     # Act
-    result = generate_openapi(title='title', version='1.0.0', routes=[route])
+    result = generate_openapi_for_routes(title='title', version='1.0.0', routes=[route])
 
     # Assert
     parameters = result["paths"]["/{param}/"]["post"]["parameters"]
@@ -204,7 +209,7 @@ def test_query_parameter_without_python_argument():
 
     # Act
     with pytest.raises(Exception) as exc_info:
-        generate_openapi(title='title', version='1.0.0', routes=[route])
+        generate_openapi_for_routes(title='title', version='1.0.0', routes=[route])
 
     # Assert
     assert str(exc_info.value) == 'Argument "test" not found in _TestAPI.api_method, but listed in query parameters'
@@ -225,7 +230,7 @@ def test_path_parameter_without_python_argument():
 
     # Act
     with pytest.raises(Exception) as exc_info:
-        generate_openapi(title='title', version='1.0.0', routes=[route])
+        generate_openapi_for_routes(title='title', version='1.0.0', routes=[route])
 
     # Assert
     assert str(exc_info.value) == 'Path variable "test" not found in method _TestAPI.api_method'
@@ -258,11 +263,42 @@ def test_custom_query_parameters():
     }
     route = get_route(_TestAPI.simple_method)
     # Act
-    result = generate_openapi(title='title', version='1.0.0', routes=[route])
+    result = generate_openapi_for_routes(title='title', version='1.0.0', routes=[route])
 
     # Assert
     parameters = result["paths"]["/resource/"]["get"]["parameters"]
     assert parameters == [expected_parameter]
+
+
+def test_custom_query_parameters_not_required():
+    @dataclasses.dataclass
+    class CustomQueryParameters:
+        required: int
+        optional: Optional[int]
+        with_default: int = 1
+        with_default_factory: List[int] = dataclasses.field(default_factory=list)
+
+    class _TestAPI:
+        @winter.web.route_get('/resource/{?required,optional,with_default,with_default_factory}')
+        @winter.web.query_parameters('query_parameters')
+        def simple_method(
+            self,
+            query_parameters: CustomQueryParameters,
+        ):  # pragma: no cover
+            pass
+
+    route = get_route(_TestAPI.simple_method)
+    # Act
+    result = generate_openapi_for_routes(title='title', version='1.0.0', routes=[route])
+
+    # Assert
+    parameters = result["paths"]["/resource/"]["get"]["parameters"]
+    assert {parameter['name']: parameter['required'] for parameter in parameters} == {
+        'required': True,
+        'optional': False,
+        'with_default': False,
+        'with_default_factory': False,
+    }
 
 
 def test_custom_query_parameters_with_wrong_field_type():
@@ -296,7 +332,7 @@ def test_custom_query_parameters_with_wrong_field_type():
     route = get_route(_TestAPI.simple_method)
     # Act
     with pytest.raises(CanNotInspectType) as e:
-        generate_openapi(title='title', version='1.0.0', routes=[route])
+        generate_openapi_for_routes(title='title', version='1.0.0', routes=[route])
 
     # Assert
     assert str(e.value) == (

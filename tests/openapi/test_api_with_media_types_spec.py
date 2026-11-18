@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import winter.web
 from winter.web import MediaType
 from winter.web.routing import get_route
-from winter.openapi import generate_openapi
+from winter.openapi.generator import generate_openapi_for_routes
 
 
 def test_generate_spec_for_media_type_produces():
@@ -15,7 +15,7 @@ def test_generate_spec_for_media_type_produces():
     route = get_route(_TestAPI.get_xml)
 
     # Act
-    result = generate_openapi(title='title', version='1.0.0', routes=[route])
+    result = generate_openapi_for_routes(title='title', version='1.0.0', routes=[route])
 
     # Assert
     paths = result['paths']
@@ -51,7 +51,7 @@ def test_generate_spec_for_media_type_consumes():
     route = get_route(_TestAPI.get_xml)
 
     # Act
-    result = generate_openapi(title='title', version='1.0.0', routes=[route])
+    result = generate_openapi_for_routes(title='title', version='1.0.0', routes=[route])
 
     # Assert
     paths = result['paths']

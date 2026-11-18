@@ -3,6 +3,7 @@ from typing import List
 from typing import Optional
 from typing import TypeVar
 
+from injector import Injector
 from injector import inject
 from sqlalchemy import and_
 from sqlalchemy import exists
@@ -14,7 +15,6 @@ from sqlalchemy.orm import class_mapper
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import UnmappedClassError
 
-from winter.application import get_injector
 from winter.ddd import CRUDRepository
 from winter.ddd.exceptions import NotFoundException
 from winter.ddd import AggregateRoot
@@ -166,8 +166,7 @@ def sqla_crud(repository_cls):
 
     class RepositoryImpl(DefaultCRUDRepositoryImpl, *repository_subclasses):
         @inject
-        def __init__(self):
-            injector = get_injector()
+        def __init__(self, injector: Injector):
             injector.call_with_injection(DefaultCRUDRepositoryImpl.__init__, self)
             for subclass in repository_subclasses:
                 injector.call_with_injection(subclass.__init__, self)

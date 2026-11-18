@@ -3,20 +3,11 @@ from abc import abstractmethod
 
 
 class Interceptor(ABC):
+    """
+    Runs before the API method in each request of the web applications that list it. The arguments of pre_handle are
+    resolved like those of an API method: a `Route` argument, for one, gets the route of the request and its method.
+    """
+
     @abstractmethod
     def pre_handle(self, **kwargs):
         pass
-
-
-class InterceptorRegistry:
-    def __init__(self):
-        self._interceptors = []
-
-    def add_interceptor(self, interceptor: Interceptor):
-        self._interceptors.append(interceptor)
-
-    def __iter__(self):
-        return iter(self._interceptors)
-
-
-interceptor_registry = InterceptorRegistry()

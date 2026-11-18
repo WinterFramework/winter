@@ -20,33 +20,10 @@ Web Framework with focus on python typing, dataclasses and modular design
 
 Package structure and layer rules: [docs/architecture.md](docs/architecture.md).
 
-## Upgrading to Winter 33
+# Upgrading
 
-`winter` is a namespace package now: the `import winter` facade is gone, use `winter.web` instead
-(`@winter.web.route_get(...)`). `winter_openapi`, `winter_django`, `winter_sqlalchemy`, `winter_ddd`,
-`winter.core` and `winter.data` are gone; their contents live under `winter.<package>` as described in
-[docs/architecture.md](docs/architecture.md). A codemod rewrites a code base, preserving formatting:
-
-```
-pip install libcst
-python tools/migrate_to_33.py path/to/your/project
-```
-
-`winter.web` does not depend on Django any more. What the codemod cannot do for you:
-
-- Custom `ArgumentResolver`, `IOutputProcessor`, `ExceptionMapper` and `Interceptor` implementations receive
-  `winter.web.Request` instead of `django.http.HttpRequest`: `request.query_parameters`, `request.headers`,
-  `request.body`, `request.path_parameters`, `request.full_path`. API methods that declare a `HttpRequest`
-  argument still get the Django request. `winter.web.throttling.reset`, `get_next_page_url` and
-  `get_previous_page_url` from `winter.web.pagination.utils` take a `winter.web.Request` too.
-- Raw responses: return `winter.web.Response(status_code, body=bytes, headers={...})`; returning a Django
-  `HttpResponse` still works under the Django adapter.
-- `winter.ddd.NotFoundException` is not mapped to HTTP 404 by the framework. Add
-  `winter.web.problem(status=404)(NotFoundException)` before `winter.web.setup()`.
-- Throttling storage is explicit: `winter.web.set_throttling_storage(RedisThrottlingStorage(configuration))`
-  from `winter.redis.throttling`, or `InMemoryThrottlingStorage()` for a single process.
-- `Request` has no `user`. Who gets throttled is decided by the identity resolver: `winter.django.setup()`
-  installs one that uses the Django user, `winter.web.set_throttling_identity_resolver` replaces it.
+- [Upgrading to Winter 34](docs/upgrading-to-34.md)
+- [Upgrading to Winter 33](docs/upgrading-to-33.md)
 
 # How to use
 
@@ -67,14 +44,15 @@ class HelloWorld:
         return 'Hello, world!'
 ```
 
-To use it with Django:
+To use it with Django, in `urls.py`:
 ```python
-from winter.web.autodiscovery import find_package_routes
+import some_package
 import winter.django
+import winter.web
 
-routes = find_package_routes('some_package.sub_package')
+app = winter.web.WebApplication(modules=[some_package])
 urlpatterns = [
-    *winter.django.create_django_urls_from_routes(routes),
+    *winter.django.create_urls(app),
 ]
 ```
 
@@ -193,14 +171,92 @@ class Example:
         )
 ```
 
+The fields of a subclass go to the meta of the JSON and of the OpenAPI spec, so a subclass can add links
+to the previous and the next pages, built from the request:
+```python
+from dataclasses import dataclass
+from typing import Generic
+from typing import Optional
+from typing import TypeVar
+
+from furl import furl
+
+import winter.web
+from winter.pagination import Page
+from winter.pagination import PagePosition
+
+
+T = TypeVar('T')
+
+@dataclass(frozen=True)
+class LinkedPage(Page, Generic[T]):
+    previous: Optional[str]
+    next: Optional[str]
+
+    @classmethod
+    def of(cls, page: Page[T], request: winter.web.Request) -> 'LinkedPage[T]':
+        limit = page.position.limit
+        offset = page.position.offset or 0
+        has_previous = limit is not None and offset > 0
+        has_next = limit is not None and offset + limit < page.total_count
+        return cls(
+            total_count=page.total_count,
+            items=page.items,
+            position=page.position,
+            previous=_page_url(request, limit, max(offset - limit, 0)) if has_previous else None,
+            next=_page_url(request, limit, offset + limit) if has_next else None,
+        )
+
+
+def _page_url(request: winter.web.Request, limit: int, offset: int) -> str:
+    url = furl(request.full_path)
+    url.args['limit'] = limit
+    if offset:
+        url.args['offset'] = offset
+    else:
+        url.args.pop('offset', None)
+    return url.tostr()
+
+
+class TodoAPI:
+    @winter.web.route_get('todos/')
+    def get_todos(self, request: winter.web.Request, page_position: PagePosition) -> LinkedPage[int]:
+        page = Page(total_count=3, items=[1, 2, 3], position=page_position)
+        return LinkedPage.of(page, request)
+```
+
+`PagePosition` comes from `limit`, `offset` and `order_by`. Other parameters of a page are a dataclass of query
+parameters, which the route declares for the request and for the OpenAPI spec alike:
+```python
+from dataclasses import dataclass
+
+import winter.web
+from winter.pagination import Page
+from winter.pagination import PagePosition
+
+
+@dataclass
+class PageNumber:
+    page_size: int = 20
+    page_number: int = 1
+
+    def position(self) -> PagePosition:
+        return PagePosition(limit=self.page_size, offset=(self.page_number - 1) * self.page_size)
+
+
+class TodoAPI:
+    @winter.web.route_get('todos/{?page_size,page_number}')
+    @winter.web.query_parameters('page')
+    def get_todos(self, page: PageNumber) -> Page[int]:
+        return Page(total_count=3, items=[1, 2, 3], position=page.position())
+```
+
 
 ## Exception handling
 ```python
 from dataclasses import dataclass
 from http import HTTPStatus
 from typing import List
-
-from django.http import HttpRequest
 
 import winter.web
 
@@ -222,71 +278,110 @@ class TodoNotFoundException(Exception):
 class TodoNotFoundException(Exception):
     invalid_index: int
 
-# When we want to override global handler and customize response body. Expected output below:
-# {index: 1, 'message': 'Access denied'}
+# When we want to build the response body ourselves. Expected output below:
+# {'index': 1, 'message': 'Access denied'}
+class TodoAccessDeniedException(Exception):
+    def __init__(self, index: int):
+        self.index = index
+
+
 @dataclass
 class ErrorDTO:
     index: int
     message: str
 
 
-class TodoNotFoundExceptionCustomHandler(winter.web.ExceptionHandler):
-    @winter.web.response_status(HTTPStatus.NOT_FOUND)
-    def handle(self, request: HttpRequest, exception: TodoNotFoundException) -> ErrorDTO:
-        return ErrorDTO(index=exception.invalid_index, message='Access denied')
+class TodoExceptionHandlers:
+    # Handles the exception its first argument is annotated with, and its subclasses, everywhere in the
+    # application. The class is created by the injector. An exception without a handler goes to the host, such as
+    # Django or a WSGI server, which logs it and answers 500; a handler of Exception gives a response of its own.
+    @winter.web.exception_handler
+    @winter.web.response_status(HTTPStatus.FORBIDDEN)
+    def handle_access_denied(self, exception: TodoAccessDeniedException) -> ErrorDTO:
+        return ErrorDTO(index=exception.index, message='Access denied')
 
 
 todo_list: List[str] = []
 
 
 class TodoProblemExistsExampleAPI:
-    @winter.web.route_get('global/{todo_index}/')
-    def get_todo_with_global_handling(self, todo_index: int):
+    @winter.web.route_get('problem/{todo_index}/')
+    # Declares the response in the OpenAPI spec. The application must have a handler of the exception.
+    @winter.web.raises(TodoNotFoundException)
+    def get_todo(self, todo_index: int):
         raise TodoNotFoundException(invalid_index=todo_index)
 
-    @winter.web.route_get('custom/{todo_index}/')
-    @winter.web.raises(TodoNotFoundException, handler_cls=TodoNotFoundExceptionCustomHandler)
-    def get_todo_with_custom_handling(self, todo_index: int):
-        raise TodoNotFoundException(invalid_index=todo_index)
+    @winter.web.route_get('denied/{todo_index}/')
+    @winter.web.raises(TodoAccessDeniedException)
+    def get_denied_todo(self, todo_index: int):
+        raise TodoAccessDeniedException(index=todo_index)
 
 ```
 
 
 ## Interceptors
 You can define interceptors to pre-handle a web request before it gets to an endpoint code.
-The pre_handle method arguments will be injected the same way as it's done in methods with winter.web.route annotation.
+The pre_handle method arguments are resolved the same way as those of an API method: a `winter.web.Route` argument
+gets the route of the request, whose `method` is the API method with its annotations.
 It's not supported to return any response from interceptors.
 However, the exceptions thrown from within an interceptor will be handled automatically.
 ```python
 import winter.web
-from winter.components import ComponentMethod
 from winter.web import Interceptor
 from winter.web import Request
 from winter.web import ResponseHeader
+from winter.web import Route
 
 
 class HelloWorldInterceptor(Interceptor):
     @winter.web.response_header('x-hello-world', 'hello_world_header')
-    def pre_handle(self, method: ComponentMethod, request: Request, hello_world_header: ResponseHeader[str]):
-        print(f'Method: {method.name}')
+    def pre_handle(self, route: Route, request: Request, hello_world_header: ResponseHeader[str]):
+        print(f'Method: {route.method.name}')
         if 'hello_world' in request.query_parameters:
             hello_world_header.set('Hello, World!')
 
 ```
 
-
-The only way now to register an interceptor is to add it to InterceptorRegistry singleton.
-
-Don't forget to import this adding during app initialization.
+An application lists the classes of its interceptors in the order they run. The injector of each request creates
+them, so their dependencies go to `__init__`:
 ```python
-from winter.web import interceptor_registry
-from .interceptors import HelloWorldInterceptor
-
-class SomeInitializationClassInMyApplication:
-    def initialize_my_app(self):
-        interceptor_registry.add_interceptor(HelloWorldInterceptor())
-
+app = winter.web.WebApplication(modules=[some_package], interceptors=[HelloWorldInterceptor])
 ```
+
+## Values from the injector
+An argument that is not mapped from the request (path and query parameters, `@request_body`, `@request_header`,
+`@response_header`, `PagePosition`) comes from the injector of the application, which must bind its type:
+otherwise the application fails on startup. The dependencies of the class itself go to `__init__`, where the
+injector creates them without bindings. A provider marked `@winter.web.request_scope` is called once per request,
+and its value exists only while Winter handles a request. Every request binds `winter.web.Request`, its
+`winter.web.Route`, whose `method` is the API method with its annotations, and, under Django, `django.http.HttpRequest`.
+```python
+import injector
+import winter.web
+from django.http import HttpRequest
+
+
+class AccountModule(injector.Module):
+    @injector.provider
+    @winter.web.request_scope
+    def account(self, request: HttpRequest, accounts: AccountQueries) -> Account:
+        return accounts.get(request.user.pk)
+
+
+class ProfileAPI:
+    @injector.inject
+    def __init__(self, profiles: ProfileQueries):
+        self._profiles = profiles
+
+    @winter.web.route_get('profile/')
+    def get(self, account: Account) -> ProfileDTO:
+        return self._profiles.get(account)
+
+
+app = winter.web.WebApplication(modules=[profiles], injector=injector.Injector([AccountModule()]))
+```
+
+Interceptors and exception handlers of a request get the same request-scoped values as its API method.
 
 ## Undefined JSON fields
 

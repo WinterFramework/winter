@@ -3,7 +3,7 @@ import pytest
 import winter.web
 from winter.pagination import PagePosition
 from winter.web.routing import get_route
-from winter.openapi import generate_openapi
+from winter.openapi.generator import generate_openapi_for_routes
 
 
 def test_generate_page_position_argument_spec():
@@ -15,7 +15,7 @@ def test_generate_page_position_argument_spec():
     route = get_route(_TestAPI.method)
 
     # Act
-    result = generate_openapi(title="title", version="1.0.0", routes=[route])
+    result = generate_openapi_for_routes(title="title", version="1.0.0", routes=[route])
 
     # Assert
     parameters = result["paths"]["/pageable_resource"]["get"]["parameters"]
@@ -52,7 +52,7 @@ def test_generate_object_argument_spec():
     route = get_route(_TestAPI.method)
 
     # Act
-    result = generate_openapi(title="title", version="1.0.0", routes=[route])
+    result = generate_openapi_for_routes(title="title", version="1.0.0", routes=[route])
 
     # Assert
     parameters = result["paths"]["/pageable_resource"]["get"]["parameters"]
@@ -98,7 +98,7 @@ def test_page_position_argument_inspector_with_allowed_order_by_fields(default_s
         expected_order_by_parameter['schema']['default'] = default_sort
 
     # Act
-    result = generate_openapi(title="title", version="1.0.0", routes=[route])
+    result = generate_openapi_for_routes(title="title", version="1.0.0", routes=[route])
 
     # Assert
     parameters = result["paths"]["/ordered_resource"]["get"]["parameters"]

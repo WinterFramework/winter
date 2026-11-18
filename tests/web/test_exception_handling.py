@@ -2,17 +2,13 @@ from http import HTTPStatus
 
 import pytest
 
-from winter.web.argument_resolver import ArgumentNotSupported
-from tests.api.api_with_exceptions import CustomException
-from tests.api.api_with_exceptions import ExceptionWithoutHandler
-
 
 @pytest.mark.parametrize(
     ['url_path', 'expected_status', 'expected_body'], (
         ('declared_but_not_thrown', HTTPStatus.OK, 'Hello, sir!'),
         ('declared_and_thrown', HTTPStatus.BAD_REQUEST, {'message': 'declared_and_thrown'}),
         ('declared_and_thrown_child', HTTPStatus.BAD_REQUEST, {'message': 'declared_and_thrown_child'}),
-        ('exception_with_custom_handler', HTTPStatus.UNAUTHORIZED, 21),
+        ('not_declared_but_thrown', HTTPStatus.BAD_REQUEST, {'message': 'not_declared_but_thrown'}),
     ),
 )
 def test_api_with_exceptions(api_client, url_path, expected_status, expected_body):
@@ -24,20 +20,6 @@ def test_api_with_exceptions(api_client, url_path, expected_status, expected_bod
     # Assert
     assert response.status_code == expected_status
     assert response.json() == expected_body
-
-
-@pytest.mark.parametrize(
-    'url_path', (
-        '/with_exceptions/not_declared_but_thrown/',
-        '/with_exceptions/declared_but_no_handler/',
-        '/with_exceptions/with_unknown_argument_exception/',
-    ),
-)
-def test_api_with_exceptions_throws_500(api_client, url_path):
-    response = api_client.get(url_path)
-
-    assert response.status_code == 500
-    assert response.content == b'Server Error (500)'
 
 
 @pytest.mark.parametrize(
@@ -86,12 +68,6 @@ def test_api_with_exceptions_throws_500(api_client, url_path):
                 'title': 'Inheritor of problem exists',
                 'detail': 'Implicit string of detail',
             },
-        ),
-        (
-            'custom_handler_problem_exists_exception',
-            HTTPStatus.BAD_REQUEST,
-            'application/json',
-            {'message': 'Implicit string of detail'},
         ),
         (
             'not_found_exception',

@@ -1,16 +1,7 @@
-from http import HTTPStatus
 
 import winter.web
-from winter.web import route_post, route_get, raises, response_status, ExceptionHandler
-from winter.web import Request
-from winter.web.exceptions import ThrottleException
-from winter.web.throttling import reset
-
-
-class CustomThrottleExceptionHandler(ExceptionHandler):
-    @response_status(HTTPStatus.TOO_MANY_REQUESTS)
-    def handle(self, exception: ThrottleException) -> str:
-        return 'custom throttle exception'
+from winter.web import route_post, route_get
+from winter.web import Throttle
 
 
 @route_get('with-throttling/')
@@ -34,15 +25,14 @@ class APIWithThrottling:
     def method_without_throttling(self):
         pass
 
-    @route_get('custom-handler/')
+    @route_get('without-user/')
     @winter.web.throttling('5/s')
-    @raises(ThrottleException, CustomThrottleExceptionHandler)
-    def simple_method_with_custom_handler(self) -> int:
+    def method_for_request_without_user(self) -> int:
         return 1
 
     @route_get('with-reset/{?is_reset}')
     @winter.web.throttling('5/s', 'reset_scope')
-    def simple_method_with_reset(self, request: Request, is_reset: bool) -> int:
+    def simple_method_with_reset(self, throttle: Throttle, is_reset: bool) -> int:
         if is_reset:
-            reset(request, 'reset_scope')
+            throttle.reset()
         return 1

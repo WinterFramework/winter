@@ -1,6 +1,6 @@
 import winter.web
 from winter.web.routing import get_route
-from winter.openapi import generate_openapi
+from winter.openapi.generator import generate_openapi_for_routes
 
 
 def test_generate_openapi_with_all_args_spec():
@@ -12,7 +12,7 @@ def test_generate_openapi_with_all_args_spec():
     route = get_route(_TestAPI.get_resource)
     tags = [{'name': 'tag_value'}]
     # Act
-    result = generate_openapi(
+    result = generate_openapi_for_routes(
         title='title',
         version='1.0.0',
         description='description',

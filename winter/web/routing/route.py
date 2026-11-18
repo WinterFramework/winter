@@ -25,6 +25,15 @@ class Route:
         self.method = method
         self.http_method = http_method
 
+    def with_prefix(self, prefix: str) -> 'Route':
+        """
+        The same route under a path prefix, such as the one an adapter serves an application under. A prefix is a path
+        like the paths of routes: `public-api/v1/`, without a leading slash and with a trailing one.
+        """
+        if prefix and (prefix.startswith('/') or not prefix.endswith('/')):
+            raise ValueError(f"A prefix has no leading slash and ends with a slash, like 'public-api/v1/': {prefix!r}")
+        return Route(self.http_method, prefix + self._url_path_with_query_parameters, self.method)
+
     @property
     def url_path(self):
         return _remove_query_params_regexp.sub('', self._url_path_with_query_parameters)

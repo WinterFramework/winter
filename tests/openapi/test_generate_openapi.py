@@ -1,0 +1,29 @@
+import winter.openapi
+import winter.web
+from tests.injection import app_injector
+from tests.web_application import web_application
+
+
+class _API:
+    @winter.web.route_get('v1/items/')
+    def get_items(self) -> list[int]:  # pragma: no cover
+        return []
+
+    @winter.web.route_get('v1/orders/')
+    def get_orders(self) -> list[int]:  # pragma: no cover
+        return []
+
+
+def _application(*definitions) -> winter.web.WebApplication:
+    return web_application(*definitions, injector=app_injector)
+
+
+def test_generate_openapi_of_application():
+    app = _application(_API)
+
+    # Act
+    spec = winter.openapi.generate_openapi(app, title='title', version='1.0.0')
+
+    # Assert
+    assert list(spec['paths']) == ['/items/', '/orders/']
+    assert spec['servers'] == [{'url': '/v1'}]

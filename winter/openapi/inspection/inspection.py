@@ -15,14 +15,16 @@ _inspectors_by_type: Dict[
 ] = {}
 
 
-def register_type_inspector(*types_: Type, checker: Callable = None, func: Callable = None):
-    if func is None:
-        return lambda func: register_type_inspector(*types_, checker=checker, func=func)
-
-    for type_ in types_:
-        callables = _inspectors_by_type.setdefault(type_, [])
-        callables.append((func, checker))
-    return func
+def type_inspector(*types_: Type, checker: Callable = None):
+    """
+    The decorated function describes the types, and their subclasses, in OpenAPI schemas. A checker limits it to
+    the type hints for which it returns true.
+    """
+    def decorator(func: Callable) -> Callable:
+        for type_ in types_:
+            _inspectors_by_type.setdefault(type_, []).append((func, checker))
+        return func
+    return decorator
 
 
 class InspectorNotFound(Exception):

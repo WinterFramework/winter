@@ -24,7 +24,7 @@ from winter.json import Undefined
 from winter.typing import TypeWrapper
 from winter.pagination import Page
 from winter.web.routing import get_route
-from winter.openapi import generate_openapi
+from winter.openapi.generator import generate_openapi_for_routes
 from winter.openapi.generator import CanNotInspectType
 
 
@@ -91,6 +91,12 @@ CustomPageItem = TypeVar('CustomPageItem')
 @dataclass(frozen=True)
 class CustomPage(Page, Generic[CustomPageItem]):
     extra: str
+
+
+@dataclass(frozen=True)
+class LinkedPage(Page, Generic[CustomPageItem]):
+    previous: str
+    next: str
 
 
 TypeVarItem = TypeVar('TypeVarItem')
@@ -349,11 +355,9 @@ class RequestBodyWithUndefined:
                     'properties': {
                         'limit': {'format': 'int32', 'nullable': True, 'type': 'integer'},
                         'offset': {'format': 'int32', 'nullable': True, 'type': 'integer'},
-                        'next': {'nullable': True, 'type': 'string'},
-                        'previous': {'nullable': True, 'type': 'string'},
                         'total_count': {'format': 'int32', 'type': 'integer'},
                     },
-                    'required': ['total_count', 'limit', 'offset', 'previous', 'next'],
+                    'required': ['total_count', 'limit', 'offset'],
                     'title': 'PageMetaOfNestedDataclass',
                     'type': 'object',
                 },
@@ -387,34 +391,32 @@ class RequestBodyWithUndefined:
         CustomPage[int],
         {
             'schema': {
-                '$ref': '#/components/schemas/PageOfInteger',
+                '$ref': '#/components/schemas/CustomPageOfInteger',
             },
         },
         {
             'parameters': {},
             'responses': {},
             'schemas': {
-                'PageMetaOfInteger': {
+                'CustomPageMetaOfInteger': {
                     'properties': {
                         'extra': {'type': 'string'},
                         'limit': {'format': 'int32', 'nullable': True, 'type': 'integer'},
                         'offset': {'format': 'int32', 'nullable': True, 'type': 'integer'},
-                        'next': {'nullable': True, 'type': 'string'},
-                        'previous': {'nullable': True, 'type': 'string'},
                         'total_count': {'format': 'int32', 'type': 'integer'}},
-                    'required': ['total_count', 'limit', 'offset', 'previous', 'next', 'extra'],
-                    'title': 'PageMetaOfInteger',
+                    'required': ['total_count', 'limit', 'offset', 'extra'],
+                    'title': 'CustomPageMetaOfInteger',
                     'type': 'object',
                 },
-                'PageOfInteger': {
+                'CustomPageOfInteger': {
                     'properties': {
                         'meta': {
-                            '$ref': '#/components/schemas/PageMetaOfInteger',
+                            '$ref': '#/components/schemas/CustomPageMetaOfInteger',
                         },
                         'objects': {'items': {'format': 'int32', 'type': 'integer'}, 'type': 'array'},
                     },
                     'required': ['meta', 'objects'],
-                    'title': 'PageOfInteger',
+                    'title': 'CustomPageOfInteger',
                     'type': 'object',
                 }
             },
@@ -464,7 +466,7 @@ def test_response_return_type(type_hint, expected_response_info, expected_compon
         'tags': ['types'],
     }
     # Act
-    result = generate_openapi(title='title', version='1.0.0', routes=[route])
+    result = generate_openapi_for_routes(title='title', version='1.0.0', routes=[route])
 
     # Assert
     method_info = result['paths']['/types/']['get']
@@ -482,7 +484,7 @@ def test_response_with_invalid_return_type():
 
     with pytest.raises(CanNotInspectType) as e:
         # Act
-        generate_openapi(title='title', version='1.0.0', routes=[route])
+        generate_openapi_for_routes(title='title', version='1.0.0', routes=[route])
 
     assert repr(e.value) == (
         "CanNotInspectType(test_api_request_and_response_spec._TestAPI.with_invalid_return_type: "
@@ -567,7 +569,7 @@ def test_request_type(type_hint, expected_request_body_spec, expected_components
     route = get_route(_TestAPI.simple_method)
 
     # Act
-    result = generate_openapi(title='title', version='1.0.0', routes=[route])
+    result = generate_openapi_for_routes(title='title', version='1.0.0', routes=[route])
 
     # Assert
     method_info = result['paths']['/types/']['post']['requestBody']
@@ -612,7 +614,7 @@ def test_request_type_with_union_undefined():
     route = get_route(_TestAPI.simple_method)
 
     # Act
-    result = generate_openapi(title='title', version='1.0.0', routes=[route])
+    result = generate_openapi_for_routes(title='title', version='1.0.0', routes=[route])
 
     # Assert
     method_info = result['paths']['/types/']['post']['requestBody']
@@ -673,7 +675,7 @@ def test_reuse_dataclass_schema():
         def method_request_body_undefined_2(self, data: DataclassWithUndefined):
             pass
 
-    result = generate_openapi(
+    result = generate_openapi_for_routes(
         title='title',
         version='1.0.0',
         routes=[
@@ -992,7 +994,7 @@ def test_reuse_page_schema():
         def method_2(self) -> Page[str]:
             pass
 
-    result = generate_openapi(
+    result = generate_openapi_for_routes(
         title='title',
         version='1.0.0',
         routes=[
@@ -1008,12 +1010,10 @@ def test_reuse_page_schema():
                 'PageMetaOfString': {
                     'properties': {
                         'limit': {'format': 'int32', 'nullable': True, 'type': 'integer'},
-                        'next': {'nullable': True, 'type': 'string'},
                         'offset': {'format': 'int32', 'nullable': True, 'type': 'integer'},
-                        'previous': {'nullable': True, 'type': 'string'},
                         'total_count': {'format': 'int32', 'type': 'integer'},
                     },
-                    'required': ['total_count', 'limit', 'offset', 'previous', 'next'],
+                    'required': ['total_count', 'limit', 'offset'],
                     'title': 'PageMetaOfString',
                     'type': 'object'},
                 'PageOfString': {
@@ -1075,6 +1075,29 @@ def test_reuse_page_schema():
     }
 
 
+def test_page_subclass_has_schemas_of_its_own():
+    class _TestAPI:  # pragma: no cover
+        @winter.web.route_get('/page/')
+        def get_page(self) -> Page[str]:
+            pass
+
+        @winter.web.route_get('/linked-page/')
+        def get_linked_page(self) -> LinkedPage[str]:
+            pass
+
+    # Act
+    result = generate_openapi_for_routes(
+        title='title',
+        version='1.0.0',
+        routes=[get_route(_TestAPI.get_page), get_route(_TestAPI.get_linked_page)],
+    )
+
+    # Assert
+    schemas = result['components']['schemas']
+    assert set(schemas) == {'PageOfString', 'PageMetaOfString', 'LinkedPageOfString', 'LinkedPageMetaOfString'}
+    assert schemas['LinkedPageMetaOfString']['required'] == ['total_count', 'limit', 'offset', 'previous', 'next']
+
+
 def test_raises_for_type_duplicates():
     class DuplicateTypes:
         @dataclass
@@ -1091,7 +1114,7 @@ def test_raises_for_type_duplicates():
             pass
 
     with pytest.raises(ValueError) as e:
-        generate_openapi(
+        generate_openapi_for_routes(
             title='title',
             version='1.0.0',
             routes=[

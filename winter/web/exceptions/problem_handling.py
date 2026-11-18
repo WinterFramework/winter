@@ -6,18 +6,14 @@ from dataclasses import is_dataclass
 from typing import Dict
 from typing import Type
 
-
-from winter.components import Component
 from .beautify_string import camel_to_human
-from winter.web import ResponseHeader
 from .exception_handler_generator import ExceptionHandlerGenerator
 from .exception_mapper import ExceptionMapper
-from .handlers import ExceptionHandler
-from .handlers import exception_handlers_registry
-from .problem_annotation import ProblemAnnotation
+from .handlers import exception_handler
 from .problem_handling_info import ProblemHandlingInfo
-from .. import MediaType
+from ..media_type import MediaType
 from ..request import Request
+from ..response_header_annotation import ResponseHeader
 from ..response_header_annotation import response_header
 
 
@@ -25,27 +21,28 @@ class ProblemExceptionHandlerGenerator(ExceptionHandlerGenerator):
     def __init__(self, exception_mapper: ExceptionMapper):
         self._exception_mapper = exception_mapper
 
-    def generate(self, exception_class: Type[Exception], handling_info: ProblemHandlingInfo) -> Type[ExceptionHandler]:
+    def generate(self, exception_class: Type[Exception], handling_info: ProblemHandlingInfo) -> Type:
         from ..response_status_annotation import response_status
 
         return_type_class = self._build_exception_dataclass(exception_class)
         exception_mapper = self._exception_mapper
 
+        @exception_handler
         @response_status(handling_info.status)
         @response_header('Content-Type', 'content_type_header')
-        def handle_method(
+        def handle(
             self,
-            request: Request,
             exception: exception_class,
+            request: Request,
             content_type_header: ResponseHeader[str],
             **kwargs,
         ) -> return_type_class:
-            content_type_header.set(MediaType.APPLICATION_PROBLEM_JSON)
+            content_type_header.set(str(MediaType.APPLICATION_PROBLEM_JSON))
             return exception_mapper.to_response_body(request, exception, handling_info)
 
-        handler_class_name = exception_class.__name__ + 'Handler'
-        handler_class = type(handler_class_name, (ExceptionHandler,), {'handle': handle_method})
-        return handler_class
+        # Named after the decorator, so that messages tell it from a handler class of the application
+        handler_class_name = f'@problem({exception_class.__name__})'
+        return type(handler_class_name, (), {'handle': handle})
 
     def _build_exception_dataclass(self, exception_class: Type[Exception]) -> Type:
         class_name = exception_class.__name__
@@ -91,18 +88,3 @@ class ProblemExceptionMapper(ExceptionMapper):
     @classmethod
     def _try_cut_exception_name_postfix(cls, exception_cls: Type[Exception]) -> str:
         return re.sub('Exception$', '', exception_cls.__name__)
-
-
-def autodiscover_problem_annotations(handler_generator: ProblemExceptionHandlerGenerator):
-    handled_problems: Dict[Type[Exception], ProblemAnnotation] = {
-        cls: component.annotations.get_one(ProblemAnnotation)
-        for cls, component in Component.get_all().items()
-        if component.annotations.get_one_or_none(ProblemAnnotation)
-    }
-    for exception_class, problem_annotation in handled_problems.items():
-        handler_class = handler_generator.generate(exception_class, problem_annotation.handling_info)
-        exception_handlers_registry.add_handler(
-            exception_class,
-            handler_class,
-            auto_handle=True,
-        )
